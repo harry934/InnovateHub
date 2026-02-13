@@ -58,9 +58,17 @@
                 <a class="nav-link" href="#" onclick="showSection('submit'); return false;">
                     <i class="fa fa-plus-circle me-2"></i> Submit Project
                 </a>
+                <!-- Notifications Link -->
+                <a class="nav-link" href="#" onclick="showSection('notifications'); return false;">
+                    <i class="fa fa-bell me-2"></i> Notifications <span class="badge bg-danger ms-2">2</span>
+                </a>
                 <!-- Mentors Link -->
                 <a class="nav-link" href="#" onclick="showSection('mentors'); return false;">
-                    <i class="fa fa-user-tie me-2"></i> Find Mentors
+                    <i class="fa fa-user-tie me-2"></i> Assigned Mentors
+                </a>
+                <!-- Submit Report Link -->
+                <a class="nav-link" href="#" onclick="showSection('report'); return false;">
+                    <i class="fa fa-file-alt me-2"></i> Submit Report
                 </a>
                 <!-- Events Link -->
                 <a class="nav-link" href="event.html">
@@ -250,15 +258,77 @@
                 </div>
             </div>
             
-            <!-- Find Mentors Section -->
+            <!-- Assigned Mentors Section -->
             <div id="mentorsSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header">
-                    <h2>Find Mentors</h2>
-                    <p class="text-muted">Connect with experienced mentors in your field</p>
+                    <h2>Assigned Mentors</h2>
+                    <p class="text-muted">Connect with the experts guiding your project</p>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="dashboard-card text-center">
+                            <div class="mb-3">
+                                <img src="img/team-1.jpg" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;" alt="Mentor">
+                            </div>
+                            <h4>Dr. Sarah Johnson</h4>
+                            <p class="text-primary mb-1">AI & Robotics Expert</p>
+                            <p class="text-muted small">Assigned to: Smart Irrigation System</p>
+                            <div class="d-grid gap-2 mt-3">
+                                <button class="btn btn-outline-primary btn-sm" onclick="showSection('report')"><i class="fa fa-file-alt me-2"></i>Send Report</button>
+                                <button class="btn btn-outline-secondary btn-sm"><i class="fa fa-envelope me-2"></i>Message</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Report Section -->
+            <div id="reportSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>Submit Progress Report</h2>
+                    <p class="text-muted">Keep your mentor updated on your project's progress</p>
                 </div>
                 
                 <div class="dashboard-card">
-                    <p class="text-muted">Mentor matching feature coming soon! You will be automatically matched with mentors based on your project category and needs.</p>
+                    <form id="reportForm" onsubmit="submitReport(event); return false;">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Select Project *</label>
+                            <select class="form-select" required>
+                                <option value="">Choose a project...</option>
+                                <option value="1">Smart Irrigation System</option>
+                                <option value="2">AI Tutor Bot</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Report Type *</label>
+                            <select class="form-select" required>
+                                <option value="weekly">Weekly Progress</option>
+                                <option value="milestone">Milestone Completion</option>
+                                <option value="issue">Issue/Blocker</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Summary of Activities *</label>
+                            <textarea class="form-control" rows="4" placeholder="What have you accomplished since the last report?" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Challenges & Blockers</label>
+                            <textarea class="form-control" rows="3" placeholder="Any issues preventing progress?"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Next Steps</label>
+                            <textarea class="form-control" rows="3" placeholder="What do you plan to do next?"></textarea>
+                        </div>
+                        <div class="form-group mb-3">
+                             <label for="reportFile" class="form-label fw-bold">Attachments</label>
+                             <input type="file" class="form-control" id="reportFile">
+                             <small class="text-muted">Upload any relevant documents or screenshots</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fa fa-paper-plane me-2"></i>Submit Report
+                        </button>
+                    </form>
                 </div>
             </div>
             
@@ -276,6 +346,38 @@
                 </div>
             </div>
             
+            <!-- Notifications Section -->
+            <div id="notificationsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>Notifications</h2>
+                    <p class="text-muted">Stay updated with latest activities and alerts</p>
+                </div>
+                
+                <div class="dashboard-card mb-3 p-3 border-start border-5 border-success bg-light">
+                     <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1 text-success"><i class="fa fa-check-circle me-2"></i>Project Approved</h5>
+                        <small>3 days ago</small>
+                    </div>
+                    <p class="mb-1">Your project "Smart Irrigation System" has been approved for the next phase.</p>
+                </div>
+                
+                <div class="dashboard-card mb-3 p-3 border-start border-5 border-primary bg-light">
+                     <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1 text-primary"><i class="fa fa-comment me-2"></i>New Feedback</h5>
+                        <small>1 day ago</small>
+                    </div>
+                    <p class="mb-1">Dr. Sarah Johnson left a comment on your weekly report.</p>
+                </div>
+                
+                <div class="dashboard-card mb-3 p-3">
+                     <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1"><i class="fa fa-calendar me-2"></i>Event Reminder</h5>
+                        <small>1 week ago</small>
+                    </div>
+                    <p class="mb-1">Don't forget the Innovation Summit happening this Saturday!</p>
+                </div>
+            </div>
+
             <!-- Settings Section -->
             <div id="settingsSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header">
@@ -358,6 +460,9 @@
                 'submit': 'submitSection',
                 'projects': 'projectsSection',
                 'mentors': 'mentorsSection',
+                'mentors': 'mentorsSection',
+                'report': 'reportSection',
+                'notifications': 'notificationsSection',
                 'profile': 'profileSection',
                 'settings': 'settingsSection'
             };
@@ -475,6 +580,19 @@
             });
             
             container.innerHTML = html;
+        }
+
+
+        /**
+         * Submit Report
+         */
+        function submitReport(event) {
+            event.preventDefault();
+            showSuccessMessage('Progress report submitted successfully to your mentor!');
+            document.getElementById('reportForm').reset();
+            setTimeout(() => {
+                showSection('overview');
+            }, 1500);
         }
     </script>
 </body>
