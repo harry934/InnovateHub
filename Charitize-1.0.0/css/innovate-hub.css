@@ -3,102 +3,7 @@
    Additional styles for Innovate Hub platform
    ======================================== */
 
-/* ========================================
-   1. SPLASH SCREEN
-   Loading screen shown when page first loads
-   ======================================== */
 
-/* Splash Screen Container */
-#splash-screen {
-  position: fixed; /* Fixed position covers entire viewport */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh; /* vh = viewport height, 100vh = full screen */
-  background: var(--bs-white); /* Reverted to white */
-  display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  z-index: 9999; /* Highest z-index to appear above everything */
-  transition:
-    opacity 0.5s ease,
-    visibility 0.5s ease; /* Smooth fade out */
-}
-
-/* Hide splash screen class - added via JavaScript */
-#splash-screen.hidden {
-  opacity: 0; /* Transparent */
-  visibility: hidden; /* Not visible */
-  pointer-events: none; /* Can't interact with it */
-}
-
-/* Splash Screen Content Container */
-.splash-content {
-  text-align: center;
-}
-
-/* Logo Container in Splash */
-.splash-logo {
-  font-size: 4rem;
-  color: var(--bs-primary);
-  margin-bottom: 1.5rem;
-}
-
-/* Splash Screen Heading */
-.splash-content h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--bs-dark);
-  margin-bottom: 0.5rem;
-}
-
-/* Splash Screen Tagline */
-.splash-content p {
-  font-size: 1.1rem;
-  color: var(--bs-tertiary);
-  margin-bottom: 2rem;
-}
-
-/* Loading Spinner in Splash */
-.splash-spinner {
-  margin: 0 auto;
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--bs-light);
-  border-top-color: var(--bs-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-/* Pulse Animation for Logo */
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-/* Fade In Up Animation */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Spin Animation for Loading Spinner */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 /* ========================================
    2. ENHANCED LOGO STYLING
@@ -122,7 +27,11 @@
 .logo-text {
   font-weight: 700;
   font-size: 1.8rem;
-  color: var(--bs-dark);
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #2d5016 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
 }
 
 /* Navbar Logo (smaller version) */
