@@ -188,6 +188,46 @@
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
+/* Custom Sign Up Button (Orange) */
+.btn-custom-signup {
+  background-color: #F3A813; /* Image match: Bright Orange */
+  color: #000000;
+  border: none;
+  padding: 10px 30px; /* Reduced slightly to fit navbar better */
+  font-weight: 700;
+  border-radius: 0 !important; /* STRICTLY SHARP CORNERS */
+  text-transform: capitalize; 
+  white-space: nowrap; /* Prevent text wrapping */
+  transition: all 0.3s ease;
+}
+
+.btn-custom-signup:hover {
+  background-color: #d99611;
+  color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Custom Login Button (Dark Green) */
+.btn-custom-login {
+  background-color: #1A5E4F; /* Image match: Dark Deep Green */
+  color: #FFFFFF;
+  border: none;
+  padding: 10px 30px; /* Reduced slightly to fit navbar better */
+  font-weight: 700;
+  border-radius: 0 !important; /* STRICTLY SHARP CORNERS */
+  text-transform: capitalize;
+  white-space: nowrap; /* Prevent text wrapping */
+  transition: all 0.3s ease;
+}
+
+.btn-custom-login:hover {
+  background-color: #14493e;
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
 /* Secondary Button Enhancements */
 .btn-secondary {
   font-weight: 600;
