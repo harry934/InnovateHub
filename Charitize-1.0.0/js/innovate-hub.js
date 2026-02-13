@@ -341,11 +341,14 @@ function updateUIForRole(user) {
   const guestButtons = document.getElementById("guestButtons");
   const userProfile = document.getElementById("userProfile");
   const userNameSpan = document.getElementById("userName");
+  const navDashboardLink = document.getElementById("navDashboardLink");
 
   if (guestButtons) guestButtons.classList.add("d-none");
   if (userProfile) userProfile.classList.remove("d-none");
   if (userProfile) userProfile.classList.add("d-flex");
   if (userNameSpan) userNameSpan.textContent = user.name || user.email;
+  // Show "My Dashboard" link in main nav
+  if (navDashboardLink) navDashboardLink.classList.remove("d-none");
 
   // Show role-specific navigation
   // Role-specific sidebar navigation elements
@@ -378,7 +381,7 @@ function updateUIForRole(user) {
     // Show specific role sidebar
     if (user.role === "innovator") {
       if (innovatorSidebarNav) innovatorSidebarNav.classList.remove("d-none");
-      showDashboardSection('innovatorOverview');
+      showDashboardSection('myProjects'); // Default to My Projects
     } else if (user.role === "mentor") {
       if (mentorSidebarNav) mentorSidebarNav.classList.remove("d-none");
       showDashboardSection('mentorOverview');
@@ -449,16 +452,16 @@ function logout() {
  * Used in forms and filters throughout the platform
  */
 const INNOVATION_CATEGORIES = [
-  { value: "agriculture", label: "Agricultural Technology", class: "category-agriculture", icon: "fa-leaf" },
-  { value: "robotics", label: "Robotics", class: "category-robotics", icon: "fa-cog" },
-  { value: "ai", label: "Artificial Intelligence", class: "category-ai", icon: "fa-microchip" },
-  { value: "engineering", label: "Engineering", class: "category-engineering", icon: "fa-tools" },
-  { value: "business", label: "Business Innovation", class: "category-business", icon: "fa-chart-line" },
-  { value: "technology", label: "Technology", class: "category-technology", icon: "fa-laptop-code" },
-  { value: "healthcare", label: "Healthcare", class: "category-healthcare", icon: "fa-hospital" },
-  { value: "education", label: "Education", class: "category-education", icon: "fa-university" },
-  { value: "environment", label: "Environment", class: "category-environment", icon: "fa-globe-africa" },
-  { value: "social", label: "Social Impact", class: "category-social", icon: "fa-hand-holding-heart" }
+  { value: "agriculture", label: "Agricultural Technology", class: "text-success", icon: "fa-leaf" },
+  { value: "robotics", label: "Robotics", class: "text-secondary", icon: "fa-robot" },
+  { value: "ai", label: "Artificial Intelligence", class: "text-primary", icon: "fa-brain" },
+  { value: "engineering", label: "Engineering", class: "text-dark", icon: "fa-cogs" },
+  { value: "business", label: "Business Innovation", class: "text-info", icon: "fa-briefcase" },
+  { value: "technology", label: "Technology", class: "text-primary", icon: "fa-laptop" },
+  { value: "healthcare", label: "Healthcare", class: "text-danger", icon: "fa-heartbeat" },
+  { value: "education", label: "Education", class: "text-warning", icon: "fa-graduation-cap" },
+  { value: "environment", label: "Environment", class: "text-success", icon: "fa-tree" },
+  { value: "social", label: "Social Impact", class: "text-danger", icon: "fa-hands-helping" }
 ];
 
 /**

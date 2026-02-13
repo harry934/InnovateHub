@@ -301,17 +301,7 @@
                         required>
                 </div>
                 
-                <!-- Role Selection -->
-                <div class="form-group">
-                    <label for="role">I want to join as</label>
-                    <!-- select: Dropdown menu -->
-                    <select class="form-select" id="role" required>
-                        <option value="">Choose your role...</option>
-                        <option value="innovator">Innovator - Submit and develop projects</option>
-                        <option value="mentor">Mentor - Guide and support innovators</option>
-                    </select>
-                    <small class="text-muted">You can change this later in settings</small>
-                </div>
+
                 
                 <!-- Terms and Conditions Checkbox -->
                 <div class="form-group">
@@ -404,11 +394,10 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            const role = document.getElementById('role').value;
             const agreeTerms = document.getElementById('agreeTerms').checked;
             
             // Validate all fields are filled
-            if (!fullName || !email || !password || !confirmPassword || !role) {
+            if (!fullName || !email || !password || !confirmPassword) {
                 showErrorMessage('Please fill in all fields');
                 return;
             }
@@ -439,13 +428,12 @@
             
             // SIMULATED REGISTRATION
             // In a real application, this would send data to a server
-            // For this frontend-only version, we just validate and store locally
             
             // Create user object
             const userData = {
                 fullName: fullName,
                 email: email,
-                role: role,
+                role: 'innovator', // Default role for all signups
                 registrationDate: new Date().toISOString()
             };
             

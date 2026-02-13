@@ -233,17 +233,7 @@
                         required>
                 </div>
                 
-                <!-- Role Selection -->
-                <div class="form-group">
-                    <label for="role">Select Your Role</label>
-                    <!-- select: Dropdown menu -->
-                    <select class="form-select" id="role" required>
-                        <option value="">Choose your role...</option>
-                        <option value="innovator">Innovator</option>
-                        <option value="mentor">Mentor</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
+
                 
                 <!-- Remember Me Checkbox -->
                 <div class="form-group">
@@ -298,11 +288,10 @@
             // .value: Gets the current value of the input
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const role = document.getElementById('role').value;
             const rememberMe = document.getElementById('rememberMe').checked;
             
             // Validate inputs
-            if (!email || !password || !role) {
+            if (!email || !password) {
                 // Show error message if any field is empty
                 showErrorMessage('Please fill in all fields');
                 return;
@@ -316,7 +305,16 @@
             
             // SIMULATED AUTHENTICATION
             // In a real application, this would send credentials to a server
-            // For this frontend-only version, we just check if fields are filled
+            
+            // Auto-detect role based on email
+            let role = 'innovator'; // Default role
+            
+            if (email.toLowerCase() === 'admin@innovatehub.com') {
+                role = 'admin';
+            } else if (email.toLowerCase() === 'mentor@innovatehub.com') {
+                role = 'mentor';
+            }
+            // Add more specific logic here if needed
             
             // Create user object to store in localStorage
             const userData = {
