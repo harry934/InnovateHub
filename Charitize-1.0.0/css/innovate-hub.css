@@ -641,3 +641,116 @@
 .smooth-transition {
   transition: all 0.3s ease;
 }
+
+/* ========================================
+   5. NAVIGATION BAR REFINEMENTS
+   Professional alignment and visibility
+   ======================================== */
+
+.guest-actions .btn {
+  margin-left: 10px;
+  border-radius: 5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.guest-actions .btn-outline-primary {
+  color: var(--bs-white) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.guest-actions .btn-outline-primary:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: var(--bs-white) !important;
+}
+
+.navbar-nav .nav-link {
+  transition: .3s;
+  padding: 10px 15px !important;
+}
+
+.navbar-nav .nav-link.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+}
+
+/* ========================================
+   6. STRUCTURED DASHBOARD LAYOUT
+   Standard professional platform interface
+   ======================================== */
+
+.dashboard-wrapper {
+  display: flex;
+  background: #f4f7f6;
+  min-height: calc(100vh - 100px);
+}
+
+.dashboard-sidebar-nav {
+  width: 280px;
+  background: var(--bs-white);
+  border-right: 1px solid #dee2e6;
+  padding: 2rem 0;
+  flex-shrink: 0;
+}
+
+.dashboard-sidebar-nav .nav-link {
+  color: var(--bs-dark);
+  font-weight: 500;
+  padding: 12px 25px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-left: 4px solid transparent;
+  text-decoration: none;
+  transition: .3s;
+}
+
+.dashboard-sidebar-nav .nav-link:hover,
+.dashboard-sidebar-nav .nav-link.active {
+  background: var(--bs-light);
+  color: var(--bs-primary);
+  border-left-color: var(--bs-primary);
+}
+
+.dashboard-content-area {
+  flex-grow: 1;
+  padding: 2.5rem;
+  overflow-y: auto;
+}
+
+.content-card {
+  background: var(--bs-white);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-notification-banner {
+  background: #fff3cd;
+  border-left: 5px solid #ffc107;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.dashboard-notification-banner i {
+  color: #856404;
+}
+
+.dashboard-header-title {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Utility to hide/show sections */
+.d-dashboard-none { display: none !important; }
+.d-dashboard-block { display: block !important; }
+

@@ -132,47 +132,35 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <!-- Navigation Menu: Main navigation links for the website -->
                     <div class="navbar-nav me-auto" id="mainNav">
-                        <!-- Active class highlights the current page -->
                         <a href="index.html" class="nav-item nav-link active">Home</a>
                         <a href="#about" class="nav-item nav-link">About</a>
                         <a href="#service" class="nav-item nav-link">Innovation Areas</a>
-                        
-                        <!-- Role-Specific Navigation (Hidden by default) -->
-                        <div id="innovatorNav" class="d-none d-contents">
-                            <a href="#my-projects" class="nav-item nav-link">My Projects</a>
-                            <a href="#submit-idea" class="nav-item nav-link">Submit Idea</a>
-                        </div>
-                        <div id="mentorNav" class="d-none d-contents">
-                            <a href="#assigned-projects" class="nav-item nav-link">Assigned Projects</a>
-                        </div>
-                        <div id="adminNav" class="d-none d-contents">
-                            <a href="#platform-stats" class="nav-item nav-link">Platform Stats</a>
-                            <a href="#user-management" class="nav-item nav-link">Users</a>
-                        </div>
-
                         <a href="#contact" class="nav-item nav-link">Contact</a>
                     </div>
                     <!-- Authentication/User Area -->
                     <div class="d-flex ms-auto align-items-center">
-                        <!-- Guest View -->
-                        <div id="guestButtons" class="d-flex">
-                            <a class="btn btn-outline-primary px-4 py-2 ms-2" href="signup.html">Sign Up</a>
-                            <a class="btn btn-primary px-4 py-2 ms-2" href="login.html">Login</a>
+                        <!-- Guest View: Clearly visible and styled buttons -->
+                        <div id="guestButtons" class="guest-actions d-flex">
+                            <a class="btn btn-outline-primary px-3 py-2" href="signup.html">Explore Platform</a>
+                            <a class="btn btn-primary px-4 py-2" href="login.html">Login</a>
                         </div>
-                        <!-- Logged In User View -->
+                        <!-- Logged In User View: Professional Profile Dropdown -->
                         <div id="userProfile" class="d-none align-items-center ms-2">
                              <div class="dropdown">
-                                <a href="#" class="nav-link dropdown-toggle text-dark d-flex align-items-center" data-bs-toggle="dropdown">
-                                    <div class="btn-square bg-light me-2">
+                                <a href="#" class="nav-link dropdown-toggle text-dark d-flex align-items-center p-0" data-bs-toggle="dropdown">
+                                    <div class="btn-square bg-light me-2 border">
                                         <i class="fa fa-user text-primary"></i>
                                     </div>
-                                    <span id="userName">User</span>
+                                    <div class="d-none d-sm-block">
+                                        <small class="d-block text-muted" style="font-size: 0.7rem; line-height: 1;">Logged in as</small>
+                                        <span id="userName" class="fw-bold">User</span>
+                                    </div>
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-end m-0">
-                                    <a href="#profile" class="dropdown-item">My Profile</a>
-                                    <a href="#settings" class="dropdown-item">Settings</a>
+                                <div class="dropdown-menu dropdown-menu-end m-0 shadow border-0">
+                                    <a href="#profile" class="dropdown-item"><i class="fa fa-id-card me-2 text-primary"></i>My Profile</a>
+                                    <a href="#settings" class="dropdown-item"><i class="fa fa-cog me-2 text-primary"></i>Settings</a>
                                     <hr class="dropdown-divider">
-                                    <a href="javascript:void(0)" onclick="logout()" class="dropdown-item text-danger">Logout</a>
+                                    <a href="javascript:void(0)" onclick="logout()" class="dropdown-item text-danger"><i class="fa fa-sign-out-alt me-2"></i>Logout</a>
                                 </div>
                             </div>
                         </div>
@@ -288,74 +276,186 @@
     <!-- Video Modal End -->
 
 
-    <!-- Dashboard Sections Start -->
-    <!-- These sections are hidden by default and only shown/populated via JS when a user is logged in -->
-    
-    <!-- Innovator Dashboard Section -->
-    <div id="innovatorDashboard" class="container-fluid py-5 d-none bg-light">
-        <div class="container">
-            <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
-                <h1 class="display-6 mb-5">Innovator Dashboard</h1>
+    <!-- Dashboard Context Start -->
+    <!-- Integrated Dashboard View: Shown only when logged in -->
+    <div id="dashboardWrapper" class="dashboard-wrapper d-none">
+        <!-- Dashboard Sidebar: Role-specific sub-navigation -->
+        <aside class="dashboard-sidebar-nav">
+            <div id="innovatorSidebarNav" class="d-none">
+                <a href="javascript:void(0)" onclick="showDashboardSection('innovatorOverview')" class="nav-link active">
+                    <i class="fa fa-chart-pie"></i> Overview
+                </a>
+                <a href="javascript:void(0)" onclick="showDashboardSection('myProjects')" class="nav-link">
+                    <i class="fa fa-folder-open"></i> My Projects
+                </a>
+                <a href="javascript:void(0)" onclick="showDashboardSection('submitIdea')" class="nav-link">
+                    <i class="fa fa-lightbulb"></i> Submit Idea
+                </a>
+                <a href="javascript:void(0)" onclick="showDashboardSection('notifications')" class="nav-link">
+                    <i class="fa fa-bell"></i> Notifications <span class="badge bg-danger ms-auto">2</span>
+                </a>
             </div>
-            <div class="row g-4 justify-content-center">
-                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="service-item bg-white text-center h-100 p-4 p-xl-5">
-                        <i class="fa fa-plus fa-3x text-primary mb-4"></i>
-                        <h4 class="mb-3">Submit Idea</h4>
-                        <p class="mb-4">Bring your next big innovation to life by submitting your project idea today.</p>
-                        <a class="btn btn-outline-primary px-3" href="#submit-idea">Get Started</a>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
-                    <div class="service-item bg-white text-center h-100 p-4 p-xl-5">
-                        <i class="fa fa-tasks fa-3x text-primary mb-4"></i>
-                        <h4 class="mb-3">My Projects</h4>
-                        <p class="mb-4">Track the status of your submitted projects and manage your innovation portfolio.</p>
-                        <a class="btn btn-outline-primary px-3" href="#my-projects">View All</a>
-                    </div>
-                </div>
+            <div id="mentorSidebarNav" class="d-none">
+                <a href="javascript:void(0)" onclick="showDashboardSection('mentorOverview')" class="nav-link active">
+                    <i class="fa fa-chart-line"></i> Mentor Overview
+                </a>
+                <a href="javascript:void(0)" onclick="showDashboardSection('assignedProjects')" class="nav-link">
+                    <i class="fa fa-project-diagram"></i> Assigned Projects
+                </a>
             </div>
-        </div>
-    </div>
+            <div id="adminSidebarNav" class="d-none">
+                <a href="javascript:void(0)" onclick="showDashboardSection('adminOverview')" class="nav-link active">
+                    <i class="fa fa-shield-alt"></i> Admin Panel
+                </a>
+                <a href="javascript:void(0)" onclick="showDashboardSection('userManagement')" class="nav-link">
+                    <i class="fa fa-users-cog"></i> User Management
+                </a>
+            </div>
+        </aside>
 
-    <!-- Mentor Dashboard Section -->
-    <div id="mentorDashboard" class="container-fluid py-5 d-none bg-light">
-        <div class="container">
-            <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
-                <h1 class="display-6 mb-5">Mentor Dashboard</h1>
-            </div>
-            <div class="row g-4 justify-content-center">
-                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="service-item bg-white text-center h-100 p-4 p-xl-5">
-                        <i class="fa fa-project-diagram fa-3x text-primary mb-4"></i>
-                        <h4 class="mb-3">Assigned Projects</h4>
-                        <p class="mb-4">Review and provide feedback on the innovation projects assigned to you.</p>
-                        <a class="btn btn-outline-primary px-3" href="#assigned-projects">Manage</a>
+        <!-- Main Dashboard Content Area -->
+        <main class="dashboard-content-area">
+            
+            <!-- Notification Center (Global for Dashboard) -->
+            <div id="dashboardNotificationsArea" class="d-dashboard-none">
+                <h3 class="dashboard-header-title">Notifications Center</h3>
+                <div class="dashboard-notification-banner">
+                    <i class="fa fa-info-circle fa-2x"></i>
+                    <div>
+                        <h6 class="mb-1 fw-bold">Feedback Received</h6>
+                        <p class="mb-0 small">Your project "Smart Irrigation" has received feedback from Mentor Jane Doe.</p>
+                    </div>
+                </div>
+                <div class="dashboard-notification-banner" style="border-left-color: #198754; background: #e9f7ef;">
+                    <i class="fa fa-check-circle fa-2x text-success"></i>
+                    <div>
+                        <h6 class="mb-1 fw-bold text-success">Idea Approved</h6>
+                        <p class="mb-0 small">Congratulations! Your idea has been approved for the next development phase.</p>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Admin Dashboard Section -->
-    <div id="adminDashboard" class="container-fluid py-5 d-none bg-light">
-        <div class="container">
-             <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
-                <h1 class="display-6 mb-5">Admin Control Panel</h1>
-            </div>
-            <div class="row g-4">
-                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="text-center bg-white p-4 h-100 shadow-sm border-bottom border-primary border-3">
-                        <i class="fa fa-users fa-2x text-primary mb-3"></i>
-                        <h5>Users</h5>
-                        <p class="mb-0">Manage platform users and roles</p>
+            <!-- Role-Specific Content Sections -->
+            
+            <!-- INNOVATOR SECTION -->
+            <div id="innovatorOverview" class="d-dashboard-none">
+                <h3 class="dashboard-header-title">Welcome Back, Innovator!</h3>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="content-card text-center">
+                            <h2 class="text-primary">3</h2>
+                            <p class="mb-0 text-muted">Active Projects</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="content-card text-center">
+                            <h2 class="text-warning">1</h2>
+                            <p class="mb-0 text-muted">Pending Review</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="content-card text-center">
+                            <h2 class="text-success">5</h2>
+                            <p class="mb-0 text-muted">Mentor Sessions</p>
+                        </div>
                     </div>
                 </div>
-                <!-- Add more admin slots as needed -->
+                <div class="content-card">
+                    <h5>Recent Activity</h5>
+                    <p class="text-muted">No recent activity to show.</p>
+                </div>
             </div>
-        </div>
+
+            <div id="myProjects" class="d-dashboard-none">
+                <div class="dashboard-header-title">
+                    <h3>My Projects</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showDashboardSection('submitIdea')">
+                        <i class="fa fa-plus me-2"></i>New Idea
+                    </button>
+                </div>
+                <div class="content-card">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Smart Irrigation System</strong></td>
+                                    <td>AgriTech</td>
+                                    <td><span class="badge bg-success">Approved</span></td>
+                                    <td><button class="btn btn-sm btn-outline-primary">Details</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>AI Tutor Bot</strong></td>
+                                    <td>EdTech</td>
+                                    <td><span class="badge bg-warning">Under Review</span></td>
+                                    <td><button class="btn btn-sm btn-outline-primary">Details</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="submitIdea" class="d-dashboard-none">
+                <h3 class="dashboard-header-title">Submit a New Innovation Idea</h3>
+                <div class="content-card">
+                    <form id="projectSubmissionForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Project Title</label>
+                            <input type="text" class="form-control" placeholder="Enter a descriptive name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Innovation Category</label>
+                            <select class="form-select" id="innovationCategorySelect">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Problem Statement</label>
+                            <textarea class="form-control" rows="3" placeholder="What problem does this solve?"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Proposed Solution</label>
+                            <textarea class="form-control" rows="4" placeholder="Describe your innovative approach"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary px-4">Submit for Review</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- MENTOR SECTION -->
+            <div id="mentorOverview" class="d-dashboard-none">
+                <h3>Mentor Overview</h3>
+                <div class="content-card">
+                    <p>Welcome to your mentorship dashboard.</p>
+                </div>
+            </div>
+
+            <div id="assignedProjects" class="d-dashboard-none">
+                <h3>Assigned Projects</h3>
+                <div class="content-card">
+                    <p>Projects currently assigned for your review will appear here.</p>
+                </div>
+            </div>
+
+            <!-- ADMIN SECTION -->
+            <div id="adminOverview" class="d-dashboard-none">
+                 <h3>Platform Administration</h3>
+                 <div class="content-card">
+                    <p>Supervision of users, projects, and platform settings.</p>
+                 </div>
+            </div>
+
+        </main>
     </div>
-    <!-- Dashboard Sections End -->
+    <!-- Dashboard Context End -->
 
 
     <!-- About Start -->

@@ -348,37 +348,85 @@ function updateUIForRole(user) {
   if (userNameSpan) userNameSpan.textContent = user.name || user.email;
 
   // Show role-specific navigation
-  // Role-specific navigation elements
-  const innovatorNav = document.getElementById("innovatorNav");
-  const mentorNav = document.getElementById("mentorNav");
-  const adminNav = document.getElementById("adminNav");
+  // Role-specific sidebar navigation elements
+  const innovatorSidebarNav = document.getElementById("innovatorSidebarNav");
+  const mentorSidebarNav = document.getElementById("mentorSidebarNav");
+  const adminSidebarNav = document.getElementById("adminSidebarNav");
+  const dashboardWrapper = document.getElementById("dashboardWrapper");
 
-  // Dashboard content sections
-  const innovatorDashboard = document.getElementById("innovatorDashboard");
-  const mentorDashboard = document.getElementById("mentorDashboard");
-  const adminDashboard = document.getElementById("adminDashboard");
-
-  // Hide all role-specific elements first
-  const roleElements = [
-    innovatorNav, mentorNav, adminNav,
-    innovatorDashboard, mentorDashboard, adminDashboard
+  // Hide main sections when dashboard is active (optional, based on preference)
+  // For a true SPA dashboard, we might want to hide the hero carousel etc.
+  const mainElements = [
+    document.querySelector('.carousel'),
+    document.querySelector('.video'),
+    document.querySelector('.about'),
+    document.querySelector('.service'),
+    document.querySelector('.event'),
+    document.querySelector('.team'),
+    document.querySelector('.testimonial'),
+    document.getElementById('contact')
   ];
-  
-  roleElements.forEach(el => {
-    if (el) el.classList.add("d-none");
+
+  if (dashboardWrapper) {
+    dashboardWrapper.classList.remove("d-none");
+    
+    // Hide standard marketing content to focus on dashboard
+    mainElements.forEach(el => {
+      if (el) el.classList.add("d-none");
+    });
+
+    // Show specific role sidebar
+    if (user.role === "innovator") {
+      if (innovatorSidebarNav) innovatorSidebarNav.classList.remove("d-none");
+      showDashboardSection('innovatorOverview');
+    } else if (user.role === "mentor") {
+      if (mentorSidebarNav) mentorSidebarNav.classList.remove("d-none");
+      showDashboardSection('mentorOverview');
+    } else if (user.role === "admin") {
+      if (adminSidebarNav) adminSidebarNav.classList.remove("d-none");
+      showDashboardSection('adminOverview');
+    }
+  }
+}
+
+/**
+ * Toggle dashboard sub-sections
+ * @param {string} sectionId - ID of the section to show
+ */
+function showDashboardSection(sectionId) {
+  const sections = [
+    'innovatorOverview', 'myProjects', 'submitIdea', 'notifications',
+    'mentorOverview', 'assignedProjects',
+    'adminOverview', 'userManagement', 'dashboardNotificationsArea'
+  ];
+
+  // Specific mapping for 'notifications' to the global dashboardNotificationsArea
+  let targetId = sectionId;
+  if (sectionId === 'notifications') targetId = 'dashboardNotificationsArea';
+
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('d-dashboard-block');
+      el.classList.add('d-dashboard-none');
+    }
   });
 
-  // Show elements for the specific role
-  if (user.role === "innovator") {
-    if (innovatorNav) innovatorNav.classList.remove("d-none");
-    if (innovatorDashboard) innovatorDashboard.classList.remove("d-none");
-  } else if (user.role === "mentor") {
-    if (mentorNav) mentorNav.classList.remove("d-none");
-    if (mentorDashboard) mentorDashboard.classList.remove("d-none");
-  } else if (user.role === "admin") {
-    if (adminNav) adminNav.classList.remove("d-none");
-    if (adminDashboard) adminDashboard.classList.remove("d-none");
+  const target = document.getElementById(targetId);
+  if (target) {
+    target.classList.remove('d-dashboard-none');
+    target.classList.add('d-dashboard-block');
   }
+
+  // Update active state in sidebar
+  const navLinks = document.querySelectorAll('.dashboard-sidebar-nav .nav-link');
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    // Simple check if the link's onclick contains the sectionId
+    if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(sectionId)) {
+      link.classList.add('active');
+    }
+  });
 }
 
 /**
