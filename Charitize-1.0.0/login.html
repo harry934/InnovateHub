@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <!-- Page Title -->
+    <title>Login - Innovate Hub</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="innovation, login, student platform" name="keywords">
+    <meta content="Login to Innovate Hub to access your dashboard" name="description">
+
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap"
+        rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+    
+    <!-- Innovate Hub Custom Styles -->
+    <link href="css/innovate-hub.css" rel="stylesheet">
+    
+    <!-- Page-specific styles -->
+    <style>
+        /* Login Page Specific Styles */
+        
+        /* Full-height container */
+        .login-container {
+            min-height: 100vh;
+            background: var(--bs-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        /* Login card - white box containing the form */
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 100%;
+            padding: 3rem;
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        /* Logo section at top of card */
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-logo i {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .login-logo h2 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-logo p {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        /* Form group spacing */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Form labels */
+        .form-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        /* Form inputs */
+        .form-control,
+        .form-select {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        /* Input focus state */
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bs-primary);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            background: var(--bs-dark);
+            transform: translateY(-2px);
+        }
+        
+        /* Divider between form and links */
+        .login-divider {
+            text-align: center;
+            margin: 2rem 0;
+            color: #6c757d;
+        }
+        
+        /* Links section */
+        .login-links {
+            text-align: center;
+        }
+        
+        .login-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-links a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Back to home link */
+        .back-home {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .back-home:hover {
+            color: white;
+            transform: translateX(-5px);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .login-card {
+                padding: 2rem;
+            }
+            
+            .back-home {
+                position: static;
+                display: inline-flex;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Login Page Container -->
+    <div class="login-container">
+        <!-- Back to Home Link -->
+        <a href="index.html" class="back-home">
+            <i class="fa fa-arrow-left"></i>
+            Back to Home
+        </a>
+        
+        <!-- Login Card -->
+        <div class="login-card">
+            <!-- Logo and Title -->
+            <div class="login-logo">
+                <i class="fa fa-lightbulb"></i>
+                <h2>Welcome Back!</h2>
+                <p>Login to access your Innovate Hub dashboard</p>
+            </div>
+            
+            <!-- Login Form -->
+            <!-- onsubmit: JavaScript function called when form is submitted -->
+            <!-- return false: Prevents default form submission (page reload) -->
+            <form id="loginForm" onsubmit="handleLogin(event); return false;">
+                
+                <!-- Email Input -->
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <!-- type="email": Validates email format -->
+                    <!-- required: Field must be filled before submission -->
+                    <!-- placeholder: Gray text shown when field is empty -->
+                    <input 
+                        type="email" 
+                        class="form-control" 
+                        id="email" 
+                        placeholder="Enter your email"
+                        required>
+                </div>
+                
+                <!-- Password Input -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <!-- type="password": Hides characters as user types -->
+                    <input 
+                        type="password" 
+                        class="form-control" 
+                        id="password" 
+                        placeholder="Enter your password"
+                        required>
+                </div>
+                
+                <!-- Role Selection -->
+                <div class="form-group">
+                    <label for="role">Select Your Role</label>
+                    <!-- select: Dropdown menu -->
+                    <select class="form-select" id="role" required>
+                        <option value="">Choose your role...</option>
+                        <option value="innovator">Innovator</option>
+                        <option value="mentor">Mentor</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <!-- Remember Me Checkbox -->
+                <div class="form-group">
+                    <div class="form-check">
+                        <!-- type="checkbox": Creates checkbox -->
+                        <input class="form-check-input" type="checkbox" id="rememberMe">
+                        <label class="form-check-label" for="rememberMe">
+                            Remember me
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <!-- type="submit": Triggers form submission -->
+                <button type="submit" class="btn btn-login">
+                    Login to Dashboard
+                </button>
+            </form>
+            
+            <!-- Divider -->
+            <div class="login-divider">
+                <span>Don't have an account?</span>
+            </div>
+            
+            <!-- Sign Up Link -->
+            <div class="login-links">
+                <a href="signup.html">Create an Account</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Innovate Hub JavaScript -->
+    <script src="js/innovate-hub.js"></script>
+    
+    <!-- Login Page JavaScript -->
+    <script>
+        /**
+         * Handle login form submission
+         * This function is called when user clicks "Login to Dashboard"
+         * @param {Event} event - Form submission event
+         */
+        function handleLogin(event) {
+            // Prevent default form submission (which would reload the page)
+            event.preventDefault();
+            
+            // Get form values
+            // document.getElementById: Gets element by its ID attribute
+            // .value: Gets the current value of the input
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
+            // Validate inputs
+            if (!email || !password || !role) {
+                // Show error message if any field is empty
+                showErrorMessage('Please fill in all fields');
+                return;
+            }
+            
+            // Validate email format
+            if (!validateEmail(email)) {
+                showErrorMessage('Please enter a valid email address');
+                return;
+            }
+            
+            // SIMULATED AUTHENTICATION
+            // In a real application, this would send credentials to a server
+            // For this frontend-only version, we just check if fields are filled
+            
+            // Create user object to store in localStorage
+            const userData = {
+                email: email,
+                role: role,
+                loggedIn: true,
+                loginTime: new Date().toISOString()  // Current date/time
+            };
+            
+            // Save user data to localStorage
+            // This persists even after closing browser
+            saveToLocalStorage('innovateHubUser', userData);
+            
+            // Show success message
+            showSuccessMessage('Login successful! Redirecting...');
+            
+            // Redirect to homepage - Unified Dashboard Logic
+            setTimeout(function() {
+                window.location.href = 'index.html';
+            }, 1000);  // Wait 1 second before redirecting
+        }
+        
+        /**
+         * Auto-fill form for testing (DEVELOPMENT ONLY)
+         * Remove this in production
+         */
+        // Uncomment the lines below to enable auto-fill for testing
+        /*
+        window.addEventListener('load', function() {
+            document.getElementById('email').value = 'test@innovatehub.com';
+            document.getElementById('password').value = 'password123';
+            document.getElementById('role').value = 'innovator';
+        });
+        */
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Innovator Dashboard - Innovate Hub</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap"
+        rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+    
+    <!-- Innovate Hub Custom Styles -->
+    <link href="css/innovate-hub.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Dashboard Container -->
+    <!-- Uses flexbox to create sidebar + main content layout -->
+    <div class="dashboard-container">
+        
+        <!-- Sidebar Navigation -->
+        <div class="dashboard-sidebar">
+            <!-- Logo Section -->
+            <div class="px-4 mb-4">
+                <a href="index.html" class="logo-container text-decoration-none">
+                    <i class="fa fa-lightbulb logo-icon" style="color: white;"></i>
+                    <span class="logo-text" style="color: white;">Innovate Hub</span>
+                </a>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="nav flex-column">
+                <!-- Dashboard Home Link -->
+                <a class="nav-link active" href="#" onclick="showSection('overview'); return false;">
+                    <i class="fa fa-home me-2"></i> Dashboard
+                </a>
+                <!-- My Projects Link -->
+                <a class="nav-link" href="#" onclick="showSection('projects'); return false;">
+                    <i class="fa fa-lightbulb me-2"></i> My Projects
+                </a>
+                <!-- Submit Project Link -->
+                <a class="nav-link" href="#" onclick="showSection('submit'); return false;">
+                    <i class="fa fa-plus-circle me-2"></i> Submit Project
+                </a>
+                <!-- Mentors Link -->
+                <a class="nav-link" href="#" onclick="showSection('mentors'); return false;">
+                    <i class="fa fa-user-tie me-2"></i> Find Mentors
+                </a>
+                <!-- Events Link -->
+                <a class="nav-link" href="event.html">
+                    <i class="fa fa-calendar me-2"></i> Events
+                </a>
+                <!-- Resources Link -->
+                <a class="nav-link" href="service.html">
+                    <i class="fa fa-book me-2"></i> Resources
+                </a>
+                
+                <!-- Divider -->
+                <hr class="my-3" style="border-color: rgba(255,255,255,0.2);">
+                
+                <!-- Profile Link -->
+                <a class="nav-link" href="#" onclick="showSection('profile'); return false;">
+                    <i class="fa fa-user me-2"></i> My Profile
+                </a>
+                <!-- Settings Link -->
+                <a class="nav-link" href="#" onclick="showSection('settings'); return false;">
+                    <i class="fa fa-cog me-2"></i> Settings
+                </a>
+                <!-- Logout Link -->
+                <a class="nav-link" href="#" onclick="logout(); return false;">
+                    <i class="fa fa-sign-out-alt me-2"></i> Logout
+                </a>
+            </nav>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="dashboard-main">
+            
+            <!-- Overview Section (Default View) -->
+            <div id="overviewSection" class="dashboard-section">
+                <!-- Header -->
+                <div class="dashboard-header">
+                    <h1>Welcome, <span id="userName">Innovator</span>!</h1>
+                    <p class="text-muted">Here's an overview of your innovation journey</p>
+                </div>
+                
+                <!-- Stats Cards Row -->
+                <div class="row g-4 mb-4">
+                    <!-- Total Projects Card -->
+                    <div class="col-md-4">
+                        <div class="dashboard-card text-center">
+                            <i class="fa fa-lightbulb fa-3x text-primary mb-3"></i>
+                            <h3 id="totalProjects">0</h3>
+                            <p class="text-muted mb-0">Total Projects</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Pending Reviews Card -->
+                    <div class="col-md-4">
+                        <div class="dashboard-card text-center">
+                            <i class="fa fa-clock fa-3x text-warning mb-3"></i>
+                            <h3 id="pendingProjects">0</h3>
+                            <p class="text-muted mb-0">Pending Review</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Completed Projects Card -->
+                    <div class="col-md-4">
+                        <div class="dashboard-card text-center">
+                            <i class="fa fa-check-circle fa-3x text-success mb-3"></i>
+                            <h3 id="completedProjects">0</h3>
+                            <p class="text-muted mb-0">Completed</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="dashboard-card">
+                    <h4 class="mb-3">Quick Actions</h4>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <button class="btn btn-primary" onclick="showSection('submit')">
+                            <i class="fa fa-plus me-2"></i>Submit New Project
+                        </button>
+                        <button class="btn btn-secondary" onclick="showSection('projects')">
+                            <i class="fa fa-list me-2"></i>View My Projects
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="showSection('mentors')">
+                            <i class="fa fa-user-tie me-2"></i>Find Mentors
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Project Section -->
+            <div id="submitSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>Submit New Project</h2>
+                    <p class="text-muted">Share your innovative idea with mentors and the community</p>
+                </div>
+                
+                <div class="dashboard-card">
+                    <!-- Project Submission Form -->
+                    <form id="projectForm" onsubmit="submitProject(event); return false;">
+                        
+                        <!-- Project Title -->
+                        <div class="form-group mb-3">
+                            <label for="projectTitle" class="form-label fw-bold">Project Title *</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="projectTitle" 
+                                placeholder="Enter a catchy title for your project"
+                                required>
+                        </div>
+                        
+                        <!-- Project Category -->
+                        <div class="form-group mb-3">
+                            <label for="projectCategory" class="form-label fw-bold">Innovation Category *</label>
+                            <select class="form-select" id="projectCategory" required>
+                                <option value="">Select a category...</option>
+                                <option value="technology">Technology</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="education">Education</option>
+                                <option value="environment">Environment</option>
+                                <option value="social">Social Impact</option>
+                                <option value="business">Business</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Project Description -->
+                        <div class="form-group mb-3">
+                            <label for="projectDescription" class="form-label fw-bold">Project Description *</label>
+                            <textarea 
+                                class="form-control" 
+                                id="projectDescription" 
+                                rows="5"
+                                placeholder="Describe your project idea, the problem it solves, and your proposed solution..."
+                                required></textarea>
+                            <small class="text-muted">Minimum 50 characters</small>
+                        </div>
+                        
+                        <!-- Project Goals -->
+                        <div class="form-group mb-3">
+                            <label for="projectGoals" class="form-label fw-bold">Project Goals</label>
+                            <textarea 
+                                class="form-control" 
+                                id="projectGoals" 
+                                rows="3"
+                                placeholder="What do you hope to achieve with this project?"></textarea>
+                        </div>
+                        
+                        <!-- File Upload (Simulated) -->
+                        <div class="form-group mb-3">
+                            <label for="projectFile" class="form-label fw-bold">Supporting Documents</label>
+                            <input 
+                                type="file" 
+                                class="form-control" 
+                                id="projectFile"
+                                accept=".pdf,.doc,.docx,.ppt,.pptx">
+                            <small class="text-muted">Upload presentations, documents, or diagrams (PDF, DOC, PPT)</small>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fa fa-paper-plane me-2"></i>Submit Project
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('projectForm').reset();">
+                                <i class="fa fa-redo me-2"></i>Reset Form
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- My Projects Section -->
+            <div id="projectsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>My Projects</h2>
+                    <p class="text-muted">View and manage all your submitted projects</p>
+                </div>
+                
+                <!-- Projects Container -->
+                <!-- This div will be populated dynamically with JavaScript -->
+                <div id="projectsContainer">
+                    <!-- Projects will be added here dynamically -->
+                    <div class="dashboard-card text-center">
+                        <i class="fa fa-lightbulb fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No projects yet. Submit your first project to get started!</p>
+                        <button class="btn btn-primary" onclick="showSection('submit')">
+                            <i class="fa fa-plus me-2"></i>Submit Project
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Find Mentors Section -->
+            <div id="mentorsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>Find Mentors</h2>
+                    <p class="text-muted">Connect with experienced mentors in your field</p>
+                </div>
+                
+                <div class="dashboard-card">
+                    <p class="text-muted">Mentor matching feature coming soon! You will be automatically matched with mentors based on your project category and needs.</p>
+                </div>
+            </div>
+            
+            <!-- Profile Section -->
+            <div id="profileSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>My Profile</h2>
+                    <p class="text-muted">Manage your account information</p>
+                </div>
+                
+                <div class="dashboard-card">
+                    <p><strong>Email:</strong> <span id="userEmail">user@example.com</span></p>
+                    <p><strong>Role:</strong> Innovator</p>
+                    <p><strong>Member Since:</strong> <span id="memberSince">-</span></p>
+                </div>
+            </div>
+            
+            <!-- Settings Section -->
+            <div id="settingsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>Settings</h2>
+                    <p class="text-muted">Customize your experience</p>
+                </div>
+                
+                <div class="dashboard-card">
+                    <p class="text-muted">Settings panel coming soon!</p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Innovate Hub JavaScript -->
+    <script src="js/innovate-hub.js"></script>
+    
+    <!-- Dashboard JavaScript -->
+    <script>
+        /**
+         * Check authentication on page load
+         * Redirects to login if not authenticated
+         */
+        window.addEventListener('load', function() {
+            // Check if user is logged in
+            const user = requireAuth();
+            
+            // Verify user role is innovator
+            if (user.role !== 'innovator') {
+                showErrorMessage('Access denied. This dashboard is for innovators only.');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+                return;
+            }
+            
+            // Display user information
+            if (user.email) {
+                document.getElementById('userEmail').textContent = user.email;
+                // Extract name from email (before @)
+                const name = user.email.split('@')[0];
+                document.getElementById('userName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            }
+            
+            // Display member since date
+            if (user.loginTime) {
+                const date = new Date(user.loginTime);
+                document.getElementById('memberSince').textContent = formatDate(date);
+            }
+            
+            // Load projects from localStorage
+            loadProjects();
+        });
+        
+        /**
+         * Show specific section and hide others
+         * @param {string} sectionName - Name of section to show
+         */
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.dashboard-section');
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all nav links
+            const navLinks = document.querySelectorAll('.dashboard-sidebar .nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected section
+            const sectionMap = {
+                'overview': 'overviewSection',
+                'submit': 'submitSection',
+                'projects': 'projectsSection',
+                'mentors': 'mentorsSection',
+                'profile': 'profileSection',
+                'settings': 'settingsSection'
+            };
+            
+            const sectionId = sectionMap[sectionName];
+            if (sectionId) {
+                document.getElementById(sectionId).style.display = 'block';
+            }
+        }
+        
+        /**
+         * Submit new project
+         * @param {Event} event - Form submission event
+         */
+        function submitProject(event) {
+            event.preventDefault();
+            
+            // Get form values
+            const title = document.getElementById('projectTitle').value;
+            const category = document.getElementById('projectCategory').value;
+            const description = document.getElementById('projectDescription').value;
+            const goals = document.getElementById('projectGoals').value;
+            const file = document.getElementById('projectFile').files[0];
+            
+            // Validate description length
+            if (description.length < 50) {
+                showErrorMessage('Project description must be at least 50 characters');
+                return;
+            }
+            
+            // Create project object
+            const project = {
+                id: generateUniqueId('PROJ'),
+                title: title,
+                category: category,
+                description: description,
+                goals: goals,
+                fileName: file ? file.name : null,
+                status: 'pending',
+                submittedDate: new Date().toISOString(),
+                feedback: []
+            };
+            
+            // Get existing projects or create new array
+            let projects = loadFromLocalStorage('innovateHubProjects') || [];
+            
+            // Add new project
+            projects.push(project);
+            
+            // Save to localStorage
+            saveToLocalStorage('innovateHubProjects', projects);
+            
+            // Show success message
+            showSuccessMessage('Project submitted successfully!');
+            
+            // Reset form
+            document.getElementById('projectForm').reset();
+            
+            // Reload projects display
+            loadProjects();
+            
+            // Switch to projects view
+            setTimeout(() => {
+                showSection('projects');
+            }, 1500);
+        }
+        
+        /**
+         * Load and display projects
+         */
+        function loadProjects() {
+            const projects = loadFromLocalStorage('innovateHubProjects') || [];
+            const container = document.getElementById('projectsContainer');
+            
+            // Update stats
+            document.getElementById('totalProjects').textContent = projects.length;
+            document.getElementById('pendingProjects').textContent = 
+                projects.filter(p => p.status === 'pending').length;
+            document.getElementById('completedProjects').textContent = 
+                projects.filter(p => p.status === 'completed').length;
+            
+            // Display projects
+            if (projects.length === 0) {
+                container.innerHTML = `
+                    <div class="dashboard-card text-center">
+                        <i class="fa fa-lightbulb fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No projects yet. Submit your first project to get started!</p>
+                        <button class="btn btn-primary" onclick="showSection('submit')">
+                            <i class="fa fa-plus me-2"></i>Submit Project
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Build HTML for projects
+            let html = '';
+            projects.forEach(project => {
+                html += `
+                    <div class="project-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3>${project.title}</h3>
+                            ${getCategoryBadge(project.category)}
+                        </div>
+                        <p class="text-muted">${truncateText(project.description, 150)}</p>
+                        <div class="project-card-footer">
+                            <small class="text-muted">
+                                <i class="fa fa-calendar me-1"></i>
+                                ${formatDate(new Date(project.submittedDate))}
+                            </small>
+                            ${getStatusBadge(project.status)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+
+</html>
