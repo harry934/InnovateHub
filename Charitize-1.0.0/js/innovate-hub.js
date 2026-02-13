@@ -13,25 +13,15 @@
  * Hide splash screen after page loads
  * Uses window.addEventListener to wait for page to fully load
  */
+/**
+ * Run on page load
+ */
 window.addEventListener("load", function () {
-  // Get splash screen element
-  const splashScreen = document.getElementById("splash-screen");
-
-  // Wait 1.0 second (optimized timing for professional feel)
-  setTimeout(function () {
-    if (splashScreen) {
-      splashScreen.classList.add("hidden");
-      setTimeout(function () {
-        splashScreen.style.display = "none";
-      }, 500);
-    }
-    
-    // Check authentication and update UI immediately after splash
+    // Check authentication and update UI immediately
     const user = checkAuth();
     if (user && user.loggedIn) {
       updateUIForRole(user);
     }
-  }, 1000);
 });
 
 // ========================================
