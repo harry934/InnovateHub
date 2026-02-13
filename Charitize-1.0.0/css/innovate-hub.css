@@ -284,10 +284,11 @@
   background-color: #F3A813; /* Image match: Bright Orange */
   color: #000000;
   border: none;
-  padding: 12px 35px; /* Larger, matching the image weight */
+  padding: 10px 30px; /* Reduced slightly to fit navbar better */
   font-weight: 700;
-  border-radius: 0; /* Perfectly square as per image */
-  text-transform: capitalize; /* Ensure standard casing */
+  border-radius: 0 !important; /* STRICTLY SHARP CORNERS */
+  text-transform: capitalize; 
+  white-space: nowrap; /* Prevent text wrapping */
   transition: all 0.3s ease;
 }
 
@@ -303,10 +304,11 @@
   background-color: #1A5E4F; /* Image match: Dark Deep Green */
   color: #FFFFFF;
   border: none;
-  padding: 12px 35px; /* Larger, matching the image weight */
+  padding: 10px 30px; /* Reduced slightly to fit navbar better */
   font-weight: 700;
-  border-radius: 0; /* Perfectly square as per image */
+  border-radius: 0 !important; /* STRICTLY SHARP CORNERS */
   text-transform: capitalize;
+  white-space: nowrap; /* Prevent text wrapping */
   transition: all 0.3s ease;
 }
 
