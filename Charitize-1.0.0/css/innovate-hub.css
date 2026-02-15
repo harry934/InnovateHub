@@ -824,3 +824,54 @@
     max-height: none; /* Remove previous constraint */
   }
 }
+/* ========================================
+   13. TRANSFORMING STICKY NAVBAR
+   Scroll-based refinement: Transparent-ish, slim, and focused
+   ======================================== */
+
+.nav-bar {
+    transition: all 0.5s ease;
+}
+
+/* Scrolled state */
+.nav-bar.navbar-scrolled {
+    background: rgba(26, 94, 79, 0.85) !important; /* Semi-transparent brand green */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.nav-bar.navbar-scrolled .navbar {
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+
+/* Hide navigation links on scroll for focus */
+.nav-bar.navbar-scrolled #navbarCollapse .navbar-nav {
+    display: none !important;
+}
+
+/* Reveal logo inside navbar on scroll */
+.sticky-logo {
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    display: none !important; /* Initial desktop state */
+}
+
+.nav-bar.navbar-scrolled .sticky-logo {
+    opacity: 1;
+    visibility: visible;
+    display: flex !important;
+}
+
+/* Ensure the 'GET STARTED' button stays right-aligned */
+.nav-bar.navbar-scrolled .navbar-collapse {
+    justify-content: space-between;
+}
+
+@media (max-width: 991.98px) {
+    .nav-bar.navbar-scrolled {
+        padding: 0 !important; /* Full width on mobile scroll */
+    }
+}
