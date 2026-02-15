@@ -3,40 +3,33 @@
 // ========================================
 
 (function() {
-    // Function to remove preloader
-    const removePreloader = () => {
-        const preloader = document.getElementById("logo-preloader");
-        if (!preloader) return;
-        
-        preloader.classList.add("fade-out");
-        // Force removal after transition
-        setTimeout(() => {
-            if(preloader && preloader.parentNode) {
-                preloader.remove();
-            }
-        }, 1200);
-    };
-
-    // Run immediately to handle preloader visibility
+    // Run immediately
     const initPreloader = () => {
         const preloader = document.getElementById("logo-preloader");
         if (!preloader) return;
 
-        // Simple navigation detection
+        // Check Navigation Type
         const wasNavigated = sessionStorage.getItem("wasNavigated");
         
         // Clear flag immediately
         sessionStorage.removeItem("wasNavigated");
 
         if (wasNavigated) {
-            // Instant skip on navigation - No green screen delay
-            preloader.style.opacity = "0";
-            preloader.style.display = "none";
-            if(preloader.parentNode) preloader.remove();
+            // It was a navigation click -> DO NOTHING
+            // Preloader is hidden by default in CSS
+            preloader.remove();
         } else {
-            // Show cinematic assembly on refresh or initial entry
-            // Start 2.2s sequence immediately
-            setTimeout(removePreloader, 2200);
+            // It was a Refresh or Initial Load -> SHOW PRELOADER
+            preloader.classList.add("active");
+            
+            // Remove after animation
+            setTimeout(() => {
+                preloader.classList.remove("active");
+                preloader.classList.add("fade-out");
+                setTimeout(() => {
+                    if(preloader && preloader.parentNode) preloader.remove();
+                }, 1200);
+            }, 2200);
         }
     };
 
@@ -46,15 +39,6 @@
     } else {
         initPreloader();
     }
-    
-    // BACKUP: Ensure removal on full window load (catches any edge cases)
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-             const preloader = document.getElementById("logo-preloader");
-             if(preloader) removePreloader();
-        }, 2300); // 100ms buffer after main timeout
-    });
-
 })();
 
 // Navigation listener to set flag
