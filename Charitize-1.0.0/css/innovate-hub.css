@@ -701,6 +701,64 @@
 }
 
 /* ========================================
+   12. ENHANCED DROPDOWN MENUS
+   Spice up the dropdowns with glassmorphism and animations
+   ======================================== */
+
+.navbar .dropdown-menu {
+    border: none;
+    border-radius: 0;
+    background: rgba(26, 94, 79, 0.95); /* Deep Brand Green with slight transparency */
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    margin-top: 0;
+    padding: 10px 0;
+    transition: all 0.3s ease;
+}
+
+.navbar .dropdown-item {
+    color: rgba(255, 255, 255, 0.85);
+    padding: 12px 25px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.navbar .dropdown-item:hover, 
+.navbar .dropdown-item.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F3A813; /* Brand Orange */
+    border-left: 3px solid #F3A813;
+    padding-left: 30px; /* Slight shift to the right */
+}
+
+/* Dropdown Animation for Desktop */
+@media (min-width: 992px) {
+    .navbar .nav-item .dropdown-menu {
+        display: block;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(15px);
+    }
+    
+    .navbar .nav-item:hover .dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+}
+
+/* Custom Dropdown Toggle */
+.navbar .dropdown-toggle::after {
+    transition: transform 0.3s ease;
+}
+
+.navbar .nav-item:hover .dropdown-toggle::after {
+    transform: rotate(180deg);
+}
+
+/* ========================================
    6. STRUCTURED DASHBOARD LAYOUT
    Standard professional platform interface
    ======================================== */
