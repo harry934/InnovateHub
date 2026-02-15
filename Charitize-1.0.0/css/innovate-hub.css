@@ -964,6 +964,16 @@
     visibility: hidden;
 }
 
+/* Subsequent Load - Instant Assembly State */
+#logo-preloader.subsequent-load .hexagon-path,
+#logo-preloader.subsequent-load .hub-circle,
+#logo-preloader.subsequent-load .connect-line {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+    transform: scale(1) !important;
+    opacity: 1 !important;
+}
+
 .preloader-content {
     text-align: center;
     position: relative;
@@ -975,6 +985,21 @@
     height: 150px;
     filter: drop-shadow(0 0 30px rgba(243, 168, 19, 0.15));
     animation: finalPulse 6s ease-in-out infinite 3.5s;
+}
+
+/* Page Transition States */
+body {
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+}
+
+body.page-ready {
+    opacity: 1;
+}
+
+body.page-exit {
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* Cinematic Path Animations */

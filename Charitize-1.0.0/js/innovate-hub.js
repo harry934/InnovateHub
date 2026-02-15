@@ -17,20 +17,55 @@
  * Run on page load
  */
 window.addEventListener("load", function () {
-    // Hide Logo Preloader
-    const preloader = document.getElementById('logo-preloader');
-    if (preloader) {
-        preloader.classList.add('fade-out');
-        // Remove from DOM after transition
+    const preloader = document.getElementById("logo-preloader");
+    if (!preloader) return;
+
+    // High-End Session Tracking for Cinematic Entry
+    const hasSeenIntro = sessionStorage.getItem("hasSeenIntro");
+    
+    if (hasSeenIntro) {
+        // Fast subsequent load for returning users/navigation
+        preloader.classList.add("subsequent-load");
         setTimeout(() => {
-            preloader.remove();
+            preloader.classList.add("fade-out");
+            setTimeout(() => preloader.remove(), 1200);
+        }, 500);
+    } else {
+        // First-time cinematic assembly experience
+        sessionStorage.setItem("hasSeenIntro", "true");
+        setTimeout(() => {
+            preloader.classList.add("fade-out");
+            setTimeout(() => preloader.remove(), 1200);
         }, 3500);
     }
 
-    // Check authentication and update UI immediately
+    // Page Entry Animation
+    document.body.classList.add("page-ready");
+
+    // Check authentication and update UI
     const user = checkAuth();
     if (user && user.loggedIn) {
-      updateUIForRole(user);
+        updateUIForRole(user);
+    }
+});
+
+// Cinematic Page Exit Transitions
+document.addEventListener("click", function(e) {
+    const link = e.target.closest("a");
+    if (link && 
+        link.href && 
+        link.href.includes(window.location.origin) && 
+        !link.href.includes("#") && 
+        link.target !== "_blank") {
+        
+        e.preventDefault();
+        const targetUrl = link.href;
+        
+        document.body.classList.add("page-exit");
+        
+        setTimeout(() => {
+            window.location.href = targetUrl;
+        }, 400); // Wait for fade-out animation
     }
 });
 
