@@ -20,11 +20,22 @@ window.addEventListener("load", function () {
     const preloader = document.getElementById("logo-preloader");
     if (!preloader) return;
 
-    // Always show the cinematic logo assembly on page load/refresh
-    setTimeout(() => {
+    // Check if this is a page refresh or initial load (not navigation)
+    const isPageRefresh = sessionStorage.getItem("navigationActive") === null;
+    const perfEntries = performance.getEntriesByType("navigation");
+    const isReload = perfEntries.length > 0 && perfEntries[0].type === "reload";
+    
+    if (isPageRefresh || isReload) {
+        // Show logo animation on refresh or initial site entry
+        setTimeout(() => {
+            preloader.classList.add("fade-out");
+            setTimeout(() => preloader.remove(), 1200);
+        }, 2200); // Reduced to 2.2s
+    } else {
+        // Skip animation on internal navigation
         preloader.classList.add("fade-out");
-        setTimeout(() => preloader.remove(), 1200);
-    }, 3500);
+        setTimeout(() => preloader.remove(), 100);
+    }
 
     // Page Entry Animation
     document.body.classList.add("page-ready");
@@ -36,7 +47,7 @@ window.addEventListener("load", function () {
     }
 });
 
-// Cinematic Page Exit Transitions (no preloader on navigation)
+// Smooth Page Transitions (no preloader on navigation)
 document.addEventListener("click", function(e) {
     const link = e.target.closest("a");
     if (link && 
@@ -48,11 +59,14 @@ document.addEventListener("click", function(e) {
         e.preventDefault();
         const targetUrl = link.href;
         
+        // Mark that we're navigating (not refreshing)
+        sessionStorage.setItem("navigationActive", "true");
+        
         document.body.classList.add("page-exit");
         
         setTimeout(() => {
             window.location.href = targetUrl;
-        }, 400); // Wait for fade-out animation
+        }, 400);
     }
 });
 
