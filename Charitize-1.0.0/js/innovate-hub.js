@@ -1,15 +1,22 @@
-/**
- * ========================================
- * INNOVATE HUB - MAIN JAVASCRIPT FILE
- * Handles splash screen, navigation, and core functionality
- * ========================================
- */
-
 // ========================================
 // 1. SPLASH SCREEN CONTROL (PRELOADER)
 // ========================================
 
 (function() {
+    // Function to remove preloader
+    const removePreloader = () => {
+        const preloader = document.getElementById("logo-preloader");
+        if (!preloader) return;
+        
+        preloader.classList.add("fade-out");
+        // Force removal after transition
+        setTimeout(() => {
+            if(preloader && preloader.parentNode) {
+                preloader.remove();
+            }
+        }, 1200);
+    };
+
     // Run immediately to handle preloader visibility
     const initPreloader = () => {
         const preloader = document.getElementById("logo-preloader");
@@ -21,15 +28,6 @@
         // Clear flag immediately
         sessionStorage.removeItem("wasNavigated");
 
-        const removePreloader = () => {
-            preloader.classList.add("fade-out");
-            setTimeout(() => {
-                if(preloader && preloader.parentNode) {
-                    preloader.remove();
-                }
-            }, 1200);
-        };
-
         if (wasNavigated) {
             // Instant skip on navigation - No green screen delay
             preloader.style.opacity = "0";
@@ -40,14 +38,6 @@
             // Start 2.2s sequence immediately
             setTimeout(removePreloader, 2200);
         }
-
-        // Failsafe: Ensure preloader is removed after a maximum time
-        // This prevents the "stuck green screen" issue if errors occur
-        setTimeout(() => {
-            if (document.getElementById("logo-preloader")) {
-               removePreloader();
-            }
-        }, 5000);
     };
 
     // Initialize as soon as DOM is ready or Script runs
@@ -56,6 +46,15 @@
     } else {
         initPreloader();
     }
+    
+    // BACKUP: Ensure removal on full window load (catches any edge cases)
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+             const preloader = document.getElementById("logo-preloader");
+             if(preloader) removePreloader();
+        }, 2300); // 100ms buffer after main timeout
+    });
+
 })();
 
 // Navigation listener to set flag
