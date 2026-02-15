@@ -17,10 +17,37 @@
  * Run on page load
  */
 window.addEventListener("load", function () {
-    // Check authentication and update UI immediately
+    const preloader = document.getElementById("logo-preloader");
+    if (!preloader) return;
+
+    // Check if this is a page refresh or initial load (not navigation)
+    const isPageRefresh = sessionStorage.getItem("navigationActive") === null;
+    const perfEntries = performance.getEntriesByType("navigation");
+    const isReload = perfEntries.length > 0 && perfEntries[0].type === "reload";
+    
+    if (isPageRefresh || isReload) {
+        // Show logo animation on refresh or initial site entry
+        setTimeout(() => {
+            preloader.classList.add("fade-out");
+            setTimeout(() => preloader.remove(), 1200);
+        }, 2200); // 2.2s animation
+        // Clear the navigation flag
+        sessionStorage.removeItem("navigationActive");
+    } else {
+        // Skip animation on internal navigation
+        preloader.classList.add("fade-out");
+        setTimeout(() => preloader.remove(), 100);
+        // Clear the navigation flag
+        sessionStorage.removeItem("navigationActive");
+    }
+
+    // Page Entry Animation
+    document.body.classList.add("page-ready");
+
+    // Check authentication and update UI
     const user = checkAuth();
     if (user && user.loggedIn) {
-      updateUIForRole(user);
+        updateUIForRole(user);
     }
 });
 
