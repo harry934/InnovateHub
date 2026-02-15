@@ -41,9 +41,6 @@ window.addEventListener("load", function () {
         sessionStorage.removeItem("navigationActive");
     }
 
-    // Page Entry Animation
-    document.body.classList.add("page-ready");
-
     // Check authentication and update UI
     const user = checkAuth();
     if (user && user.loggedIn) {
