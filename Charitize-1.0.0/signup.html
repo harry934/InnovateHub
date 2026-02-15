@@ -51,13 +51,14 @@
         /* Signup card - white box containing the form */
         .signup-card {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 0; /* Sharp corners */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); /* Neater shadow */
             max-width: 500px;
             width: 100%;
             padding: 3rem;
             animation: fadeInUp 0.6s ease;
             margin: 2rem 0;
+            border: 1px solid #eee;
         }
         
         /* Logo section at top of card */
@@ -66,9 +67,9 @@
             margin-bottom: 2rem;
         }
         
-        .signup-logo i {
-            font-size: 3rem;
-            color: #667eea;
+        .signup-logo img {
+            width: 60px;
+            height: 60px;
             margin-bottom: 1rem;
         }
         
@@ -100,7 +101,7 @@
         .form-control,
         .form-select {
             padding: 0.75rem 1rem;
-            border-radius: 10px;
+            border-radius: 0; /* Sharp corners */
             border: 2px solid #e9ecef;
             transition: all 0.3s ease;
         }
@@ -108,25 +109,27 @@
         /* Input focus state */
         .form-control:focus,
         .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #1A5E4F;
+            box-shadow: 0 0 0 0.2rem rgba(26, 94, 79, 0.15);
         }
         
         /* Submit button */
         .btn-signup {
             width: 100%;
             padding: 0.75rem;
-            background: var(--bs-primary);
+            background: #F3A813; /* Brand Orange */
             border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
+            border-radius: 0; /* Sharp corners */
+            color: black;
+            font-weight: 700;
             font-size: 1.1rem;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .btn-signup:hover {
-            background: var(--bs-dark);
+            background: #d99611;
             transform: translateY(-2px);
         }
         
@@ -173,7 +176,7 @@
         }
         
         .signup-links a {
-            color: #667eea;
+            color: #1A5E4F;
             text-decoration: none;
             font-weight: 600;
         }
@@ -187,7 +190,7 @@
             position: absolute;
             top: 2rem;
             left: 2rem;
-            color: white;
+            color: #1A5E4F;
             text-decoration: none;
             font-weight: 600;
             display: flex;
@@ -197,7 +200,7 @@
         }
         
         .back-home:hover {
-            color: white;
+            color: #14493e;
             transform: translateX(-5px);
         }
         
@@ -235,8 +238,8 @@
         <div class="signup-card">
             <!-- Logo and Title -->
             <div class="signup-logo">
-                <i class="fa fa-lightbulb"></i>
-                <h2>Join Innovate Hub</h2>
+                <img src="img/logo-dark.svg" alt="Innovate Hub Logo">
+                <h2 style="color: #1A5E4F;">Join Innovate Hub</h2>
                 <p>Start your innovation journey today</p>
             </div>
             

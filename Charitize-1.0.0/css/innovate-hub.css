@@ -3,8 +3,6 @@
    Additional styles for Innovate Hub platform
    ======================================== */
 
-
-
 /* ========================================
    2. ENHANCED LOGO STYLING
    Professional logo with icon
@@ -27,11 +25,13 @@
 .logo-text {
   font-weight: 700;
   font-size: 1.8rem;
-  background: linear-gradient(135deg, var(--bs-primary) 0%, #2d5016 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #FFFFFF; /* White for better visibility on dark backgrounds */
   letter-spacing: -0.5px;
+  transition: color 0.3s ease;
+}
+
+.logo-container:hover .logo-text {
+  color: #F3A813; /* Brand Orange on hover */
 }
 
 /* Navbar Logo (smaller version) */
@@ -58,7 +58,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Hover Effect for Badges */
@@ -69,61 +69,61 @@
 
 /* Agricultural Technology - Dark green */
 .category-agriculture {
-  background: linear-gradient(135deg, #2d5016 0%, #6b9b37 100%);
+  background-color: #2d5016;
   color: white;
 }
 
 /* Robotics - Medium green */
 .category-robotics {
-  background: linear-gradient(135deg, #4a7c2c 0%, #7cb342 100%);
+  background-color: #4a7c2c;
   color: white;
 }
 
 /* Artificial Intelligence - Yellow to green */
 .category-ai {
-  background: linear-gradient(135deg, #ffd700 0%, #9acd32 100%);
+  background-color: #ffd700;
   color: #2d5016; /* Dark green text for contrast */
 }
 
 /* Engineering - Professional green */
 .category-engineering {
-  background: linear-gradient(135deg, #558b2f 0%, #689f38 100%);
+  background-color: #558b2f;
   color: white;
 }
 
 /* Business Innovation - Gold/Yellow */
 .category-business {
-  background: linear-gradient(135deg, #f9a825 0%, #ffd700 100%);
+  background-color: #f9a825;
   color: #2d5016; /* Dark green text */
 }
 
 /* Technology (General) - Balanced green-yellow */
 .category-technology {
-  background: linear-gradient(135deg, #6b9b37 0%, #cddc39 100%);
+  background-color: #6b9b37;
   color: #2d5016;
 }
 
 /* Healthcare - Lighter green */
 .category-healthcare {
-  background: linear-gradient(135deg, #7cb342 0%, #aed581 100%);
+  background-color: #7cb342;
   color: #2d5016;
 }
 
 /* Education - Warm yellow-green */
 .category-education {
-  background: linear-gradient(135deg, #9ccc65 0%, #dce775 100%);
+  background-color: #9ccc65;
   color: #2d5016;
 }
 
 /* Environment - Deep green */
 .category-environment {
-  background: linear-gradient(135deg, #33691e 0%, #558b2f 100%);
+  background-color: #33691e;
   color: white;
 }
 
 /* Social Impact - Bright yellow */
 .category-social {
-  background: linear-gradient(135deg, #fbc02d 0%, #ffeb3b 100%);
+  background-color: #fbc02d;
   color: #2d5016;
 }
 
@@ -180,23 +180,23 @@
 /* Primary Button Enhancements */
 .btn-primary {
   font-weight: 600;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Custom Sign Up Button (Orange) */
 .btn-custom-signup {
-  background-color: #F3A813; /* Image match: Bright Orange */
+  background-color: #f3a813; /* Image match: Bright Orange */
   color: #000000;
   border: none;
   padding: 10px 30px; /* Reduced slightly to fit navbar better */
   font-weight: 700;
   border-radius: 0 !important; /* STRICTLY SHARP CORNERS */
-  text-transform: capitalize; 
+  text-transform: capitalize;
   white-space: nowrap; /* Prevent text wrapping */
   transition: all 0.3s ease;
 }
@@ -205,13 +205,13 @@
   background-color: #d99611;
   color: #000000;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Custom Login Button (Dark Green) */
 .btn-custom-login {
-  background-color: #1A5E4F; /* Image match: Dark Deep Green */
-  color: #FFFFFF;
+  background-color: #1a5e4f; /* Image match: Dark Deep Green */
+  color: #ffffff;
   border: none;
   padding: 10px 30px; /* Reduced slightly to fit navbar better */
   font-weight: 700;
@@ -223,20 +223,20 @@
 
 .btn-custom-login:hover {
   background-color: #14493e;
-  color: #FFFFFF;
+  color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Secondary Button Enhancements */
 .btn-secondary {
   font-weight: 600;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .btn-secondary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* ========================================
@@ -253,17 +253,17 @@
 /* Dashboard Sidebar */
 .dashboard-sidebar {
   width: 250px;
-  background: #1A5E4F; /* Dark Green Brand Color */
+  background: #1a5e4f; /* Dark Green Brand Color */
   color: white;
   padding: 1.5rem 0;
   position: fixed;
   height: 100vh;
   overflow-y: auto;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-heading {
-  font-family: 'Josefin Sans', sans-serif;
+  font-family: "Josefin Sans", sans-serif;
   letter-spacing: 1px;
   opacity: 0.7;
 }
@@ -274,7 +274,7 @@
   padding: 0.8rem 1.5rem;
   transition: all 0.2s ease;
   border-left: 4px solid transparent;
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: 500;
 }
 
@@ -286,14 +286,14 @@
 
 .dashboard-sidebar .nav-link.active {
   background: rgba(255, 255, 255, 0.15);
-  color: #F3A813; /* Orange Brand Color for Active */
-  border-left-color: #F3A813;
+  color: #f3a813; /* Orange Brand Color for Active */
+  border-left-color: #f3a813;
   font-weight: 700;
 }
 
 .dashboard-sidebar .nav-link.text-danger:hover {
-    color: #ff4d4d !important;
-    background: rgba(255, 77, 77, 0.1);
+  color: #ff4d4d !important;
+  background: rgba(255, 77, 77, 0.1);
 }
 
 /* Dashboard Main Content */
@@ -311,14 +311,14 @@
   border-radius: 0; /* Match sharp corners */
   margin-bottom: 2rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border-bottom: 3px solid #F3A813; /* Accent line */
+  border-bottom: 3px solid #f3a813; /* Accent line */
 }
 
 .dashboard-header h2 {
-    font-family: 'Josefin Sans', sans-serif;
-    font-weight: 700;
-    color: #1A5E4F;
-    margin-bottom: 0.25rem;
+  font-family: "Josefin Sans", sans-serif;
+  font-weight: 700;
+  color: #1a5e4f;
+  margin-bottom: 0.25rem;
 }
 
 /* Dashboard Card */
@@ -363,21 +363,21 @@
 /* Enhanced Form Controls */
 .form-control,
 .form-select {
-    border-radius: 0; /* Sharp corners */
-    padding: 0.75rem 1rem;
-    border: 1px solid #ced4da;
+  border-radius: 0; /* Sharp corners */
+  padding: 0.75rem 1rem;
+  border: 1px solid #ced4da;
 }
 
 .form-control:focus,
 .form-select:focus {
-  border-color: #1A5E4F;
+  border-color: #1a5e4f;
   box-shadow: 0 0 0 0.15rem rgba(26, 94, 79, 0.15);
 }
 
 .form-label {
-    color: #1A5E4F;
-    font-size: 0.9rem;
-    margin-bottom: 0.4rem;
+  color: #1a5e4f;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
 }
 
 /* File Upload Styling */
@@ -412,12 +412,12 @@
 
 .project-card {
   background: white;
-  border-radius: 10px;
+  border-radius: 0; /* Sharp corners for a neater look */
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08); /* Subtler shadow */
   transition: all 0.3s ease;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #1a5e4f; /* Use brand colors */
 }
 
 .project-card:hover {
@@ -457,7 +457,11 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6b9b37 0%, #8bc34a 100%); /* Green gradient */
+  background: linear-gradient(
+    135deg,
+    #6b9b37 0%,
+    #8bc34a 100%
+  ); /* Green gradient */
   color: white;
   border: none;
   font-size: 1.5rem;
@@ -473,7 +477,11 @@
 .ai-assistant-button:hover {
   transform: scale(1.1);
   box-shadow: 0 6px 16px rgba(107, 155, 55, 0.6);
-  background: linear-gradient(135deg, #558b2f 0%, #7cb342 100%); /* Darker green on hover */
+  background: linear-gradient(
+    135deg,
+    #558b2f 0%,
+    #7cb342 100%
+  ); /* Darker green on hover */
 }
 
 /* AI Chat Container */
@@ -499,7 +507,11 @@
 
 /* Chat Header */
 .ai-chat-header {
-  background: linear-gradient(135deg, #6b9b37 0%, #8bc34a 100%); /* Green gradient */
+  background: linear-gradient(
+    135deg,
+    #6b9b37 0%,
+    #8bc34a 100%
+  ); /* Green gradient */
   color: white;
   padding: 1rem;
   display: flex;
@@ -658,7 +670,7 @@
 }
 
 .navbar-nav .nav-link {
-  transition: .3s;
+  transition: 0.3s;
   padding: 10px 15px !important;
 }
 
@@ -695,7 +707,7 @@
   gap: 12px;
   border-left: 4px solid transparent;
   text-decoration: none;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .dashboard-sidebar-nav .nav-link:hover,
@@ -714,7 +726,7 @@
 .content-card {
   background: var(--bs-white);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   padding: 2rem;
   margin-bottom: 2rem;
 }
@@ -742,6 +754,9 @@
 }
 
 /* Utility to hide/show sections */
-.d-dashboard-none { display: none !important; }
-.d-dashboard-block { display: block !important; }
-
+.d-dashboard-none {
+  display: none !important;
+}
+.d-dashboard-block {
+  display: block !important;
+}
