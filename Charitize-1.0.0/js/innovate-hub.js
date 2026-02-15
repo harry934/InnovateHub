@@ -17,6 +17,16 @@
  * Run on page load
  */
 window.addEventListener("load", function () {
+    // Hide Logo Preloader
+    const preloader = document.getElementById('logo-preloader');
+    if (preloader) {
+        preloader.classList.add('fade-out');
+        // Remove from DOM after transition
+        setTimeout(() => {
+            preloader.remove();
+        }, 600);
+    }
+
     // Check authentication and update UI immediately
     const user = checkAuth();
     if (user && user.loggedIn) {
