@@ -235,7 +235,7 @@
   border: none;
   padding: 10px 25px;
   font-weight: 700;
-  border-radius: 5px;
+  border-radius: 0 !important; /* STRICTLY SHARP CORNERS */
   text-transform: uppercase;
   letter-spacing: 1px;
   transition: all 0.3s ease;
