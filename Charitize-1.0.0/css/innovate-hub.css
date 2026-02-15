@@ -701,6 +701,64 @@
 }
 
 /* ========================================
+   12. ENHANCED DROPDOWN MENUS
+   Spice up the dropdowns with glassmorphism and animations
+   ======================================== */
+
+.navbar .dropdown-menu {
+    border: none;
+    border-radius: 0;
+    background: rgba(26, 94, 79, 0.95); /* Deep Brand Green with slight transparency */
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    margin-top: 0;
+    padding: 10px 0;
+    transition: all 0.3s ease;
+}
+
+.navbar .dropdown-item {
+    color: rgba(255, 255, 255, 0.85);
+    padding: 12px 25px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.navbar .dropdown-item:hover, 
+.navbar .dropdown-item.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F3A813; /* Brand Orange */
+    border-left: 3px solid #F3A813;
+    padding-left: 30px; /* Slight shift to the right */
+}
+
+/* Dropdown Animation for Desktop */
+@media (min-width: 992px) {
+    .navbar .nav-item .dropdown-menu {
+        display: block;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(15px);
+    }
+    
+    .navbar .nav-item:hover .dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+}
+
+/* Custom Dropdown Toggle */
+.navbar .dropdown-toggle::after {
+    transition: transform 0.3s ease;
+}
+
+.navbar .nav-item:hover .dropdown-toggle::after {
+    transform: rotate(180deg);
+}
+
+/* ========================================
    6. STRUCTURED DASHBOARD LAYOUT
    Standard professional platform interface
    ======================================== */
@@ -780,4 +838,99 @@
 }
 .d-dashboard-block {
   display: block !important;
+}
+/* ========================================
+   12. HERO CAROUSEL UNIQUE PRESENTATION
+   Zoom-in effect and optimized vertical fit
+   ======================================== */
+
+.header-carousel .carousel-img {
+    overflow: hidden; /* Prevent zoom from overflowing */
+    height: 100%;
+}
+
+.header-carousel .carousel-img img {
+  width: 100%;
+  height: auto;
+  min-height: 400px; /* Base height for mobile */
+  aspect-ratio: 1 / 1; 
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0 !important;
+  transition: transform 6s ease-in-out; /* Smooth baseline */
+}
+
+/* Unique Ken Burns Animation for Active Slide */
+.header-carousel .owl-item.active .carousel-img img {
+    animation: kenBurnsZoom 10s ease-in-out forwards;
+}
+
+@keyframes kenBurnsZoom {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.15);
+    }
+}
+
+/* Responsive adjustment for desktop to fit from top to bottom */
+@media (min-width: 992px) {
+  .header-carousel .carousel-img img {
+    min-height: 600px; /* Larger vertical presence */
+    aspect-ratio: 4 / 3; 
+    max-height: none; /* Remove previous constraint */
+  }
+}
+/* ========================================
+   13. TRANSFORMING STICKY NAVBAR
+   Scroll-based refinement: Transparent-ish, slim, and focused
+   ======================================== */
+
+.nav-bar {
+    transition: all 0.5s ease;
+}
+
+/* Scrolled state overrides */
+.nav-bar.navbar-scrolled {
+    background: rgba(26, 94, 79, 0.75) !important; /* Slightly more transparent */
+    backdrop-filter: blur(15px); /* Stronger blur for better effect */
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.nav-bar.navbar-scrolled .navbar {
+    background: transparent !important; /* Force inner navbar to be transparent */
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+
+/* Hide navigation links on scroll for focus */
+.nav-bar.navbar-scrolled #navbarCollapse .navbar-nav {
+    display: none !important;
+}
+
+/* Reveal logo inside navbar on scroll */
+.sticky-logo {
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    display: none !important; /* Initial desktop state */
+}
+
+.nav-bar.navbar-scrolled .sticky-logo {
+    opacity: 1;
+    visibility: visible;
+    display: flex !important;
+}
+
+/* Ensure the 'GET STARTED' button stays right-aligned */
+.nav-bar.navbar-scrolled .navbar-collapse {
+    justify-content: space-between;
+}
+
+@media (max-width: 991.98px) {
+    .nav-bar.navbar-scrolled {
+        padding: 0 !important; /* Full width on mobile scroll */
+    }
 }

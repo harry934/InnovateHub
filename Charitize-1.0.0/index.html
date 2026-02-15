@@ -70,7 +70,7 @@
                             </div>
                             <div class="ms-2">
                                 <h6 class="text-primary mb-0">Call Us</h6>
-                                <span class="text-white">+012 345 6789</span>
+                                <span class="text-white">+254 700 000000</span>
                             </div>
                         </div>
                     </div>
@@ -81,7 +81,7 @@
                             </div>
                             <div class="ms-2">
                                 <h6 class="text-primary mb-0">Mail Us</h6>
-                                <span class="text-white">info@domain.com</span>
+                                <span class="text-white">InnovateHub@gmail.com</span>
                             </div>
                         </div>
                     </div>
@@ -92,7 +92,7 @@
                             </div>
                             <div class="ms-2">
                                 <h6 class="text-primary mb-0">Address</h6>
-                                <span class="text-white">123 Street, NY, USA</span>
+                                <span class="text-white">Nairobi, Kenya</span>
                             </div>
                         </div>
                     </div>
@@ -107,6 +107,10 @@
     <div class="container-fluid bg-secondary px-0 wow fadeIn" data-wow-delay="0.1s">
         <div class="nav-bar">
             <nav class="navbar navbar-expand-lg bg-primary navbar-dark px-4 py-lg-0">
+                <a href="index.html" class="navbar-brand d-none d-lg-flex align-items-center ms-0 me-auto sticky-logo">
+                    <img src="img/logo.svg" alt="Innovate Hub" style="width: 35px; height: 35px;">
+                    <span class="logo-text ms-2" style="font-size: 1.2rem; color: white;">Innovate Hub</span>
+                </a>
                 <h4 class="d-lg-none m-0">Menu</h4>
                 <button type="button" class="navbar-toggler me-0" data-bs-toggle="collapse"
                     data-bs-target="#navbarCollapse">
@@ -116,9 +120,23 @@
                     <!-- Navigation Menu: Main navigation links for the website -->
                     <div class="navbar-nav me-auto" id="mainNav">
                         <a href="index.html" class="nav-item nav-link active">Home</a>
-                        <a href="about.html" class="nav-item nav-link">About</a>
-                        <a href="service.html" class="nav-item nav-link">Innovation Areas</a>
-                        <a href="contact.html" class="nav-item nav-link">Contact</a>
+                        <div class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">About Us</a>
+                            <div class="dropdown-menu m-0">
+                                <a href="about.html" class="dropdown-item">Our Story</a>
+                                <a href="team.html" class="dropdown-item">Our Team</a>
+                                <a href="policy.html" class="dropdown-item">Policy</a>
+                            </div>
+                        </div>
+                        <div class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Get Involved</a>
+                            <div class="dropdown-menu m-0">
+                                <a href="signup.html" class="dropdown-item">Submit a Project</a>
+                                <a href="contact.html" class="dropdown-item">Partner With Us</a>
+                                <a href="event.html" class="dropdown-item">Events</a>
+                            </div>
+                        </div>
+                        <a href="contact.html" class="nav-item nav-link">Contact Us</a>
                         <!-- My Dashboard Link (Hidden by default, shown via JS when logged in) -->
                         <a href="innovator-dashboard.html" class="nav-item nav-link d-none" id="navDashboardLink">My Dashboard</a>
                     </div>
@@ -160,49 +178,82 @@
     <!-- Carousel Start -->
     <div class="container-fluid p-0 wow fadeIn" data-wow-delay="0.1s">
         <div class="owl-carousel header-carousel py-5">
+            <!-- Slide 1: Startup Journey -->
             <div class="container py-5">
                 <div class="row g-5 align-items-center">
                     <div class="col-lg-6">
-                        <!-- Hero Carousel Text: Main headline and description for first slide -->
                         <div class="carousel-text">
-                            <!-- display-1: Bootstrap class for very large text -->
-                            <!-- text-uppercase: Makes all text uppercase -->
-                            <h1 class="display-1 text-uppercase mb-3">Empowering Innovators to Change the World</h1>
-                            <!-- fs-5: Font size 5 (medium-large) -->
-                            <p class="fs-5 mb-5">Submit your innovative ideas, connect with experienced mentors, and bring your projects to life through collaboration and guidance.</p>
-                            <!-- Call-to-Action Buttons: Primary actions users can take -->
+                            <h1 class="display-1 text-uppercase mb-3">Fuel Your Startup Journey</h1>
+                            <p class="fs-5 mb-5">Join a vibrant community of student innovators. Collaborate on groundbreaking projects, share insights, and scale your ideas with collective support and peer guidance.</p>
                             <div class="d-flex">
-                                <!-- btn-primary: Main action button with primary color -->
-                                <!-- py-3 px-4: Padding (vertical 3, horizontal 4) -->
                                 <a class="btn btn-primary py-3 px-4 me-3" href="signup.html">Submit Your Project</a>
-                                <!-- btn-secondary: Secondary action button -->
                                 <a class="btn btn-secondary py-3 px-4" href="about.html">Learn More</a>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-6">
                         <div class="carousel-img">
-                            <img class="w-100" src="img/carousel-1.jpg" alt="Image">
+                            <img class="w-100" src="img/carousel-1.jpg" alt="Innovators collaborating">
                         </div>
                     </div>
                 </div>
             </div>
+            <!-- Slide 2: Social Impact -->
             <div class="container py-5">
                 <div class="row g-5 align-items-center">
                     <div class="col-lg-6">
-                        <!-- Second Carousel Slide -->
                         <div class="carousel-text">
-                            <h1 class="display-1 text-uppercase mb-3">Connect with Mentors, Build Your Future</h1>
-                            <p class="fs-5 mb-5">Get expert guidance from experienced mentors who will help you refine your ideas, overcome challenges, and achieve your innovation goals.</p>
+                            <h1 class="display-1 text-uppercase mb-3">Innovation for Social Impact</h1>
+                            <p class="fs-5 mb-5">Solve real-world challenges in our community. From education technology to sustainable local solutions, make a tangible difference through targeted innovation and community outreach.</p>
                             <div class="d-flex mt-4">
-                                <a class="btn btn-primary py-3 px-4 me-3" href="signup.html">Get Started</a>
-                                <a class="btn btn-secondary py-3 px-4" href="event.html">View Events</a>
+                                <a class="btn btn-primary py-3 px-4 me-3" href="signup.html">Get Started Today</a>
+                                <a class="btn btn-secondary py-3 px-4" href="service.html">Our Areas</a>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-6">
                         <div class="carousel-img">
-                            <img class="w-100" src="img/carousel-2.jpg" alt="Image">
+                            <img class="w-100" src="img/carousel-2.jpg" alt="Social impact through tech">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Slide 3: Technical Mastery -->
+            <div class="container py-5">
+                <div class="row g-5 align-items-center">
+                    <div class="col-lg-6">
+                        <div class="carousel-text">
+                            <h1 class="display-1 text-uppercase mb-3">Master Your Technical Skills</h1>
+                            <p class="fs-5 mb-5">Access high-quality resources and hands-on technical training. Whether it's AI, robotics, or renewable energy, we provide the platform for you to refine your expertise and build for the future.</p>
+                            <div class="d-flex mt-4">
+                                <a class="btn btn-primary py-3 px-4 me-3" href="signup.html">Join the Hub</a>
+                                <a class="btn btn-secondary py-3 px-4" href="feature.html">View Resources</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="carousel-img">
+                            <img class="w-100" src="img/carousel-3.jpg" alt="Technical learning">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Slide 4: Expert Mentorship -->
+            <div class="container py-5">
+                <div class="row g-5 align-items-center">
+                    <div class="col-lg-6">
+                        <div class="carousel-text">
+                            <h1 class="display-1 text-uppercase mb-3">Expert Mentorship & Guidance</h1>
+                            <p class="fs-5 mb-5">Connect with industry professionals and seasoned experts. Get the direct feedback, strategic advice, and technical validation you need to turn your vision into a production-ready reality.</p>
+                            <div class="d-flex mt-4">
+                                <a class="btn btn-primary py-3 px-4 me-3" href="signup.html">Connect with a Mentor</a>
+                                <a class="btn btn-secondary py-3 px-4" href="team.html">Our Mentors</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="carousel-img">
+                            <img class="w-100" src="img/carousel-4.jpg" alt="Mentorship session">
                         </div>
                     </div>
                 </div>
@@ -789,9 +840,9 @@
             <div class="row g-5 py-5">
                 <div class="col-lg-3 col-md-6">
                     <h4 class="text-light mb-4">Our Office</h4>
-                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@example.com</p>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Nairobi, Kenya</p>
+                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+254 700 000000</p>
+                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>InnovateHub@gmail.com</p>
                     <div class="d-flex pt-3">
                         <a class="btn btn-square btn-primary me-2" href="#!"><i class="fab fa-x-twitter"></i></a>
                         <a class="btn btn-square btn-primary me-2" href="#!"><i class="fab fa-facebook-f"></i></a>
@@ -801,11 +852,11 @@
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <h4 class="text-light mb-4">Quick Links</h4>
-                    <a class="btn btn-link" href="#!">About Us</a>
-                    <a class="btn btn-link" href="#!">Contact Us</a>
-                    <a class="btn btn-link" href="#!">Our Services</a>
-                    <a class="btn btn-link" href="#!">Terms & Condition</a>
-                    <a class="btn btn-link" href="#!">Support</a>
+                    <a class="btn btn-link" href="about.html">About Us</a>
+                    <a class="btn btn-link" href="contact.html">Contact Us</a>
+                    <a class="btn btn-link" href="service.html">Our Services</a>
+                    <a class="btn btn-link" href="policy.html">Terms & Condition</a>
+                    <a class="btn btn-link" href="contact.html">Support</a>
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <h4 class="text-light mb-4">Business Hours</h4>
