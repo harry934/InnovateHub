@@ -24,7 +24,7 @@ window.addEventListener("load", function () {
         // Remove from DOM after transition
         setTimeout(() => {
             preloader.remove();
-        }, 600);
+        }, 3500);
     }
 
     // Check authentication and update UI immediately
