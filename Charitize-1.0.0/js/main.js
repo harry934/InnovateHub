@@ -75,6 +75,8 @@
 
     // Header carousel
     $(".header-carousel").owlCarousel({
+        animateOut: 'fadeOut',
+        animateIn: 'fadeIn',
         items: 1,
         autoplay: true,
         smartSpeed: 1000,

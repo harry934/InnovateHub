@@ -781,3 +781,46 @@
 .d-dashboard-block {
   display: block !important;
 }
+/* ========================================
+   12. HERO CAROUSEL UNIQUE PRESENTATION
+   Zoom-in effect and optimized vertical fit
+   ======================================== */
+
+.header-carousel .carousel-img {
+    overflow: hidden; /* Prevent zoom from overflowing */
+    height: 100%;
+}
+
+.header-carousel .carousel-img img {
+  width: 100%;
+  height: auto;
+  min-height: 400px; /* Base height for mobile */
+  aspect-ratio: 1 / 1; 
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0 !important;
+  transition: transform 6s ease-in-out; /* Smooth baseline */
+}
+
+/* Unique Ken Burns Animation for Active Slide */
+.header-carousel .owl-item.active .carousel-img img {
+    animation: kenBurnsZoom 10s ease-in-out forwards;
+}
+
+@keyframes kenBurnsZoom {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.15);
+    }
+}
+
+/* Responsive adjustment for desktop to fit from top to bottom */
+@media (min-width: 992px) {
+  .header-carousel .carousel-img img {
+    min-height: 600px; /* Larger vertical presence */
+    aspect-ratio: 4 / 3; 
+    max-height: none; /* Remove previous constraint */
+  }
+}
