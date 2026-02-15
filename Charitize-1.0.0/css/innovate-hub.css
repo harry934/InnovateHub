@@ -228,6 +228,27 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* GET STARTED Button (Green with White Text) */
+.btn-get-started {
+  background-color: #1a5e4f; /* Using the Deep Green brand color */
+  color: #ffffff !important;
+  border: none;
+  padding: 10px 25px;
+  font-weight: 700;
+  border-radius: 0 !important; /* STRICTLY SHARP CORNERS */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-get-started:hover {
+  background-color: #14493e;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* Secondary Button Enhancements */
 .btn-secondary {
   font-weight: 600;
