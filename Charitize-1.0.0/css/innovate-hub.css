@@ -940,8 +940,8 @@
 }
 
 /* ========================================
-   14. ANIMATED LOGO PRELOADER
-   A premium loading screen using the Innovate Hub logo
+   14. RECONSTRUCTING LOGO PRELOADER
+   Individual path animations for brand structure
    ======================================== */
 
 #logo-preloader {
@@ -956,7 +956,7 @@
     align-items: center;
     justify-content: center;
     z-index: 999999;
-    transition: opacity 0.6s cubic-bezier(0.77, 0, 0.175, 1), visibility 0.6s;
+    transition: opacity 0.8s cubic-bezier(0.77, 0, 0.175, 1), visibility 0.8s;
 }
 
 #logo-preloader.fade-out {
@@ -967,34 +967,57 @@
 .preloader-content {
     text-align: center;
     position: relative;
+    padding: 20px;
 }
 
-.preloader-logo {
-    width: 100px;
-    height: 100px;
-    margin-bottom: 20px;
-    animation: logoPulse 2s infinite ease-in-out, logoRotate 8s infinite linear;
-    filter: drop-shadow(0 0 15px rgba(243, 168, 19, 0.3));
+.preloader-logo-svg {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 25px;
+    filter: drop-shadow(0 0 20px rgba(243, 168, 19, 0.2));
 }
+
+/* Path Specific Animations */
+.hexagon-path {
+    stroke-dasharray: 120;
+    stroke-dashoffset: 120;
+    animation: drawPath 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+}
+
+.hub-circle {
+    transform: scale(0);
+    transform-origin: 20px 20px;
+    animation: scaleHub 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards 0.8s;
+}
+
+.connect-line {
+    stroke-dasharray: 15;
+    stroke-dashoffset: 15;
+}
+
+.line-1 { animation: drawPath 0.4s ease-out forwards 1.2s; }
+.line-2 { animation: drawPath 0.4s ease-out forwards 1.4s; }
+.line-3 { animation: drawPath 0.4s ease-out forwards 1.6s; }
 
 .preloader-text {
     color: #F3A813; /* Brand Orange */
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 4px;
     text-transform: uppercase;
     opacity: 0;
-    animation: fadeInText 1s forwards 0.5s;
+    transform: translateY(10px);
+    animation: textAppear 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards 1.8s;
 }
 
 .preloader-bar {
-    width: 150px;
+    width: 180px;
     height: 2px;
-    background: rgba(243, 168, 19, 0.2);
-    margin-top: 20px;
+    background: rgba(243, 168, 19, 0.1);
+    margin: 25px auto 0;
     position: relative;
     overflow: hidden;
-    border-radius: 2px;
+    border-radius: 4px;
 }
 
 .preloader-bar::after {
@@ -1005,44 +1028,30 @@
     width: 100%;
     height: 100%;
     background: #F3A813;
-    animation: barLoading 2s infinite ease-in-out;
+    animation: barFill 2s infinite ease-in-out;
 }
 
-@keyframes logoPulse {
-    0%, 100% {
+@keyframes drawPath {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes scaleHub {
+    to {
         transform: scale(1);
     }
-    50% {
-        transform: scale(1.1);
-    }
 }
 
-@keyframes logoRotate {
-    0% {
-        transform: scale(1) rotate(0deg);
-    }
-    50% {
-        transform: scale(1.1) rotate(5deg);
-    }
-    100% {
-        transform: scale(1) rotate(0deg);
-    }
-}
-
-@keyframes fadeInText {
+@keyframes textAppear {
     to {
         opacity: 1;
+        transform: translateY(0);
     }
 }
 
-@keyframes barLoading {
-    0% {
-        left: -100%;
-    }
-    50% {
-        left: 0;
-    }
-    100% {
-        left: 100%;
-    }
+@keyframes barFill {
+    0% { left: -100%; }
+    50% { left: 0; }
+    100% { left: 100%; }
 }
