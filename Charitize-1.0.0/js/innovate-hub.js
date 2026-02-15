@@ -20,24 +20,11 @@ window.addEventListener("load", function () {
     const preloader = document.getElementById("logo-preloader");
     if (!preloader) return;
 
-    // High-End Session Tracking for Cinematic Entry
-    const hasSeenIntro = sessionStorage.getItem("hasSeenIntro");
-    
-    if (hasSeenIntro) {
-        // Fast subsequent load for returning users/navigation
-        preloader.classList.add("subsequent-load");
-        setTimeout(() => {
-            preloader.classList.add("fade-out");
-            setTimeout(() => preloader.remove(), 1200);
-        }, 500);
-    } else {
-        // First-time cinematic assembly experience
-        sessionStorage.setItem("hasSeenIntro", "true");
-        setTimeout(() => {
-            preloader.classList.add("fade-out");
-            setTimeout(() => preloader.remove(), 1200);
-        }, 3500);
-    }
+    // Always show the cinematic logo assembly on page load/refresh
+    setTimeout(() => {
+        preloader.classList.add("fade-out");
+        setTimeout(() => preloader.remove(), 1200);
+    }, 3500);
 
     // Page Entry Animation
     document.body.classList.add("page-ready");
@@ -49,7 +36,7 @@ window.addEventListener("load", function () {
     }
 });
 
-// Cinematic Page Exit Transitions
+// Cinematic Page Exit Transitions (no preloader on navigation)
 document.addEventListener("click", function(e) {
     const link = e.target.closest("a");
     if (link && 
