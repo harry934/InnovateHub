@@ -6,48 +6,59 @@
  */
 
 // ========================================
-// 1. SPLASH SCREEN CONTROL
+// 1. SPLASH SCREEN CONTROL (PRELOADER)
 // ========================================
 
-/**
- * Hide splash screen after page loads
- * Uses window.addEventListener to wait for page to fully load
- */
-/**
- * Run on page load
- */
-window.addEventListener("load", function () {
-    const preloader = document.getElementById("logo-preloader");
-    if (!preloader) return;
+(function() {
+    // Run immediately to handle preloader visibility
+    const initPreloader = () => {
+        const preloader = document.getElementById("logo-preloader");
+        if (!preloader) return;
 
-    // Detect if this is an internal navigation or a refresh
-    const wasNavigated = sessionStorage.getItem("wasNavigated");
-    const perfEntries = performance.getEntriesByType("navigation");
-    const isReload = perfEntries.length > 0 && perfEntries[0].type === "reload";
-    
-    // Clear flag immediately
-    sessionStorage.removeItem("wasNavigated");
+        // Simple navigation detection
+        const wasNavigated = sessionStorage.getItem("wasNavigated");
+        
+        // Clear flag immediately
+        sessionStorage.removeItem("wasNavigated");
 
-    if (wasNavigated && !isReload) {
-        // Instant skip on navigation
-        preloader.style.display = "none";
-        preloader.remove();
-    } else {
-        // Show logo animation on refresh or initial entry
-        setTimeout(() => {
+        const removePreloader = () => {
             preloader.classList.add("fade-out");
-            setTimeout(() => preloader.remove(), 1200);
-        }, 2200); // 2.2s cinematic experience
-    }
+            setTimeout(() => {
+                if(preloader && preloader.parentNode) {
+                    preloader.remove();
+                }
+            }, 1200);
+        };
 
-    // Check authentication and update UI
-    const user = checkAuth();
-    if (user && user.loggedIn) {
-        updateUIForRole(user);
-    }
-});
+        if (wasNavigated) {
+            // Instant skip on navigation - No green screen delay
+            preloader.style.opacity = "0";
+            preloader.style.display = "none";
+            if(preloader.parentNode) preloader.remove();
+        } else {
+            // Show cinematic assembly on refresh or initial entry
+            // Start 2.2s sequence immediately
+            setTimeout(removePreloader, 2200);
+        }
 
-// Set navigation flag on link click (WITHOUT e.preventDefault() to avoid breaking links)
+        // Failsafe: Ensure preloader is removed after a maximum time
+        // This prevents the "stuck green screen" issue if errors occur
+        setTimeout(() => {
+            if (document.getElementById("logo-preloader")) {
+               removePreloader();
+            }
+        }, 5000);
+    };
+
+    // Initialize as soon as DOM is ready or Script runs
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPreloader);
+    } else {
+        initPreloader();
+    }
+})();
+
+// Navigation listener to set flag
 document.addEventListener("click", function(e) {
     const link = e.target.closest("a");
     if (link && 
@@ -56,6 +67,17 @@ document.addEventListener("click", function(e) {
         !link.href.includes("#") && 
         link.target !== "_blank") {
         sessionStorage.setItem("wasNavigated", "true");
+    }
+});
+
+/**
+ * Handle Auth and UI updates on window load
+ */
+window.addEventListener("load", function () {
+    // Check authentication and update UI
+    const user = checkAuth();
+    if (user && user.loggedIn) {
+        updateUIForRole(user);
     }
 });
 
