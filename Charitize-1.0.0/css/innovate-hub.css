@@ -980,6 +980,15 @@
     padding: 40px;
 }
 
+.preloader-logo-svg {
+    width: 150px;
+    height: 150px;
+    filter: drop-shadow(0 0 30px rgba(243, 168, 19, 0.15));
+    animation: finalPulse 6s ease-in-out infinite 3.5s;
+    display: block;
+    margin: 0 auto;
+}
+
 /* Optimized Path Animations (2.2s total) */
 .hexagon-path {
     stroke-dasharray: 120;

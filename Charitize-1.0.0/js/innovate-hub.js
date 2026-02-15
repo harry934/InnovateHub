@@ -20,31 +20,42 @@ window.addEventListener("load", function () {
     const preloader = document.getElementById("logo-preloader");
     if (!preloader) return;
 
-    // Check if this is a page refresh or initial load (not navigation)
-    const isPageRefresh = sessionStorage.getItem("navigationActive") === null;
+    // Detect if this is an internal navigation or a refresh
+    const wasNavigated = sessionStorage.getItem("wasNavigated");
     const perfEntries = performance.getEntriesByType("navigation");
     const isReload = perfEntries.length > 0 && perfEntries[0].type === "reload";
     
-    if (isPageRefresh || isReload) {
-        // Show logo animation on refresh or initial site entry
+    // Clear flag immediately
+    sessionStorage.removeItem("wasNavigated");
+
+    if (wasNavigated && !isReload) {
+        // Instant skip on navigation
+        preloader.style.display = "none";
+        preloader.remove();
+    } else {
+        // Show logo animation on refresh or initial entry
         setTimeout(() => {
             preloader.classList.add("fade-out");
             setTimeout(() => preloader.remove(), 1200);
-        }, 2200); // 2.2s animation
-        // Clear the navigation flag
-        sessionStorage.removeItem("navigationActive");
-    } else {
-        // Skip animation on internal navigation
-        preloader.classList.add("fade-out");
-        setTimeout(() => preloader.remove(), 100);
-        // Clear the navigation flag
-        sessionStorage.removeItem("navigationActive");
+        }, 2200); // 2.2s cinematic experience
     }
 
     // Check authentication and update UI
     const user = checkAuth();
     if (user && user.loggedIn) {
         updateUIForRole(user);
+    }
+});
+
+// Set navigation flag on link click (WITHOUT e.preventDefault() to avoid breaking links)
+document.addEventListener("click", function(e) {
+    const link = e.target.closest("a");
+    if (link && 
+        link.href && 
+        link.href.includes(window.location.origin) && 
+        !link.href.includes("#") && 
+        link.target !== "_blank") {
+        sessionStorage.setItem("wasNavigated", "true");
     }
 });
 
