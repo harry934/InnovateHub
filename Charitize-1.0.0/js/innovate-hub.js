@@ -30,11 +30,15 @@ window.addEventListener("load", function () {
         setTimeout(() => {
             preloader.classList.add("fade-out");
             setTimeout(() => preloader.remove(), 1200);
-        }, 2200); // Reduced to 2.2s
+        }, 2200); // 2.2s animation
+        // Clear the navigation flag
+        sessionStorage.removeItem("navigationActive");
     } else {
         // Skip animation on internal navigation
         preloader.classList.add("fade-out");
         setTimeout(() => preloader.remove(), 100);
+        // Clear the navigation flag
+        sessionStorage.removeItem("navigationActive");
     }
 
     // Page Entry Animation
@@ -44,29 +48,6 @@ window.addEventListener("load", function () {
     const user = checkAuth();
     if (user && user.loggedIn) {
         updateUIForRole(user);
-    }
-});
-
-// Smooth Page Transitions (no preloader on navigation)
-document.addEventListener("click", function(e) {
-    const link = e.target.closest("a");
-    if (link && 
-        link.href && 
-        link.href.includes(window.location.origin) && 
-        !link.href.includes("#") && 
-        link.target !== "_blank") {
-        
-        e.preventDefault();
-        const targetUrl = link.href;
-        
-        // Mark that we're navigating (not refreshing)
-        sessionStorage.setItem("navigationActive", "true");
-        
-        document.body.classList.add("page-exit");
-        
-        setTimeout(() => {
-            window.location.href = targetUrl;
-        }, 400);
     }
 });
 
