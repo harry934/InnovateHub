@@ -833,15 +833,16 @@
     transition: all 0.5s ease;
 }
 
-/* Scrolled state */
+/* Scrolled state overrides */
 .nav-bar.navbar-scrolled {
-    background: rgba(26, 94, 79, 0.85) !important; /* Semi-transparent brand green */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(26, 94, 79, 0.75) !important; /* Slightly more transparent */
+    backdrop-filter: blur(15px); /* Stronger blur for better effect */
+    -webkit-backdrop-filter: blur(15px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .nav-bar.navbar-scrolled .navbar {
+    background: transparent !important; /* Force inner navbar to be transparent */
     padding-top: 5px !important;
     padding-bottom: 5px !important;
 }
