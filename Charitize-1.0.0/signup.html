@@ -194,15 +194,14 @@
         }
         
         .back-home {
-            position: absolute;
-            top: 2rem;
-            left: 2rem;
+            margin-bottom: 2rem;
             color: #1A5E4F;
             text-decoration: none;
             font-weight: 600;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            transition: all 0.3s ease;
         }
         
         /* Social Auth Buttons */
@@ -730,7 +729,7 @@
                     showSuccessMessage(welcomeMsg);
                     
                     setTimeout(() => {
-                        window.location.href = status === 'pending_approval' ? 'login.html' : 'innovator-dashboard.html';
+                        window.location.href = role === 'mentor' ? 'index.html' : 'innovator-dashboard.html';
                     }, 2000);
 
                 } catch (error) {

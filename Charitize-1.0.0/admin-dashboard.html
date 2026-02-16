@@ -69,21 +69,21 @@
                     <div class="col-md-4">
                         <div class="dashboard-card text-center text-primary">
                             <i class="fa fa-users fa-3x mb-3"></i>
-                            <h3>142</h3>
+                            <h3 id="totalUsersCount">0</h3>
                             <p class="text-muted">Total Users</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="dashboard-card text-center text-success">
                             <i class="fa fa-project-diagram fa-3x mb-3"></i>
-                            <h3>56</h3>
+                            <h3 id="activeProjectsCount">0</h3>
                             <p class="text-muted">Active Projects</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="dashboard-card text-center text-warning">
                              <i class="fa fa-chalkboard-teacher fa-3x mb-3"></i>
-                            <h3>12</h3>
+                            <h3 id="pendingStatCount">0</h3>
                             <p class="text-muted">Pending Mentors</p>
                         </div>
                     </div>
@@ -98,12 +98,36 @@
                 </div>
                 
                 <div id="approvalsContainer">
-                    <!-- Dynamic content will be loaded here -->
                     <div class="alert alert-info">Loading pending applications...</div>
                 </div>
             </div>
-            
-            <!-- Other sections omitted for brevity in prototype -->
+
+            <!-- All Users Section -->
+            <div id="usersSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>User Management</h2>
+                    <p class="text-muted">Manage all platform users</p>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
             
         </div>
     </div>
@@ -113,32 +137,50 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="js/innovate-hub.js"></script>
     
-    <script>
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // State
+        let allUsers = [];
+        let pendingMentors = [];
+
         window.addEventListener('load', function() {
             // Check Access
-            const user = requireAuth();
-            if (user.role !== 'admin') {
-                alert('Access Denied');
+            const session = JSON.parse(localStorage.getItem('innovateHubUser'));
+            if (!session || session.role !== 'admin') {
+                alert('Access Denied. Admins only.');
                 window.location.href = 'login.html';
                 return;
             }
             
-            loadPendingMentors();
+            // Listen for Real-time Updates
+            setupListeners();
         });
-        
-        function showSection(sectionName) {
-            document.querySelectorAll('.dashboard-section').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(sectionName + 'Section').style.display = 'block';
-            if(event.target) event.target.classList.add('active');
+
+        function setupListeners() {
+            // 1. Listen for all users
+            onSnapshot(collection(db, "users"), (snapshot) => {
+                allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateOverview();
+                updateUsersTable();
+                
+                // 2. Filter pending mentors
+                pendingMentors = allUsers.filter(u => u.role === 'mentor' && u.status === 'pending_approval');
+                updatePendingMentors();
+            });
         }
-        
-        function loadPendingMentors() {
-            const container = document.getElementById('approvalsContainer');
-            const pendingMentors = loadFromLocalStorage('pendingMentors') || [];
-            
+
+        function updateOverview() {
+            document.getElementById('totalUsersCount').textContent = allUsers.length;
+            document.getElementById('activeProjectsCount').textContent = allUsers.filter(u => u.project).length;
             document.getElementById('pendingCount').textContent = pendingMentors.length;
+            document.getElementById('pendingStatCount').textContent = pendingMentors.length;
+        }
+
+        function updatePendingMentors() {
+            const container = document.getElementById('approvalsContainer');
             
             if (pendingMentors.length === 0) {
                  container.innerHTML = `
@@ -151,30 +193,28 @@
             }
             
             let html = '';
-            pendingMentors.forEach((mentor, index) => {
+            pendingMentors.forEach((mentor) => {
                 html += `
                     <div class="dashboard-card mb-3">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <h4 class="mb-1">${mentor.fullName}</h4>
-                                <p class="text-primary mb-2">${mentor.jobTitle} at ${mentor.organization}</p>
-                                <span class="badge bg-secondary mb-3">${mentor.expertise}</span>
+                                <p class="text-primary mb-2">${mentor.organization || 'Independent'}</p>
+                                <span class="badge bg-secondary mb-3">${mentor.expertise || 'General'}</span>
                             </div>
                             <div class="text-end">
-                                <small class="text-muted d-block">Applied: ${formatDate(new Date(mentor.submittedDate))}</small>
+                                <small class="text-muted d-block">Applied: ${new Date(mentor.createdAt).toLocaleDateString()}</small>
                             </div>
                         </div>
                         
                         <div class="bg-light p-3 rounded mb-3">
                             <p class="mb-1 fw-bold small text-muted">MOTIVATION</p>
-                            <p class="mb-3 fst-italic">"${mentor.motivation}"</p>
-                            <p class="mb-1 fw-bold small text-muted">APPROACH</p>
-                            <p class="mb-0 fst-italic">"${mentor.approach}"</p>
+                            <p class="mb-3 fst-italic">"${mentor.motivation || 'No motivation provided'}"</p>
                         </div>
                         
                         <div class="d-flex gap-2 justify-content-end">
-                            <button class="btn btn-outline-danger" onclick="rejectMentor(${index})">Reject</button>
-                            <button class="btn btn-success" onclick="approveMentor(${index})">Approve & Activate</button>
+                            <button class="btn btn-outline-danger" onclick="deleteUser('${mentor.uid}')">Reject & Delete</button>
+                            <button class="btn btn-success" onclick="approveMentor('${mentor.uid}')">Approve Account</button>
                         </div>
                     </div>
                 `;
@@ -182,28 +222,64 @@
             
             container.innerHTML = html;
         }
-        
-        function approveMentor(index) {
-            let pendingMentors = loadFromLocalStorage('pendingMentors') || [];
-            const mentor = pendingMentors[index];
-            
-            // In a real app, strict database updates. Here we just alert.
-            alert(`Approved ${mentor.fullName}! They can now log in.`);
-            
-            // Remove from pending
-            pendingMentors.splice(index, 1);
-            saveToLocalStorage('pendingMentors', pendingMentors);
-            
-            loadPendingMentors();
+
+        function updateUsersTable() {
+            const container = document.getElementById('usersTableBody');
+            if (!container) return;
+
+            let html = '';
+            allUsers.forEach(user => {
+                html += `
+                    <tr>
+                        <td>${user.fullName}</td>
+                        <td>${user.email}</td>
+                        <td><span class="badge ${user.role === 'admin' ? 'bg-danger' : user.role === 'mentor' ? 'bg-primary' : 'bg-info'}">${user.role}</span></td>
+                        <td><span class="badge ${user.status === 'active' ? 'bg-success' : 'bg-warning'}">${user.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${user.uid}')">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            container.innerHTML = html;
         }
-        
-        function rejectMentor(index) {
-            if(confirm('Are you sure you want to reject this application?')) {
-                let pendingMentors = loadFromLocalStorage('pendingMentors') || [];
-                pendingMentors.splice(index, 1);
-                saveToLocalStorage('pendingMentors', pendingMentors);
-                loadPendingMentors();
+
+        window.approveMentor = async function(uid) {
+            try {
+                await updateDoc(doc(db, "users", uid), {
+                    status: 'active'
+                });
+                alert("Account approved successfully!");
+            } catch (err) {
+                alert("Approval failed: " + err.message);
             }
+        }
+
+        window.deleteUser = async function(uid) {
+            if (confirm("Are you sure? This will delete the user's profile database entry. Note: If you want to block login, also delete them from Firebase Auth Console.")) {
+                try {
+                    await deleteDoc(doc(db, "users", uid));
+                    alert("User profile deleted from Firestore.");
+                } catch (err) {
+                    alert("Deletion failed: " + err.message);
+                }
+            }
+        }
+
+        window.showSection = function(sectionName) {
+            document.querySelectorAll('.dashboard-section').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(sectionName + 'Section').style.display = 'block';
+            if(window.event && window.event.target) window.event.target.classList.add('active');
+        }
+
+        window.logout = async function() {
+            await signOut(auth);
+            localStorage.removeItem('innovateHubUser');
+            window.location.href = 'login.html';
         }
     </script>
 </body>
