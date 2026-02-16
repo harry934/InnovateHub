@@ -10,31 +10,47 @@ const NURU_KNOWLEDGE = {
         "Hello! I'm Nuru. I'm here to answer your questions and help you navigate our community.", 
         "Welcome to Innovate Hub! I'm Nuru, and I'd be delighted to assist you."
     ],
-    fallback: "I'm sorry, I don't have a specific answer for that yet. However, I've noted your question and will notify the admin. Is there anything else I can assist you with?",
+    clarify_prefix: "I'm not entirely sure I caught that, but I can help you with: ",
+    fallback_suggest: "I want to make sure I give you the best guidance. Would you like to know about our projects, how to join, or maybe speak with a mentor?",
+    out_of_scope: "That’s a great question! For the most accurate and up-to-date information, please submit it through our Contact section so our team can assist you directly.",
     triggers: [
         {
-            keywords: ['join', 'signup', 'register', 'account', 'create'],
-            response: "We'd love to have you. You can join as an Innovator to share ideas, or as a Mentor to guide others. Click the button below to start.",
+            id: 'about',
+            keywords: ['about', 'what', 'website', 'websitge', 'purpose', 'do', 'hub', 'innovate'],
+            response: "Innovate Hub is a premier platform for all innovators. We turn ideas into reality by connecting people of all ages with mentors, project partners, and essential resources. We're excited to see what you build!",
+            links: [{ label: "Learn More", url: "about.html" }]
+        },
+        {
+            id: 'join',
+            keywords: ['join', 'signup', 'register', 'account', 'create', 'start', 'regster'],
+            response: "We'd love to have you! You can sign up as an Innovator to share your projects, or as a Mentor to guide others. It's a supportive universal community for everyone and we're here to help you get started.",
             links: [{ label: "Start Registration", url: "signup.html" }]
         },
         {
-            keywords: ['mentor', 'mentorship'],
-            response: "Our mentorship program connects students with industry experts. Would you like to see the details?",
+            id: 'mentor',
+            keywords: ['mentor', 'mentorship', 'guide', 'expert', 'help me'],
+            response: "Our mentorship program connects people with industry experts. Mentors provide guidance on project scaling, technical hurdles, and personal growth. That sounds like a great way to start your journey!",
             links: [{ label: "Join as Mentor", url: "signup.html" }]
         },
         {
-            keywords: ['project', 'submit', 'idea'],
-            response: "Ready to share your innovation? Once you're signed up as an Innovator, you can submit projects from your dashboard.",
-            links: [{ label: "Submit Project", url: "innovator-dashboard.html" }]
+            id: 'project',
+            keywords: ['project', 'submit', 'idea', 'innovation', 'share', 'list', 'work on', 'suggest'],
+            response: "Looking for inspiration? Based on our community interests, you could work on ideas like: \n• Community Sustainability Tracker\n• Global Peer-to-Peer Learning Hub\n• Innovation Event Platform\nThat sounds like it could be a game-changer!",
+            links: [{ label: "Submit Your Project", url: "innovator-dashboard.html" }]
         },
         {
-            keywords: ['cost', 'price', 'free'],
-            response: "Innovate Hub is completely free for all students. We're here to support your growth without financial barriers. ✨"
+            id: 'navigation',
+            keywords: ['where', 'pages', 'go', 'contact', 'home', 'services'],
+            response: "I can guide you anywhere! You can check our 'About Us' to see our story, or visit 'Contact Us' if you need directions. Let me know if you need help finding anything else.",
+            links: [
+                { label: "About Us", url: "about.html" },
+                { label: "Contact Us", url: "contact.html" }
+            ]
         },
         {
-            keywords: ['contact', 'email', 'support', 'help'],
-            response: "You're chatting with me now and I'm happy to help. If you'd like to see our physical location or contact info, click below.",
-            links: [{ label: "Contact Info", url: "contact.html" }]
+            id: 'cost',
+            keywords: ['cost', 'price', 'free', 'pay', 'money'],
+            response: "Innovation should be accessible! Innovate Hub is completely free for all community members and mentors. We're here to support your growth without any financial barriers."
         }
     ]
 };
@@ -68,9 +84,7 @@ class NuruAssistant {
             </button>
             <div class="nuru-chat-window" id="nuruWindow">
                 <div class="nuru-chat-header">
-                    <div class="nuru-header-avatar">
-                        <img src="img/nuru-avatar.svg" alt="Nuru Avatar">
-                    </div>
+                
                     <div class="nuru-header-info">
                         <h5>Nuru Assistant</h5>
                         <div class="nuru-header-status">Online • Ready to help</div>
@@ -96,6 +110,34 @@ class NuruAssistant {
         this.messagesContainer = document.getElementById('nuruMessages');
         this.inputField = document.getElementById('nuruInput');
         this.sendBtn = document.getElementById('nuruSend');
+
+        // Initial state: hide behind corner
+        this.toggleBtn.classList.add('nuru-pos-br', 'nuru-peek-active');
+        
+        // Start the greeting sequence after a short delay
+        setTimeout(() => this.triggerGreetingSequence(), 1000);
+    }
+
+    triggerGreetingSequence() {
+        const toggle = this.toggleBtn;
+        const nameTag = document.querySelector('.nuru-name-tag');
+        
+        // Step 1: Stationery Greeting
+        toggle.classList.remove('nuru-peek-active');
+        toggle.classList.add('nuru-say-hi');
+        if (nameTag) nameTag.textContent = "Hi I'm Nuru";
+        
+        setTimeout(() => {
+            // Step 2: Hide (Peek)
+            toggle.classList.remove('nuru-say-hi');
+            if (nameTag) nameTag.textContent = "Nuru Assistant";
+            toggle.classList.add('nuru-peek-active');
+            
+            setTimeout(() => {
+                // Step 3: Reveal Smoothly
+                toggle.classList.remove('nuru-peek-active');
+            }, 3000);
+        }, 3000);
     }
 
     addEventListeners() {
@@ -152,11 +194,11 @@ class NuruAssistant {
         setInterval(() => {
             const timeSinceLastAction = Date.now() - this.lastInteraction;
             if (!this.isOpen && !this.isHidden) {
-                if (timeSinceLastAction > 20000) {
+                if (timeSinceLastAction > 8000) {
                     // Enter peek state if inactive
-                    this.toggleBtn.classList.add('nuru-peek-corner');
+                    this.toggleBtn.classList.add('nuru-peek-active');
                 } else {
-                    this.toggleBtn.classList.remove('nuru-peek-corner');
+                    this.toggleBtn.classList.remove('nuru-peek-active');
                     const rand = Math.random();
                     if (rand > 0.8) this.playAnimation('attention');
                 }
@@ -187,7 +229,51 @@ class NuruAssistant {
         }, 1500);
     }
 
-    // ... getResponse stays same ...
+    getResponse(input) {
+        const text = input.toLowerCase().trim();
+        
+        // Handle specific requested mapping: "what is this websitge about"
+        if (text.includes('websitge') || (text.includes('website') && text.includes('about'))) {
+            return NURU_KNOWLEDGE.triggers.find(t => t.id === 'about');
+        }
+
+        // Fuzzy Scoring System
+        let scores = NURU_KNOWLEDGE.triggers.map(trigger => {
+            let score = 0;
+            trigger.keywords.forEach(keyword => {
+                // Direct include
+                if (text.includes(keyword)) score += 2;
+                // Partial word match (slang/typos)
+                else if (keyword.length > 3 && text.split(' ').some(word => word.includes(keyword.substring(0, 4)))) score += 1;
+            });
+            return { trigger, score };
+        });
+
+        // Filter and sort by score
+        const matches = scores.filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+
+        if (matches.length > 0 && matches[0].score >= 2) {
+            return matches[0].trigger;
+        }
+
+        // Proactive Suggestion Logic (No "I don't understand")
+        if (matches.length > 0) {
+            const suggestions = matches.slice(0, 2).map(m => m.trigger.id);
+            return {
+                response: `${NURU_KNOWLEDGE.clarify_prefix} ${suggestions.join(' or ')}. Is it one of those?`,
+                links: matches.slice(0, 2).map(m => ({ label: `About ${m.trigger.id.charAt(0).toUpperCase() + m.trigger.id.slice(1)}`, url: "#" }))
+            };
+        }
+
+        // Final fallback: proactive guidance instead of generic refusal
+        return { 
+            response: NURU_KNOWLEDGE.fallback_suggest,
+            links: [
+                { label: "Tell me about Hub", url: "#" },
+                { label: "Show me Pages", url: "#" }
+            ]
+        };
+    }
 
     addMessage(text, sender, links = []) {
         const msg = { text, sender, links, time: new Date().toISOString() };
@@ -217,13 +303,13 @@ class NuruAssistant {
                 const btn = document.createElement('a');
                 btn.className = 'nuru-action-btn';
                 btn.href = link.url;
-                btn.textContent = link.label;
+                btn.textContent = `👉 ${link.label}`;
                 btnGroup.appendChild(btn);
                 
                 if (link.url === '#') {
                     btn.onclick = (e) => {
                         e.preventDefault();
-                        this.inputField.value = link.label.replace('👉 About ', '');
+                        this.inputField.value = link.label.replace('About ', '');
                         this.handleSendMessage();
                     };
                 }
