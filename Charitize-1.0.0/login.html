@@ -388,11 +388,10 @@
                     showSuccessMessage('Login successful! Welcome back.');
                     setTimeout(() => window.location.href = redirectUrl, 1000);
                 } else {
-                    // New user via Google - redirect to signup to complete profile
-                    showSuccessMessage('Google account verified! Please complete your profile.');
-                    setTimeout(() => {
-                        window.location.href = 'signup.html?google=true';
-                    }, 1500);
+                    // Specific case: User exists in Auth but record was deleted from Firestore
+                    showErrorMessage('Login failed: This account record does not exist or has been deleted.');
+                    // Sign out from Auth to clean up
+                    await signOut(auth);
                 }
             } catch (error) {
                 console.error("Google Login Error:", error);

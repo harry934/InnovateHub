@@ -143,13 +143,14 @@
         let mentees = [];
 
         window.addEventListener('load', async function() {
-            const user = requireAuth();
-            if (user.role !== 'mentor') {
+            const session = JSON.parse(sessionStorage.getItem('innovateHubUser'));
+            if (!session || session.role !== 'mentor') {
+                alert('Access Denied. Mentors only.');
                 window.location.href = 'login.html';
                 return;
             }
             
-            mentorData = user;
+            mentorData = session;
             loadProfile();
             setupListeners();
             setupFormHandlers();

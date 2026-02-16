@@ -100,7 +100,7 @@ onAuthStateChanged(auth, async (user) => {
         }
     } else {
         // User is logged out
-        localStorage.removeItem("innovateHubUser");
+        sessionStorage.removeItem("innovateHubUser");
         resetUI();
     }
 });
@@ -285,7 +285,7 @@ function showErrorMessage(message) {
 // ========================================
 
 /**
- * Save data to localStorage
+ * Save data to sessionStorage
  * @param {string} key - Storage key
  * @param {any} data - Data to store (will be converted to JSON)
  */
@@ -293,28 +293,28 @@ function saveToLocalStorage(key, data) {
   try {
     // Convert data to JSON string
     const jsonData = JSON.stringify(data);
-    // Save to localStorage
-    localStorage.setItem(key, jsonData);
+    // Save to sessionStorage
+    sessionStorage.setItem(key, jsonData);
     return true;
   } catch (error) {
-    console.error("Error saving to localStorage:", error);
+    console.error("Error saving to sessionStorage:", error);
     return false;
   }
 }
 
 /**
- * Load data from localStorage
+ * Load data from sessionStorage
  * @param {string} key - Storage key
  * @returns {any} - Retrieved data (parsed from JSON)
  */
 function loadFromLocalStorage(key) {
   try {
-    // Get JSON string from localStorage
-    const jsonData = localStorage.getItem(key);
+    // Get JSON string from sessionStorage
+    const jsonData = sessionStorage.getItem(key);
     // Parse and return data
     return jsonData ? JSON.parse(jsonData) : null;
   } catch (error) {
-    console.error("Error loading from localStorage:", error);
+    console.error("Error loading from sessionStorage:", error);
     return null;
   }
 }
@@ -537,11 +537,11 @@ function showDashboardSection(sectionId) {
 window.logout = async function logout() {
     try {
         await signOut(auth);
-        // localStorage is cleared by the onAuthStateChanged listener
+        // sessionStorage is cleared by the onAuthStateChanged listener
         window.location.href = "index.html";
     } catch (error) {
         console.error("Logout error:", error);
-        localStorage.removeItem("innovateHubUser");
+        sessionStorage.removeItem("innovateHubUser");
         window.location.href = "index.html";
     }
 }

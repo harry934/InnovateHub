@@ -466,7 +466,7 @@
 
         window.logout = async function() {
             await auth.signOut();
-            localStorage.removeItem('innovateHubUser');
+            sessionStorage.removeItem('innovateHubUser');
             window.location.href = 'login.html';
         }
     </script>

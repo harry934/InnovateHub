@@ -194,8 +194,16 @@
                             <textarea class="form-control" name="description" rows="3" required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Date</label>
-                            <input type="date" class="form-control" name="date" required>
+                            <label class="form-label">Date Range</label>
+                            <input type="text" class="form-control" name="date" placeholder="e.g. August 05 - August 30" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Time</label>
+                            <input type="text" class="form-control" name="time" placeholder="e.g. 09:00 AM - 16:00 PM" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" name="location" placeholder="e.g. Innovate Hub, Main Campus" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Image Link</label>
@@ -231,7 +239,7 @@
 
         window.addEventListener('load', function() {
             // Check Access
-            const session = JSON.parse(localStorage.getItem('innovateHubUser'));
+            const session = JSON.parse(sessionStorage.getItem('innovateHubUser'));
             if (!session || session.role !== 'admin') {
                 alert('Access Denied. Admins only.');
                 window.location.href = 'login.html';
@@ -278,6 +286,8 @@
                         title: formData.get('title'),
                         description: formData.get('description'),
                         date: formData.get('date'),
+                        time: formData.get('time'),
+                        location: formData.get('location'),
                         imageLink: formData.get('imageLink'),
                         createdAt: serverTimestamp()
                     });
@@ -377,7 +387,9 @@
                         <div class="dashboard-card h-100">
                             <img src="${ev.imageLink}" class="img-fluid rounded mb-3" style="height: 150px; width: 100%; object-fit: cover;">
                             <h5>${ev.title}</h5>
-                            <p class="small text-muted mb-2">${ev.date}</p>
+                            <p class="small text-muted mb-1"><i class="fa fa-calendar-alt me-2 text-primary"></i>${ev.date}</p>
+                            <p class="small text-muted mb-1"><i class="fa fa-clock me-2 text-primary"></i>${ev.time || 'N/A'}</p>
+                            <p class="small text-muted mb-2"><i class="fa fa-map-marker-alt me-2 text-primary"></i>${ev.location || 'N/A'}</p>
                             <p class="small">${ev.description}</p>
                             <button class="btn btn-sm btn-outline-danger w-100" onclick="deleteEvent('${ev.id}')">Delete</button>
                         </div>
@@ -404,9 +416,11 @@
                                 <button class="btn btn-outline-warning" onclick="toggleUserStatus('${user.id}', '${user.status}')">
                                     ${isActive ? 'Disable' : 'Enable'}
                                 </button>
-                                <button class="btn btn-outline-danger" onclick="deleteUser('${user.id}')">
+                                ${user.email === 'techeagle254@gmail.com' ? '' : `
+                                <button class="btn btn-outline-danger" onclick="deleteUser('${user.id}', '${user.email}')">
                                     <i class="fa fa-trash"></i>
                                 </button>
+                                `}
                             </div>
                         </td>
                     </tr>
@@ -427,7 +441,11 @@
             alert(`User account ${newStatus === 'active' ? 'enabled' : 'disabled'}.`);
         }
 
-        window.deleteUser = async function(id) {
+        window.deleteUser = async function(id, email) {
+            if (email === 'techeagle254@gmail.com') {
+                alert("The official admin account cannot be deleted.");
+                return;
+            }
             if (confirm("Delete this user's profile forever?")) {
                 await deleteDoc(doc(db, "users", id));
             }
@@ -470,7 +488,7 @@
 
         window.logout = async function() {
             await auth.signOut();
-            localStorage.removeItem('innovateHubUser');
+            sessionStorage.removeItem('innovateHubUser');
             window.location.href = 'login.html';
         }
     </script>
