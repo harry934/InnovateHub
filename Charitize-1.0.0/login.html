@@ -181,6 +181,62 @@
             transform: translateX(-5px);
         }
 
+        /* Social Auth Buttons */
+        .social-auth {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            background: white;
+            color: #495057;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            width: 100%;
+        }
+        
+        .btn-social:hover {
+            background: #f8f9fa;
+            border-color: #dee2e6;
+            color: #495057;
+        }
+        
+        .btn-google img {
+            width: 20px;
+        }
+
+        .divider-text {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+        
+        .divider-text::before, .divider-text::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .divider-text:not(:empty)::before {
+            margin-right: 1rem;
+        }
+        
+        .divider-text:not(:empty)::after {
+            margin-left: 1rem;
+        }
+
         @media (max-width: 768px) {
             .back-home {
                 position: static;
@@ -227,6 +283,15 @@
             <!-- return false: Prevents default form submission (page reload) -->
             <form id="loginForm" onsubmit="handleLogin(event); return false;">
                 
+                <div class="social-auth">
+                    <button type="button" class="btn btn-social btn-google" onclick="handleGoogleLogin()">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                        Continue with Google
+                    </button>
+                </div>
+
+                <div class="divider-text">OR EMAIL</div>
+
                 <div class="alert alert-info py-2 small">
                     <i class="fa fa-info-circle me-1"></i> <strong>Firebase Auth Mode:</strong>
                     Use your registered email and password. Innovators and Mentors are redirected automatically.
@@ -285,8 +350,8 @@
     
     <!-- Login Logic -->
     <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { auth, db, googleProvider } from './js/firebase-config.js';
+        import { signInWithEmailAndPassword, signInWithPopup, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Check for URL parameters to pre-fill email
@@ -297,6 +362,43 @@
                 document.getElementById('email').value = 'admin@innovatehub.com';
             }
         });
+
+        window.handleGoogleLogin = async function() {
+            if (window.location.protocol === 'file:') {
+                showErrorMessage("Google login requires a web server. Please run using a local server (e.g., Live Server).");
+                return;
+            }
+
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
+
+                // Check if user exists in Firestore
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    saveToLocalStorage('innovateHubUser', { ...userData, loggedIn: true });
+                    
+                    // Redirect based on role
+                    let redirectUrl = 'innovator-dashboard.html';
+                    if (userData.role === 'admin') redirectUrl = 'admin-dashboard.html';
+                    else if (userData.role === 'mentor') redirectUrl = 'mentor-dashboard.html';
+
+                    showSuccessMessage('Login successful! Welcome back.');
+                    setTimeout(() => window.location.href = redirectUrl, 1000);
+                } else {
+                    // New user via Google - redirect to signup to complete profile
+                    showSuccessMessage('Google account verified! Please complete your profile.');
+                    setTimeout(() => {
+                        window.location.href = 'signup.html?google=true';
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error("Google Login Error:", error);
+                showErrorMessage("Google authentication failed: " + error.message);
+            }
+        }
 
         window.handleLogin = async function(event) {
             event.preventDefault();

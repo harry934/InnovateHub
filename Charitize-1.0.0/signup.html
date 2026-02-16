@@ -470,6 +470,15 @@
         let currentStep = 1;
         let confirmationResult = null;
 
+        // Check for role or Google redirect on load
+        window.addEventListener('load', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('google') === 'true') {
+                // Auto-trigger Google sign-in to get user details
+                handleGoogleSignIn();
+            }
+        });
+
         // Role-based dynamics
         window.toggleStep3Layout = function() {
             const role = document.getElementById('role').value;
