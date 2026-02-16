@@ -363,6 +363,13 @@
                             <span class="badge bg-info">${proj.category || 'Uncategorized'}</span>
                         </div>
                         <p class="text-muted">${proj.description}</p>
+                        ${proj.fileUrl ? `
+                        <div class="mb-3">
+                            <a href="${proj.fileUrl}" target="_blank" class="btn btn-sm btn-outline-info">
+                                <i class="fa fa-file-word me-1"></i> View Document (${proj.fileName || 'Doc'})
+                            </a>
+                        </div>
+                        ` : '<p class="small text-danger">No document attached</p>'}
                         <small class="text-muted d-block mb-3">Submitted by User ID: ${proj.innovatorId}</small>
                         <div class="d-flex gap-2">
                             <button class="btn btn-success btn-sm" onclick="approveProject('${proj.id}')">Approve</button>

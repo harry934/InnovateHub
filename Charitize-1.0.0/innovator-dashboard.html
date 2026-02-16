@@ -131,15 +131,16 @@
                                 placeholder="What do you hope to achieve with this project?"></textarea>
                         </div>
                         
-                        <!-- File Upload (Simulated) -->
+                        <!-- File Upload -->
                         <div class="form-group mb-3">
-                            <label for="projectFile" class="form-label fw-bold">Supporting Documents</label>
+                            <label for="projectFile" class="form-label fw-bold">Supporting Documents (Word Only) *</label>
                             <input 
                                 type="file" 
                                 class="form-control" 
                                 id="projectFile"
-                                accept=".pdf,.doc,.docx,.ppt,.pptx">
-                            <small class="text-muted">Upload presentations, documents, or diagrams (PDF, DOC, PPT)</small>
+                                accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                required>
+                            <small class="text-muted">Upload your project proposal as a Word document (.doc, .docx)</small>
                         </div>
                         
                         <!-- Submit Button -->
@@ -294,7 +295,8 @@
     
     <script type="module">
         import { auth, db } from './js/firebase-config.js';
-        import { ProjectService, MentorshipService } from './js/innovate-hub.js';
+        import { ProjectService, MentorshipService, NotificationService, requireAuth } from './js/innovate-hub.js';
+        // Importing standard helpers as well since this is a module scope
         import { 
             collection, query, where, onSnapshot, getDocs, 
             doc, getDoc, updateDoc, addDoc, serverTimestamp, orderBy 
@@ -341,6 +343,17 @@
             // Project Submission
             document.getElementById('projectForm').onsubmit = async (e) => {
                 e.preventDefault();
+                
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                const fileInput = document.getElementById('projectFile');
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    alert("Please select a Word document to upload.");
+                    return;
+                }
+
                 const formData = {
                     title: document.getElementById('projectTitle').value,
                     category: document.getElementById('projectCategory').value,
@@ -350,12 +363,20 @@
                 };
                 
                 try {
-                    await ProjectService.submitProject(formData);
-                    alert("Project submitted successfully for approval!");
+                    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Uploading & Submitting...';
+                    submitBtn.disabled = true;
+
+                    await ProjectService.submitProject(formData, file);
+                    
+                    alert("Project submitted successfully! Your document has been uploaded.");
                     e.target.reset();
                     showSection('projects');
                 } catch (err) {
+                    console.error("Submission error:", err);
                     alert("Error submitting project: " + err.message);
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
                 }
             };
         }

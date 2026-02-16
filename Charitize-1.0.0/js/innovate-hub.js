@@ -16,20 +16,30 @@
 
         if (wasNavigated) {
             // It was a navigation click -> DO NOTHING
-            // Preloader is hidden by default in CSS
             preloader.remove();
         } else {
             // It was a Refresh or Initial Load -> SHOW PRELOADER
             preloader.classList.add("active");
             
-            // Remove after animation
-            setTimeout(() => {
+            // Primary animation completion
+            const hidePreloader = () => {
                 preloader.classList.remove("active");
                 preloader.classList.add("fade-out");
                 setTimeout(() => {
                     if(preloader && preloader.parentNode) preloader.remove();
-                }, 1200);
-            }, 2200);
+                }, 1000);
+            };
+
+            // Remove after planned animation
+            setTimeout(hidePreloader, 2000);
+
+            // FAILSAFE: Force remove after 4 seconds regardless of state
+            setTimeout(() => {
+                if (preloader && preloader.parentNode) {
+                    console.warn("Preloader failsafe triggered.");
+                    preloader.remove();
+                }
+            }, 4000);
         }
     };
 
@@ -53,13 +63,14 @@ document.addEventListener("click", function(e) {
     }
 });
 
-import { auth, db } from './firebase-config.js';
+import { auth, db, storage } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
     doc, getDoc, getDocs, collection, addDoc, updateDoc, 
     query, where, orderBy, limit, serverTimestamp, increment,
     onSnapshot, setDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 /**
  * Real-time Firebase Auth Listener
@@ -408,7 +419,7 @@ function debounce(func, delay) {
  * Used by dashboard pages to verify access
  * @returns {object|null} - User data if logged in, null otherwise
  */
-function checkAuth() {
+export function checkAuth() {
   const userData = loadFromLocalStorage("innovateHubUser");
   return userData;
 }
@@ -420,7 +431,7 @@ function checkAuth() {
 /**
  * Redirect to login if not authenticated
  */
-function requireAuth() {
+export function requireAuth() {
   const user = checkAuth();
   if (!user || !user.loggedIn) {
     window.location.href = "login.html";
@@ -610,13 +621,26 @@ function getStatusBadge(status) {
  * PROJECT SERVICE
  */
 export const ProjectService = {
-    async submitProject(projectData) {
+    async submitProject(projectData, file = null) {
         const user = checkAuth();
         if (!user || user.role !== 'innovator') throw new Error("Unauthorized");
+
+        let fileUrl = null;
+        let fileName = null;
+
+        // Handle File Upload if present
+        if (file) {
+            const storageRef = ref(storage, `projects/${user.uid}/${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            fileUrl = await getDownloadURL(snapshot.ref);
+            fileName = file.name;
+        }
 
         const project = {
             ...projectData,
             innovatorId: user.uid,
+            fileUrl,
+            fileName,
             status: 'pending',
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
