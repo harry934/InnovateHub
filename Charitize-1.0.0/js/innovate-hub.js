@@ -53,16 +53,54 @@ document.addEventListener("click", function(e) {
     }
 });
 
+import { auth, db } from './firebase-config.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
 /**
- * Handle Auth and UI updates on window load
+ * Real-time Firebase Auth Listener
+ * Synchronizes Firebase auth state with LocalStorage and UI
  */
-window.addEventListener("load", function () {
-    // Check authentication and update UI
-    const user = checkAuth();
-    if (user && user.loggedIn) {
-        updateUIForRole(user);
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // User is logged in
+        let userData = loadFromLocalStorage("innovateHubUser");
+        
+        // If local data is missing or out of sync, fetch from Firestore
+        if (!userData || userData.uid !== user.uid) {
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    userData = { ...userDoc.data(), loggedIn: true };
+                    saveToLocalStorage("innovateHubUser", userData);
+                }
+            } catch (error) {
+                console.error("Error fetching user role:", error);
+            }
+        }
+        
+        if (userData) {
+            updateUIForRole(userData);
+        }
+    } else {
+        // User is logged out
+        localStorage.removeItem("innovateHubUser");
+        resetUI();
     }
 });
+
+/**
+ * Reset UI to Guest State
+ */
+function resetUI() {
+    const guestButtons = document.getElementById("guestButtons");
+    const userProfile = document.getElementById("userProfile");
+    const navDashboardLink = document.getElementById("navDashboardLink");
+
+    if (guestButtons) guestButtons.classList.remove("d-none");
+    if (userProfile) userProfile.classList.add("d-none");
+    if (navDashboardLink) navDashboardLink.classList.add("d-none");
+}
 
 // ========================================
 // 2. SMOOTH SCROLLING FOR ANCHOR LINKS
@@ -139,6 +177,20 @@ function validateForm(form) {
 
   return isValid;
 }
+
+// Global Exports for legacy scripts
+window.showSuccessMessage = showSuccessMessage;
+window.showErrorMessage = showErrorMessage;
+window.validateForm = validateForm;
+window.validateEmail = validateEmail;
+window.saveToLocalStorage = saveToLocalStorage;
+window.loadFromLocalStorage = loadFromLocalStorage;
+window.generateUniqueId = generateUniqueId;
+window.formatDate = formatDate;
+window.truncateText = truncateText;
+window.checkAuth = checkAuth;
+window.requireAuth = requireAuth;
+window.showDashboardSection = showDashboardSection;
 
 // ========================================
 // 5. EMAIL VALIDATION
@@ -466,11 +518,16 @@ function showDashboardSection(sectionId) {
  * Logout user
  * Clears user data and redirects to homepage
  */
-function logout() {
-  // Clear user data
-  localStorage.removeItem("innovateHubUser");
-  // Redirect to homepage
-  window.location.href = "index.html";
+window.logout = async function logout() {
+    try {
+        await signOut(auth);
+        // localStorage is cleared by the onAuthStateChanged listener
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Logout error:", error);
+        localStorage.removeItem("innovateHubUser");
+        window.location.href = "index.html";
+    }
 }
 
 // ========================================
