@@ -608,9 +608,8 @@ function getStatusBadge(status) {
 
 /**
  * PROJECT SERVICE
- * Handles project submission, lifecycle, and versioning
  */
-const ProjectService = {
+export const ProjectService = {
     async submitProject(projectData) {
         const user = checkAuth();
         if (!user || user.role !== 'innovator') throw new Error("Unauthorized");
@@ -678,9 +677,8 @@ const ProjectService = {
 
 /**
  * MENTORSHIP SERVICE
- * Handles requests, matching, and meetings
  */
-const MentorshipService = {
+export const MentorshipService = {
     async sendRequest(mentorId, projectId) {
         const user = checkAuth();
         return await addDoc(collection(db, "mentorshipRequests"), {
@@ -724,7 +722,7 @@ const MentorshipService = {
  * AUTOMATION SERVICE
  * Background checks for inactivity and expirations
  */
-const AutomationService = {
+export const AutomationService = {
     async checkExpirations() {
         const q = query(
             collection(db, "mentorshipRequests"), 
@@ -761,7 +759,7 @@ const AutomationService = {
 /**
  * NOTIFICATION SERVICE
  */
-const NotificationService = {
+export const NotificationService = {
     async send(userId, message, type = 'info', link = '#') {
         return await addDoc(collection(db, "notifications"), {
             userId, message, type, link,
