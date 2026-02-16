@@ -1,0 +1,243 @@
+/* Nuru Assistant - Floating Chat Widget Styles */
+
+:root {
+  --nuru-primary: #1a5e4f;
+  --nuru-accent: #f3a813;
+  --nuru-white: #ffffff;
+  --nuru-gray: #f8f9fa;
+  --nuru-text: #2c3e50;
+  --nuru-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Floating Toggle Button */
+.nuru-assistant-toggle {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background-color: var(--nuru-accent);
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--nuru-shadow);
+  z-index: 9999;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: none;
+}
+
+.nuru-assistant-toggle:hover {
+  transform: scale(1.1);
+}
+
+.nuru-assistant-toggle i {
+  font-size: 24px;
+}
+
+/* Chat Window */
+.nuru-chat-window {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  width: 380px;
+  max-width: calc(100vw - 60px);
+  height: 500px;
+  max-height: calc(100vh - 150px);
+  background: var(--nuru-white);
+  border-radius: 15px;
+  box-shadow: var(--nuru-shadow);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 9998;
+  animation: fadeInUp 0.4s ease;
+}
+
+.nuru-chat-window.active {
+  display: flex;
+}
+
+/* Header */
+.nuru-chat-header {
+  background: var(--nuru-primary);
+  color: var(--nuru-white);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nuru-avatar {
+  width: 40px;
+  height: 40px;
+  background: var(--nuru-accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nuru-info h5 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.nuru-status {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.nuru-close {
+  margin-left: auto;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: 0.3s;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.nuru-close:hover {
+  opacity: 1;
+}
+
+/* Messages Area */
+.nuru-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: var(--nuru-gray);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.nuru-msg {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 15px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  position: relative;
+  word-wrap: break-word;
+}
+
+.nuru-msg-bot {
+  align-self: flex-start;
+  background: white;
+  color: var(--nuru-text);
+  border-bottom-left-radius: 2px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.nuru-msg-user {
+  align-self: flex-end;
+  background: var(--nuru-primary);
+  color: white;
+  border-bottom-right-radius: 2px;
+}
+
+/* Input Area */
+.nuru-input-area {
+  padding: 15px;
+  background: white;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 10px;
+}
+
+.nuru-input-area input {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  padding: 10px 20px;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.nuru-input-area input:focus {
+  border-color: var(--nuru-primary);
+}
+
+.nuru-send-btn {
+  width: 40px;
+  height: 40px;
+  background: var(--nuru-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  transition: 0.3s;
+}
+
+.nuru-send-btn:hover {
+  background: var(--nuru-accent);
+  color: #000;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  padding: 12px 16px;
+  background: white;
+  border-radius: 15px;
+  display: inline-flex;
+  gap: 4px;
+  align-self: flex-start;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  background: #bbb;
+  border-radius: 50%;
+  animation: blink 1.4s infinite both;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .nuru-chat-window {
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+}
