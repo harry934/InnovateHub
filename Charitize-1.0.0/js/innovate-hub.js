@@ -16,20 +16,30 @@
 
         if (wasNavigated) {
             // It was a navigation click -> DO NOTHING
-            // Preloader is hidden by default in CSS
             preloader.remove();
         } else {
             // It was a Refresh or Initial Load -> SHOW PRELOADER
             preloader.classList.add("active");
             
-            // Remove after animation
-            setTimeout(() => {
+            // Primary animation completion
+            const hidePreloader = () => {
                 preloader.classList.remove("active");
                 preloader.classList.add("fade-out");
                 setTimeout(() => {
                     if(preloader && preloader.parentNode) preloader.remove();
-                }, 1200);
-            }, 2200);
+                }, 1000);
+            };
+
+            // Remove after planned animation
+            setTimeout(hidePreloader, 2000);
+
+            // FAILSAFE: Force remove after 4 seconds regardless of state
+            setTimeout(() => {
+                if (preloader && preloader.parentNode) {
+                    console.warn("Preloader failsafe triggered.");
+                    preloader.remove();
+                }
+            }, 4000);
         }
     };
 
@@ -53,9 +63,14 @@ document.addEventListener("click", function(e) {
     }
 });
 
-import { auth, db } from './firebase-config.js';
+import { auth, db, storage } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { 
+    doc, getDoc, getDocs, collection, addDoc, updateDoc, 
+    query, where, orderBy, limit, serverTimestamp, increment,
+    onSnapshot, setDoc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 /**
  * Real-time Firebase Auth Listener
@@ -72,6 +87,12 @@ onAuthStateChanged(auth, async (user) => {
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 if (userDoc.exists()) {
                     userData = { ...userDoc.data(), loggedIn: true };
+                    
+                    // Update lastLogin for inactivity tracking
+                    await updateDoc(doc(db, "users", user.uid), {
+                        lastLogin: serverTimestamp()
+                    });
+                    
                     saveToLocalStorage("innovateHubUser", userData);
                 }
             } catch (error) {
@@ -81,10 +102,16 @@ onAuthStateChanged(auth, async (user) => {
         
         if (userData) {
             updateUIForRole(userData);
+            
+            // Run system checks if admin or mentor
+            if (userData.role === 'admin' || userData.role === 'mentor') {
+                AutomationService.checkExpirations();
+                AutomationService.checkMentorInactivity();
+            }
         }
     } else {
         // User is logged out
-        localStorage.removeItem("innovateHubUser");
+        sessionStorage.removeItem("innovateHubUser");
         resetUI();
     }
 });
@@ -269,7 +296,7 @@ function showErrorMessage(message) {
 // ========================================
 
 /**
- * Save data to localStorage
+ * Save data to sessionStorage
  * @param {string} key - Storage key
  * @param {any} data - Data to store (will be converted to JSON)
  */
@@ -277,28 +304,28 @@ function saveToLocalStorage(key, data) {
   try {
     // Convert data to JSON string
     const jsonData = JSON.stringify(data);
-    // Save to localStorage
-    localStorage.setItem(key, jsonData);
+    // Save to sessionStorage
+    sessionStorage.setItem(key, jsonData);
     return true;
   } catch (error) {
-    console.error("Error saving to localStorage:", error);
+    console.error("Error saving to sessionStorage:", error);
     return false;
   }
 }
 
 /**
- * Load data from localStorage
+ * Load data from sessionStorage
  * @param {string} key - Storage key
  * @returns {any} - Retrieved data (parsed from JSON)
  */
 function loadFromLocalStorage(key) {
   try {
-    // Get JSON string from localStorage
-    const jsonData = localStorage.getItem(key);
+    // Get JSON string from sessionStorage
+    const jsonData = sessionStorage.getItem(key);
     // Parse and return data
     return jsonData ? JSON.parse(jsonData) : null;
   } catch (error) {
-    console.error("Error loading from localStorage:", error);
+    console.error("Error loading from sessionStorage:", error);
     return null;
   }
 }
@@ -392,7 +419,7 @@ function debounce(func, delay) {
  * Used by dashboard pages to verify access
  * @returns {object|null} - User data if logged in, null otherwise
  */
-function checkAuth() {
+export function checkAuth() {
   const userData = loadFromLocalStorage("innovateHubUser");
   return userData;
 }
@@ -404,7 +431,7 @@ function checkAuth() {
 /**
  * Redirect to login if not authenticated
  */
-function requireAuth() {
+export function requireAuth() {
   const user = checkAuth();
   if (!user || !user.loggedIn) {
     window.location.href = "login.html";
@@ -521,11 +548,11 @@ function showDashboardSection(sectionId) {
 window.logout = async function logout() {
     try {
         await signOut(auth);
-        // localStorage is cleared by the onAuthStateChanged listener
+        // sessionStorage is cleared by the onAuthStateChanged listener
         window.location.href = "index.html";
     } catch (error) {
         console.error("Logout error:", error);
-        localStorage.removeItem("innovateHubUser");
+        sessionStorage.removeItem("innovateHubUser");
         window.location.href = "index.html";
     }
 }
@@ -587,8 +614,193 @@ function getStatusBadge(status) {
 }
 
 // ========================================
-// CONSOLE MESSAGE
+// 16. CORE SERVICES
 // ========================================
+
+/**
+ * PROJECT SERVICE
+ */
+export const ProjectService = {
+    async submitProject(projectData, file = null) {
+        const user = checkAuth();
+        if (!user || user.role !== 'innovator') throw new Error("Unauthorized");
+
+        let fileUrl = null;
+        let fileName = null;
+
+        // Handle File Upload if present
+        if (file) {
+            const storageRef = ref(storage, `projects/${user.uid}/${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            fileUrl = await getDownloadURL(snapshot.ref);
+            fileName = file.name;
+        }
+
+        const project = {
+            ...projectData,
+            innovatorId: user.uid,
+            fileUrl,
+            fileName,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            completionPercentage: 0,
+            version: 1,
+            visibility: projectData.visibility || 'public'
+        };
+
+        const docRef = await addDoc(collection(db, "projects"), project);
+        
+        // Log Initial Version
+        await addDoc(collection(db, `projects/${docRef.id}/history`), {
+            version: 1,
+            data: project,
+            timestamp: serverTimestamp(),
+            changedBy: user.uid
+        });
+
+        return docRef.id;
+    },
+
+    async updateProject(projectId, updates) {
+        const user = checkAuth();
+        if (!user) throw new Error("Unauthorized");
+
+        const projectRef = doc(db, "projects", projectId);
+        const projectDoc = await getDoc(projectRef);
+        
+        if (!projectDoc.exists()) throw new Error("Project not found");
+        
+        const currentData = projectDoc.data();
+        const newVersion = (currentData.version || 1) + 1;
+
+        await updateDoc(projectRef, {
+            ...updates,
+            version: newVersion,
+            updatedAt: serverTimestamp()
+        });
+
+        // Log Version History
+        await addDoc(collection(db, `projects/${projectId}/history`), {
+            version: newVersion,
+            changes: updates,
+            timestamp: serverTimestamp(),
+            changedBy: user.uid
+        });
+    },
+
+    async addMilestone(projectId, milestone) {
+        return await addDoc(collection(db, "milestones"), {
+            ...milestone,
+            projectId: projectId,
+            status: 'pending',
+            createdAt: serverTimestamp()
+        });
+    }
+};
+
+/**
+ * MENTORSHIP SERVICE
+ */
+export const MentorshipService = {
+    async sendRequest(mentorId, projectId) {
+        const user = checkAuth();
+        return await addDoc(collection(db, "mentorshipRequests"), {
+            innovatorId: user.uid,
+            mentorId: mentorId,
+            projectId: projectId,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+        });
+    },
+
+    async respondToRequest(requestId, status, reason = "") {
+        const requestRef = doc(db, "mentorshipRequests", requestId);
+        await updateDoc(requestRef, { 
+            status: status,
+            reason: reason,
+            respondedAt: serverTimestamp() 
+        });
+
+        if (status === 'accepted') {
+            const requestDoc = await getDoc(requestRef);
+            const data = requestDoc.data();
+            // Link mentor to project
+            await updateDoc(doc(db, "projects", data.projectId), {
+                mentorId: data.mentorId,
+                status: 'in-progress'
+            });
+        }
+    },
+
+    async scheduleMeeting(meetingData) {
+        return await addDoc(collection(db, "meetings"), {
+            ...meetingData,
+            createdAt: serverTimestamp()
+        });
+    }
+};
+
+/**
+ * AUTOMATION SERVICE
+ * Background checks for inactivity and expirations
+ */
+export const AutomationService = {
+    async checkExpirations() {
+        const q = query(
+            collection(db, "mentorshipRequests"), 
+            where("status", "==", "pending"),
+            where("expiresAt", "<=", new Date())
+        );
+        const snapshot = await getDocs(q);
+        snapshot.forEach(async (d) => {
+            await updateDoc(doc(db, "mentorshipRequests", d.id), { status: 'expired' });
+        });
+    },
+
+    async checkMentorInactivity() {
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const q = query(
+            collection(db, "users"), 
+            where("role", "==", "mentor"),
+            where("lastLogin", "<=", thirtyDaysAgo)
+        );
+        const snapshot = await getDocs(q);
+        snapshot.forEach(async (d) => {
+            await updateDoc(doc(db, "users", d.id), { autoFlagged: 'inactive_30d' });
+            // Alert Admin usually via Notification
+            await addDoc(collection(db, "notifications"), {
+                userId: 'admin', // Placeholder or broadcast
+                message: `Mentor ${d.data().fullName} flagged for 30-day inactivity.`,
+                type: 'alert',
+                createdAt: serverTimestamp()
+            });
+        });
+    }
+};
+
+/**
+ * NOTIFICATION SERVICE
+ */
+export const NotificationService = {
+    async send(userId, message, type = 'info', link = '#') {
+        return await addDoc(collection(db, "notifications"), {
+            userId, message, type, link,
+            read: false,
+            createdAt: serverTimestamp()
+        });
+    }
+};
+
+// ========================================
+// GLOBAL EXPORTS
+// ========================================
+
+window.ProjectService = ProjectService;
+window.MentorshipService = MentorshipService;
+window.AutomationService = AutomationService;
+window.NotificationService = NotificationService;
 
 // Log initialization message
 console.log(
@@ -599,4 +811,4 @@ console.log(
   "%cEmpowering Innovation Through Collaboration",
   "color: #764ba2; font-size: 14px;",
 );
-console.log("Platform initialized successfully ✓");
+console.log("Platform services initialized successfully ✓");
