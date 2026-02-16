@@ -35,14 +35,48 @@
     pointer-events: none;
 }
 
-.nuru-assistant-toggle:hover {
-    transform: scale(1.1) rotate(5deg);
+@keyframes float {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(2deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
 }
 
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-15px); }
-    100% { transform: translateY(0px); }
+/* New Dynamic Animations */
+.nuru-attention {
+    animation: pulse-attention 1.5s ease-in-out;
+}
+
+@keyframes pulse-attention {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); filter: drop-shadow(0 0 15px var(--nuru-accent)); }
+    100% { transform: scale(1); }
+}
+
+.nuru-wave {
+    animation: wave-robot 1.2s ease-in-out;
+}
+
+@keyframes wave-robot {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    50% { transform: rotate(-10deg); }
+    75% { transform: rotate(5deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.nuru-hide {
+    transform: scale(0) translateY(100px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.nuru-reappear {
+    animation: pop-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes pop-in {
+    from { transform: scale(0) translateY(50px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 /* Chat window */
@@ -62,6 +96,34 @@
     z-index: 9998;
     border: 1px solid rgba(26, 94, 79, 0.1);
     animation: fadeInUp 0.4s ease;
+}
+
+/* Header Actions */
+.nuru-header-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+}
+
+.nuru-btn-icon {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    opacity: 0.7;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.nuru-btn-icon:hover {
+    opacity: 1;
+    background: rgba(255,255,255,0.1);
 }
 
 .nuru-chat-window.active {
