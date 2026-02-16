@@ -294,38 +294,26 @@
             <!-- return false: Prevents default form submission (page reload) -->
             <form id="loginForm" onsubmit="handleLogin(event); return false;">
                 
+                <div class="alert alert-info py-2 small">
+                    <i class="fa fa-info-circle me-1"></i> <strong>Prototype Mode:</strong>
+                    Login with "admin", "mentor", or "student" in your email to access different roles. Password is optional.
+                </div>
+
                 <!-- Email Input -->
                 <div class="form-group">
                     <label for="email">Email Address</label>
-                    <!-- type="email": Validates email format -->
-                    <!-- required: Field must be filled before submission -->
-                    <!-- placeholder: Gray text shown when field is empty -->
-                    <input 
-                        type="email" 
-                        class="form-control" 
-                        id="email" 
-                        placeholder="Enter your email"
-                        required>
+                    <input type="email" class="form-control" id="email" placeholder="e.g. admin@innovate.com" required>
                 </div>
                 
                 <!-- Password Input -->
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <!-- type="password": Hides characters as user types -->
-                    <input 
-                        type="password" 
-                        class="form-control" 
-                        id="password" 
-                        placeholder="Enter your password"
-                        required>
+                    <label for="password">Password (Optional)</label>
+                    <input type="password" class="form-control" id="password" placeholder="Any password works">
                 </div>
-                
-
                 
                 <!-- Remember Me Checkbox -->
                 <div class="form-group">
                     <div class="form-check">
-                        <!-- type="checkbox": Creates checkbox -->
                         <input class="form-check-input" type="checkbox" id="rememberMe">
                         <label class="form-check-label" for="rememberMe">
                             Remember me
@@ -333,19 +321,16 @@
                     </div>
                 </div>
                 
-                <!-- Submit Button -->
-                <!-- type="submit": Triggers form submission -->
                 <button type="submit" class="btn btn-login">
                     Login to Dashboard
                 </button>
             </form>
             
-            <!-- Divider -->
+            <!-- (Divider and Links remain unchanged) -->
             <div class="login-divider">
                 <span>Don't have an account?</span>
             </div>
             
-            <!-- Sign Up Link -->
             <div class="login-links">
                 <a href="signup.html">Create an Account</a>
             </div>
@@ -359,83 +344,56 @@
     <!-- Innovate Hub JavaScript -->
     <script src="js/innovate-hub.js"></script>
     
-    <!-- Login Page JavaScript -->
+    <!-- Login Logic -->
     <script>
-        /**
-         * Handle login form submission
-         * This function is called when user clicks "Login to Dashboard"
-         * @param {Event} event - Form submission event
-         */
+        // Check for URL parameters to pre-fill email
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const role = urlParams.get('role');
+            if (role === 'admin') {
+                document.getElementById('email').value = 'admin@innovatehub.com';
+            }
+        });
+
         function handleLogin(event) {
-            // Prevent default form submission (which would reload the page)
             event.preventDefault();
             
-            // Get form values
-            // document.getElementById: Gets element by its ID attribute
-            // .value: Gets the current value of the input
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const rememberMe = document.getElementById('rememberMe').checked;
+            const email = document.getElementById('email').value.toLowerCase();
+            const password = document.getElementById('password').value; // Password ignored in prototype
             
-            // Validate inputs
-            if (!email || !password) {
-                // Show error message if any field is empty
-                showErrorMessage('Please fill in all fields');
+            if (!email) {
+                alert('Please enter an email address');
                 return;
             }
             
-            // Validate email format
-            if (!validateEmail(email)) {
-                showErrorMessage('Please enter a valid email address');
-                return;
+            // Auto-Detect Role based on Email content
+            let userType = 'innovator'; // Default
+            let redirectUrl = 'innovator-dashboard.html';
+            
+            if (email.includes('admin')) {
+                userType = 'admin';
+                redirectUrl = 'admin-dashboard.html';
+            } else if (email.includes('mentor')) {
+                userType = 'mentor';
+                redirectUrl = 'mentor-dashboard.html';
             }
             
-            // SIMULATED AUTHENTICATION
-            // In a real application, this would send credentials to a server
+            // Save session
+            const user = { email: email, role: userType, loggedIn: true };
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            // Also save specifically for the persistent auth check if used elsewhere
+            localStorage.setItem('innovateHubUser', JSON.stringify(user)); 
             
-            // Auto-detect role based on email
-            let role = 'innovator'; // Default role
+            // Simple visual feedback
+            const btn = document.querySelector('.btn-login');
+            const originalText = btn.innerText;
+            btn.innerHTML = `<i class="fa fa-spinner fa-spin me-2"></i> Accessing as ${userType.toUpperCase()}...`;
+            btn.classList.add('btn-success');
             
-            if (email.toLowerCase() === 'admin@innovatehub.com') {
-                role = 'admin';
-            } else if (email.toLowerCase() === 'mentor@innovatehub.com') {
-                role = 'mentor';
-            }
-            // Add more specific logic here if needed
-            
-            // Create user object to store in localStorage
-            const userData = {
-                email: email,
-                role: role,
-                loggedIn: true,
-                loginTime: new Date().toISOString()  // Current date/time
-            };
-            
-            // Save user data to localStorage
-            // This persists even after closing browser
-            saveToLocalStorage('innovateHubUser', userData);
-            
-            // Show success message
-            showSuccessMessage('Login successful! Redirecting...');
-            
-            // Redirect to homepage - Unified Dashboard Logic
-            setTimeout(function() {
-                window.location.href = 'index.html';
-            }, 1000);  // Wait 1 second before redirecting
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 800);
         }
-        
-        /**
-         * Auto-fill form for testing (DEVELOPMENT ONLY)
-         * Remove this in production
-         */
-        // Uncomment the lines below to enable auto-fill for testing
-        /*
-        window.addEventListener('load', function() {
-            document.getElementById('email').value = 'test@innovatehub.com';
-            document.getElementById('password').value = 'password123';
-            document.getElementById('role').value = 'innovator';
-        });
-        */
     </script>
 </body>
 

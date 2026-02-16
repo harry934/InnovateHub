@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Mentor Sign Up - Innovate Hub</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="mentor, signup, expert, guidance, registration" name="keywords">
+    <meta content="Join Innovate Hub as a mentor to guide the next generation of innovators" name="description">
+
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap"
+        rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+    
+    <!-- Innovate Hub Custom Styles -->
+    <link href="css/innovate-hub.css" rel="stylesheet">
+    
+    <!-- Page-specific styles -->
+    <style>
+        /* Reusing Sign Up Page Specific Styles */
+        .signup-container {
+            min-height: 100vh;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .signup-card {
+            background: white;
+            border-radius: 0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            max-width: 700px; /* Slightly wider for the questionnaire */
+            width: 100%;
+            padding: 3rem;
+            animation: fadeInUp 0.6s ease;
+            position: relative;
+            border: 1px solid #eee;
+        }
+        
+        /* Stepper Visuals */
+        .stepper-wrapper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        
+        .stepper-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #e9ecef;
+            z-index: 1;
+        }
+        
+        .stepper-item {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 33.33%;
+        }
+        
+        .step-counter {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            border: 2px solid #fff;
+        }
+        
+        .step-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stepper-item.active .step-counter {
+            background: #1A5E4F;
+            color: white;
+        }
+        
+        .stepper-item.active .step-name {
+            color: #1A5E4F;
+        }
+        
+        .stepper-item.completed .step-counter {
+            background: #F3A813;
+            color: black;
+        }
+        
+        /* Form Steps */
+        .form-step {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .form-step.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 0;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #1A5E4F;
+            box-shadow: none;
+        }
+        
+        /* Navigation Buttons */
+        .step-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+        
+        .btn-step {
+            padding: 0.75rem 2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-next {
+            background: #F3A813;
+            color: black;
+            border: none;
+            flex-grow: 1;
+        }
+        
+        .btn-prev {
+            background: #e9ecef;
+            color: #495057;
+            border: none;
+        }
+        
+        .btn-next:hover {
+            background: #d99611;
+        }
+        
+        .btn-prev:hover {
+            background: #dee2e6;
+        }
+        
+        .back-home {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            color: #1A5E4F;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Topbar Start -->
+    <div class="container-fluid bg-secondary top-bar wow fadeIn" data-wow-delay="0.1s">
+        <div class="row align-items-center h-100">
+            <div class="col-lg-4 text-center text-lg-start">
+                <a href="index.html" class="logo-container text-decoration-none">
+                    <img src="img/logo.svg" alt="Innovate Hub Logo" class="logo-icon" style="width: 40px; height: 40px;">
+                    <span class="logo-text">Innovate Hub</span>
+                </a>
+            </div>
+            <!-- Standard Topbar content omitted for brevity/consistency -->
+        </div>
+    </div>
+    <!-- Topbar End -->
+
+    <!-- Navbar Start -->
+    <div class="container-fluid bg-secondary px-0 wow fadeIn" data-wow-delay="0.1s">
+        <div class="nav-bar">
+            <nav class="navbar navbar-expand-lg bg-primary navbar-dark px-4 py-lg-0">
+                <a href="index.html" class="navbar-brand d-none d-lg-flex align-items-center ms-0 me-auto sticky-logo">
+                    <img src="img/logo.svg" alt="Innovate Hub" style="width: 35px; height: 35px;">
+                    <span class="logo-text ms-2" style="font-size: 1.2rem; color: white;">Innovate Hub</span>
+                </a>
+                <button type="button" class="navbar-toggler me-0" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <div class="navbar-nav me-auto">
+                        <a href="index.html" class="nav-item nav-link">Home</a>
+                        <a href="signup.html" class="nav-item nav-link">Submission Portal</a>
+                        <a href="mentor-signup.html" class="nav-item nav-link active">Mentor Portal</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+    <!-- Navbar End -->
+
+    <!-- Mentor Sign Up Page Container -->
+    <div class="signup-container">
+        <!-- Back to Home Link -->
+        <a href="index.html" class="back-home">
+            <i class="fa fa-arrow-left"></i>
+            Back to Home
+        </a>
+        
+        <!-- Signup Card -->
+        <div class="signup-card">
+            <h2 class="text-center mb-4 text-primary">Mentor Application</h2>
+            
+            <!-- Stepper Progress -->
+            <div class="stepper-wrapper">
+                <div class="stepper-item active" id="stepIndicator1">
+                    <div class="step-counter">1</div>
+                    <div class="step-name">Account</div>
+                </div>
+                <div class="stepper-item" id="stepIndicator2">
+                    <div class="step-counter">2</div>
+                    <div class="step-name">Experience</div>
+                </div>
+                <div class="stepper-item" id="stepIndicator3">
+                    <div class="step-counter">3</div>
+                    <div class="step-name">Onboarding</div>
+                </div>
+            </div>
+            
+            <!-- Signup Form -->
+            <form id="mentorSignupForm" onsubmit="return false;">
+                
+                <!-- Step 1: Account Information -->
+                <div class="form-step active" id="step1">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" class="form-control" id="email" placeholder="email@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" placeholder="Create a strong password" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Repeat password" required>
+                    </div>
+                     <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" class="form-control" id="fullName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="step-buttons">
+                        <button type="button" class="btn btn-step btn-next" onclick="nextStep(1)">Next Step</button>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Professional Profile -->
+                <div class="form-step" id="step2">
+                    <div class="form-group">
+                        <label for="currentRole">Current Job Title</label>
+                        <input type="text" class="form-control" id="currentRole" placeholder="e.g. Senior Engineer" required>
+                    </div>
+                    <div class="form-group">
+                         <label for="organization">Organization / Company</label>
+                        <input type="text" class="form-control" id="organization" placeholder="e.g. Google, Safaricom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expertise">Area of Expertise</label>
+                        <select class="form-control" id="expertise" required>
+                            <option value="" disabled selected>Select your expertise</option>
+                            <option value="technology">Software & Technology</option>
+                            <option value="business">Business Strategy</option>
+                            <option value="finance">Finance & Investment</option>
+                            <option value="marketing">Marketing & Sales</option>
+                            <option value="legal">Legal & IP</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="experience">Years of Experience</label>
+                         <select class="form-control" id="experience" required>
+                            <option value="1-3">1-3 Years</option>
+                            <option value="4-7">4-7 Years</option>
+                            <option value="8-10">8-10 Years</option>
+                            <option value="10+">10+ Years</option>
+                        </select>
+                    </div>
+                     <div class="form-group">
+                        <label for="linkedin">LinkedIn Profile URL</label>
+                        <input type="url" class="form-control" id="linkedin" placeholder="https://linkedin.com/in/..." required>
+                    </div>
+                    <div class="step-buttons">
+                        <button type="button" class="btn btn-step btn-prev" onclick="prevStep(2)">Previous</button>
+                        <button type="button" class="btn btn-step btn-next" onclick="nextStep(2)">Next Step</button>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Onboarding Questions -->
+                <div class="form-step" id="step3">
+                    <div class="alert alert-info border-start border-5 border-info">
+                        <h6 class="alert-heading fw-bold"><i class="fa fa-info-circle me-2"></i>Application Process</h6>
+                        <p class="mb-0 small">Your application requires administrator approval. Please answer the following questions to help us assess your fit for our program.</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="motivation">Why do you want to be a mentor?</label>
+                        <textarea class="form-control" id="motivation" rows="3" placeholder="Briefly describe your motivation..." required minlength="50"></textarea>
+                    </div>
+                    <div class="form-group">
+                         <label for="approach">What is your mentorship approach?</label>
+                        <textarea class="form-control" id="approach" rows="3" placeholder="How do you guide mentees?" required minlength="50"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="availability">Availability (Hours per month)</label>
+                         <select class="form-control" id="availability" required>
+                            <option value="2-4">2-4 Hours</option>
+                            <option value="5-10">5-10 Hours</option>
+                            <option value="10+">10+ Hours</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                            <label class="form-check-label terms-text" for="agreeTerms">
+                                I verify that the information provided is accurate and agree to the <a href="#" class="text-decoration-none">Mentor Code of Conduct</a>.
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="step-buttons">
+                        <button type="button" class="btn btn-step btn-prev" onclick="prevStep(3)">Previous</button>
+                        <button type="submit" class="btn btn-step btn-next" onclick="handleMentorSignup()">Submit Application</button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Divider -->
+            <div class="signup-divider" style="text-align: center; margin: 2rem 0; color: #6c757d;">
+                <span>Already have an account?</span>
+            </div>
+            
+            <!-- Login Link -->
+            <div class="signup-links" style="text-align: center;">
+                <a href="login.html" style="color: #1A5E4F; text-decoration: none; font-weight: 600;">Login to your account</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Innovate Hub JavaScript -->
+    <script src="js/innovate-hub.js"></script>
+    
+    <!-- Signup Logic -->
+    <script>
+        let currentStep = 1;
+        
+        function nextStep(step) {
+            if (validateStep(step)) {
+                document.getElementById(`step${step}`).classList.remove('active');
+                document.getElementById(`stepIndicator${step}`).classList.add('completed');
+                document.getElementById(`stepIndicator${step}`).classList.remove('active');
+                
+                currentStep = step + 1;
+                document.getElementById(`step${currentStep}`).classList.add('active');
+                document.getElementById(`stepIndicator${currentStep}`).classList.add('active');
+            }
+        }
+        
+        function prevStep(step) {
+            document.getElementById(`step${step}`).classList.remove('active');
+            document.getElementById(`stepIndicator${step}`).classList.remove('active');
+            
+            currentStep = step - 1;
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.getElementById(`stepIndicator${currentStep}`).classList.remove('completed');
+            document.getElementById(`stepIndicator${currentStep}`).classList.add('active');
+        }
+        
+        function validateStep(step) {
+            const currentStepDiv = document.getElementById(`step${step}`);
+            const inputs = currentStepDiv.querySelectorAll('input, select, textarea');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (!input.checkValidity()) {
+                    input.reportValidity();
+                    isValid = false;
+                }
+            });
+            
+            if (step === 1) {
+                const password = document.getElementById('password').value;
+                const confirm = document.getElementById('confirmPassword').value;
+                if (password !== confirm) {
+                    showErrorMessage('Passwords do not match');
+                    isValid = false;
+                }
+            }
+            
+            return isValid;
+        }
+        
+        function handleMentorSignup() {
+            if (validateStep(3)) {
+                const userData = {
+                    email: document.getElementById('email').value,
+                    role: 'mentor',
+                    status: 'pending_approval',
+                    fullName: document.getElementById('fullName').value,
+                    jobTitle: document.getElementById('currentRole').value,
+                    organization: document.getElementById('organization').value,
+                    expertise: document.getElementById('expertise').value,
+                    experience: document.getElementById('experience').value,
+                    linkedin: document.getElementById('linkedin').value,
+                    motivation: document.getElementById('motivation').value,
+                    approach: document.getElementById('approach').value,
+                    availability: document.getElementById('availability').value,
+                    submittedDate: new Date().toISOString()
+                };
+                
+                // Save to a separate 'pendingMentors' array for Admin approval
+                let pendingMentors = loadFromLocalStorage('pendingMentors') || [];
+                pendingMentors.push(userData);
+                saveToLocalStorage('pendingMentors', pendingMentors);
+                
+                // Also save to generic users but marked as pending
+                // In a real app, this would be one DB, but here we simulate
+                saveToLocalStorage('innovateHubUser', userData); // For immediate session simulation
+                
+                showSuccessMessage('Application submitted! Your account is pending admin approval.');
+                
+                setTimeout(() => {
+                    // Redirect to login page or a "request received" page
+                    window.location.href = 'login.html';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+
+</html>
