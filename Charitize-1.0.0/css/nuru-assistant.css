@@ -1,0 +1,240 @@
+:root {
+    --nuru-primary: #1A5E4F;
+    --nuru-accent: #F3A813;
+    --nuru-bg-grey: #f0f2f5;
+    --user-msg-bg: #1A5E4F;
+    --bot-msg-bg: #ffffff;
+    --bot-msg-text: #333333;
+}
+
+/* Floating Toggle Button */
+.nuru-assistant-toggle {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 70px; /* Smaller toggle */
+    height: 70px;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 9999;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: float 4s ease-in-out infinite;
+    padding: 0;
+}
+
+.nuru-assistant-toggle img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+/* Name Tag */
+.nuru-name-tag {
+    position: absolute;
+    right: 75px;
+    background: var(--nuru-primary);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 1px solid var(--nuru-accent);
+}
+
+.nuru-assistant-toggle:hover .nuru-name-tag {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+@keyframes float {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* Chat window - Compact Reversion */
+.nuru-chat-window {
+    position: fixed;
+    bottom: 110px;
+    right: 30px;
+    width: 320px; /* Even more compact */
+    height: 480px;
+    background: var(--nuru-bg-grey);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9998;
+    border: 1px solid rgba(0,0,0,0.05);
+    animation: slideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.nuru-chat-window.active {
+    display: flex;
+}
+
+/* Header */
+.nuru-chat-header {
+    background: var(--nuru-primary);
+    color: white;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.nuru-header-avatar {
+    width: 45px;
+    height: 45px;
+    background: var(--nuru-accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px;
+}
+
+.nuru-header-info h5 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.nuru-header-status {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.nuru-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: 0.3s;
+}
+
+.nuru-close:hover {
+    opacity: 1;
+}
+
+/* Messages Area */
+.nuru-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #f8f9fa;
+}
+
+.nuru-msg-wrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 90%;
+}
+
+.nuru-msg-bot {
+    align-self: flex-start;
+}
+
+.nuru-msg-user {
+    align-self: flex-end;
+}
+
+.nuru-msg-text {
+    padding: 10px 14px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.nuru-msg-bot .nuru-msg-text {
+    background: var(--bot-msg-bg);
+    color: var(--bot-msg-text);
+    border-top-left-radius: 4px;
+}
+
+.nuru-msg-user .nuru-msg-text {
+    background: var(--user-msg-bg);
+    color: white;
+    border-top-right-radius: 4px;
+}
+
+/* Input Area */
+.nuru-input-area {
+    padding: 15px;
+    background: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid #efefef;
+}
+
+.nuru-input-container {
+    flex: 1;
+    background: #f0f2f5;
+    border-radius: 20px;
+    padding: 2px 15px;
+}
+
+.nuru-input-container input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 8px 0;
+    font-size: 0.95rem;
+}
+
+.nuru-input-container input:focus {
+    outline: none;
+}
+
+.nuru-send-btn {
+    width: 40px;
+    height: 40px;
+    background: var(--nuru-primary);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(26, 94, 79, 0.15);
+}
+
+/* Peeking Behavior - Hide Behind Images */
+.nuru-peek-corner {
+    transform: translate(45px, 45px) rotate(-15deg) !important;
+    z-index: 10 !important; /* Put behind main content */
+}
+
+/* Let's clarify z-index for main content if needed, 
+   but standard practice is elements have z-index 1-100.
+   Lowering Nuru to 10 makes her hide behind high-level headers or section containers.
+*/

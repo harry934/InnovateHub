@@ -951,12 +951,18 @@
     width: 100%;
     height: 100vh;
     background: radial-gradient(circle at center, #1E6B5A 0%, #1A5E4F 100%); /* Radial depth */
-    display: flex;
+    display: none; /* fail-safe: hidden by default */
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 999999;
     transition: opacity 1.2s cubic-bezier(0.77, 0, 0.175, 1), visibility 1.2s;
+    opacity: 0; /* Hidden by default */
+}
+
+#logo-preloader.active {
+    display: flex;
+    opacity: 1;
 }
 
 #logo-preloader.fade-out {
@@ -978,6 +984,15 @@
     text-align: center;
     position: relative;
     padding: 40px;
+}
+
+.preloader-logo-svg {
+    width: 150px;
+    height: 150px;
+    filter: drop-shadow(0 0 30px rgba(243, 168, 19, 0.15));
+    animation: finalPulse 6s ease-in-out infinite 3.5s;
+    display: block;
+    margin: 0 auto;
 }
 
 /* Optimized Path Animations (2.2s total) */

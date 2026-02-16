@@ -1,55 +1,106 @@
-/**
- * ========================================
- * INNOVATE HUB - MAIN JAVASCRIPT FILE
- * Handles splash screen, navigation, and core functionality
- * ========================================
- */
-
 // ========================================
-// 1. SPLASH SCREEN CONTROL
+// 1. SPLASH SCREEN CONTROL (PRELOADER)
 // ========================================
 
-/**
- * Hide splash screen after page loads
- * Uses window.addEventListener to wait for page to fully load
- */
-/**
- * Run on page load
- */
-window.addEventListener("load", function () {
-    const preloader = document.getElementById("logo-preloader");
-    if (!preloader) return;
+(function() {
+    // Run immediately
+    const initPreloader = () => {
+        const preloader = document.getElementById("logo-preloader");
+        if (!preloader) return;
 
-    // Check if this is a page refresh or initial load (not navigation)
-    const isPageRefresh = sessionStorage.getItem("navigationActive") === null;
-    const perfEntries = performance.getEntriesByType("navigation");
-    const isReload = perfEntries.length > 0 && perfEntries[0].type === "reload";
-    
-    if (isPageRefresh || isReload) {
-        // Show logo animation on refresh or initial site entry
-        setTimeout(() => {
-            preloader.classList.add("fade-out");
-            setTimeout(() => preloader.remove(), 1200);
-        }, 2200); // 2.2s animation
-        // Clear the navigation flag
-        sessionStorage.removeItem("navigationActive");
+        // Check Navigation Type
+        const wasNavigated = sessionStorage.getItem("wasNavigated");
+        
+        // Clear flag immediately
+        sessionStorage.removeItem("wasNavigated");
+
+        if (wasNavigated) {
+            // It was a navigation click -> DO NOTHING
+            // Preloader is hidden by default in CSS
+            preloader.remove();
+        } else {
+            // It was a Refresh or Initial Load -> SHOW PRELOADER
+            preloader.classList.add("active");
+            
+            // Remove after animation
+            setTimeout(() => {
+                preloader.classList.remove("active");
+                preloader.classList.add("fade-out");
+                setTimeout(() => {
+                    if(preloader && preloader.parentNode) preloader.remove();
+                }, 1200);
+            }, 2200);
+        }
+    };
+
+    // Initialize as soon as DOM is ready or Script runs
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPreloader);
     } else {
-        // Skip animation on internal navigation
-        preloader.classList.add("fade-out");
-        setTimeout(() => preloader.remove(), 100);
-        // Clear the navigation flag
-        sessionStorage.removeItem("navigationActive");
+        initPreloader();
     }
+})();
 
-    // Page Entry Animation
-    document.body.classList.add("page-ready");
-
-    // Check authentication and update UI
-    const user = checkAuth();
-    if (user && user.loggedIn) {
-        updateUIForRole(user);
+// Navigation listener to set flag
+document.addEventListener("click", function(e) {
+    const link = e.target.closest("a");
+    if (link && 
+        link.href && 
+        link.href.includes(window.location.origin) && 
+        !link.href.includes("#") && 
+        link.target !== "_blank") {
+        sessionStorage.setItem("wasNavigated", "true");
     }
 });
+
+import { auth, db } from './firebase-config.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/**
+ * Real-time Firebase Auth Listener
+ * Synchronizes Firebase auth state with LocalStorage and UI
+ */
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // User is logged in
+        let userData = loadFromLocalStorage("innovateHubUser");
+        
+        // If local data is missing or out of sync, fetch from Firestore
+        if (!userData || userData.uid !== user.uid) {
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    userData = { ...userDoc.data(), loggedIn: true };
+                    saveToLocalStorage("innovateHubUser", userData);
+                }
+            } catch (error) {
+                console.error("Error fetching user role:", error);
+            }
+        }
+        
+        if (userData) {
+            updateUIForRole(userData);
+        }
+    } else {
+        // User is logged out
+        localStorage.removeItem("innovateHubUser");
+        resetUI();
+    }
+});
+
+/**
+ * Reset UI to Guest State
+ */
+function resetUI() {
+    const guestButtons = document.getElementById("guestButtons");
+    const userProfile = document.getElementById("userProfile");
+    const navDashboardLink = document.getElementById("navDashboardLink");
+
+    if (guestButtons) guestButtons.classList.remove("d-none");
+    if (userProfile) userProfile.classList.add("d-none");
+    if (navDashboardLink) navDashboardLink.classList.add("d-none");
+}
 
 // ========================================
 // 2. SMOOTH SCROLLING FOR ANCHOR LINKS
@@ -126,6 +177,20 @@ function validateForm(form) {
 
   return isValid;
 }
+
+// Global Exports for legacy scripts
+window.showSuccessMessage = showSuccessMessage;
+window.showErrorMessage = showErrorMessage;
+window.validateForm = validateForm;
+window.validateEmail = validateEmail;
+window.saveToLocalStorage = saveToLocalStorage;
+window.loadFromLocalStorage = loadFromLocalStorage;
+window.generateUniqueId = generateUniqueId;
+window.formatDate = formatDate;
+window.truncateText = truncateText;
+window.checkAuth = checkAuth;
+window.requireAuth = requireAuth;
+window.showDashboardSection = showDashboardSection;
 
 // ========================================
 // 5. EMAIL VALIDATION
@@ -453,11 +518,16 @@ function showDashboardSection(sectionId) {
  * Logout user
  * Clears user data and redirects to homepage
  */
-function logout() {
-  // Clear user data
-  localStorage.removeItem("innovateHubUser");
-  // Redirect to homepage
-  window.location.href = "index.html";
+window.logout = async function logout() {
+    try {
+        await signOut(auth);
+        // localStorage is cleared by the onAuthStateChanged listener
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Logout error:", error);
+        localStorage.removeItem("innovateHubUser");
+        window.location.href = "index.html";
+    }
 }
 
 // ========================================

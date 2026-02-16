@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Mentor Dashboard - Innovate Hub</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap"
+        rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+    
+    <!-- Innovate Hub Custom Styles -->
+    <link href="css/innovate-hub.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        
+        <!-- Sidebar Navigation -->
+        <div class="dashboard-sidebar">
+             <a href="index.html" class="logo-container text-decoration-none px-4 mb-4 mt-3">
+                <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
+                <span class="logo-text" style="color: white; font-size: 1.3rem; margin-left: 10px;">Innovate Hub</span>
+            </a>
+            
+            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Mentorship</h6>
+            <nav class="nav flex-column mb-3">
+                <a class="nav-link active" href="#" onclick="showSection('projects'); return false;">Project Reviews</a>
+                <a class="nav-link" href="#" onclick="showSection('mentees'); return false;">My Mentees</a>
+            </nav>
+
+             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Account</h6>
+            <nav class="nav flex-column mb-3">
+                <a class="nav-link" href="#" onclick="showSection('profile'); return false;">My Profile</a>
+                <a class="nav-link text-danger mt-2" href="#" onclick="logout(); return false;">Logout</a>
+            </nav>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="dashboard-main">
+            
+            <!-- Project Reviews Section -->
+            <div id="projectsSection" class="dashboard-section">
+                <div class="dashboard-header">
+                    <h2>Project Reviews</h2>
+                    <p class="text-muted">Review proposals and provide feedback</p>
+                </div>
+                
+                <!-- Mock Data Logic for Prototype -->
+                <div id="reviewsContainer">
+                    <div class="dashboard-card mb-3">
+                         <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3>Smart Irrigation System</h3>
+                            <span class="badge bg-success">Technology</span>
+                        </div>
+                        <p class="text-muted">An IoT based system using Arduino to automate farm irrigation based on soil moisture levels.</p>
+                        <div class="bg-light p-3 rounded mb-3">
+                            <small class="text-muted fw-bold">INNOVATOR</small>
+                            <p class="mb-0">John Doe (Student)</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">YOUR FEEDBACK</label>
+                            <textarea class="form-control" rows="2" placeholder="Write feedback for the innovator..."></textarea>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                             <button class="btn btn-custom-signup">Submit Feedback</button>
+                             <button class="btn btn-outline-dark">View Details</button>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card mb-3">
+                         <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3>Eco-Brick Planner</h3>
+                            <span class="badge bg-warning text-dark">Environment</span>
+                        </div>
+                        <p class="text-muted">A mobile app to coordinate the collection and manufacturing of recycled plastic bricks.</p>
+                        <div class="d-flex gap-2 mt-3">
+                             <button class="btn btn-custom-signup">Submit Feedback</button>
+                              <button class="btn btn-outline-dark">View Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+             <!-- Mentees Section -->
+            <div id="menteesSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>My Mentees</h2>
+                    <p class="text-muted">Students you are currently guiding</p>
+                </div>
+                
+                 <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="dashboard-card text-center">
+                            <img src="img/team-1.jpg" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h4>Alice Wambui</h4>
+                            <p class="text-muted mb-2">Project: AI Tutor</p>
+                            <button class="btn btn-sm btn-outline-primary">Send Message</button>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+
+            <!-- Profile Section -->
+            <div id="profileSection" class="dashboard-section" style="display: none;">
+                 <div class="dashboard-header">
+                    <h2>Mentor Profile</h2>
+                    <p class="text-muted">Your public mentor profile</p>
+                </div>
+                <div class="dashboard-card">
+                    <p>Profile editing coming soon...</p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="js/innovate-hub.js"></script>
+    
+    <script>
+         window.addEventListener('load', function() {
+            // Check Access
+            const user = requireAuth();
+            if (user.role !== 'mentor') {
+                alert('Access Denied');
+                window.location.href = 'login.html';
+                return;
+            }
+        });
+
+        function showSection(sectionName) {
+            document.querySelectorAll('.dashboard-section').forEach(el => el.style.display = 'none');
+             document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(sectionName + 'Section').style.display = 'block';
+             if(event.target) event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
