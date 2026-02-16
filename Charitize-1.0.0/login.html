@@ -154,8 +154,22 @@
         }
         
         /* Back to home link */
+        .login-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 1rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 100px);
+        }
+        
         .back-home {
-            margin-bottom: 2rem;
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
             color: #1A5E4F;
             text-decoration: none;
             font-weight: 600;
@@ -163,24 +177,18 @@
             align-items: center;
             gap: 0.5rem;
             transition: all 0.3s ease;
+            z-index: 10;
         }
-        
+
         .back-home:hover {
             color: #14493e;
             transform: translateX(-5px);
         }
-        
-        /* Responsive adjustments */
+
         @media (max-width: 768px) {
-            .login-card {
-                padding: 2rem;
-            }
-            
             .back-home {
                 position: static;
-                display: inline-flex;
-                margin-bottom: 1rem;
-                color: #1A5E4F;
+                margin-bottom: 2rem;
             }
         }
     </style>
@@ -272,13 +280,13 @@
     <!-- Navbar End -->
     <!-- Login Page Container -->
     <div class="login-container">
-        <!-- Back to Home Link -->
+        <!-- Back to Home Link (Top Left) -->
         <a href="index.html" class="back-home">
             <i class="fa fa-arrow-left"></i>
             Back to Home
         </a>
         
-        <!-- Login Card -->
+        <!-- Login Card (Centered) -->
         <div class="login-card">
             <!-- Logo and Title -->
             <div class="login-logo">

@@ -5,28 +5,36 @@
 
 // Knowledge base for Nuru
 const NURU_KNOWLEDGE = {
-    greetings: ["Hello! I'm Nuru, your Innovate Hub guide. How can I help you today?", "Jambo! I'm here to assist you with everything on Innovate Hub.", "Hi there! Looking to innovate? I'm Nuru, let's get started!"],
-    fallback: "I'm not quite sure about that, but I'd love to help! You can try asking about 'How to join', 'Mentorship', or 'Project submission'.",
+    greetings: [
+        "Jambo! I'm Nuru, your friendly Innovate Hub guide. It's such a pleasure to meet you! How can I make your day better?", 
+        "Hello there! I'm Nuru. I'm here to help you navigate our wonderful community. What's on your mind today?", 
+        "Welcome to Innovate Hub! I'm Nuru, and I'd be absolutely delighted to assist you with any questions you might have."
+    ],
+    fallback: "I'm so sorry, but I don't quite have the answer to that specific question yet. 😔 However, I've noted this down and I'll contact the admin to let them know so we can get back to you! Is there anything else I can try to help you with in the meantime?",
     triggers: [
         {
-            keywords: ['join', 'signup', 'register', 'account'],
-            response: "Joining is easy! Just click 'Get Started' at the top right. You can join as an 'Innovator' (for students with ideas) or a 'Mentor' (for professionals)."
+            keywords: ['join', 'signup', 'register', 'account', 'create'],
+            response: "We'd love to have you! You can join as an Innovator if you have a brilliant idea, or as a Mentor if you'd like to guide others. Just click the button below to start your journey!",
+            links: [{ label: "🚀 Start Registration", url: "signup.html" }]
         },
         {
             keywords: ['mentor', 'mentorship'],
-            response: "Our mentors are industry experts who guide student projects. If you're an expert, sign up as a Mentor. If you're a student, you'll be assigned a mentor once your project is approved!"
+            response: "Our mentorship program is the heart of Innovate Hub! Experts can apply to guide projects, while students get paired with industry leaders. Would you like to see more details?",
+            links: [{ label: "🤝 Join as Mentor", url: "signup.html" }]
         },
         {
             keywords: ['project', 'submit', 'idea'],
-            response: "Innovators can submit projects through their dashboard. Just sign up, go to 'My Projects', and fill out the submission form!"
+            response: "Ready to share your innovation with the world? Once you're signed up as an Innovator, you can submit your project directly from your dashboard!",
+            links: [{ label: "💡 Submit Project", url: "innovator-dashboard.html" }]
         },
         {
             keywords: ['cost', 'price', 'free'],
-            response: "Innovate Hub is completely free for students! Our goal is to support your innovation journey without barriers."
+            response: "Good news! Innovate Hub is completely free for all students. We are here to support your growth and innovation without any financial barriers. 🌟"
         },
         {
             keywords: ['contact', 'email', 'support', 'help'],
-            response: "You're chatting with me! But if you need more help, you can email us at InnovateHub@gmail.com or visit our 'Contact Us' page."
+            response: "You're chatting with me right now, and I'm happy to help! But if you'd like to reach our physical office or see our location, click below.",
+            links: [{ label: "📍 Contact Info", url: "contact.html" }]
         }
     ]
 };
@@ -50,12 +58,12 @@ class NuruAssistant {
         // Create widget HTML and append to body
         const widgetHTML = `
             <button class="nuru-assistant-toggle" id="nuruToggle">
-                <i class="fa fa-comment-dots"></i>
+                <img src="img/nuru-avatar.svg" alt="Nuru Avatar">
             </button>
             <div class="nuru-chat-window" id="nuruWindow">
                 <div class="nuru-chat-header">
                     <div class="nuru-avatar">
-                        <i class="fa fa-robot"></i>
+                        <img src="img/nuru-avatar.svg" alt="Nuru Avatar">
                     </div>
                     <div class="nuru-info">
                         <h5>Nuru Assistant</h5>
@@ -118,8 +126,8 @@ class NuruAssistant {
 
         setTimeout(() => {
             this.removeTyping();
-            const response = this.getResponse(text);
-            this.addMessage(response, 'bot');
+            const result = this.getResponse(text);
+            this.addMessage(result.response, 'bot', result.links);
         }, 1500);
     }
 
@@ -127,14 +135,14 @@ class NuruAssistant {
         const query = text.toLowerCase();
         for (const trigger of NURU_KNOWLEDGE.triggers) {
             if (trigger.keywords.some(k => query.includes(k))) {
-                return trigger.response;
+                return { response: trigger.response, links: trigger.links };
             }
         }
-        return NURU_KNOWLEDGE.fallback;
+        return { response: NURU_KNOWLEDGE.fallback };
     }
 
-    addMessage(text, sender) {
-        const msg = { text, sender, time: new Date().toISOString() };
+    addMessage(text, sender, links = []) {
+        const msg = { text, sender, links, time: new Date().toISOString() };
         this.chatHistory.push(msg);
         this.saveHistory();
         this.renderMsg(msg);
@@ -142,10 +150,40 @@ class NuruAssistant {
     }
 
     renderMsg(msg) {
-        const div = document.createElement('div');
-        div.className = `nuru-msg nuru-msg-${msg.sender}`;
-        div.textContent = msg.text;
-        this.messagesContainer.appendChild(div);
+        const msgWrapper = document.createElement('div');
+        msgWrapper.className = `nuru-msg-wrapper nuru-msg-${msg.sender}`;
+
+        if (msg.sender === 'bot') {
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'nuru-msg-avatar';
+            avatarDiv.innerHTML = '<img src="img/nuru-avatar.svg" alt="Nuru">';
+            msgWrapper.appendChild(avatarDiv);
+        }
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'nuru-msg-content';
+        
+        const textDiv = document.createElement('div');
+        textDiv.className = 'nuru-msg-text';
+        textDiv.textContent = msg.text;
+        contentDiv.appendChild(textDiv);
+
+        if (msg.links && msg.links.length > 0) {
+            const btnGroup = document.createElement('div');
+            btnGroup.className = 'nuru-btn-group';
+            
+            msg.links.forEach(link => {
+                const btn = document.createElement('a');
+                btn.className = 'nuru-action-btn';
+                btn.href = link.url;
+                btn.textContent = link.label;
+                btnGroup.appendChild(btn);
+            });
+            contentDiv.appendChild(btnGroup);
+        }
+
+        msgWrapper.appendChild(contentDiv);
+        this.messagesContainer.appendChild(msgWrapper);
     }
 
     renderHistory() {
