@@ -258,6 +258,27 @@ function debounce(func, delay) {
 // ========================================
 
 /**
+ * Check if user is logged in
+ * Used by dashboard pages to verify access
+ * @returns {object|null} - User data if logged in, null otherwise
+ */
+function checkAuth() {
+  const userData = loadFromLocalStorage("innovateHubUser");
+  return userData;
+}
+
+/**
+ * Redirect to login if not authenticated
+ */
+function requireAuth() {
+  const user = checkAuth();
+  if (!user) {
+    window.location.href = "login.html";
+  }
+  return user;
+}
+
+/**
  * Update UI based on user role
  * @param {object} user - User data object
  */

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Mentor Dashboard - Innovate Hub</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap"
+        rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+    
+    <!-- Innovate Hub Custom Styles -->
+    <link href="css/innovate-hub.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        
+        <!-- Sidebar Navigation -->
+        <div class="dashboard-sidebar">
+            <!-- Logo Section -->
+                <a href="index.html" class="logo-container text-decoration-none">
+                    <span class="logo-text" style="color: white; font-size: 1.5rem;">Innovate Hub</span>
+                </a>
+            
+            <!-- Group: Mentorship -->
+            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Mentorship</h6>
+            <nav class="nav flex-column mb-3">
+                <a class="nav-link active" href="#" onclick="showSection('mentorOverview'); return false;">Overview</a>
+                <a class="nav-link" href="#" onclick="showSection('requests'); return false;">Requests</a>
+                <a class="nav-link" href="#" onclick="showSection('assignedProjects'); return false;">Assigned Projects</a>
+            </nav>
+
+            <!-- Group: Account -->
+            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Account</h6>
+            <nav class="nav flex-column mb-3">
+                <a class="nav-link" href="#" onclick="showSection('notifications'); return false;">
+                    Notifications <span class="badge bg-danger ms-2 badge-pill">1</span>
+                </a>
+                <a class="nav-link" href="#" onclick="showSection('profile'); return false;">My Profile</a>
+                <a class="nav-link" href="#" onclick="showSection('settings'); return false;">Settings</a>
+                <a class="nav-link text-danger mt-2" href="#" onclick="logout(); return false;">Logout</a>
+            </nav>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="dashboard-main">
+            
+            <!-- Overview Section -->
+            <div id="mentorOverview" class="dashboard-section">
+                <div class="dashboard-header">
+                    <h2>Mentor Overview</h2>
+                    <p class="text-muted">Welcome back, <span id="userName">Mentor</span></p>
+                </div>
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="dashboard-card text-center mb-3">
+                            <h3 class="display-4 fw-bold text-primary">3</h3>
+                            <p class="text-muted">Active Mentorships</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="dashboard-card text-center mb-3">
+                            <h3 class="display-4 fw-bold text-warning">2</h3>
+                            <p class="text-muted">Pending Requests</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="dashboard-card text-center mb-3">
+                            <div class="form-check form-switch d-flex justify-content-center align-items-center gap-2">
+                                <input class="form-check-input" type="checkbox" id="availabilityToggle" checked>
+                                <label class="form-check-label fw-bold" for="availabilityToggle">Available</label>
+                            </div>
+                            <p class="text-muted small mt-2">Accepting new requests</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Requests Section -->
+            <div id="requestsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>Mentorship Requests</h2>
+                    <p class="text-muted">Innovators seeking your guidance</p>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h5>Recent Requests</h5>
+                    <!-- Placeholder request -->
+                    <div class="border-bottom py-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="fw-bold mb-1">Smart Irrigation System</h6>
+                                <p class="text-muted mb-1 small">By: John Doe • Category: Agriculture</p>
+                                <p class="mb-2">We need guidance on optimizing IoT sensor data collection.</p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-success">Accept</button>
+                                <button class="btn btn-sm btn-outline-danger">Decline</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Assigned Projects Section -->
+            <div id="assignedProjectsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>Assigned Projects</h2>
+                    <p class="text-muted">Projects you are currently mentoring</p>
+                </div>
+                <div class="dashboard-card">
+                    <p class="text-muted">No active projects yet.</p>
+                </div>
+            </div>
+
+            <!-- Notifications Section -->
+            <div id="notificationsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>Notifications</h2>
+                </div>
+                <div class="dashboard-card p-3 border-start border-5 border-primary bg-light">
+                    <p class="mb-0">System: Welcome to InnovateHub as a Mentor!</p>
+                </div>
+            </div>
+
+            <!-- Profile & Settings -->
+            <div id="profileSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>My Profile</h2>
+                </div>
+                <div class="dashboard-card">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Bio / Expertise</label>
+                            <textarea class="form-control" rows="3">Robotics, AI, Python</textarea>
+                        </div>
+                        <button class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="settingsSection" class="dashboard-section" style="display: none;">
+                 <div class="dashboard-header">
+                    <h2>Settings</h2>
+                </div>
+                <div class="dashboard-card">
+                    <p>Settings coming soon.</p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Innovate Hub JavaScript -->
+    <script src="js/api.js"></script>
+    <script src="js/innovate-hub.js"></script>
+    
+    <script>
+        window.addEventListener('load', function() {
+            const user = requireAuth();
+            if (user.role !== 'mentor') {
+                 showErrorMessage('Access denied.');
+                 setTimeout(() => window.location.href = 'login.html', 1500);
+            }
+            // Display User Info
+            if (user.name) document.getElementById('userName').textContent = user.name;
+        });
+
+        // Simple routing
+        function showSection(sectionName) {
+            const sections = document.querySelectorAll('.dashboard-section');
+            sections.forEach(s => s.style.display = 'none');
+            
+            const map = {
+                'mentorOverview': 'mentorOverview',
+                'requests': 'requestsSection',
+                'assignedProjects': 'assignedProjectsSection',
+                'notifications': 'notificationsSection',
+                'profile': 'profileSection',
+                'settings': 'settingsSection'
+            };
+            
+            const target = document.getElementById(map[sectionName] || sectionName);
+            if (target) target.style.display = 'block';
+            
+             // Update active state in sidebar
+             const navLinks = document.querySelectorAll('.dashboard-sidebar .nav-link');
+             navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(sectionName)) {
+                  link.classList.add('active');
+                }
+             });
+        }
+    </script>
+</body>
+</html>

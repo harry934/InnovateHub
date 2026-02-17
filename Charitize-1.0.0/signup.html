@@ -386,7 +386,7 @@
          * This function is called when user clicks "Create Account"
          * @param {Event} event - Form submission event
          */
-        function handleSignup(event) {
+        async function handleSignup(event) {
             // Prevent default form submission
             event.preventDefault();
             
@@ -395,6 +395,9 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            // Note: Signup form currently doesn't have a role selector in the HTML provided in step 125.
+            // It has a Terms checkbox.
+            // We'll default to 'innovator' for now as per the original code.
             const agreeTerms = document.getElementById('agreeTerms').checked;
             
             // Validate all fields are filled
@@ -427,28 +430,31 @@
                 return;
             }
             
-            // SIMULATED REGISTRATION
-            // In a real application, this would send data to a server
-            
-            // Create user object
-            const userData = {
-                fullName: fullName,
-                email: email,
-                role: 'innovator', // Default role for all signups
-                registrationDate: new Date().toISOString()
-            };
-            
-            // Save to localStorage (simulating database)
-            // In real app, this would be saved on server
-            saveToLocalStorage('innovateHubRegistration', userData);
-            
-            // Show success message
-            showSuccessMessage('Account created successfully! Redirecting to login...');
-            
-            // Redirect to homepage immediately (auto-login is handled there)
-            setTimeout(function() {
-                window.location.href = 'index.html';
-            }, 1500);
+            // Call API
+            try {
+                // Defaulting to 'innovator' role
+                const userData = {
+                    name: fullName,
+                    email: email,
+                    password: password,
+                    role: 'innovator' 
+                };
+                
+                const result = await window.api.register(userData);
+                
+                if (result.ok) {
+                    showSuccessMessage('Account created successfully! Redirecting...');
+                    
+                    setTimeout(function() {
+                        window.location.href = 'innovator-dashboard.html';
+                    }, 1500);
+                } else {
+                    showErrorMessage(result.data.msg || 'Registration failed');
+                }
+            } catch (error) {
+                console.error(error);
+                showErrorMessage('An error occurred. Please try again.');
+            }
         }
     </script>
 </body>

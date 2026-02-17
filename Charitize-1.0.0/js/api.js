@@ -15,8 +15,9 @@ const api = {
         });
         const data = await response.json();
         if (response.ok) {
+            const user = { ...data.user, loggedIn: true };
             localStorage.setItem('token', data.token);
-            localStorage.setItem('innovateHubUser', JSON.stringify(data.user));
+            localStorage.setItem('innovateHubUser', JSON.stringify(user));
         }
         return { ok: response.ok, data };
     },
@@ -29,8 +30,9 @@ const api = {
         });
         const data = await response.json();
         if (response.ok) {
+            const user = { ...data.user, loggedIn: true };
             localStorage.setItem('token', data.token);
-            localStorage.setItem('innovateHubUser', JSON.stringify(data.user));
+            localStorage.setItem('innovateHubUser', JSON.stringify(user));
         }
         return { ok: response.ok, data };
     },
