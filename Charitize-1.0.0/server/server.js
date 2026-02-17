@@ -1,9 +1,22 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 
 dotenv.config();
+
+// Initialize Firebase Admin
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+    });
+} else {
+    admin.initializeApp({
+        credential: admin.credential.applicationDefault()
+    });
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;

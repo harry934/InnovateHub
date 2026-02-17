@@ -6,13 +6,15 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 
 // @route   POST api/auth/register
-// @desc    Register user
+// @desc    Register user (Link Firebase Auth UID with MongoDB)
 // @access  Public
 router.post('/register', async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, firebaseUid, role } = req.body;
 
     try {
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ 
+            $or: [{ email }, { firebaseUid }] 
+        });
 
         if (user) {
             return res.status(400).json({ msg: 'User already exists' });
@@ -21,75 +23,53 @@ router.post('/register', async (req, res) => {
         user = new User({
             name,
             email,
-            password,
+            firebaseUid,
             role
         });
 
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(password, salt);
-
         await user.save();
 
-        const payload = {
-            user: {
-                id: user.id,
-                role: user.role
-            }
-        };
-
-        jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: 360000 },
-            (err, token) => {
-                if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
-            }
-        );
+        res.json({ 
+            user: { 
+                id: user.id, 
+                name: user.name, 
+                email: user.email, 
+                role: user.role,
+                firebaseUid: user.firebaseUid
+            } 
+        });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({ msg: 'Server error: ' + err.message });
     }
 });
 
 // @route   POST api/auth/login
-// @desc    Authenticate user & get token
+// @desc    Authenticate user (Verify existence in MongoDB)
 // @access  Public
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { firebaseUid } = req.body;
 
     try {
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ firebaseUid });
 
         if (!user) {
-            return res.status(400).json({ msg: 'Invalid Credentials' });
+            return res.status(404).json({ msg: 'User not found in data store' });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            return res.status(400).json({ msg: 'Invalid Credentials' });
-        }
-
-        const payload = {
-            user: {
-                id: user.id,
-                role: user.role
-            }
-        };
-
-        jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: 360000 },
-            (err, token) => {
-                if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, onboardingCompleted: user.onboardingCompleted } });
-            }
-        );
+        res.json({ 
+            user: { 
+                id: user.id, 
+                name: user.name, 
+                email: user.email, 
+                role: user.role, 
+                onboardingCompleted: user.onboardingCompleted,
+                firebaseUid: user.firebaseUid
+            } 
+        });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({ msg: 'Server error: ' + err.message });
     }
 });
 
@@ -98,11 +78,14 @@ router.post('/login', async (req, res) => {
 // @access  Private
 router.get('/user', auth, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await User.findOne({ firebaseUid: req.user.id });
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
         res.json(user);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error: ' + err.message });
     }
 });
 

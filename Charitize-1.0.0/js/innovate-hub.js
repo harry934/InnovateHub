@@ -63,14 +63,8 @@ document.addEventListener("click", function(e) {
     }
 });
 
-import { auth, db, storage } from './firebase-config.js';
+import { auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { 
-    doc, getDoc, getDocs, collection, addDoc, updateDoc, 
-    query, where, orderBy, limit, serverTimestamp, increment,
-    onSnapshot, setDoc, deleteDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 /**
  * Real-time Firebase Auth Listener
@@ -78,36 +72,22 @@ import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/fireba
  */
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // User is logged in
-        let userData = loadFromLocalStorage("innovateHubUser");
-        
-        // If local data is missing or out of sync, fetch from Firestore
-        if (!userData || userData.uid !== user.uid) {
-            try {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists()) {
-                    userData = { ...userDoc.data(), loggedIn: true };
-                    
-                    // Update lastLogin for inactivity tracking
-                    await updateDoc(doc(db, "users", user.uid), {
-                        lastLogin: serverTimestamp()
-                    });
-                    
-                    saveToLocalStorage("innovateHubUser", userData);
-                }
-            } catch (error) {
-                console.error("Error fetching user role:", error);
-            }
-        }
-        
-        if (userData) {
-            updateUIForRole(userData);
+        try {
+            // User is logged in Firebase, now get MongoDB profile via backend
+            const userData = await window.api.getCurrentUser();
             
-            // Run system checks if admin or mentor
-            if (userData.role === 'admin' || userData.role === 'mentor') {
-                AutomationService.checkExpirations();
-                AutomationService.checkMentorInactivity();
+            if (userData) {
+                const sessionData = { ...userData, loggedIn: true };
+                saveToLocalStorage("innovateHubUser", sessionData);
+                updateUIForRole(sessionData);
+                
+                // Note: AutomationService logic would ideally move to backend cron jobs
+            } else {
+                // User authenticated in Firebase but no profile in MongoDB (e.g., halfway through signup)
+                console.log("Authenticated in Firebase, but MongoDB profile not found.");
             }
+        } catch (error) {
+            console.error("Error syncing auth state:", error);
         }
     } else {
         // User is logged out
@@ -395,22 +375,19 @@ function debounce(func, delay) {
  * Used by dashboard pages to verify access
  * @returns {object|null} - User data if logged in, null otherwise
  */
-export function checkAuth() {
+function checkAuth() {
   const userData = loadFromLocalStorage("innovateHubUser");
-  return userData;
+  return userData && userData.loggedIn ? userData : null;
 }
 
 /**
  * Redirect to login if not authenticated
  * Call this at the top of dashboard pages
  */
-/**
- * Redirect to login if not authenticated
- */
-export function requireAuth() {
+function requireAuth() {
   const user = checkAuth();
-  if (!user || !user.loggedIn) {
-    window.location.href = "login.html";
+  if (!user) {
+    window.location.href = "/login";
   }
   return user;
 }
@@ -528,248 +505,17 @@ window.logout = async function logout() {
     try {
         await signOut(auth);
         // sessionStorage is cleared by the onAuthStateChanged listener
-        window.location.href = "index.html";
+        window.location.href = "/";
     } catch (error) {
         console.error("Logout error:", error);
         sessionStorage.removeItem("innovateHubUser");
-        window.location.href = "index.html";
+        window.location.href = "/";
     }
 }
 
 // ========================================
 // 14. INNOVATION CATEGORIES
 // ========================================
-
-const INNOVATION_CATEGORIES = [
-  { value: "agriculture", label: "Agricultural Technology", class: "text-success", icon: "fa-leaf" },
-  { value: "robotics", label: "Robotics", class: "text-secondary", icon: "fa-robot" },
-  { value: "ai", label: "Artificial Intelligence", class: "text-primary", icon: "fa-brain" },
-  { value: "engineering", label: "Engineering", class: "text-dark", icon: "fa-cogs" },
-  { value: "business", label: "Business Innovation", class: "text-info", icon: "fa-briefcase" },
-  { value: "technology", label: "Technology", class: "text-primary", icon: "fa-laptop" },
-  { value: "healthcare", label: "Healthcare", class: "text-danger", icon: "fa-heartbeat" },
-  { value: "education", label: "Education", class: "text-warning", icon: "fa-graduation-cap" },
-  { value: "environment", label: "Environment", class: "text-success", icon: "fa-tree" },
-  { value: "social", label: "Social Impact", class: "text-danger", icon: "fa-hands-helping" }
-];
-
-function getCategoryBadge(category) {
-  const cat = INNOVATION_CATEGORIES.find((c) => c.value === category);
-  if (!cat) return `<span class="category-badge text-secondary">${category}</span>`;
-
-  return `<span class="category-badge ${cat.class}">
-    <i class="fa ${cat.icon} me-1"></i>${cat.label}
-  </span>`;
-}
-
-// ========================================
-// 15. PROJECT STATUS
-// ========================================
-
-function getStatusBadge(status) {
-  // Added new statuses as per requirements
-  const statusMap = {
-    pending: { label: "Pending Review", class: "status-pending bg-warning text-dark badge" },
-    progress: { label: "In Progress", class: "status-progress bg-info text-dark badge" },
-    completed: { label: "Completed", class: "status-completed bg-success text-white badge" },
-    rejected: { label: "Rejected", class: "status-rejected bg-danger text-white badge" },
-    draft: { label: "Draft", class: "status-draft bg-secondary text-white badge" },
-    expired: { label: "Expired", class: "status-expired bg-orange text-dark badge" },
-    approved: { label: "Approved", class: "status-approved bg-success text-white badge" }
-  };
-
-  const statusInfo = statusMap[status] || statusMap["pending"];
-  return `<span class="${statusInfo.class}">${statusInfo.label}</span>`;
-}
-
-// ========================================
-// 16. CORE SERVICES
-// ========================================
-
-/**
- * PROJECT SERVICE
- */
-export const ProjectService = {
-    async submitProject(projectData, file = null) {
-        const user = checkAuth();
-        if (!user || user.role !== 'innovator') throw new Error("Unauthorized");
-
-        let fileUrl = null;
-        let fileName = null;
-
-        // Handle File Upload if present
-        if (file) {
-            const storageRef = ref(storage, `projects/${user.uid}/${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            fileUrl = await getDownloadURL(snapshot.ref);
-            fileName = file.name;
-        }
-
-        const project = {
-            ...projectData,
-            innovatorId: user.uid,
-            fileUrl,
-            fileName,
-            status: 'pending',
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-            completionPercentage: 0,
-            version: 1,
-            visibility: projectData.visibility || 'public'
-        };
-
-        const docRef = await addDoc(collection(db, "projects"), project);
-        
-        // Log Initial Version
-        await addDoc(collection(db, `projects/${docRef.id}/history`), {
-            version: 1,
-            data: project,
-            timestamp: serverTimestamp(),
-            changedBy: user.uid
-        });
-
-        return docRef.id;
-    },
-
-    async updateProject(projectId, updates) {
-        const user = checkAuth();
-        if (!user) throw new Error("Unauthorized");
-
-        const projectRef = doc(db, "projects", projectId);
-        const projectDoc = await getDoc(projectRef);
-        
-        if (!projectDoc.exists()) throw new Error("Project not found");
-        
-        const currentData = projectDoc.data();
-        const newVersion = (currentData.version || 1) + 1;
-
-        await updateDoc(projectRef, {
-            ...updates,
-            version: newVersion,
-            updatedAt: serverTimestamp()
-        });
-
-        // Log Version History
-        await addDoc(collection(db, `projects/${projectId}/history`), {
-            version: newVersion,
-            changes: updates,
-            timestamp: serverTimestamp(),
-            changedBy: user.uid
-        });
-    },
-
-    async addMilestone(projectId, milestone) {
-        return await addDoc(collection(db, "milestones"), {
-            ...milestone,
-            projectId: projectId,
-            status: 'pending',
-            createdAt: serverTimestamp()
-        });
-    }
-};
-
-/**
- * MENTORSHIP SERVICE
- */
-export const MentorshipService = {
-    async sendRequest(mentorId, projectId) {
-        const user = checkAuth();
-        return await addDoc(collection(db, "mentorshipRequests"), {
-            innovatorId: user.uid,
-            mentorId: mentorId,
-            projectId: projectId,
-            status: 'pending',
-            createdAt: serverTimestamp(),
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
-        });
-    },
-
-    async respondToRequest(requestId, status, reason = "") {
-        const requestRef = doc(db, "mentorshipRequests", requestId);
-        await updateDoc(requestRef, { 
-            status: status,
-            reason: reason,
-            respondedAt: serverTimestamp() 
-        });
-
-        if (status === 'accepted') {
-            const requestDoc = await getDoc(requestRef);
-            const data = requestDoc.data();
-            // Link mentor to project
-            await updateDoc(doc(db, "projects", data.projectId), {
-                mentorId: data.mentorId,
-                status: 'in-progress'
-            });
-        }
-    },
-
-    async scheduleMeeting(meetingData) {
-        return await addDoc(collection(db, "meetings"), {
-            ...meetingData,
-            createdAt: serverTimestamp()
-        });
-    }
-};
-
-/**
- * AUTOMATION SERVICE
- * Background checks for inactivity and expirations
- */
-export const AutomationService = {
-    async checkExpirations() {
-        const q = query(
-            collection(db, "mentorshipRequests"), 
-            where("status", "==", "pending"),
-            where("expiresAt", "<=", new Date())
-        );
-        const snapshot = await getDocs(q);
-        snapshot.forEach(async (d) => {
-            await updateDoc(doc(db, "mentorshipRequests", d.id), { status: 'expired' });
-        });
-    },
-
-    async checkMentorInactivity() {
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-        const q = query(
-            collection(db, "users"), 
-            where("role", "==", "mentor"),
-            where("lastLogin", "<=", thirtyDaysAgo)
-        );
-        const snapshot = await getDocs(q);
-        snapshot.forEach(async (d) => {
-            await updateDoc(doc(db, "users", d.id), { autoFlagged: 'inactive_30d' });
-            // Alert Admin usually via Notification
-            await addDoc(collection(db, "notifications"), {
-                userId: 'admin', // Placeholder or broadcast
-                message: `Mentor ${d.data().fullName} flagged for 30-day inactivity.`,
-                type: 'alert',
-                createdAt: serverTimestamp()
-            });
-        });
-    }
-};
-
-/**
- * NOTIFICATION SERVICE
- */
-export const NotificationService = {
-    async send(userId, message, type = 'info', link = '#') {
-        return await addDoc(collection(db, "notifications"), {
-            userId, message, type, link,
-            read: false,
-            createdAt: serverTimestamp()
-        });
-    }
-};
-
-// ========================================
-// GLOBAL EXPORTS
-// ========================================
-
-window.ProjectService = ProjectService;
-window.MentorshipService = MentorshipService;
-window.AutomationService = AutomationService;
-window.NotificationService = NotificationService;
 
 // Log initialization message
 console.log(

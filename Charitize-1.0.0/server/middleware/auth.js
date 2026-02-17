@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
+const admin = require('firebase-admin');
 
-module.exports = function(req, res, next) {
+module.exports = async function(req, res, next) {
     // Get token from header
     const token = req.header('x-auth-token');
 
@@ -11,10 +11,14 @@ module.exports = function(req, res, next) {
 
     // Verify token
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded.user;
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        req.user = {
+            id: decodedToken.uid,
+            email: decodedToken.email
+        };
         next();
     } catch (err) {
+        console.error('Error verifying Firebase token:', err.message);
         res.status(401).json({ msg: 'Token is not valid' });
     }
 };

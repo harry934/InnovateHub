@@ -3,39 +3,80 @@
  * Handles all communication with the backend API
  */
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://innovatehub.up.railway.app/api'; 
 
 const api = {
     // Auth
-    login: async (email, password) => {
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        const data = await response.json();
-        if (response.ok) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('innovateHubUser', JSON.stringify(data.user));
+    login: async (firebaseUser, idToken) => {
+        try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ firebaseUid: firebaseUser.uid })
+            });
+            
+            let data;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.error("Non-JSON API response:", text);
+                data = { msg: `Server error: ${text || response.statusText}` };
+            }
+
+            if (response.ok) {
+                const user = { ...data.user, loggedIn: true };
+                localStorage.setItem('token', idToken);
+                localStorage.setItem('innovateHubUser', JSON.stringify(user));
+            }
+            return { ok: response.ok, data };
+        } catch (error) {
+            console.error("API Login Error:", error);
+            return { ok: false, data: { msg: "Network or Server Error" } };
         }
-        return { ok: response.ok, data };
     },
 
-    register: async (userData) => {
-        const response = await fetch(`${API_URL}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        });
-        const data = await response.json();
-        if (response.ok) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('innovateHubUser', JSON.stringify(data.user));
+    register: async (firebaseUser, idToken, userData) => {
+        try {
+            const response = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...userData,
+                    firebaseUid: firebaseUser.uid,
+                    email: firebaseUser.email
+                })
+            });
+            
+            let data;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.error("Non-JSON API response:", text);
+                data = { msg: `Server error: ${text || response.statusText}` };
+            }
+
+            if (response.ok) {
+                const user = { ...data.user, loggedIn: true };
+                localStorage.setItem('token', idToken);
+                localStorage.setItem('innovateHubUser', JSON.stringify(user));
+            }
+            return { ok: response.ok, data };
+        } catch (error) {
+            console.error("API Register Error:", error);
+            return { ok: false, data: { msg: "Network or Server Error" } };
         }
-        return { ok: response.ok, data };
     },
     
-    logout: () => {
+    logout: async () => {
+        if (window.auth) {
+            await window.auth.signOut();
+        }
         localStorage.removeItem('token');
         localStorage.removeItem('innovateHubUser');
         window.location.href = 'index.html';

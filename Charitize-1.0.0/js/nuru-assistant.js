@@ -18,33 +18,33 @@ const NURU_KNOWLEDGE = {
             id: 'about',
             keywords: ['about', 'what', 'website', 'websitge', 'purpose', 'do', 'hub', 'innovate'],
             response: "Innovate Hub is a premier platform for all innovators. We turn ideas into reality by connecting people of all ages with mentors, project partners, and essential resources. We're excited to see what you build!",
-            links: [{ label: "Learn More", url: "about.html" }]
+            links: [{ label: "Learn More", url: "/about" }]
         },
         {
             id: 'join',
             keywords: ['join', 'signup', 'register', 'account', 'create', 'start', 'regster'],
             response: "We'd love to have you! You can sign up as an Innovator to share your projects, or as a Mentor to guide others. It's a supportive universal community for everyone and we're here to help you get started.",
-            links: [{ label: "Start Registration", url: "signup.html" }]
+            links: [{ label: "Start Registration", url: "/signup" }]
         },
         {
             id: 'mentor',
             keywords: ['mentor', 'mentorship', 'guide', 'expert', 'help me'],
             response: "Our mentorship program connects people with industry experts. Mentors provide guidance on project scaling, technical hurdles, and personal growth. That sounds like a great way to start your journey!",
-            links: [{ label: "Join as Mentor", url: "signup.html" }]
+            links: [{ label: "Join as Mentor", url: "/signup" }]
         },
         {
             id: 'project',
             keywords: ['project', 'submit', 'idea', 'innovation', 'share', 'list', 'work on', 'suggest'],
             response: "Looking for inspiration? Based on our community interests, you could work on ideas like: \n• Community Sustainability Tracker\n• Global Peer-to-Peer Learning Hub\n• Innovation Event Platform\nThat sounds like it could be a game-changer!",
-            links: [{ label: "Submit Your Project", url: "innovator-dashboard.html" }]
+            links: [{ label: "Submit Your Project", url: "/innovator-dashboard" }]
         },
         {
             id: 'navigation',
             keywords: ['where', 'pages', 'go', 'contact', 'home', 'services'],
             response: "I can guide you anywhere! You can check our 'About Us' to see our story, or visit 'Contact Us' if you need directions. Let me know if you need help finding anything else.",
             links: [
-                { label: "About Us", url: "about.html" },
-                { label: "Contact Us", url: "contact.html" }
+                { label: "About Us", url: "/about" },
+                { label: "Contact Us", url: "/contact" }
             ]
         },
         {
