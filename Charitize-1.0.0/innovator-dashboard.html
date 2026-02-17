@@ -37,7 +37,7 @@
         <!-- Sidebar Navigation -->
         <div class="dashboard-sidebar">
             <!-- Logo Section -->
-                <a href="index.html" class="logo-container text-decoration-none px-4 mb-4 mt-3">
+                <a href="/" class="logo-container text-decoration-none px-4 mb-4 mt-3">
                     <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
                     <span class="logo-text" style="color: white; font-size: 1.3rem; margin-left: 10px;">Innovate Hub</span>
                 </a>
@@ -54,7 +54,7 @@
             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Support</h6>
             <nav class="nav flex-column mb-3">
                 <a class="nav-link" href="#" onclick="showSection('myMentors'); return false;">My Mentors</a>
-                <a class="nav-link" href="events.html">Events</a>
+                <a class="nav-link" href="/event">Events</a>
             </nav>
 
             <!-- Group: Account -->
@@ -338,121 +338,6 @@
                 document.getElementById('notifCount').textContent = notifs.length;
             });
         }
-<<<<<<< HEAD
-        
-        /**
-         * Submit new project
-         * @param {Event} event - Form submission event
-         */
-        async function submitProject(event) {
-            event.preventDefault();
-            
-            // Get form values
-            const title = document.getElementById('projectTitle').value;
-            const category = document.getElementById('projectCategory').value;
-            const description = document.getElementById('projectDescription').value;
-            const goals = document.getElementById('projectGoals').value;
-            // File upload simulation (in real app, would need multipart/form-data)
-            
-            // Validate description length
-            if (description.length < 50) {
-                showErrorMessage('Project description must be at least 50 characters');
-                return;
-            }
-            
-            // Create project object
-            const projectData = {
-                title,
-                category,
-                description,
-                goals,
-                // In a full implementation, we would upload the file first and get a URL
-                // For now, we'll skip the file upload in the JSON body
-            };
-            
-            try {
-                const result = await window.api.createProject(projectData);
-                
-                if (result.ok) {
-                    showSuccessMessage('Project submitted successfully!');
-                    
-                    // Reset form
-                    document.getElementById('projectForm').reset();
-                    
-                    // Reload projects display
-                    loadProjects();
-                    
-                    // Switch to projects view
-                    setTimeout(() => {
-                        showSection('projects');
-                    }, 1500);
-                } else {
-                    showErrorMessage('Failed to submit project');
-                }
-            } catch (error) {
-                console.error(error);
-                showErrorMessage('An error occurred. Please try again.');
-            }
-        }
-        
-        /**
-         * Load and display projects
-         */
-        async function loadProjects() {
-            try {
-                const projects = await window.api.getMyProjects();
-                const container = document.getElementById('projectsContainer');
-                
-                // Update stats (safely check if projects is array)
-                if (Array.isArray(projects)) {
-                     document.getElementById('totalProjects').textContent = projects.length;
-                     // Note: Backend statuses might differ slightly, ensure consistency
-                     document.getElementById('pendingProjects').textContent = 
-                         projects.filter(p => p.status === 'pending').length;
-                     document.getElementById('completedProjects').textContent = 
-                         projects.filter(p => p.status === 'completed').length;
-                }
-                
-                // Display projects
-                if (!projects || projects.length === 0) {
-                    container.innerHTML = `
-                        <div class="dashboard-card text-center py-5">
-                            <p class="text-muted mb-4 fs-5">No projects yet. Submit your first project to get started!</p>
-                            <button class="btn btn-custom-signup px-5" onclick="showSection('submit')">
-                                Submit Project
-                            </button>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Build HTML for projects
-                let html = '';
-                projects.forEach(project => {
-                    html += `
-                        <div class="project-card">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h3>${project.title}</h3>
-                                ${getCategoryBadge(project.category)}
-                            </div>
-                            <p class="text-muted">${truncateText(project.description, 150)}</p>
-                            <div class="project-card-footer">
-                                <small class="text-muted">
-                                    Submitted: ${formatDate(project.createdAt || project.submittedDate)}
-                                </small>
-                                ${getStatusBadge(project.status)}
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                container.innerHTML = html;
-            } catch (error) {
-                console.error(error);
-                document.getElementById('projectsContainer').innerHTML = 
-                    '<p class="text-danger text-center">Failed to load projects. Please refresh.</p>';
-            }
-=======
 
         function setupFormHandlers() {
             // Project Submission
@@ -519,7 +404,6 @@
                 `;
             });
             container.innerHTML = html;
->>>>>>> 4f003953aab5290b1965c4b19a0757d722c85f18
         }
 
         function updateMentorsUI() {

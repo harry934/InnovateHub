@@ -387,7 +387,7 @@ function checkAuth() {
 function requireAuth() {
   const user = checkAuth();
   if (!user) {
-    window.location.href = "login.html";
+    window.location.href = "/login";
   }
   return user;
 }
@@ -505,11 +505,11 @@ window.logout = async function logout() {
     try {
         await signOut(auth);
         // sessionStorage is cleared by the onAuthStateChanged listener
-        window.location.href = "index.html";
+        window.location.href = "/";
     } catch (error) {
         console.error("Logout error:", error);
         sessionStorage.removeItem("innovateHubUser");
-        window.location.href = "index.html";
+        window.location.href = "/";
     }
 }
 
