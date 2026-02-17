@@ -474,10 +474,10 @@
             showSuccessMessage("Login successful! Welcome back.");
             setTimeout(() => (window.location.href = redirectUrl), 1000);
           } else {
-            // New logic: if user not found, redirect to signup with their info
-            showErrorMessage("No account found. Redirecting to signup to complete your profile...");
+            // New logic: if user not found in MongoDB, redirect to signup with their info
+            showErrorMessage("Profile not found in our data store. Redirecting to complete your profile...");
             setTimeout(() => {
-                window.location.href = `/signup?email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.displayName || '')}`;
+                window.location.href = `signup.html?email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.displayName || '')}`;
             }, 2000);
           }
         } catch (error) {
@@ -529,10 +529,11 @@
             showSuccessMessage("Login successful! Welcome back.");
             setTimeout(() => (window.location.href = redirectUrl), 1000);
           } else {
-            showErrorMessage(
-              loginResult.data.msg || "User not found in data store",
-            );
+            showErrorMessage("Account found in auth service, but profile is missing. Redirecting to signup...");
             await signOut(auth);
+            setTimeout(() => {
+                window.location.href = `signup.html?email=${encodeURIComponent(email)}`;
+            }, 2000);
             btn.innerHTML = originalText;
             btn.disabled = false;
           }

@@ -144,14 +144,30 @@
         let mentees = [];
 
         window.addEventListener('load', async function() {
-            const session = JSON.parse(sessionStorage.getItem('innovateHubUser'));
+            const session = JSON.parse(localStorage.getItem('innovateHubUser')); // Use localStorage
             if (!session || session.role !== 'mentor') {
                 alert('Access Denied. Mentors only.');
-                window.location.href = '/login';
+                window.location.href = 'login.html';
                 return;
             }
             
             mentorData = session;
+            
+            // Mandatory Onboarding Check
+            if (!mentorData.onboardingCompleted) {
+                showSection('profile');
+                // Hide other nav links
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    if (link.textContent !== 'My Profile' && link.textContent !== 'Logout') {
+                        link.style.display = 'none';
+                    }
+                });
+                const alertBox = document.createElement('div');
+                alertBox.className = 'alert alert-warning mb-4';
+                alertBox.innerHTML = '<i class="fa fa-info-circle me-2"></i> Please complete your profile to unlock all dashboard features.';
+                document.querySelector('#profileSection .dashboard-header').after(alertBox);
+            }
+
             loadProfile();
             setupListeners();
             setupFormHandlers();
@@ -194,14 +210,49 @@
             document.getElementById('mentorProfileForm').onsubmit = async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
-                await updateDoc(doc(db, "users", mentorData.uid), {
-                    profession: formData.get('profession'),
-                    photoURL: formData.get('photoURL'),
-                    expertise: formData.get('expertise'),
-                    bio: formData.get('bio'),
-                    updatedAt: serverTimestamp()
-                });
-                alert("Profile updated!");
+                
+                // Show loading
+                const btn = e.target.querySelector('button');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Updating...';
+                btn.disabled = true;
+
+                try {
+                    // 1. Update MongoDB via API
+                    const result = await window.api.updateProfile({
+                        bio: formData.get('bio'),
+                        skills: formData.get('expertise').split(',').map(s => s.trim()),
+                        experience: formData.get('profession'),
+                        availability: true
+                    });
+
+                    if (result.ok) {
+                        // 2. Update Firestore for legacy (optional but good for consistency)
+                        await updateDoc(doc(db, "users", mentorData.uid), {
+                            profession: formData.get('profession'),
+                            photoURL: formData.get('photoURL'),
+                            expertise: formData.get('expertise'),
+                            bio: formData.get('bio'),
+                            onboardingCompleted: true, // Mark as completed
+                            updatedAt: serverTimestamp()
+                        });
+
+                        // 3. Update local storage
+                        mentorData.onboardingCompleted = true;
+                        localStorage.setItem('innovateHubUser', JSON.stringify(mentorData));
+                        
+                        alert("Profile updated! Refreshing dashboard...");
+                        window.location.reload();
+                    } else {
+                        alert("Failed to update profile on server: " + (result.data ? result.data.msg : "Unknown error"));
+                    }
+                } catch (err) {
+                    console.error("Profile update error:", err);
+                    alert("An error occurred during update.");
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
             };
         }
 
