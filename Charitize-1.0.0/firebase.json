@@ -1,0 +1,36 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "server/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/signup",
+        "destination": "/signup.html"
+      },
+      {
+        "source": "/login",
+        "destination": "/login.html"
+      },
+      {
+        "source": "/innovator-dashboard",
+        "destination": "/innovator-dashboard.html"
+      },
+      {
+        "source": "/mentor-dashboard",
+        "destination": "/mentor-dashboard.html"
+      },
+      {
+        "source": "/admin-dashboard",
+        "destination": "/admin-dashboard.html"
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}

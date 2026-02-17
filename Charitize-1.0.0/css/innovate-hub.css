@@ -3,8 +3,6 @@
    Additional styles for Innovate Hub platform
    ======================================== */
 
-
-
 /* ========================================
    2. ENHANCED LOGO STYLING
    Professional logo with icon
@@ -27,11 +25,13 @@
 .logo-text {
   font-weight: 700;
   font-size: 1.8rem;
-  background: linear-gradient(135deg, var(--bs-primary) 0%, #2d5016 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #FFFFFF; /* White for better visibility on dark backgrounds */
   letter-spacing: -0.5px;
+  transition: color 0.3s ease;
+}
+
+.logo-container:hover .logo-text {
+  color: #F3A813; /* Brand Orange on hover */
 }
 
 /* Navbar Logo (smaller version) */
@@ -58,7 +58,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Hover Effect for Badges */
@@ -69,61 +69,61 @@
 
 /* Agricultural Technology - Dark green */
 .category-agriculture {
-  background: linear-gradient(135deg, #2d5016 0%, #6b9b37 100%);
+  background-color: #2d5016;
   color: white;
 }
 
 /* Robotics - Medium green */
 .category-robotics {
-  background: linear-gradient(135deg, #4a7c2c 0%, #7cb342 100%);
+  background-color: #4a7c2c;
   color: white;
 }
 
 /* Artificial Intelligence - Yellow to green */
 .category-ai {
-  background: linear-gradient(135deg, #ffd700 0%, #9acd32 100%);
+  background-color: #ffd700;
   color: #2d5016; /* Dark green text for contrast */
 }
 
 /* Engineering - Professional green */
 .category-engineering {
-  background: linear-gradient(135deg, #558b2f 0%, #689f38 100%);
+  background-color: #558b2f;
   color: white;
 }
 
 /* Business Innovation - Gold/Yellow */
 .category-business {
-  background: linear-gradient(135deg, #f9a825 0%, #ffd700 100%);
+  background-color: #f9a825;
   color: #2d5016; /* Dark green text */
 }
 
 /* Technology (General) - Balanced green-yellow */
 .category-technology {
-  background: linear-gradient(135deg, #6b9b37 0%, #cddc39 100%);
+  background-color: #6b9b37;
   color: #2d5016;
 }
 
 /* Healthcare - Lighter green */
 .category-healthcare {
-  background: linear-gradient(135deg, #7cb342 0%, #aed581 100%);
+  background-color: #7cb342;
   color: #2d5016;
 }
 
 /* Education - Warm yellow-green */
 .category-education {
-  background: linear-gradient(135deg, #9ccc65 0%, #dce775 100%);
+  background-color: #9ccc65;
   color: #2d5016;
 }
 
 /* Environment - Deep green */
 .category-environment {
-  background: linear-gradient(135deg, #33691e 0%, #558b2f 100%);
+  background-color: #33691e;
   color: white;
 }
 
 /* Social Impact - Bright yellow */
 .category-social {
-  background: linear-gradient(135deg, #fbc02d 0%, #ffeb3b 100%);
+  background-color: #fbc02d;
   color: #2d5016;
 }
 
@@ -180,23 +180,23 @@
 /* Primary Button Enhancements */
 .btn-primary {
   font-weight: 600;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Custom Sign Up Button (Orange) */
 .btn-custom-signup {
-  background-color: #F3A813; /* Image match: Bright Orange */
+  background-color: #f3a813; /* Image match: Bright Orange */
   color: #000000;
   border: none;
   padding: 10px 30px; /* Reduced slightly to fit navbar better */
   font-weight: 700;
   border-radius: 0 !important; /* STRICTLY SHARP CORNERS */
-  text-transform: capitalize; 
+  text-transform: capitalize;
   white-space: nowrap; /* Prevent text wrapping */
   transition: all 0.3s ease;
 }
@@ -205,13 +205,13 @@
   background-color: #d99611;
   color: #000000;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Custom Login Button (Dark Green) */
 .btn-custom-login {
-  background-color: #1A5E4F; /* Image match: Dark Deep Green */
-  color: #FFFFFF;
+  background-color: #1a5e4f; /* Image match: Dark Deep Green */
+  color: #ffffff;
   border: none;
   padding: 10px 30px; /* Reduced slightly to fit navbar better */
   font-weight: 700;
@@ -223,20 +223,41 @@
 
 .btn-custom-login:hover {
   background-color: #14493e;
-  color: #FFFFFF;
+  color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* GET STARTED Button (Green with White Text) */
+.btn-get-started {
+  background-color: #1a5e4f; /* Using the Deep Green brand color */
+  color: #ffffff !important;
+  border: none;
+  padding: 10px 25px;
+  font-weight: 700;
+  border-radius: 0 !important; /* STRICTLY SHARP CORNERS */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-get-started:hover {
+  background-color: #14493e;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Secondary Button Enhancements */
 .btn-secondary {
   font-weight: 600;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .btn-secondary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* ========================================
@@ -253,17 +274,17 @@
 /* Dashboard Sidebar */
 .dashboard-sidebar {
   width: 250px;
-  background: #1A5E4F; /* Dark Green Brand Color */
+  background: #1a5e4f; /* Dark Green Brand Color */
   color: white;
   padding: 1.5rem 0;
   position: fixed;
   height: 100vh;
   overflow-y: auto;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-heading {
-  font-family: 'Josefin Sans', sans-serif;
+  font-family: "Josefin Sans", sans-serif;
   letter-spacing: 1px;
   opacity: 0.7;
 }
@@ -274,7 +295,7 @@
   padding: 0.8rem 1.5rem;
   transition: all 0.2s ease;
   border-left: 4px solid transparent;
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: 500;
 }
 
@@ -286,14 +307,14 @@
 
 .dashboard-sidebar .nav-link.active {
   background: rgba(255, 255, 255, 0.15);
-  color: #F3A813; /* Orange Brand Color for Active */
-  border-left-color: #F3A813;
+  color: #f3a813; /* Orange Brand Color for Active */
+  border-left-color: #f3a813;
   font-weight: 700;
 }
 
 .dashboard-sidebar .nav-link.text-danger:hover {
-    color: #ff4d4d !important;
-    background: rgba(255, 77, 77, 0.1);
+  color: #ff4d4d !important;
+  background: rgba(255, 77, 77, 0.1);
 }
 
 /* Dashboard Main Content */
@@ -311,14 +332,14 @@
   border-radius: 0; /* Match sharp corners */
   margin-bottom: 2rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border-bottom: 3px solid #F3A813; /* Accent line */
+  border-bottom: 3px solid #f3a813; /* Accent line */
 }
 
 .dashboard-header h2 {
-    font-family: 'Josefin Sans', sans-serif;
-    font-weight: 700;
-    color: #1A5E4F;
-    margin-bottom: 0.25rem;
+  font-family: "Josefin Sans", sans-serif;
+  font-weight: 700;
+  color: #1a5e4f;
+  margin-bottom: 0.25rem;
 }
 
 /* Dashboard Card */
@@ -363,21 +384,21 @@
 /* Enhanced Form Controls */
 .form-control,
 .form-select {
-    border-radius: 0; /* Sharp corners */
-    padding: 0.75rem 1rem;
-    border: 1px solid #ced4da;
+  border-radius: 0; /* Sharp corners */
+  padding: 0.75rem 1rem;
+  border: 1px solid #ced4da;
 }
 
 .form-control:focus,
 .form-select:focus {
-  border-color: #1A5E4F;
+  border-color: #1a5e4f;
   box-shadow: 0 0 0 0.15rem rgba(26, 94, 79, 0.15);
 }
 
 .form-label {
-    color: #1A5E4F;
-    font-size: 0.9rem;
-    margin-bottom: 0.4rem;
+  color: #1a5e4f;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
 }
 
 /* File Upload Styling */
@@ -412,12 +433,12 @@
 
 .project-card {
   background: white;
-  border-radius: 10px;
+  border-radius: 0; /* Sharp corners for a neater look */
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08); /* Subtler shadow */
   transition: all 0.3s ease;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #1a5e4f; /* Use brand colors */
 }
 
 .project-card:hover {
@@ -457,7 +478,11 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6b9b37 0%, #8bc34a 100%); /* Green gradient */
+  background: linear-gradient(
+    135deg,
+    #6b9b37 0%,
+    #8bc34a 100%
+  ); /* Green gradient */
   color: white;
   border: none;
   font-size: 1.5rem;
@@ -473,7 +498,11 @@
 .ai-assistant-button:hover {
   transform: scale(1.1);
   box-shadow: 0 6px 16px rgba(107, 155, 55, 0.6);
-  background: linear-gradient(135deg, #558b2f 0%, #7cb342 100%); /* Darker green on hover */
+  background: linear-gradient(
+    135deg,
+    #558b2f 0%,
+    #7cb342 100%
+  ); /* Darker green on hover */
 }
 
 /* AI Chat Container */
@@ -499,7 +528,11 @@
 
 /* Chat Header */
 .ai-chat-header {
-  background: linear-gradient(135deg, #6b9b37 0%, #8bc34a 100%); /* Green gradient */
+  background: linear-gradient(
+    135deg,
+    #6b9b37 0%,
+    #8bc34a 100%
+  ); /* Green gradient */
   color: white;
   padding: 1rem;
   display: flex;
@@ -658,13 +691,75 @@
 }
 
 .navbar-nav .nav-link {
-  transition: .3s;
+  transition: 0.3s;
   padding: 10px 15px !important;
 }
 
 .navbar-nav .nav-link.active {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 5px;
+}
+
+/* ========================================
+   12. ENHANCED DROPDOWN MENUS
+   Spice up the dropdowns with glassmorphism and animations
+   ======================================== */
+
+.navbar .dropdown-menu {
+    border: none;
+    border-top: 3px solid #F3A813; /* Brand Orange top accent */
+    border-radius: 0 0 10px 10px;
+    background: rgba(26, 94, 79, 0.98); /* Slightly more opaque for better legibility */
+    backdrop-filter: blur(15px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    margin-top: 0;
+    padding: 15px 0;
+    min-width: 240px; /* Increased width */
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.navbar .dropdown-item {
+    color: rgba(255, 255, 255, 0.9);
+    padding: 15px 30px; /* Increased breathing room */
+    font-weight: 600; /* Bolder for professional look */
+    font-size: 1rem; /* Slightly larger */
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.navbar .dropdown-item:hover, 
+.navbar .dropdown-item.active {
+    background: rgba(255, 255, 255, 0.08);
+    color: #F3A813; /* Brand Orange */
+    border-left: 4px solid #F3A813;
+    padding-left: 35px; /* More pronounced shift */
+    transform: translateX(5px); /* Subtle horizontal move */
+}
+
+/* Dropdown Animation for Desktop */
+@media (min-width: 992px) {
+    .navbar .nav-item .dropdown-menu {
+        display: block;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(15px);
+    }
+    
+    .navbar .nav-item:hover .dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+}
+
+/* Custom Dropdown Toggle */
+.navbar .dropdown-toggle::after {
+    transition: transform 0.3s ease;
+}
+
+.navbar .nav-item:hover .dropdown-toggle::after {
+    transform: rotate(180deg);
 }
 
 /* ========================================
@@ -695,7 +790,7 @@
   gap: 12px;
   border-left: 4px solid transparent;
   text-decoration: none;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .dashboard-sidebar-nav .nav-link:hover,
@@ -714,7 +809,7 @@
 .content-card {
   background: var(--bs-white);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   padding: 2rem;
   margin-bottom: 2rem;
 }
@@ -742,6 +837,205 @@
 }
 
 /* Utility to hide/show sections */
-.d-dashboard-none { display: none !important; }
-.d-dashboard-block { display: block !important; }
+.d-dashboard-none {
+  display: none !important;
+}
+.d-dashboard-block {
+  display: block !important;
+}
+/* ========================================
+   12. HERO CAROUSEL UNIQUE PRESENTATION
+   Zoom-in effect and optimized vertical fit
+   ======================================== */
 
+.header-carousel .carousel-img {
+    overflow: hidden; /* Prevent zoom from overflowing */
+    height: 100%;
+}
+
+.header-carousel .carousel-img img {
+  width: 100%;
+  height: auto;
+  min-height: 400px; /* Base height for mobile */
+  aspect-ratio: 1 / 1; 
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0 !important;
+  transition: transform 6s ease-in-out; /* Smooth baseline */
+}
+
+/* Unique Ken Burns Animation for Active Slide */
+.header-carousel .owl-item.active .carousel-img img {
+    animation: kenBurnsZoom 10s ease-in-out forwards;
+}
+
+@keyframes kenBurnsZoom {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.15);
+    }
+}
+
+/* Responsive adjustment for desktop to fit from top to bottom */
+@media (min-width: 992px) {
+  .header-carousel .carousel-img img {
+    min-height: 600px; /* Larger vertical presence */
+    aspect-ratio: 4 / 3; 
+    max-height: none; /* Remove previous constraint */
+  }
+}
+/* ========================================
+   13. TRANSFORMING STICKY NAVBAR
+   Scroll-based refinement: Transparent-ish, slim, and focused
+   ======================================== */
+
+.nav-bar {
+    transition: all 0.5s ease;
+}
+
+/* Scrolled state overrides */
+.nav-bar.navbar-scrolled {
+    background: rgba(26, 94, 79, 0.75) !important; /* Slightly more transparent */
+    backdrop-filter: blur(15px); /* Stronger blur for better effect */
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.nav-bar.navbar-scrolled .navbar {
+    background: transparent !important; /* Force inner navbar to be transparent */
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+
+/* Hide navigation links on scroll for focus */
+.nav-bar.navbar-scrolled #navbarCollapse .navbar-nav {
+    display: none !important;
+}
+
+/* Reveal logo inside navbar on scroll */
+.sticky-logo {
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    display: none !important; /* Initial desktop state */
+}
+
+.nav-bar.navbar-scrolled .sticky-logo {
+    opacity: 1;
+    visibility: visible;
+    display: flex !important;
+}
+
+/* Ensure the 'GET STARTED' button stays right-aligned */
+.nav-bar.navbar-scrolled .navbar-collapse {
+    justify-content: space-between;
+}
+
+@media (max-width: 991.98px) {
+    .nav-bar.navbar-scrolled {
+        padding: 0 !important; /* Full width on mobile scroll */
+    }
+}
+
+/* ========================================
+   14. RECONSTRUCTING LOGO PRELOADER (HIGH-END)
+   Cinematic minimalist assembly for premium feel
+   ======================================== */
+
+#logo-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: radial-gradient(circle at center, #1E6B5A 0%, #1A5E4F 100%); /* Radial depth */
+    display: none; /* fail-safe: hidden by default */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    transition: opacity 1.2s cubic-bezier(0.77, 0, 0.175, 1), visibility 1.2s;
+    opacity: 0; /* Hidden by default */
+}
+
+#logo-preloader.active {
+    display: flex;
+    opacity: 1;
+}
+
+#logo-preloader.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Subsequent Load - Instant Assembly State */
+#logo-preloader.subsequent-load .hexagon-path,
+#logo-preloader.subsequent-load .hub-circle,
+#logo-preloader.subsequent-load .connect-line {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+    transform: scale(1) !important;
+    opacity: 1 !important;
+}
+
+.preloader-content {
+    text-align: center;
+    position: relative;
+    padding: 40px;
+}
+
+.preloader-logo-svg {
+    width: 150px;
+    height: 150px;
+    filter: drop-shadow(0 0 30px rgba(243, 168, 19, 0.15));
+    animation: finalPulse 6s ease-in-out infinite 3.5s;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Optimized Path Animations (2.2s total) */
+.hexagon-path {
+    stroke-dasharray: 120;
+    stroke-dashoffset: 120;
+    animation: drawPath 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) forwards 0.1s;
+}
+
+.hub-circle {
+    transform: scale(0);
+    transform-origin: 20px 20px;
+    animation: scaleHub 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards 1.0s;
+}
+
+.connect-line {
+    stroke-dasharray: 15;
+    stroke-dashoffset: 15;
+}
+
+.line-1 { animation: drawPath 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards 1.4s; }
+.line-2 { animation: drawPath 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards 1.6s; }
+.line-3 { animation: drawPath 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards 1.8s; }
+
+@keyframes drawPath {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes scaleHub {
+    to {
+        transform: scale(1);
+    }
+}
+
+@keyframes finalPulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 30px rgba(243, 168, 19, 0.15));
+    }
+    50% {
+        transform: scale(1.03);
+        filter: drop-shadow(0 0 45px rgba(243, 168, 19, 0.3));
+    }
+}

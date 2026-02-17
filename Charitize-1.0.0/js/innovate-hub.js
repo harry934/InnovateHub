@@ -1,27 +1,113 @@
-/**
- * ========================================
- * INNOVATE HUB - MAIN JAVASCRIPT FILE
- * Handles splash screen, navigation, and core functionality
- * ========================================
- */
-
 // ========================================
-// 1. SPLASH SCREEN CONTROL
+// 1. SPLASH SCREEN CONTROL (PRELOADER)
 // ========================================
 
-/**
- * Run on page load
- */
-window.addEventListener("load", async function () {
-    // Check authentication and update UI immediately
-    // Note: api object is available from api.js
-    if (window.api) {
-        const user = await window.api.getCurrentUser();
-        if (user) {
-            updateUIForRole(user);
+(function() {
+    // Run immediately
+    const initPreloader = () => {
+        const preloader = document.getElementById("logo-preloader");
+        if (!preloader) return;
+
+        // Check Navigation Type
+        const wasNavigated = sessionStorage.getItem("wasNavigated");
+        
+        // Clear flag immediately
+        sessionStorage.removeItem("wasNavigated");
+
+        if (wasNavigated) {
+            // It was a navigation click -> DO NOTHING
+            preloader.remove();
+        } else {
+            // It was a Refresh or Initial Load -> SHOW PRELOADER
+            preloader.classList.add("active");
+            
+            // Primary animation completion
+            const hidePreloader = () => {
+                preloader.classList.remove("active");
+                preloader.classList.add("fade-out");
+                setTimeout(() => {
+                    if(preloader && preloader.parentNode) preloader.remove();
+                }, 1000);
+            };
+
+            // Remove after planned animation
+            setTimeout(hidePreloader, 2000);
+
+            // FAILSAFE: Force remove after 4 seconds regardless of state
+            setTimeout(() => {
+                if (preloader && preloader.parentNode) {
+                    console.warn("Preloader failsafe triggered.");
+                    preloader.remove();
+                }
+            }, 4000);
         }
+    };
+
+    // Initialize as soon as DOM is ready or Script runs
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPreloader);
+    } else {
+        initPreloader();
+    }
+})();
+
+// Navigation listener to set flag
+document.addEventListener("click", function(e) {
+    const link = e.target.closest("a");
+    if (link && 
+        link.href && 
+        link.href.includes(window.location.origin) && 
+        !link.href.includes("#") && 
+        link.target !== "_blank") {
+        sessionStorage.setItem("wasNavigated", "true");
     }
 });
+
+import { auth } from './firebase-config.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+/**
+ * Real-time Firebase Auth Listener
+ * Synchronizes Firebase auth state with LocalStorage and UI
+ */
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        try {
+            // User is logged in Firebase, now get MongoDB profile via backend
+            const userData = await window.api.getCurrentUser();
+            
+            if (userData) {
+                const sessionData = { ...userData, loggedIn: true };
+                saveToLocalStorage("innovateHubUser", sessionData);
+                updateUIForRole(sessionData);
+                
+                // Note: AutomationService logic would ideally move to backend cron jobs
+            } else {
+                // User authenticated in Firebase but no profile in MongoDB (e.g., halfway through signup)
+                console.log("Authenticated in Firebase, but MongoDB profile not found.");
+            }
+        } catch (error) {
+            console.error("Error syncing auth state:", error);
+        }
+    } else {
+        // User is logged out
+        sessionStorage.removeItem("innovateHubUser");
+        resetUI();
+    }
+});
+
+/**
+ * Reset UI to Guest State
+ */
+function resetUI() {
+    const guestButtons = document.getElementById("guestButtons");
+    const userProfile = document.getElementById("userProfile");
+    const navDashboardLink = document.getElementById("navDashboardLink");
+
+    if (guestButtons) guestButtons.classList.remove("d-none");
+    if (userProfile) userProfile.classList.add("d-none");
+    if (navDashboardLink) navDashboardLink.classList.add("d-none");
+}
 
 // ========================================
 // 2. SMOOTH SCROLLING FOR ANCHOR LINKS
@@ -102,6 +188,20 @@ function validateForm(form) {
   return isValid;
 }
 
+// Global Exports for legacy scripts
+window.showSuccessMessage = showSuccessMessage;
+window.showErrorMessage = showErrorMessage;
+window.validateForm = validateForm;
+window.validateEmail = validateEmail;
+window.saveToLocalStorage = saveToLocalStorage;
+window.loadFromLocalStorage = loadFromLocalStorage;
+window.generateUniqueId = generateUniqueId;
+window.formatDate = formatDate;
+window.truncateText = truncateText;
+window.checkAuth = checkAuth;
+window.requireAuth = requireAuth;
+window.showDashboardSection = showDashboardSection;
+
 // ========================================
 // 5. EMAIL VALIDATION
 // ========================================
@@ -179,23 +279,36 @@ function showErrorMessage(message) {
 // Core business data now uses API
 // ========================================
 
+/**
+ * Save data to sessionStorage
+ * @param {string} key - Storage key
+ * @param {any} data - Data to store (will be converted to JSON)
+ */
 function saveToLocalStorage(key, data) {
   try {
     const jsonData = JSON.stringify(data);
-    localStorage.setItem(key, jsonData);
+    // Save to sessionStorage
+    sessionStorage.setItem(key, jsonData);
     return true;
   } catch (error) {
-    console.error("Error saving to localStorage:", error);
+    console.error("Error saving to sessionStorage:", error);
     return false;
   }
 }
 
+/**
+ * Load data from sessionStorage
+ * @param {string} key - Storage key
+ * @returns {any} - Retrieved data (parsed from JSON)
+ */
 function loadFromLocalStorage(key) {
   try {
-    const jsonData = localStorage.getItem(key);
+    // Get JSON string from sessionStorage
+    const jsonData = sessionStorage.getItem(key);
+    // Parse and return data
     return jsonData ? JSON.parse(jsonData) : null;
   } catch (error) {
-    console.error("Error loading from localStorage:", error);
+    console.error("Error loading from sessionStorage:", error);
     return null;
   }
 }
@@ -264,11 +377,12 @@ function debounce(func, delay) {
  */
 function checkAuth() {
   const userData = loadFromLocalStorage("innovateHubUser");
-  return userData;
+  return userData && userData.loggedIn ? userData : null;
 }
 
 /**
  * Redirect to login if not authenticated
+ * Call this at the top of dashboard pages
  */
 function requireAuth() {
   const user = checkAuth();
@@ -387,69 +501,29 @@ function showDashboardSection(sectionId) {
 /**
  * Logout user
  */
-function logout() {
-  if (window.api) {
-      window.api.logout();
-  } else {
-      // Fallback
-      localStorage.removeItem("token");
-      localStorage.removeItem("innovateHubUser");
-      window.location.href = "index.html";
-  }
+window.logout = async function logout() {
+    try {
+        await signOut(auth);
+        // sessionStorage is cleared by the onAuthStateChanged listener
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Logout error:", error);
+        sessionStorage.removeItem("innovateHubUser");
+        window.location.href = "index.html";
+    }
 }
 
 // ========================================
 // 14. INNOVATION CATEGORIES
 // ========================================
 
-const INNOVATION_CATEGORIES = [
-  { value: "agriculture", label: "Agricultural Technology", class: "text-success", icon: "fa-leaf" },
-  { value: "robotics", label: "Robotics", class: "text-secondary", icon: "fa-robot" },
-  { value: "ai", label: "Artificial Intelligence", class: "text-primary", icon: "fa-brain" },
-  { value: "engineering", label: "Engineering", class: "text-dark", icon: "fa-cogs" },
-  { value: "business", label: "Business Innovation", class: "text-info", icon: "fa-briefcase" },
-  { value: "technology", label: "Technology", class: "text-primary", icon: "fa-laptop" },
-  { value: "healthcare", label: "Healthcare", class: "text-danger", icon: "fa-heartbeat" },
-  { value: "education", label: "Education", class: "text-warning", icon: "fa-graduation-cap" },
-  { value: "environment", label: "Environment", class: "text-success", icon: "fa-tree" },
-  { value: "social", label: "Social Impact", class: "text-danger", icon: "fa-hands-helping" }
-];
-
-function getCategoryBadge(category) {
-  const cat = INNOVATION_CATEGORIES.find((c) => c.value === category);
-  if (!cat) return `<span class="category-badge text-secondary">${category}</span>`;
-
-  return `<span class="category-badge ${cat.class}">
-    <i class="fa ${cat.icon} me-1"></i>${cat.label}
-  </span>`;
-}
-
-// ========================================
-// 15. PROJECT STATUS
-// ========================================
-
-function getStatusBadge(status) {
-  // Added new statuses as per requirements
-  const statusMap = {
-    pending: { label: "Pending Review", class: "status-pending bg-warning text-dark badge" },
-    progress: { label: "In Progress", class: "status-progress bg-info text-dark badge" },
-    completed: { label: "Completed", class: "status-completed bg-success text-white badge" },
-    rejected: { label: "Rejected", class: "status-rejected bg-danger text-white badge" },
-    draft: { label: "Draft", class: "status-draft bg-secondary text-white badge" },
-    expired: { label: "Expired", class: "status-expired bg-orange text-dark badge" },
-    approved: { label: "Approved", class: "status-approved bg-success text-white badge" }
-  };
-
-  const statusInfo = statusMap[status] || statusMap["pending"];
-  return `<span class="${statusInfo.class}">${statusInfo.label}</span>`;
-}
-
-// ========================================
-// CONSOLE MESSAGE
-// ========================================
-
+// Log initialization message
 console.log(
   "%cInnovate Hub Platform",
   "color: #667eea; font-size: 20px; font-weight: bold;",
 );
-console.log("Platform initialized successfully ✓");
+console.log(
+  "%cEmpowering Innovation Through Collaboration",
+  "color: #764ba2; font-size: 14px;",
+);
+console.log("Platform services initialized successfully ✓");

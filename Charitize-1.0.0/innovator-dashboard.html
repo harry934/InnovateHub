@@ -37,8 +37,9 @@
         <!-- Sidebar Navigation -->
         <div class="dashboard-sidebar">
             <!-- Logo Section -->
-                <a href="index.html" class="logo-container text-decoration-none">
-                    <span class="logo-text" style="color: white; font-size: 1.5rem;">Innovate Hub</span>
+                <a href="index.html" class="logo-container text-decoration-none px-4 mb-4 mt-3">
+                    <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
+                    <span class="logo-text" style="color: white; font-size: 1.3rem; margin-left: 10px;">Innovate Hub</span>
                 </a>
             
             <!-- Group: Innovation Management -->
@@ -46,25 +47,23 @@
             <nav class="nav flex-column mb-3">
                 <a class="nav-link active" href="#" onclick="showSection('projects'); return false;">My Projects</a>
                 <a class="nav-link" href="#" onclick="showSection('submit'); return false;">Submit Project</a>
-                <a class="nav-link" href="#" onclick="showSection('report'); return false;">Progress Reports</a>
+                <a class="nav-link" href="#" onclick="showSection('mentors'); return false;">Find Mentors</a>
             </nav>
 
             <!-- Group: Support & Community -->
             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Support</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link" href="#" onclick="showSection('mentors'); return false;">Assigned Mentors</a>
-                <a class="nav-link" href="event.html">Events</a>
-                <a class="nav-link" href="service.html">Resources</a>
+                <a class="nav-link" href="#" onclick="showSection('myMentors'); return false;">My Mentors</a>
+                <a class="nav-link" href="events.html">Events</a>
             </nav>
 
             <!-- Group: Account -->
             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Account</h6>
             <nav class="nav flex-column mb-3">
                 <a class="nav-link" href="#" onclick="showSection('notifications'); return false;">
-                    Notifications <span class="badge bg-danger ms-2 badge-pill">2</span>
+                    Notifications <span class="badge bg-danger ms-2 badge-pill" id="notifCount">0</span>
                 </a>
                 <a class="nav-link" href="#" onclick="showSection('profile'); return false;">My Profile</a>
-                <a class="nav-link" href="#" onclick="showSection('settings'); return false;">Settings</a>
                 <a class="nav-link text-danger mt-2" href="#" onclick="logout(); return false;">Logout</a>
             </nav>
         </div>
@@ -132,15 +131,16 @@
                                 placeholder="What do you hope to achieve with this project?"></textarea>
                         </div>
                         
-                        <!-- File Upload (Simulated) -->
+                        <!-- File Upload -->
                         <div class="form-group mb-3">
-                            <label for="projectFile" class="form-label fw-bold">Supporting Documents</label>
+                            <label for="projectFile" class="form-label fw-bold">Supporting Documents (Word Only) *</label>
                             <input 
                                 type="file" 
                                 class="form-control" 
                                 id="projectFile"
-                                accept=".pdf,.doc,.docx,.ppt,.pptx">
-                            <small class="text-muted">Upload presentations, documents, or diagrams (PDF, DOC, PPT)</small>
+                                accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                required>
+                            <small class="text-muted">Upload your project proposal as a Word document (.doc, .docx)</small>
                         </div>
                         
                         <!-- Submit Button -->
@@ -177,28 +177,25 @@
                 </div>
             </div>
             
-            <!-- Assigned Mentors Section -->
+            <!-- Find Mentors Section -->
             <div id="mentorsSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header">
-                    <h2>Assigned Mentors</h2>
-                    <p class="text-muted">Connect with the experts guiding your project</p>
+                    <h2>Find a Mentor</h2>
+                    <p class="text-muted">Browse experienced professionals who can help you grow</p>
                 </div>
-                
-                <div class="row g-4">
-                    <div class="col-md-6 col-lg-4">
-                        <div class="dashboard-card text-center">
-                            <div class="mb-3">
-                                <img src="img/team-1.jpg" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;" alt="Mentor">
-                            </div>
-                            <h4>Dr. Sarah Johnson</h4>
-                            <p class="text-primary mb-1">AI & Robotics Expert</p>
-                            <p class="text-muted small">Assigned to: Smart Irrigation System</p>
-                            <div class="d-grid gap-2 mt-3">
-                                <button class="btn btn-sm btn-custom-login" onclick="showSection('report')">Send Report</button>
-                                <button class="btn btn-sm btn-outline-dark">Message</button>
-                            </div>
-                        </div>
-                    </div>
+                <div id="mentorsContainer" class="row g-4">
+                    <div class="alert alert-info">Loading mentors...</div>
+                </div>
+            </div>
+
+            <!-- My Mentors Section -->
+            <div id="myMentorsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>My Assigned Mentors</h2>
+                    <p class="text-muted">Mentors guiding your active projects</p>
+                </div>
+                <div id="myMentorsContainer" class="row g-4">
+                    <div class="col-12 text-center text-muted">No mentors assigned yet. Go to "Find Mentors" to connect!</div>
                 </div>
             </div>
 
@@ -271,29 +268,8 @@
                     <h2>Notifications</h2>
                     <p class="text-muted">Stay updated with latest activities and alerts</p>
                 </div>
-                
-                <div class="dashboard-card mb-3 p-3 border-start border-5 border-success bg-light shadow-sm">
-                     <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1 text-success fw-bold">Project Approved</h5>
-                        <small class="text-muted">3 days ago</small>
-                    </div>
-                    <p class="mb-1">Your project "Smart Irrigation System" has been approved for the next phase.</p>
-                </div>
-                
-                <div class="dashboard-card mb-3 p-3 border-start border-5 border-primary bg-light shadow-sm">
-                     <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1 text-primary fw-bold">New Feedback</h5>
-                        <small class="text-muted">1 day ago</small>
-                    </div>
-                    <p class="mb-1">Dr. Sarah Johnson left a comment on your weekly report.</p>
-                </div>
-                
-                <div class="dashboard-card mb-3 p-3 shadow-sm border-start border-5 border-warning">
-                     <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1 fw-bold">Event Reminder</h5>
-                        <small class="text-muted">1 week ago</small>
-                    </div>
-                    <p class="mb-1">Don't forget the Innovation Summit happening this Saturday!</p>
+                <div id="notificationList">
+                    <div class="alert alert-info">No new notifications.</div>
                 </div>
             </div>
 
@@ -315,83 +291,54 @@
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="js/innovate-hub.js"></script>
     
-    <!-- Innovate Hub JavaScript -->
-    <script src="js/api.js"></script>
-    <script src="js/innovate-hub.js"></script>
-    
-    <!-- Dashboard JavaScript -->
-    <script>
-        /**
-         * Check authentication on page load
-         * Redirects to login if not authenticated
-         */
-        window.addEventListener('load', function() {
-            // Check if user is logged in
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { ProjectService, MentorshipService, NotificationService, requireAuth } from './js/innovate-hub.js';
+        // Importing standard helpers as well since this is a module scope
+        import { 
+            collection, query, where, onSnapshot, getDocs, 
+            doc, getDoc, updateDoc, addDoc, serverTimestamp, orderBy 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        let userData = null;
+        let myProjects = [];
+        let allMentors = [];
+
+        window.addEventListener('load', async function() {
             const user = requireAuth();
-            
-            // Verify user role is innovator
             if (user.role !== 'innovator') {
-                showErrorMessage('Access denied. This dashboard is for innovators only.');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
+                window.location.href = 'login.html';
                 return;
             }
+            userData = user;
             
-            // Display user information
-            if (user.email) {
-                document.getElementById('userEmail').textContent = user.email;
-                // Extract name from email (before @)
-                const name = user.email.split('@')[0];
-                document.getElementById('userName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
-            }
-            
-            // Display member since date
-            if (user.loginTime) {
-                const date = new Date(user.loginTime);
-                document.getElementById('memberSince').textContent = formatDate(date);
-            }
-            
-            // Load projects from localStorage
-            loadProjects();
+            setupListeners();
+            setupFormHandlers();
         });
-        
-        /**
-         * Show specific section and hide others
-         * @param {string} sectionName - Name of section to show
-         */
-        function showSection(sectionName) {
-            // Hide all sections
-            const sections = document.querySelectorAll('.dashboard-section');
-            sections.forEach(section => {
-                section.style.display = 'none';
+
+        function setupListeners() {
+            // 1. My Projects
+            onSnapshot(query(collection(db, "projects"), where("innovatorId", "==", userData.uid)), (snapshot) => {
+                myProjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateProjectsUI();
             });
-            
-            // Remove active class from all nav links
-            const navLinks = document.querySelectorAll('.dashboard-sidebar .nav-link');
-            navLinks.forEach(link => {
-                link.classList.remove('active');
+
+            // 2. Available Mentors
+            onSnapshot(query(collection(db, "users"), where("role", "==", "mentor"), where("status", "==", "active")), (snapshot) => {
+                allMentors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateMentorsUI();
             });
-            
-            // Show selected section
-            const sectionMap = {
-                'overview': 'overviewSection',
-                'submit': 'submitSection',
-                'projects': 'projectsSection',
-                'mentors': 'mentorsSection',
-                'mentors': 'mentorsSection',
-                'report': 'reportSection',
-                'notifications': 'notificationsSection',
-                'profile': 'profileSection',
-                'settings': 'settingsSection'
-            };
-            
-            const sectionId = sectionMap[sectionName];
-            if (sectionId) {
-                document.getElementById(sectionId).style.display = 'block';
-            }
+
+            // 3. Notifications
+            onSnapshot(query(collection(db, "notifications"), where("userId", "==", userData.uid), orderBy("createdAt", "desc")), (snapshot) => {
+                const notifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateNotificationsUI(notifs);
+                document.getElementById('notifCount').textContent = notifs.length;
+            });
         }
+<<<<<<< HEAD
         
         /**
          * Submit new project
@@ -505,21 +452,162 @@
                 document.getElementById('projectsContainer').innerHTML = 
                     '<p class="text-danger text-center">Failed to load projects. Please refresh.</p>';
             }
+=======
+
+        function setupFormHandlers() {
+            // Project Submission
+            document.getElementById('projectForm').onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                const fileInput = document.getElementById('projectFile');
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    alert("Please select a Word document to upload.");
+                    return;
+                }
+
+                const formData = {
+                    title: document.getElementById('projectTitle').value,
+                    category: document.getElementById('projectCategory').value,
+                    description: document.getElementById('projectDescription').value,
+                    goals: document.getElementById('projectGoals').value,
+                    innovatorId: userData.uid
+                };
+                
+                try {
+                    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Uploading & Submitting...';
+                    submitBtn.disabled = true;
+
+                    await ProjectService.submitProject(formData, file);
+                    
+                    alert("Project submitted successfully! Your document has been uploaded.");
+                    e.target.reset();
+                    showSection('projects');
+                } catch (err) {
+                    console.error("Submission error:", err);
+                    alert("Error submitting project: " + err.message);
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            };
         }
 
+        function updateProjectsUI() {
+            const container = document.getElementById('projectsContainer');
+            if (myProjects.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No projects yet. Submit your first idea!</div>';
+                return;
+            }
+            let html = '';
+            myProjects.forEach(p => {
+                html += `
+                    <div class="dashboard-card mb-3">
+                        <div class="d-flex justify-content-between">
+                            <h4>${p.title}</h4>
+                            <span class="badge ${p.status === 'approved' ? 'bg-success' : 'bg-warning'}">${p.status}</span>
+                        </div>
+                        <p class="text-muted small">${p.description}</p>
+                        ${p.adminFeedback ? `<div class="alert alert-secondary py-2 small"><strong>Admin Feedback:</strong> ${p.adminFeedback}</div>` : ''}
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="showAddMilestone('${p.id}')">Add Milestone</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+>>>>>>> 4f003953aab5290b1965c4b19a0757d722c85f18
+        }
 
-        /**
-         * Submit Report
-         */
-        function submitReport(event) {
-            event.preventDefault();
-            showSuccessMessage('Progress report submitted successfully to your mentor!');
-            document.getElementById('reportForm').reset();
-            setTimeout(() => {
-                showSection('overview');
-            }, 1500);
+        function updateMentorsUI() {
+            const container = document.getElementById('mentorsContainer');
+            if (allMentors.length === 0) {
+                container.innerHTML = '<div class="col-12 text-muted">No mentors available at the moment.</div>';
+                return;
+            }
+            let html = '';
+            allMentors.forEach(m => {
+                html += `
+                    <div class="col-md-4">
+                        <div class="dashboard-card text-center h-100">
+                            <img src="${m.photoURL || 'img/team-1.jpg'}" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h5>${m.fullName}</h5>
+                            <p class="text-primary small mb-1">${m.profession || 'Expert'}</p>
+                            <p class="text-muted x-small mb-3">${m.expertise || 'Various fields'}</p>
+                            <button class="btn btn-sm btn-custom-signup w-100" onclick="requestMentorship('${m.id}')">Request Mentorship</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function updateNotificationsUI(notifs) {
+            const container = document.getElementById('notificationList');
+            if (notifs.length === 0) {
+                container.innerHTML = '<p class="text-muted">No new notifications.</p>';
+                return;
+            }
+            let html = '';
+            notifs.forEach(n => {
+                html += `
+                    <div class="dashboard-card mb-2 p-3 border-start border-4 ${n.type === 'success' ? 'border-success' : 'border-primary'}">
+                        <h6 class="mb-1">${n.message}</h6>
+                        <small class="text-muted">${new Date(n.createdAt?.toDate()).toLocaleString()}</small>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        window.requestMentorship = async function(mentorId) {
+            if (myProjects.length === 0) {
+                alert("Please submit a project first!");
+                return;
+            }
+            const projId = prompt("Enter project index (1 to " + myProjects.length + ") or Title:");
+            // Simplified for prototype: pick first project if available
+            const targetProj = myProjects[0]; 
+            
+            try {
+                await MentorshipService.sendRequest(mentorId, targetProj.id);
+                alert("Mentorship request sent!");
+            } catch (err) {
+                alert("Request failed: " + err.message);
+            }
+        }
+
+        window.showSection = function(sectionName) {
+            document.querySelectorAll('.dashboard-section').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            
+            const mapping = {
+                'projects': 'projectsSection',
+                'submit': 'submitSection',
+                'mentors': 'mentorsSection',
+                'myMentors': 'myMentorsSection',
+                'notifications': 'notificationsSection',
+                'profile': 'profileSection'
+            };
+            
+            const target = document.getElementById(mapping[sectionName]);
+            if (target) {
+                target.style.display = 'block';
+                if(window.event && window.event.currentTarget) {
+                    window.event.currentTarget.classList.add('active');
+                }
+            }
+        }
+
+        window.logout = async function() {
+            await auth.signOut();
+            sessionStorage.removeItem('innovateHubUser');
+            window.location.href = 'login.html';
         }
     </script>
-</body>
+</body></html>
 
 </html>

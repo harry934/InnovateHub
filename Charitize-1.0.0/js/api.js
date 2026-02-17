@@ -3,41 +3,50 @@
  * Handles all communication with the backend API
  */
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://innovatehub.up.railway.app/api'; 
 
 const api = {
     // Auth
-    login: async (email, password) => {
+    login: async (firebaseUser, idToken) => {
         const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ firebaseUid: firebaseUser.uid })
         });
         const data = await response.json();
         if (response.ok) {
             const user = { ...data.user, loggedIn: true };
-            localStorage.setItem('token', data.token);
+            localStorage.setItem('token', idToken);
             localStorage.setItem('innovateHubUser', JSON.stringify(user));
         }
         return { ok: response.ok, data };
     },
 
-    register: async (userData) => {
+    register: async (firebaseUser, idToken, userData) => {
         const response = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
+            body: JSON.stringify({
+                ...userData,
+                firebaseUid: firebaseUser.uid,
+                email: firebaseUser.email
+            })
         });
         const data = await response.json();
         if (response.ok) {
             const user = { ...data.user, loggedIn: true };
-            localStorage.setItem('token', data.token);
+            localStorage.setItem('token', idToken);
             localStorage.setItem('innovateHubUser', JSON.stringify(user));
         }
         return { ok: response.ok, data };
     },
     
-    logout: () => {
+    logout: async () => {
+        if (window.auth) {
+            await window.auth.signOut();
+        }
         localStorage.removeItem('token');
         localStorage.removeItem('innovateHubUser');
         window.location.href = 'index.html';

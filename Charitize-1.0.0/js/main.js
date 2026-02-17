@@ -19,9 +19,9 @@
     // Sticky Navbar
     $(window).scroll(function () {
         if ($(this).scrollTop() > 90) {
-            $('.nav-bar').addClass('fixed-top').css('padding', '0');
+            $('.nav-bar').addClass('fixed-top navbar-scrolled').css('padding', '0');
         } else {
-            $('.nav-bar').removeClass('fixed-top').css('padding', '0px 90px');
+            $('.nav-bar').removeClass('fixed-top navbar-scrolled').css('padding', '0px 90px');
         }
     });
     
@@ -75,8 +75,8 @@
 
     // Header carousel
     $(".header-carousel").owlCarousel({
-        animateOut: 'rotateOutUpRight',
-        animateIn: 'rotateInDownLeft',
+        animateOut: 'fadeOut',
+        animateIn: 'fadeIn',
         items: 1,
         autoplay: true,
         smartSpeed: 1000,

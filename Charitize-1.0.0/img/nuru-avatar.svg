@@ -1,0 +1,31 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Body -->
+  <circle cx="100" cy="140" r="45" fill="white" stroke="#1A5E4F" stroke-width="2"/>
+  <ellipse cx="100" cy="145" rx="35" ry="40" fill="url(#bodyGradient)"/>
+  
+  <!-- Head -->
+  <rect x="55" y="45" width="90" height="75" rx="35" fill="white" stroke="#1A5E4F" stroke-width="2"/>
+  <rect x="60" y="50" width="80" height="65" rx="30" fill="url(#headGradient)"/>
+  
+  <!-- Faceplate -->
+  <rect x="70" y="60" width="60" height="40" rx="15" fill="#1A5E4F"/>
+  
+  <!-- Eyes -->
+  <path d="M80 80C80 77 82 75 85 75C88 75 90 77 90 80" stroke="#F3A813" stroke-width="3" stroke-linecap="round"/>
+  <path d="M110 80C110 77 112 75 115 75C118 75 120 77 120 80" stroke="#F3A813" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Floating Hands -->
+  <circle cx="45" cy="130" r="12" fill="white" stroke="#1A5E4F" stroke-width="1.5"/>
+  <circle cx="155" cy="130" r="12" fill="white" stroke="#1A5E4F" stroke-width="1.5"/>
+
+  <defs>
+    <linearGradient id="bodyGradient" x1="100" y1="100" x2="100" y2="190" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white"/>
+      <stop offset="1" stop-color="#F0F4F3"/>
+    </linearGradient>
+    <linearGradient id="headGradient" x1="100" y1="45" x2="100" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white"/>
+      <stop offset="1" stop-color="#F0F4F3"/>
+    </linearGradient>
+  </defs>
+</svg>
