@@ -10,37 +10,67 @@ const API_URL = window.location.hostname === 'localhost' || window.location.host
 const api = {
     // Auth
     login: async (firebaseUser, idToken) => {
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ firebaseUid: firebaseUser.uid })
-        });
-        const data = await response.json();
-        if (response.ok) {
-            const user = { ...data.user, loggedIn: true };
-            localStorage.setItem('token', idToken);
-            localStorage.setItem('innovateHubUser', JSON.stringify(user));
+        try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ firebaseUid: firebaseUser.uid })
+            });
+            
+            let data;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.error("Non-JSON API response:", text);
+                data = { msg: `Server error: ${text || response.statusText}` };
+            }
+
+            if (response.ok) {
+                const user = { ...data.user, loggedIn: true };
+                localStorage.setItem('token', idToken);
+                localStorage.setItem('innovateHubUser', JSON.stringify(user));
+            }
+            return { ok: response.ok, data };
+        } catch (error) {
+            console.error("API Login Error:", error);
+            return { ok: false, data: { msg: "Network or Server Error" } };
         }
-        return { ok: response.ok, data };
     },
 
     register: async (firebaseUser, idToken, userData) => {
-        const response = await fetch(`${API_URL}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                ...userData,
-                firebaseUid: firebaseUser.uid,
-                email: firebaseUser.email
-            })
-        });
-        const data = await response.json();
-        if (response.ok) {
-            const user = { ...data.user, loggedIn: true };
-            localStorage.setItem('token', idToken);
-            localStorage.setItem('innovateHubUser', JSON.stringify(user));
+        try {
+            const response = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...userData,
+                    firebaseUid: firebaseUser.uid,
+                    email: firebaseUser.email
+                })
+            });
+            
+            let data;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.error("Non-JSON API response:", text);
+                data = { msg: `Server error: ${text || response.statusText}` };
+            }
+
+            if (response.ok) {
+                const user = { ...data.user, loggedIn: true };
+                localStorage.setItem('token', idToken);
+                localStorage.setItem('innovateHubUser', JSON.stringify(user));
+            }
+            return { ok: response.ok, data };
+        } catch (error) {
+            console.error("API Register Error:", error);
+            return { ok: false, data: { msg: "Network or Server Error" } };
         }
-        return { ok: response.ok, data };
     },
     
     logout: async () => {
