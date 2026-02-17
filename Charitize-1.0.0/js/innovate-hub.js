@@ -144,6 +144,8 @@ document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
 
     // Get the target element
     const targetId = this.getAttribute("href");
+    if (targetId === '#') return; // Ignore empty links
+    
     const targetElement = document.querySelector(targetId);
 
     // Scroll smoothly to target
@@ -166,6 +168,7 @@ document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
  */
 window.addEventListener("scroll", function () {
   const navbar = document.querySelector(".navbar");
+  if (!navbar) return;
 
   // If scrolled more than 50 pixels
   if (window.scrollY > 50) {
@@ -292,7 +295,8 @@ function showErrorMessage(message) {
 }
 
 // ========================================
-// 8. LOCAL STORAGE HELPERS
+// 8. LOCAL STORAGE HELPERS (DEPRECATED but kept for non-critical ephemeral data)
+// Core business data now uses API
 // ========================================
 
 /**
@@ -302,7 +306,6 @@ function showErrorMessage(message) {
  */
 function saveToLocalStorage(key, data) {
   try {
-    // Convert data to JSON string
     const jsonData = JSON.stringify(data);
     // Save to sessionStorage
     sessionStorage.setItem(key, jsonData);
@@ -331,22 +334,12 @@ function loadFromLocalStorage(key) {
 }
 
 // ========================================
-// 9. GENERATE UNIQUE ID
+// 9. GENERATE UNIQUE ID (Client-side helper)
 // ========================================
 
-/**
- * Generate a unique ID for projects, events, etc.
- * Format: PREFIX-TIMESTAMP-RANDOM
- * Example: PROJ-1234567890-ABC123
- * @param {string} prefix - Prefix for the ID (e.g., 'PROJ', 'EVENT')
- * @returns {string} - Unique ID
- */
 function generateUniqueId(prefix) {
-  // Get current timestamp
   const timestamp = Date.now();
-  // Generate random string
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  // Combine into unique ID
   return `${prefix}-${timestamp}-${random}`;
 }
 
@@ -354,12 +347,9 @@ function generateUniqueId(prefix) {
 // 10. FORMAT DATE
 // ========================================
 
-/**
- * Format date to readable string
- * @param {Date} date - Date object to format
- * @returns {string} - Formatted date string
- */
 function formatDate(date) {
+  if (!date) return '';
+  const d = new Date(date);
   const options = {
     year: "numeric",
     month: "long",
@@ -367,20 +357,15 @@ function formatDate(date) {
     hour: "2-digit",
     minute: "2-digit",
   };
-  return date.toLocaleDateString("en-US", options);
+  return d.toLocaleDateString("en-US", options);
 }
 
 // ========================================
 // 11. TRUNCATE TEXT
 // ========================================
 
-/**
- * Truncate long text with ellipsis
- * @param {string} text - Text to truncate
- * @param {number} maxLength - Maximum length before truncating
- * @returns {string} - Truncated text
- */
 function truncateText(text, maxLength) {
+  if (!text) return '';
   if (text.length <= maxLength) {
     return text;
   }
@@ -391,19 +376,10 @@ function truncateText(text, maxLength) {
 // 12. DEBOUNCE FUNCTION
 // ========================================
 
-/**
- * Debounce function - delays execution until user stops typing/clicking
- * Useful for search inputs, resize events, etc.
- * @param {Function} func - Function to debounce
- * @param {number} delay - Delay in milliseconds
- * @returns {Function} - Debounced function
- */
 function debounce(func, delay) {
   let timeoutId;
   return function (...args) {
-    // Clear previous timeout
     clearTimeout(timeoutId);
-    // Set new timeout
     timeoutId = setTimeout(() => {
       func.apply(this, args);
     }, delay);
@@ -444,7 +420,7 @@ export function requireAuth() {
  * @param {object} user - User data object
  */
 function updateUIForRole(user) {
-  if (!user || !user.loggedIn) return;
+  if (!user) return;
 
   // Show user profile area
   const guestButtons = document.getElementById("guestButtons");
@@ -459,15 +435,12 @@ function updateUIForRole(user) {
   // Show "My Dashboard" link in main nav
   if (navDashboardLink) navDashboardLink.classList.remove("d-none");
 
-  // Show role-specific navigation
-  // Role-specific sidebar navigation elements
+  // Show role-specific navigation and dashboard elements
   const innovatorSidebarNav = document.getElementById("innovatorSidebarNav");
   const mentorSidebarNav = document.getElementById("mentorSidebarNav");
   const adminSidebarNav = document.getElementById("adminSidebarNav");
   const dashboardWrapper = document.getElementById("dashboardWrapper");
 
-  // Hide main sections when dashboard is active (optional, based on preference)
-  // For a true SPA dashboard, we might want to hide the hero carousel etc.
   const mainElements = [
     document.querySelector('.carousel'),
     document.querySelector('.video'),
@@ -509,29 +482,36 @@ function showDashboardSection(sectionId) {
   const sections = [
     'innovatorOverview', 'myProjects', 'submitIdea', 'notifications',
     'mentorOverview', 'assignedProjects',
-    'adminOverview', 'userManagement', 'dashboardNotificationsArea'
+    'adminOverview', 'userManagement', 'dashboardNotificationsArea',
+    'mentorsSection', 'submitSection', 'projectsSection', 'reportSection', 'profileSection', 'settingsSection'
   ];
 
-  // Specific mapping for 'notifications' to the global dashboardNotificationsArea
-  let targetId = sectionId;
-  if (sectionId === 'notifications') targetId = 'dashboardNotificationsArea';
+  // Map simplified names to IDs
+  const sectionMap = {
+      'submit': 'submitSection',
+      'projects': 'projectsSection',
+      'mentors': 'mentorsSection',
+      'report': 'reportSection',
+      'notifications': 'notificationsSection',
+      'profile': 'profileSection',
+      'settings': 'settingsSection'
+  };
 
-  sections.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.classList.remove('d-dashboard-block');
-      el.classList.add('d-dashboard-none');
-    }
+  let targetId = sectionMap[sectionId] || sectionId;
+
+  // Hide all potential sections
+  const allSections = document.querySelectorAll('.dashboard-section');
+  allSections.forEach(section => {
+      section.style.display = 'none';
   });
 
   const target = document.getElementById(targetId);
   if (target) {
-    target.classList.remove('d-dashboard-none');
-    target.classList.add('d-dashboard-block');
+    target.style.display = 'block';
   }
 
   // Update active state in sidebar
-  const navLinks = document.querySelectorAll('.dashboard-sidebar-nav .nav-link');
+  const navLinks = document.querySelectorAll('.dashboard-sidebar-nav .nav-link, .dashboard-sidebar .nav-link');
   navLinks.forEach(link => {
     link.classList.remove('active');
     // Simple check if the link's onclick contains the sectionId
@@ -543,7 +523,6 @@ function showDashboardSection(sectionId) {
 
 /**
  * Logout user
- * Clears user data and redirects to homepage
  */
 window.logout = async function logout() {
     try {
@@ -561,10 +540,6 @@ window.logout = async function logout() {
 // 14. INNOVATION CATEGORIES
 // ========================================
 
-/**
- * List of innovation categories with professional icons
- * Used in forms and filters throughout the platform
- */
 const INNOVATION_CATEGORIES = [
   { value: "agriculture", label: "Agricultural Technology", class: "text-success", icon: "fa-leaf" },
   { value: "robotics", label: "Robotics", class: "text-secondary", icon: "fa-robot" },
@@ -578,14 +553,9 @@ const INNOVATION_CATEGORIES = [
   { value: "social", label: "Social Impact", class: "text-danger", icon: "fa-hands-helping" }
 ];
 
-/**
- * Get category badge HTML with professional icon
- * @param {string} category - Category value
- * @returns {string} - HTML for category badge with icon
- */
 function getCategoryBadge(category) {
   const cat = INNOVATION_CATEGORIES.find((c) => c.value === category);
-  if (!cat) return "";
+  if (!cat) return `<span class="category-badge text-secondary">${category}</span>`;
 
   return `<span class="category-badge ${cat.class}">
     <i class="fa ${cat.icon} me-1"></i>${cat.label}
@@ -596,17 +566,16 @@ function getCategoryBadge(category) {
 // 15. PROJECT STATUS
 // ========================================
 
-/**
- * Get status badge HTML
- * @param {string} status - Status value (pending, progress, completed, rejected)
- * @returns {string} - HTML for status badge
- */
 function getStatusBadge(status) {
+  // Added new statuses as per requirements
   const statusMap = {
-    pending: { label: "Pending Review", class: "status-pending" },
-    progress: { label: "In Progress", class: "status-progress" },
-    completed: { label: "Completed", class: "status-completed" },
-    rejected: { label: "Rejected", class: "status-rejected" },
+    pending: { label: "Pending Review", class: "status-pending bg-warning text-dark badge" },
+    progress: { label: "In Progress", class: "status-progress bg-info text-dark badge" },
+    completed: { label: "Completed", class: "status-completed bg-success text-white badge" },
+    rejected: { label: "Rejected", class: "status-rejected bg-danger text-white badge" },
+    draft: { label: "Draft", class: "status-draft bg-secondary text-white badge" },
+    expired: { label: "Expired", class: "status-expired bg-orange text-dark badge" },
+    approved: { label: "Approved", class: "status-approved bg-success text-white badge" }
   };
 
   const statusInfo = statusMap[status] || statusMap["pending"];
