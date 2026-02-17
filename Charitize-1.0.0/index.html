@@ -936,8 +936,36 @@
     
     <!-- Innovate Hub Custom JavaScript -->
     <!-- Handles splash screen, authentication, form validation, and utility functions -->
-    <script type="module" src="js/innovate-hub.js"></script>
-    <script type="module" src="js/nuru-assistant.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="js/ui-utils.js?v=1.0.1"></script>
+    <script src="js/api.js?v=1.0.1"></script>
+    <script type="module" src="js/innovate-hub.js?v=1.0.1"></script>
+    <script>
+        window.updateUIForRole = function(user) {
+            if (!user) return;
+            
+            const guestButtons = document.getElementById("guestButtons");
+            const userProfile = document.getElementById("userProfile");
+            const navDashboardLink = document.getElementById("navDashboardLink");
+            
+            if (guestButtons) guestButtons.classList.add("d-none");
+            if (userProfile) userProfile.classList.remove("d-none");
+            if (userProfile) userProfile.classList.add("d-flex");
+            
+            const userNameEl = document.getElementById("userName");
+            if (userNameEl && user.fullName) {
+                userNameEl.textContent = user.fullName;
+            }
+            
+            if (navDashboardLink) {
+                navDashboardLink.classList.remove("d-none");
+                let dashboardUrl = "innovator-dashboard.html";
+                if (user.role === 'admin' || user.email === 'techeagle254@gmail.com') dashboardUrl = "admin-dashboard.html";
+                else if (user.role === 'mentor') dashboardUrl = "mentor-dashboard.html";
+                navDashboardLink.href = dashboardUrl;
+            }
+        };
+    </script>
 </body>
 
 </html>

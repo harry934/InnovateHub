@@ -12,11 +12,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
+    <link href="css/style.css?v=1.0.1" rel="stylesheet">
     
     <!-- Innovate Hub Custom Styles -->
-    <link href="css/innovate-hub.css" rel="stylesheet">
-    <link href="css/innovate-hub.css" rel="stylesheet">
+    <link href="css/innovate-hub.css?v=1.0.1" rel="stylesheet">
+    <link href="css/innovate-hub.css?v=1.0.1" rel="stylesheet">
 </head>
 
 <body>
@@ -32,21 +32,26 @@
             
             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Management</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link active" href="#" onclick="showSection('overview'); return false;">System Overview</a>
-                <a class="nav-link" href="#" onclick="showSection('approvals'); return false;">
+                <a class="nav-link active" href="#" onclick="window.showSection('overview'); return false;">System Overview</a>
+                <a class="nav-link" href="#" onclick="window.showSection('approvals'); return false;">
                     Mentor Apps <span class="badge bg-warning text-dark ms-2 badge-pill" id="pendingCount">0</span>
                 </a>
-                <a class="nav-link" href="#" onclick="showSection('projectApprovals'); return false;">
+                <a class="nav-link" href="#" onclick="window.showSection('projectApprovals'); return false;">
                     Project Rev. <span class="badge bg-primary ms-2 badge-pill" id="pendingProjectsCount">0</span>
                 </a>
-                <a class="nav-link" href="#" onclick="showSection('users'); return false;">All Users</a>
-                <a class="nav-link" href="#" onclick="showSection('events'); return false;">Events</a>
-                <a class="nav-link" href="#" onclick="showSection('reports'); return false;">Issue Reports</a>
+                <a class="nav-link" href="#" onclick="window.showSection('users'); return false;">All Users</a>
+                <a class="nav-link" href="#" onclick="window.showSection('events'); return false;">Events</a>
+                <a class="nav-link" href="#" onclick="window.showSection('reports'); return false;">Issue Reports</a>
             </nav>
 
             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Admin</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link text-danger mt-2" href="#" onclick="logout(); return false;">Logout</a>
+                <a href="javascript:void(0)" onclick="window.logout()" class="nav-link text-danger">
+                    <i class="fa fa-sign-out-alt me-2"></i>Logout
+                </a>
+                <div class="px-4 mt-3">
+                    <small class="text-muted" style="font-size: 0.65rem;">Platform v1.0.1-fixed</small>
+                </div>
             </nav>
         </div>
         
@@ -212,12 +217,13 @@
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script src="js/api.js"></script>
-    <script type="module" src="js/innovate-hub.js"></script>
+    <script src="js/ui-utils.js?v=1.0.1"></script>
+    <script src="js/api.js?v=1.0.1"></script>
+    <script type="module" src="js/innovate-hub.js?v=1.0.1"></script>
     
     <script type="module">
         import { auth, db } from './js/firebase-config.js';
+        import { NotificationService } from './js/innovate-hub.js';
         import { 
             collection, query, where, getDocs, doc, updateDoc, 
             deleteDoc, onSnapshot, addDoc, serverTimestamp, orderBy 
@@ -228,20 +234,37 @@
         let pendingMentors = [];
         let pendingProjects = [];
         let events = [];
+        let userData = null;
 
         window.addEventListener('load', function() {
-            // Check Access
-            const session = JSON.parse(sessionStorage.getItem('innovateHubUser'));
-            if (!session || session.role !== 'admin') {
+            // Wait for auth to initialize (max 5 seconds)
+            let checkCount = 0;
+            const waitForAuth = setInterval(() => {
+                userData = window.loadFromLocalStorage("innovateHubUser");
+                if (userData && userData.loggedIn && userData.role) {
+                    clearInterval(waitForAuth);
+                    initAdminDashboard();
+                }
+                if (++checkCount > 50) { // 5 seconds
+                    clearInterval(waitForAuth);
+                    if (!userData || !userData.loggedIn) window.location.href = 'login.html';
+                    else initAdminDashboard(); // Proceed anyway if logged in but role missing (fallback)
+                }
+            }, 100);
+        });
+
+        function initAdminDashboard() {
+            if (userData.role !== 'admin' && userData.email !== 'techeagle254@gmail.com') {
                 alert('Access Denied. Admins only.');
-                window.location.href = '/login';
+                window.location.href = 'login.html';
                 return;
             }
             
             // Listen for Real-time Updates
             setupListeners();
             setupFormHandlers();
-        });
+            window.showSection('overview');
+        }
 
         function setupListeners() {
             // 1. Listen for all users
@@ -286,9 +309,9 @@
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addEventModal'));
                     modal.hide();
                     e.target.reset();
-                    alert("Event added successfully!");
+                    window.showSuccessMessage("Event added successfully!");
                 } catch (err) {
-                    alert("Error adding event: " + err.message);
+                    window.showErrorMessage("Error adding event: " + err.message);
                 }
             };
         }
@@ -430,8 +453,13 @@
 
         // Global functions
         window.approveMentor = async function(id) {
-            await updateDoc(doc(db, "users", id), { status: 'active' });
-            alert("Mentor approved!");
+            try {
+                await updateDoc(doc(db, "users", id), { status: 'active' });
+                await NotificationService.send(id, "Your mentor application has been approved! Welcome aboard.", "success");
+                window.showSuccessMessage("Mentor approved and notified!");
+            } catch (err) {
+                window.showErrorMessage("Approval failed: " + err.message);
+            }
         }
 
         window.toggleUserStatus = async function(id, currentStatus) {
@@ -451,18 +479,37 @@
         }
 
         window.approveProject = async function(id) {
-            await updateDoc(doc(db, "projects", id), { status: 'approved' });
-            alert("Project approved!");
+            try {
+                // We need to find the innovatorId first
+                const projSnap = await getDoc(doc(db, "projects", id));
+                if (projSnap.exists()) {
+                    const projData = projSnap.data();
+                    await updateDoc(doc(db, "projects", id), { status: 'approved' });
+                    await NotificationService.send(projData.innovatorId, `Your project "${projData.title}" has been approved!`, "success");
+                    window.showSuccessMessage("Project approved and innovator notified!");
+                }
+            } catch (err) {
+                window.showErrorMessage("Approval failed: " + err.message);
+            }
         }
 
         window.rejectProject = async function(id) {
             const reason = prompt("Enter reason for rejection:");
             if (reason) {
-                await updateDoc(doc(db, "projects", id), { 
-                    status: 'rejected',
-                    adminFeedback: reason
-                });
-                alert("Project rejected.");
+                try {
+                    const projSnap = await getDoc(doc(db, "projects", id));
+                    if (projSnap.exists()) {
+                        const projData = projSnap.data();
+                        await updateDoc(doc(db, "projects", id), { 
+                            status: 'rejected',
+                            adminFeedback: reason
+                        });
+                        await NotificationService.send(projData.innovatorId, `Your project "${projData.title}" was rejected. Reason: ${reason}`, "error");
+                        window.showSuccessMessage("Project rejected and innovator notified.");
+                    }
+                } catch (err) {
+                    window.showErrorMessage("Rejection failed: " + err.message);
+                }
             }
         }
 
@@ -473,22 +520,34 @@
         }
 
         window.showSection = function(sectionName) {
-            document.querySelectorAll('.dashboard-section').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            console.log("Navigating to section:", sectionName);
+            const sections = document.querySelectorAll('.dashboard-section');
+            const navLinks = document.querySelectorAll('.nav-link');
             
-            const target = document.getElementById(sectionName + 'Section');
+            sections.forEach(el => el.style.display = 'none');
+            navLinks.forEach(el => el.classList.remove('active'));
+            
+            const targetId = sectionName + 'Section';
+            const target = document.getElementById(targetId);
+            
             if (target) {
                 target.style.display = 'block';
-                if(window.event && window.event.currentTarget) {
-                    window.event.currentTarget.classList.add('active');
-                }
+                const activeNavLink = document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`);
+                if (activeNavLink) activeNavLink.classList.add('active');
+            } else {
+                console.warn(`Section not found: ${sectionName} (tried ${targetId})`);
             }
         }
 
         window.logout = async function() {
-            await auth.signOut();
-            sessionStorage.removeItem('innovateHubUser');
-            window.location.href = '/login';
+            try {
+                await auth.signOut();
+                localStorage.removeItem('innovateHubUser');
+                window.location.href = 'login.html';
+            } catch (err) {
+                console.error("Logout error:", err);
+                window.location.href = 'login.html';
+            }
         }
     </script>
 </body>

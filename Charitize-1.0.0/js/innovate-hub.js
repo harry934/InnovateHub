@@ -1,49 +1,30 @@
-// ========================================
-// 1. SPLASH SCREEN CONTROL (PRELOADER)
-// ========================================
+import { auth, db, storage } from './firebase-config.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
+// 1. SPLASH SCREEN CONTROL (PRELOADER)
 (function() {
-    // Run immediately
     const initPreloader = () => {
         const preloader = document.getElementById("logo-preloader");
         if (!preloader) return;
-
-        // Check Navigation Type
         const wasNavigated = sessionStorage.getItem("wasNavigated");
-        
-        // Clear flag immediately
         sessionStorage.removeItem("wasNavigated");
-
         if (wasNavigated) {
-            // It was a navigation click -> DO NOTHING
             preloader.remove();
         } else {
-            // It was a Refresh or Initial Load -> SHOW PRELOADER
             preloader.classList.add("active");
-            
-            // Primary animation completion
             const hidePreloader = () => {
                 preloader.classList.remove("active");
                 preloader.classList.add("fade-out");
-                setTimeout(() => {
-                    if(preloader && preloader.parentNode) preloader.remove();
-                }, 1000);
+                setTimeout(() => { if(preloader && preloader.parentNode) preloader.remove(); }, 1000);
             };
-
-            // Remove after planned animation
             setTimeout(hidePreloader, 2000);
-
-            // FAILSAFE: Force remove after 4 seconds regardless of state
-            setTimeout(() => {
-                if (preloader && preloader.parentNode) {
-                    console.warn("Preloader failsafe triggered.");
-                    preloader.remove();
-                }
-            }, 4000);
+            setTimeout(() => { if (preloader && preloader.parentNode) preloader.remove(); }, 4000);
         }
     };
-
-    // Initialize as soon as DOM is ready or Script runs
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initPreloader);
     } else {
@@ -63,9 +44,6 @@ document.addEventListener("click", function(e) {
     }
 });
 
-import { auth } from './firebase-config.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
 /**
  * Real-time Firebase Auth Listener
  * Synchronizes Firebase auth state with LocalStorage and UI
@@ -73,449 +51,133 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
-            // User is logged in Firebase, now get MongoDB profile via backend
-            const userData = await window.api.getCurrentUser();
+            // 1. Fetch user profile from Firestore to get role and other metadata
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            let profileData = {};
             
-            if (userData) {
-                const sessionData = { ...userData, loggedIn: true };
-                saveToLocalStorage("innovateHubUser", sessionData);
-                updateUIForRole(sessionData);
-                
-                // Note: AutomationService logic would ideally move to backend cron jobs
+            if (userDoc.exists()) {
+                profileData = userDoc.data();
             } else {
-                // User authenticated in Firebase but no profile in MongoDB (e.g., halfway through signup)
-                console.log("Authenticated in Firebase, but MongoDB profile not found.");
+                console.warn("No Firestore profile found for user:", user.uid);
+                // Default role for new users if not found (shouldn't happen with correct signup)
+                profileData = { role: 'innovator', fullName: user.displayName || user.email };
             }
+
+            // 2. Prepare complete session data
+            const sessionData = { 
+                uid: user.uid, 
+                email: user.email, 
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+                loggedIn: true,
+                ...profileData // Merge Firestore data (role, fullName, etc.)
+            };
+
+            // 3. Save and move on (UI update handled by dashboards/landing)
+            window.saveToLocalStorage("innovateHubUser", sessionData);
+            if (typeof window.updateUIForRole === 'function') window.updateUIForRole(sessionData);
         } catch (error) {
-            console.error("Error syncing auth state:", error);
+            console.error("Error fetching user profile:", error);
+            const basicSession = { uid: user.uid, email: user.email, loggedIn: true };
+            window.saveToLocalStorage("innovateHubUser", basicSession);
         }
     } else {
-        // User is logged out
-        sessionStorage.removeItem("innovateHubUser");
-        resetUI();
+        localStorage.removeItem("innovateHubUser");
     }
 });
 
-/**
- * Reset UI to Guest State
- */
-function resetUI() {
-    const guestButtons = document.getElementById("guestButtons");
-    const userProfile = document.getElementById("userProfile");
-    const navDashboardLink = document.getElementById("navDashboardLink");
-
-    if (guestButtons) guestButtons.classList.remove("d-none");
-    if (userProfile) userProfile.classList.add("d-none");
-    if (navDashboardLink) navDashboardLink.classList.add("d-none");
-}
-
-// ========================================
-// 2. SMOOTH SCROLLING FOR ANCHOR LINKS
-// ========================================
-
-/**
- * Enable smooth scrolling when clicking anchor links
- * Example: clicking a link to #about will smoothly scroll to that section
- */
-document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
-  anchor.addEventListener("click", function (e) {
-    // Prevent default jump behavior
-    e.preventDefault();
-
-    // Get the target element
-    const targetId = this.getAttribute("href");
-    if (targetId === '#') return; // Ignore empty links
-    
-    const targetElement = document.querySelector(targetId);
-
-    // Scroll smoothly to target
-    if (targetElement) {
-      targetElement.scrollIntoView({
-        behavior: "smooth", // Smooth scroll animation
-        block: "start", // Align to top of viewport
-      });
+// Helper for Auth Redirection handled in dashboard scripts
+export function requireAuth() {
+    const user = loadFromLocalStorage("innovateHubUser");
+    if (!user || !user.loggedIn) {
+        window.location.href = 'login.html';
     }
-  });
-});
-
-// ========================================
-// 3. NAVBAR SCROLL EFFECT
-// ========================================
-
-/**
- * Add shadow to navbar when scrolling down
- * Provides visual feedback that user has scrolled
- */
-window.addEventListener("scroll", function () {
-  const navbar = document.querySelector(".navbar");
-  if (!navbar) return;
-
-  // If scrolled more than 50 pixels
-  if (window.scrollY > 50) {
-    navbar.classList.add("shadow");
-  } else {
-    navbar.classList.remove("shadow");
-  }
-});
-
-// ========================================
-// 4. FORM VALIDATION HELPER
-// ========================================
-
-/**
- * Validate form fields before submission
- * @param {HTMLFormElement} form - The form to validate
- * @returns {boolean} - True if valid, false otherwise
- */
-function validateForm(form) {
-  // Get all required fields
-  const requiredFields = form.querySelectorAll("[required]");
-  let isValid = true;
-
-  // Check each required field
-  requiredFields.forEach(function (field) {
-    if (!field.value.trim()) {
-      // Field is empty
-      isValid = false;
-      // Add error styling
-      field.classList.add("is-invalid");
-    } else {
-      // Field has value, remove error styling
-      field.classList.remove("is-invalid");
-    }
-  });
-
-  return isValid;
+    return user;
 }
 
-// Global Exports for legacy scripts
-window.showSuccessMessage = showSuccessMessage;
-window.showErrorMessage = showErrorMessage;
-window.validateForm = validateForm;
-window.validateEmail = validateEmail;
-window.saveToLocalStorage = saveToLocalStorage;
-window.loadFromLocalStorage = loadFromLocalStorage;
-window.generateUniqueId = generateUniqueId;
-window.formatDate = formatDate;
-window.truncateText = truncateText;
-window.checkAuth = checkAuth;
-window.requireAuth = requireAuth;
-window.showDashboardSection = showDashboardSection;
-
-// ========================================
-// 5. EMAIL VALIDATION
-// ========================================
-
-/**
- * Validate email format
- * @param {string} email - Email address to validate
- * @returns {boolean} - True if valid email format
- */
-function validateEmail(email) {
-  // Regular expression for email validation
-  // Checks for: text@text.text format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-// ========================================
-// 6. SHOW SUCCESS MESSAGE
-// ========================================
-
-/**
- * Display a success message to user
- * @param {string} message - Message to display
- */
-function showSuccessMessage(message) {
-  // Create alert element
-  const alert = document.createElement("div");
-  alert.className =
-    "alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3";
-  alert.style.zIndex = "9999";
-  alert.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-  // Add to page
-  document.body.appendChild(alert);
-
-  // Auto-remove after 5 seconds
-  setTimeout(function () {
-    alert.remove();
-  }, 5000);
-}
-
-// ========================================
-// 7. SHOW ERROR MESSAGE
-// ========================================
-
-/**
- * Display an error message to user
- * @param {string} message - Error message to display
- */
-function showErrorMessage(message) {
-  // Create alert element
-  const alert = document.createElement("div");
-  alert.className =
-    "alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3";
-  alert.style.zIndex = "9999";
-  alert.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-  // Add to page
-  document.body.appendChild(alert);
-
-  // Auto-remove after 5 seconds
-  setTimeout(function () {
-    alert.remove();
-  }, 5000);
-}
-
-// ========================================
-// 8. LOCAL STORAGE HELPERS (DEPRECATED but kept for non-critical ephemeral data)
-// Core business data now uses API
-// ========================================
-
-/**
- * Save data to sessionStorage
- * @param {string} key - Storage key
- * @param {any} data - Data to store (will be converted to JSON)
- */
-function saveToLocalStorage(key, data) {
-  try {
-    const jsonData = JSON.stringify(data);
-    // Save to sessionStorage
-    sessionStorage.setItem(key, jsonData);
-    return true;
-  } catch (error) {
-    console.error("Error saving to sessionStorage:", error);
-    return false;
-  }
-}
-
-/**
- * Load data from sessionStorage
- * @param {string} key - Storage key
- * @returns {any} - Retrieved data (parsed from JSON)
- */
-function loadFromLocalStorage(key) {
-  try {
-    // Get JSON string from sessionStorage
-    const jsonData = sessionStorage.getItem(key);
-    // Parse and return data
-    return jsonData ? JSON.parse(jsonData) : null;
-  } catch (error) {
-    console.error("Error loading from sessionStorage:", error);
-    return null;
-  }
-}
-
-// ========================================
-// 9. GENERATE UNIQUE ID (Client-side helper)
-// ========================================
-
-function generateUniqueId(prefix) {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `${prefix}-${timestamp}-${random}`;
-}
-
-// ========================================
-// 10. FORMAT DATE
-// ========================================
-
-function formatDate(date) {
-  if (!date) return '';
-  const d = new Date(date);
-  const options = {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  };
-  return d.toLocaleDateString("en-US", options);
-}
-
-// ========================================
-// 11. TRUNCATE TEXT
-// ========================================
-
-function truncateText(text, maxLength) {
-  if (!text) return '';
-  if (text.length <= maxLength) {
-    return text;
-  }
-  return text.substring(0, maxLength) + "...";
-}
-
-// ========================================
-// 12. DEBOUNCE FUNCTION
-// ========================================
-
-function debounce(func, delay) {
-  let timeoutId;
-  return function (...args) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      func.apply(this, args);
-    }, delay);
-  };
-}
-
-// ========================================
-// 13. CHECK USER AUTHENTICATION
-// ========================================
-
-/**
- * Check if user is logged in
- * Used by dashboard pages to verify access
- * @returns {object|null} - User data if logged in, null otherwise
- */
-function checkAuth() {
-  const userData = loadFromLocalStorage("innovateHubUser");
-  return userData && userData.loggedIn ? userData : null;
-}
-
-/**
- * Redirect to login if not authenticated
- * Call this at the top of dashboard pages
- */
-function requireAuth() {
-  const user = checkAuth();
-  if (!user) {
-    window.location.href = "/login";
-  }
-  return user;
-}
-
-/**
- * Update UI based on user role
- * @param {object} user - User data object
- */
-function updateUIForRole(user) {
-  if (!user) return;
-
-  // Show user profile area
-  const guestButtons = document.getElementById("guestButtons");
-  const userProfile = document.getElementById("userProfile");
-  const userNameSpan = document.getElementById("userName");
-  const navDashboardLink = document.getElementById("navDashboardLink");
-
-  if (guestButtons) guestButtons.classList.add("d-none");
-  if (userProfile) userProfile.classList.remove("d-none");
-  if (userProfile) userProfile.classList.add("d-flex");
-  if (userNameSpan) userNameSpan.textContent = user.name || user.email;
-  // Show "My Dashboard" link in main nav
-  if (navDashboardLink) navDashboardLink.classList.remove("d-none");
-
-  // Show role-specific navigation and dashboard elements
-  const innovatorSidebarNav = document.getElementById("innovatorSidebarNav");
-  const mentorSidebarNav = document.getElementById("mentorSidebarNav");
-  const adminSidebarNav = document.getElementById("adminSidebarNav");
-  const dashboardWrapper = document.getElementById("dashboardWrapper");
-
-  const mainElements = [
-    document.querySelector('.carousel'),
-    document.querySelector('.video'),
-    document.querySelector('.about'),
-    document.querySelector('.service'),
-    document.querySelector('.event'),
-    document.querySelector('.team'),
-    document.querySelector('.testimonial'),
-    document.getElementById('contact')
-  ];
-
-  if (dashboardWrapper) {
-    dashboardWrapper.classList.remove("d-none");
-    
-    // Hide standard marketing content to focus on dashboard
-    mainElements.forEach(el => {
-      if (el) el.classList.add("d-none");
-    });
-
-    // Show specific role sidebar
-    if (user.role === "innovator") {
-      if (innovatorSidebarNav) innovatorSidebarNav.classList.remove("d-none");
-      showDashboardSection('myProjects'); // Default to My Projects
-    } else if (user.role === "mentor") {
-      if (mentorSidebarNav) mentorSidebarNav.classList.remove("d-none");
-      showDashboardSection('mentorOverview');
-    } else if (user.role === "admin") {
-      if (adminSidebarNav) adminSidebarNav.classList.remove("d-none");
-      showDashboardSection('adminOverview');
-    }
-  }
-}
-
-/**
- * Toggle dashboard sub-sections
- * @param {string} sectionId - ID of the section to show
- */
-function showDashboardSection(sectionId) {
-  const sections = [
-    'innovatorOverview', 'myProjects', 'submitIdea', 'notifications',
-    'mentorOverview', 'assignedProjects',
-    'adminOverview', 'userManagement', 'dashboardNotificationsArea',
-    'mentorsSection', 'submitSection', 'projectsSection', 'reportSection', 'profileSection', 'settingsSection'
-  ];
-
-  // Map simplified names to IDs
-  const sectionMap = {
-      'submit': 'submitSection',
-      'projects': 'projectsSection',
-      'mentors': 'mentorsSection',
-      'report': 'reportSection',
-      'notifications': 'notificationsSection',
-      'profile': 'profileSection',
-      'settings': 'settingsSection'
-  };
-
-  let targetId = sectionMap[sectionId] || sectionId;
-
-  // Hide all potential sections
-  const allSections = document.querySelectorAll('.dashboard-section');
-  allSections.forEach(section => {
-      section.style.display = 'none';
-  });
-
-  const target = document.getElementById(targetId);
-  if (target) {
-    target.style.display = 'block';
-  }
-
-  // Update active state in sidebar
-  const navLinks = document.querySelectorAll('.dashboard-sidebar-nav .nav-link, .dashboard-sidebar .nav-link');
-  navLinks.forEach(link => {
-    link.classList.remove('active');
-    // Simple check if the link's onclick contains the sectionId
-    if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(sectionId)) {
-      link.classList.add('active');
-    }
-  });
-}
-
-/**
- * Logout user
- */
-window.logout = async function logout() {
+// Global Exports for Module services
+window.logout = async function() {
     try {
         await signOut(auth);
-        // sessionStorage is cleared by the onAuthStateChanged listener
-        window.location.href = "/";
+        localStorage.removeItem("innovateHubUser");
+        window.location.href = "login.html";
     } catch (error) {
         console.error("Logout error:", error);
-        sessionStorage.removeItem("innovateHubUser");
-        window.location.href = "/";
+        localStorage.removeItem("innovateHubUser");
+        window.location.href = "login.html";
     }
-}
+};
 
 // ========================================
-// 14. INNOVATION CATEGORIES
+// 14. SERVICES
 // ========================================
+
+// SERVICES
+// ========================================
+
+export const ProjectService = {
+    submitProject: async (formData, file) => {
+        // 1. Create Firestore Doc Shell
+        const projectRef = await addDoc(collection(db, "projects"), {
+            ...formData,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        });
+
+        // 2. Upload File to Firebase Storage
+        if (file) {
+            const fileName = `projects/${projectRef.id}_${file.name}`;
+            const fileRef = ref(storage, fileName);
+            
+            try {
+                const uploadResult = await uploadBytes(fileRef, file);
+                const fileUrl = await getDownloadURL(uploadResult.ref);
+                
+                // 3. Update Firestore with final URL
+                await updateDoc(doc(db, "projects", projectRef.id), {
+                    fileUrl: fileUrl,
+                    fileName: file.name
+                });
+            } catch (err) {
+                console.error("Firebase Storage Upload Error:", err);
+                throw new Error("Failed to upload project document.");
+            }
+        }
+        return projectRef;
+    }
+};
+
+export const MentorshipService = {
+    sendRequest: async (mentorId, projectId) => {
+        return await addDoc(collection(db, "mentorshipRequests"), {
+            mentorId,
+            projectId,
+            innovatorId: auth.currentUser.uid,
+            status: 'pending',
+            createdAt: serverTimestamp()
+        });
+    }
+};
+
+export const NotificationService = {
+    send: async (userId, message, type = 'info') => {
+        return await addDoc(collection(db, "notifications"), {
+            userId,
+            message,
+            type,
+            read: false,
+            createdAt: serverTimestamp()
+        });
+    }
+};
+
+export { requireAuth };
+
+// Export Services to Window for non-module scripts
+window.ProjectService = ProjectService;
+window.MentorshipService = MentorshipService;
+window.NotificationService = NotificationService;
 
 // Log initialization message
 console.log(

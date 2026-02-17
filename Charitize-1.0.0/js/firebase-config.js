@@ -24,9 +24,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Use Session Persistence to allow different accounts in different tabs
-// This resolves the issue where logging in/out affects all open tabs of the same domain.
-setPersistence(auth, browserSessionPersistence);
+// Use Default (Local) Persistence for better cross-tab reliability
+// setPersistence(auth, browserSessionPersistence);
 
 const db = getFirestore(app);
 const storage = getStorage(app);

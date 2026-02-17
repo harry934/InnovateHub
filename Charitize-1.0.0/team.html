@@ -204,33 +204,35 @@
     <!-- Team End -->
 
     <script type="module">
-        import { auth } from './js/firebase-config.js';
+        import { db } from './js/firebase-config.js';
+        import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         
         document.addEventListener('DOMContentLoaded', async () => {
             const container = document.getElementById('mentorsContainer');
             
             try {
-                // Fetch mentors from API
-                const mentors = await window.api.getMentors();
+                // Fetch mentors from Firestore
+                const q = query(collection(db, "users"), where("role", "==", "mentor"));
+                const querySnapshot = await getDocs(q);
                 
-                if (!mentors || mentors.length === 0) {
+                if (querySnapshot.empty) {
                     container.innerHTML = '<div class="col-12 text-center"><h3>No mentors found at the moment.</h3></div>';
                     return;
                 }
                 
                 let html = '';
-                mentors.forEach(mentor => {
-                    const profile = mentor.profile || {};
-                    const avatar = profile.avatar || 'img/team-1.jpg'; // Fallback
-                    const role = profile.experience || mentor.role || 'Expert Mentor';
-                    const expertise = profile.skills ? profile.skills.join(', ') : 'Innovation';
+                querySnapshot.forEach((doc) => {
+                    const mentor = doc.data();
+                    const avatar = mentor.photoURL || 'img/team-1.jpg'; // Fallback
+                    const role = mentor.profession || 'Expert Mentor';
+                    const expertise = mentor.expertise || 'Innovation';
                     
                     html += `
                         <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.1s">
                             <div class="team-item d-flex h-100 p-4">
                                 <div class="team-detail pe-4">
-                                    <img class="img-fluid mb-4" src="${avatar}" alt="${mentor.name}" onerror="this.src='img/team-1.jpg'">
-                                    <h3>${mentor.name}</h3>
+                                    <img class="img-fluid mb-4" src="${avatar}" alt="${mentor.fullName}" onerror="this.src='img/team-1.jpg'">
+                                    <h3>${mentor.fullName}</h3>
                                     <span>${role}</span>
                                     <p class="small text-muted mt-2">${expertise}</p>
                                 </div>

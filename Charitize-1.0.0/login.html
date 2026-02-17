@@ -414,7 +414,7 @@
         </div>
 
         <div class="login-links">
-          <a href="/signup">Create an Account</a>
+          <a href="signup.html">Create an Account</a>
         </div>
       </div>
     </div>
@@ -424,18 +424,20 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Innovate Hub JavaScript -->
-    <script src="js/api.js"></script>
-    <script type="module" src="js/innovate-hub.js"></script>
+    <script src="js/ui-utils.js?v=1.0.1"></script>
+    <script src="js/api.js?v=1.0.1"></script>
+    <script type="module" src="js/innovate-hub.js?v=1.0.1"></script>
 
     <!-- Login Logic -->
     <script type="module">
-      import { auth, googleProvider } from "./js/firebase-config.js";
+      import { auth, googleProvider, db } from "./js/firebase-config.js";
       import {
         signInWithEmailAndPassword,
         signInWithPopup,
         signOut,
         sendPasswordResetEmail,
       } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+      import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
       // Check for URL parameters to pre-fill email
       window.addEventListener("load", function () {
@@ -446,6 +448,32 @@
         }
       });
 
+      async function getRedirectUrl(user) {
+        // Admin email check (hardcoded as fallback/priority)
+        if (user.email === 'admin@innovatehub.com' || user.email === 'techeagle254@gmail.com') {
+            return "admin-dashboard.html";
+        }
+
+        try {
+            // Immediate check for Firestore doc (timeout after 3 seconds)
+            const userDocPromise = getDoc(doc(db, "users", user.uid));
+            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 3000));
+            
+            const userDoc = await Promise.race([userDocPromise, timeoutPromise]);
+            
+            if (userDoc && userDoc.exists()) {
+                const data = userDoc.data();
+                if (data.role === 'admin') return "admin-dashboard.html";
+                if (data.role === 'mentor') return "mentor-dashboard.html";
+                if (data.role === 'innovator') return "innovator-dashboard.html";
+            }
+        } catch (err) {
+            console.error("Error fetching role for redirect:", err);
+        }
+        
+        return "innovator-dashboard.html"; // Default
+      }
+
       window.handleGoogleLogin = async function () {
         if (window.location.protocol === "file:") {
           showErrorMessage("Google login requires a web server.");
@@ -455,31 +483,11 @@
         try {
           const result = await signInWithPopup(auth, googleProvider);
           const user = result.user;
-          const idToken = await user.getIdToken();
-
-          const loginResult = await window.api.login(user, idToken);
-
-          if (loginResult.ok) {
-            const userData = loginResult.data.user;
-            saveToLocalStorage("innovateHubUser", {
-              ...userData,
-              loggedIn: true,
-            });
-
-            let redirectUrl = "innovator-dashboard.html";
-            if (userData.role === "admin") redirectUrl = "admin-dashboard.html";
-            else if (userData.role === "mentor")
-              redirectUrl = "mentor-dashboard.html";
-
-            showSuccessMessage("Login successful! Welcome back.");
-            setTimeout(() => (window.location.href = redirectUrl), 1000);
-          } else {
-            // New logic: if user not found in MongoDB, redirect to signup with their info
-            showErrorMessage("Profile not found in our data store. Redirecting to complete your profile...");
-            setTimeout(() => {
-                window.location.href = `signup.html?email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.displayName || '')}`;
-            }, 2000);
-          }
+          
+          showSuccessMessage("Login successful! Welcome back.");
+          const redirectUrl = await getRedirectUrl(user);
+          console.log("Google Login Success, redirecting to:", redirectUrl);
+          setTimeout(() => (window.location.href = redirectUrl), 1000);
         } catch (error) {
           console.error("Google Login Error:", error);
           showErrorMessage("Google authentication failed: " + error.message);
@@ -510,33 +518,11 @@
             password,
           );
           const user = userCredential.user;
-          const idToken = await user.getIdToken();
-
-          const loginResult = await window.api.login(user, idToken);
-
-          if (loginResult.ok) {
-            const userData = loginResult.data.user;
-            saveToLocalStorage("innovateHubUser", {
-              ...userData,
-              loggedIn: true,
-            });
-
-            let redirectUrl = "innovator-dashboard.html";
-            if (userData.role === "admin") redirectUrl = "admin-dashboard.html";
-            else if (userData.role === "mentor")
-              redirectUrl = "mentor-dashboard.html";
-
-            showSuccessMessage("Login successful! Welcome back.");
-            setTimeout(() => (window.location.href = redirectUrl), 1000);
-          } else {
-            showErrorMessage("Account found in auth service, but profile is missing. Redirecting to signup...");
-            await signOut(auth);
-            setTimeout(() => {
-                window.location.href = `signup.html?email=${encodeURIComponent(email)}`;
-            }, 2000);
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-          }
+          
+          showSuccessMessage("Login successful! Welcome back.");
+          const redirectUrl = await getRedirectUrl(user);
+          console.log("Email Login Success, redirecting to:", redirectUrl);
+          setTimeout(() => (window.location.href = redirectUrl), 1000);
         } catch (error) {
           console.error("Login error:", error);
           let message = "Incorrect email or password.";

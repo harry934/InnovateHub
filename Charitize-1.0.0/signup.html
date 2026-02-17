@@ -628,7 +628,7 @@
         <!-- Login Link -->
         <div class="signup-links" style="text-align: center">
           <a
-            href="/login"
+            href="login.html"
             style="color: #1a5e4f; text-decoration: none; font-weight: 600"
             >Login to your account</a
           >
@@ -641,8 +641,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Innovate Hub JavaScript -->
-    <script src="js/api.js"></script>
-    <script type="module" src="js/innovate-hub.js"></script>
+    <script src="js/ui-utils.js?v=1.0.1"></script>
+    <script src="js/api.js?v=1.0.1"></script>
+    <script type="module" src="js/innovate-hub.js?v=1.0.1"></script>
 
     <!-- Signup Page JavaScript -->
     <script type="module">
@@ -736,35 +737,33 @@
 
       window.handleGoogleSignIn = async function() {
           if (window.location.protocol === 'file:') {
-              showErrorMessage("Social login requires a web server (localhost or domain). Please run using a local server (e.g., Live Server).");
+              window.showErrorMessage("Social login requires a web server (localhost or domain). Please run using a local server (e.g., Live Server).");
               return;
           }
           try {
               const result = await signInWithPopup(auth, googleProvider);
               const user = result.user;
 
-              // Fetch profile or redirect to complete it
+              // Fetch profile - if exists, it's a login attempt on signup page
               const userDoc = await getDoc(doc(db, "users", user.uid));
               if (userDoc.exists()) {
-                  const userData = userDoc.data();
-                  saveToLocalStorage('innovateHubUser', { ...userData, loggedIn: true });
-                  window.location.href = userData.role === 'admin' ? '/admin-dashboard' :
-                                       userData.role === 'mentor' ? '/mentor-dashboard' : '/innovator-dashboard';
+                  await auth.signOut();
+                  window.showErrorMessage("Email already exists. Please proceed to login.");
               } else {
                   // Pre-fill Step 2
                   document.getElementById('email').value = user.email || "";
                   document.getElementById('fullName').value = user.displayName || "";
-                  nextStep(1);
+                  window.nextStep(1);
               }
           } catch (error) {
               console.error("Google Sign-In Error:", error);
-              showErrorMessage("Google authentication failed: " + error.message);
+              window.showErrorMessage("Google authentication failed: " + error.message);
           }
       }
 
       window.showPhoneAuth = function() {
           if (window.location.protocol === 'file:') {
-              showErrorMessage("Phone auth requires a web server. Please run using a local server.");
+              window.showErrorMessage("Phone auth requires a web server. Please run using a local server.");
               return;
           }
           const phoneNumber = prompt("Enter your phone number (with country code, e.g., +254...):");
@@ -785,16 +784,16 @@
                   .then((result) => {
                       if (result) {
                           const user = result.user;
-                          nextStep(1); // Proceed to profile step
+                          window.nextStep(1); // Proceed to profile step
                       }
                   })
                   .catch((error) => {
                       console.error("Phone Auth Error:", error);
-                      showErrorMessage("Phone verification failed: " + error.message);
+                      window.showErrorMessage("Phone verification failed: " + error.message);
                   });
           } catch (err) {
               console.error("Recaptcha Setup Error:", err);
-              showErrorMessage("Verification setup failed: " + err.message);
+              window.showErrorMessage("Verification setup failed: " + err.message);
           }
       }
 
@@ -863,32 +862,14 @@
 
                   await setDoc(doc(db, "users", user.uid), profileData);
 
-                  // --- NEW: Sync with MongoDB Backend ---
-                  const idToken = await user.getIdToken();
-                  const registerResult = await window.api.register(user, idToken, {
-                      name: fullName,
-                      role: role,
-                      phone: phone,
-                      profile: {
-                          bio: motivation || "",
-                          skills: expertise ? expertise.split(',').map(s => s.trim()) : [],
-                          experience: organization || ""
-                      }
-                  });
-
-                  if (!registerResult.ok) {
-                      console.warn("MongoDB registration failed, but Firebase succeeded:", registerResult.data);
-                      // We continue because Firebase succeeded, but we should alert the user/dev
-                  }
-
                   // Set session
-                  saveToLocalStorage('innovateHubUser', { ...profileData, loggedIn: true });
+                  window.saveToLocalStorage('innovateHubUser', { ...profileData, loggedIn: true });
 
                   const welcomeMsg = role === 'mentor' ?
                       'Application submitted! Pending admin approval.' :
                       'Signup successful! Welcome to Innovate Hub.';
 
-                  showSuccessMessage(welcomeMsg);
+                  window.showSuccessMessage(welcomeMsg);
 
                   setTimeout(() => {
                       window.location.href = role === 'mentor' ? 'index.html' : 'innovator-dashboard.html';
@@ -898,16 +879,15 @@
                   console.error("Signup error:", error);
 
                   if (error.code === 'auth/email-already-in-use') {
-                      showErrorMessage('This email is already registered. Please <a href="login.html" class="alert-link">login instead</a>.');
+                      window.showErrorMessage("Email already exists. Please proceed to login.");
                   } else {
-                      showErrorMessage('Signup failed: ' + error.message);
+                      window.showErrorMessage('Signup failed: ' + error.message);
                   }
 
                   btn.innerHTML = originalText;
                   btn.disabled = false;
               }
           }
-      }
       }
     </script>
   </body>
