@@ -7,6 +7,8 @@
       "**/node_modules/**",
       "server/**"
     ],
+    "cleanUrls": true,
+    "trailingSlash": false,
     "rewrites": [
       {
         "source": "/signup",
@@ -27,6 +29,10 @@
       {
         "source": "/admin-dashboard",
         "destination": "/admin-dashboard.html"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
       }
     ]
   },
