@@ -1,27 +1,133 @@
-/**
- * ========================================
- * INNOVATE HUB - MAIN JAVASCRIPT FILE
- * Handles splash screen, navigation, and core functionality
- * ========================================
- */
-
 // ========================================
-// 1. SPLASH SCREEN CONTROL
+// 1. SPLASH SCREEN CONTROL (PRELOADER)
 // ========================================
 
-/**
- * Run on page load
- */
-window.addEventListener("load", async function () {
-    // Check authentication and update UI immediately
-    // Note: api object is available from api.js
-    if (window.api) {
-        const user = await window.api.getCurrentUser();
-        if (user) {
-            updateUIForRole(user);
+(function() {
+    // Run immediately
+    const initPreloader = () => {
+        const preloader = document.getElementById("logo-preloader");
+        if (!preloader) return;
+
+        // Check Navigation Type
+        const wasNavigated = sessionStorage.getItem("wasNavigated");
+        
+        // Clear flag immediately
+        sessionStorage.removeItem("wasNavigated");
+
+        if (wasNavigated) {
+            // It was a navigation click -> DO NOTHING
+            preloader.remove();
+        } else {
+            // It was a Refresh or Initial Load -> SHOW PRELOADER
+            preloader.classList.add("active");
+            
+            // Primary animation completion
+            const hidePreloader = () => {
+                preloader.classList.remove("active");
+                preloader.classList.add("fade-out");
+                setTimeout(() => {
+                    if(preloader && preloader.parentNode) preloader.remove();
+                }, 1000);
+            };
+
+            // Remove after planned animation
+            setTimeout(hidePreloader, 2000);
+
+            // FAILSAFE: Force remove after 4 seconds regardless of state
+            setTimeout(() => {
+                if (preloader && preloader.parentNode) {
+                    console.warn("Preloader failsafe triggered.");
+                    preloader.remove();
+                }
+            }, 4000);
         }
+    };
+
+    // Initialize as soon as DOM is ready or Script runs
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPreloader);
+    } else {
+        initPreloader();
+    }
+})();
+
+// Navigation listener to set flag
+document.addEventListener("click", function(e) {
+    const link = e.target.closest("a");
+    if (link && 
+        link.href && 
+        link.href.includes(window.location.origin) && 
+        !link.href.includes("#") && 
+        link.target !== "_blank") {
+        sessionStorage.setItem("wasNavigated", "true");
     }
 });
+
+import { auth, db, storage } from './firebase-config.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    doc, getDoc, getDocs, collection, addDoc, updateDoc, 
+    query, where, orderBy, limit, serverTimestamp, increment,
+    onSnapshot, setDoc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+/**
+ * Real-time Firebase Auth Listener
+ * Synchronizes Firebase auth state with LocalStorage and UI
+ */
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // User is logged in
+        let userData = loadFromLocalStorage("innovateHubUser");
+        
+        // If local data is missing or out of sync, fetch from Firestore
+        if (!userData || userData.uid !== user.uid) {
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    userData = { ...userDoc.data(), loggedIn: true };
+                    
+                    // Update lastLogin for inactivity tracking
+                    await updateDoc(doc(db, "users", user.uid), {
+                        lastLogin: serverTimestamp()
+                    });
+                    
+                    saveToLocalStorage("innovateHubUser", userData);
+                }
+            } catch (error) {
+                console.error("Error fetching user role:", error);
+            }
+        }
+        
+        if (userData) {
+            updateUIForRole(userData);
+            
+            // Run system checks if admin or mentor
+            if (userData.role === 'admin' || userData.role === 'mentor') {
+                AutomationService.checkExpirations();
+                AutomationService.checkMentorInactivity();
+            }
+        }
+    } else {
+        // User is logged out
+        sessionStorage.removeItem("innovateHubUser");
+        resetUI();
+    }
+});
+
+/**
+ * Reset UI to Guest State
+ */
+function resetUI() {
+    const guestButtons = document.getElementById("guestButtons");
+    const userProfile = document.getElementById("userProfile");
+    const navDashboardLink = document.getElementById("navDashboardLink");
+
+    if (guestButtons) guestButtons.classList.remove("d-none");
+    if (userProfile) userProfile.classList.add("d-none");
+    if (navDashboardLink) navDashboardLink.classList.add("d-none");
+}
 
 // ========================================
 // 2. SMOOTH SCROLLING FOR ANCHOR LINKS
@@ -102,6 +208,20 @@ function validateForm(form) {
   return isValid;
 }
 
+// Global Exports for legacy scripts
+window.showSuccessMessage = showSuccessMessage;
+window.showErrorMessage = showErrorMessage;
+window.validateForm = validateForm;
+window.validateEmail = validateEmail;
+window.saveToLocalStorage = saveToLocalStorage;
+window.loadFromLocalStorage = loadFromLocalStorage;
+window.generateUniqueId = generateUniqueId;
+window.formatDate = formatDate;
+window.truncateText = truncateText;
+window.checkAuth = checkAuth;
+window.requireAuth = requireAuth;
+window.showDashboardSection = showDashboardSection;
+
 // ========================================
 // 5. EMAIL VALIDATION
 // ========================================
@@ -179,23 +299,36 @@ function showErrorMessage(message) {
 // Core business data now uses API
 // ========================================
 
+/**
+ * Save data to sessionStorage
+ * @param {string} key - Storage key
+ * @param {any} data - Data to store (will be converted to JSON)
+ */
 function saveToLocalStorage(key, data) {
   try {
     const jsonData = JSON.stringify(data);
-    localStorage.setItem(key, jsonData);
+    // Save to sessionStorage
+    sessionStorage.setItem(key, jsonData);
     return true;
   } catch (error) {
-    console.error("Error saving to localStorage:", error);
+    console.error("Error saving to sessionStorage:", error);
     return false;
   }
 }
 
+/**
+ * Load data from sessionStorage
+ * @param {string} key - Storage key
+ * @returns {any} - Retrieved data (parsed from JSON)
+ */
 function loadFromLocalStorage(key) {
   try {
-    const jsonData = localStorage.getItem(key);
+    // Get JSON string from sessionStorage
+    const jsonData = sessionStorage.getItem(key);
+    // Parse and return data
     return jsonData ? JSON.parse(jsonData) : null;
   } catch (error) {
-    console.error("Error loading from localStorage:", error);
+    console.error("Error loading from sessionStorage:", error);
     return null;
   }
 }
@@ -256,6 +389,31 @@ function debounce(func, delay) {
 // ========================================
 // 13. CHECK USER AUTHENTICATION
 // ========================================
+
+/**
+ * Check if user is logged in
+ * Used by dashboard pages to verify access
+ * @returns {object|null} - User data if logged in, null otherwise
+ */
+export function checkAuth() {
+  const userData = loadFromLocalStorage("innovateHubUser");
+  return userData;
+}
+
+/**
+ * Redirect to login if not authenticated
+ * Call this at the top of dashboard pages
+ */
+/**
+ * Redirect to login if not authenticated
+ */
+export function requireAuth() {
+  const user = checkAuth();
+  if (!user || !user.loggedIn) {
+    window.location.href = "login.html";
+  }
+  return user;
+}
 
 /**
  * Update UI based on user role
@@ -366,15 +524,16 @@ function showDashboardSection(sectionId) {
 /**
  * Logout user
  */
-function logout() {
-  if (window.api) {
-      window.api.logout();
-  } else {
-      // Fallback
-      localStorage.removeItem("token");
-      localStorage.removeItem("innovateHubUser");
-      window.location.href = "index.html";
-  }
+window.logout = async function logout() {
+    try {
+        await signOut(auth);
+        // sessionStorage is cleared by the onAuthStateChanged listener
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Logout error:", error);
+        sessionStorage.removeItem("innovateHubUser");
+        window.location.href = "index.html";
+    }
 }
 
 // ========================================
@@ -424,11 +583,201 @@ function getStatusBadge(status) {
 }
 
 // ========================================
-// CONSOLE MESSAGE
+// 16. CORE SERVICES
 // ========================================
 
+/**
+ * PROJECT SERVICE
+ */
+export const ProjectService = {
+    async submitProject(projectData, file = null) {
+        const user = checkAuth();
+        if (!user || user.role !== 'innovator') throw new Error("Unauthorized");
+
+        let fileUrl = null;
+        let fileName = null;
+
+        // Handle File Upload if present
+        if (file) {
+            const storageRef = ref(storage, `projects/${user.uid}/${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            fileUrl = await getDownloadURL(snapshot.ref);
+            fileName = file.name;
+        }
+
+        const project = {
+            ...projectData,
+            innovatorId: user.uid,
+            fileUrl,
+            fileName,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            completionPercentage: 0,
+            version: 1,
+            visibility: projectData.visibility || 'public'
+        };
+
+        const docRef = await addDoc(collection(db, "projects"), project);
+        
+        // Log Initial Version
+        await addDoc(collection(db, `projects/${docRef.id}/history`), {
+            version: 1,
+            data: project,
+            timestamp: serverTimestamp(),
+            changedBy: user.uid
+        });
+
+        return docRef.id;
+    },
+
+    async updateProject(projectId, updates) {
+        const user = checkAuth();
+        if (!user) throw new Error("Unauthorized");
+
+        const projectRef = doc(db, "projects", projectId);
+        const projectDoc = await getDoc(projectRef);
+        
+        if (!projectDoc.exists()) throw new Error("Project not found");
+        
+        const currentData = projectDoc.data();
+        const newVersion = (currentData.version || 1) + 1;
+
+        await updateDoc(projectRef, {
+            ...updates,
+            version: newVersion,
+            updatedAt: serverTimestamp()
+        });
+
+        // Log Version History
+        await addDoc(collection(db, `projects/${projectId}/history`), {
+            version: newVersion,
+            changes: updates,
+            timestamp: serverTimestamp(),
+            changedBy: user.uid
+        });
+    },
+
+    async addMilestone(projectId, milestone) {
+        return await addDoc(collection(db, "milestones"), {
+            ...milestone,
+            projectId: projectId,
+            status: 'pending',
+            createdAt: serverTimestamp()
+        });
+    }
+};
+
+/**
+ * MENTORSHIP SERVICE
+ */
+export const MentorshipService = {
+    async sendRequest(mentorId, projectId) {
+        const user = checkAuth();
+        return await addDoc(collection(db, "mentorshipRequests"), {
+            innovatorId: user.uid,
+            mentorId: mentorId,
+            projectId: projectId,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+        });
+    },
+
+    async respondToRequest(requestId, status, reason = "") {
+        const requestRef = doc(db, "mentorshipRequests", requestId);
+        await updateDoc(requestRef, { 
+            status: status,
+            reason: reason,
+            respondedAt: serverTimestamp() 
+        });
+
+        if (status === 'accepted') {
+            const requestDoc = await getDoc(requestRef);
+            const data = requestDoc.data();
+            // Link mentor to project
+            await updateDoc(doc(db, "projects", data.projectId), {
+                mentorId: data.mentorId,
+                status: 'in-progress'
+            });
+        }
+    },
+
+    async scheduleMeeting(meetingData) {
+        return await addDoc(collection(db, "meetings"), {
+            ...meetingData,
+            createdAt: serverTimestamp()
+        });
+    }
+};
+
+/**
+ * AUTOMATION SERVICE
+ * Background checks for inactivity and expirations
+ */
+export const AutomationService = {
+    async checkExpirations() {
+        const q = query(
+            collection(db, "mentorshipRequests"), 
+            where("status", "==", "pending"),
+            where("expiresAt", "<=", new Date())
+        );
+        const snapshot = await getDocs(q);
+        snapshot.forEach(async (d) => {
+            await updateDoc(doc(db, "mentorshipRequests", d.id), { status: 'expired' });
+        });
+    },
+
+    async checkMentorInactivity() {
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const q = query(
+            collection(db, "users"), 
+            where("role", "==", "mentor"),
+            where("lastLogin", "<=", thirtyDaysAgo)
+        );
+        const snapshot = await getDocs(q);
+        snapshot.forEach(async (d) => {
+            await updateDoc(doc(db, "users", d.id), { autoFlagged: 'inactive_30d' });
+            // Alert Admin usually via Notification
+            await addDoc(collection(db, "notifications"), {
+                userId: 'admin', // Placeholder or broadcast
+                message: `Mentor ${d.data().fullName} flagged for 30-day inactivity.`,
+                type: 'alert',
+                createdAt: serverTimestamp()
+            });
+        });
+    }
+};
+
+/**
+ * NOTIFICATION SERVICE
+ */
+export const NotificationService = {
+    async send(userId, message, type = 'info', link = '#') {
+        return await addDoc(collection(db, "notifications"), {
+            userId, message, type, link,
+            read: false,
+            createdAt: serverTimestamp()
+        });
+    }
+};
+
+// ========================================
+// GLOBAL EXPORTS
+// ========================================
+
+window.ProjectService = ProjectService;
+window.MentorshipService = MentorshipService;
+window.AutomationService = AutomationService;
+window.NotificationService = NotificationService;
+
+// Log initialization message
 console.log(
   "%cInnovate Hub Platform",
   "color: #667eea; font-size: 20px; font-weight: bold;",
 );
-console.log("Platform initialized successfully ✓");
+console.log(
+  "%cEmpowering Innovation Through Collaboration",
+  "color: #764ba2; font-size: 14px;",
+);
+console.log("Platform services initialized successfully ✓");

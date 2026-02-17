@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Charitize - Charity Organization Website Template</title>
+    <title>404 - Innovate Hub</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -30,23 +30,34 @@
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    
+    <!-- Innovate Hub Custom Styles -->
+    <link href="css/innovate-hub.css" rel="stylesheet">
 </head>
 
 <body>
-    <!-- Spinner Start -->
-    <div id="spinner"
-        class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    <!-- Logo Preloader Start -->
+    <div id="logo-preloader">
+        <div class="preloader-content">
+            <svg class="preloader-logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="hexagon-path" d="M20 4L33.8564 12V28L20 36L6.14359 28V12L20 4Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+                <circle class="hub-circle" cx="20" cy="20" r="5" fill="#F3A813"/>
+                <line class="connect-line line-1" x1="20" y1="4" x2="20" y2="15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <line class="connect-line line-2" x1="33.8564" y1="28" x2="24.3301" y2="22.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <line class="connect-line line-3" x1="6.14359" y1="28" x2="15.6699" y2="22.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
     </div>
-    <!-- Spinner End -->
+    <!-- Logo Preloader End -->
 
 
     <!-- Topbar Start -->
     <div class="container-fluid bg-secondary top-bar wow fadeIn" data-wow-delay="0.1s">
         <div class="row align-items-center h-100">
             <div class="col-lg-4 text-center text-lg-start">
-                <a href="index.html">
-                    <h1 class="display-5 text-primary m-0">Charitize</h1>
+                <a href="index.html" class="logo-container text-decoration-none">
+                    <img src="img/logo.svg" alt="Innovate Hub Logo" class="logo-icon" style="width: 40px; height: 40px;">
+                    <span class="logo-text">Innovate Hub</span>
                 </a>
             </div>
             <div class="col-lg-8 d-none d-lg-block">
@@ -58,7 +69,7 @@
                             </div>
                             <div class="ms-2">
                                 <h6 class="text-primary mb-0">Call Us</h6>
-                                <span class="text-white">+012 345 6789</span>
+                                <span class="text-white">+254 700 000000</span>
                             </div>
                         </div>
                     </div>
@@ -69,7 +80,7 @@
                             </div>
                             <div class="ms-2">
                                 <h6 class="text-primary mb-0">Mail Us</h6>
-                                <span class="text-white">info@domain.com</span>
+                                <span class="text-white">InnovateHub@gmail.com</span>
                             </div>
                         </div>
                     </div>
@@ -80,7 +91,7 @@
                             </div>
                             <div class="ms-2">
                                 <h6 class="text-primary mb-0">Address</h6>
-                                <span class="text-white">123 Street, NY, USA</span>
+                                <span class="text-white">Nairobi, Kenya</span>
                             </div>
                         </div>
                     </div>
@@ -95,6 +106,10 @@
     <div class="container-fluid bg-secondary px-0 wow fadeIn" data-wow-delay="0.1s">
         <div class="nav-bar">
             <nav class="navbar navbar-expand-lg bg-primary navbar-dark px-4 py-lg-0">
+                <a href="index.html" class="navbar-brand d-none d-lg-flex align-items-center ms-0 me-auto sticky-logo">
+                    <img src="img/logo.svg" alt="Innovate Hub" style="width: 35px; height: 35px;">
+                    <span class="logo-text ms-2" style="font-size: 1.2rem; color: white;">Innovate Hub</span>
+                </a>
                 <h4 class="d-lg-none m-0">Menu</h4>
                 <button type="button" class="navbar-toggler me-0" data-bs-toggle="collapse"
                     data-bs-target="#navbarCollapse">
@@ -103,25 +118,26 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav me-auto">
                         <a href="index.html" class="nav-item nav-link">Home</a>
-                        <a href="about.html" class="nav-item nav-link">About</a>
-                        <a href="service.html" class="nav-item nav-link">Service</a>
-                        <a href="donation.html" class="nav-item nav-link">Donation</a>
                         <div class="nav-item dropdown">
-                            <a href="#!" class="nav-link dropdown-toggle active" data-bs-toggle="dropdown">Pages</a>
-                            <div class="dropdown-menu bg-light m-0">
-                                <a href="event.html" class="dropdown-item">Event</a>
-                                <a href="feature.html" class="dropdown-item">Feature</a>
-                                <a href="team.html" class="dropdown-item">Our Team</a>
-                                <a href="testimonial.html" class="dropdown-item">Testimonial</a>
-                                <a href="404.html" class="dropdown-item active">404 Page</a>
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">About Us</a>
+                            <div class="dropdown-menu m-0">
+                                <a href="about.html#our-story" class="dropdown-item">Our Story</a>
+                                <a href="about.html#our-team" class="dropdown-item">Our Team</a>
+                                <a href="policy.html" class="dropdown-item">Policy</a>
                             </div>
                         </div>
-                        <a href="contact.html" class="nav-item nav-link">Contact</a>
+                        <div class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Get Involved</a>
+                            <div class="dropdown-menu m-0">
+                                <a href="signup.html" class="dropdown-item">Submit a Project</a>
+                                <a href="contact.html" class="dropdown-item">Partner With Us</a>
+                                <a href="event.html" class="dropdown-item">Events</a>
+                            </div>
+                        </div>
+                        <a href="contact.html" class="nav-item nav-link">Contact Us</a>
                     </div>
-                    <div class="d-none d-lg-flex ms-auto">
-                        <a class="btn btn-square btn-dark ms-2" href="#!"><i class="fab fa-twitter"></i></a>
-                        <a class="btn btn-square btn-dark ms-2" href="#!"><i class="fab fa-facebook-f"></i></a>
-                        <a class="btn btn-square btn-dark ms-2" href="#!"><i class="fab fa-youtube"></i></a>
+                    <div class="d-flex ms-auto">
+                        <a class="btn btn-get-started" href="signup.html">GET STARTED</a>
                     </div>
                 </div>
             </nav>
@@ -133,12 +149,11 @@
     <!-- Page Header Start -->
     <div class="container-fluid page-header py-5 wow fadeIn" data-wow-delay="0.1s">
         <div class="container text-center py-4">
-            <h1 class="display-3 animated slideInDown">404 Page</h1>
+            <h1 class="display-3 animated slideInDown">404 Error</h1>
             <nav aria-label="breadcrumb animated slideInDown">
                 <ol class="breadcrumb justify-content-center mb-0">
-                    <li class="breadcrumb-item"><a href="#!">Home</a></li>
-                    <li class="breadcrumb-item"><a href="#!">Pages</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">404 Page</li>
+                    <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">404</li>
                 </ol>
             </nav>
         </div>
@@ -175,12 +190,11 @@
         <div class="container text-center">
             <div class="row justify-content-center">
                 <div class="col-lg-6">
-                    <i class="bi bi-exclamation-triangle display-1 text-primary"></i>
+                    <i class="bi bi-exclamation-octagon display-1 text-primary"></i>
                     <h1 class="display-1">404</h1>
-                    <h1 class="mb-4">Page Not Found</h1>
-                    <p class="mb-4">We’re sorry, the page you have looked for does not exist in our website! Maybe go to
-                        our home page or try to use a search?</p>
-                    <a class="btn btn-primary py-3 px-4" href="#!">Go Back To Home</a>
+                    <h1 class="mb-4">Lost in Innovation?</h1>
+                    <p class="mb-4">We couldn't find the page you were looking for. Even the best innovators take a wrong turn sometimes! Let's get you back on track.</p>
+                    <a class="btn btn-primary py-3 px-4" href="index.html">Go Back To Home</a>
                 </div>
             </div>
         </div>
@@ -193,7 +207,7 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-7 text-center wow fadeIn" data-wow-delay="0.5s">
-                    <h1 class="display-6 mb-4">Subscribe the Newsletter</h1>
+                    <h1 class="display-6 mb-4">Get Notified On Our Latest News & Updates</h1>
                     <div class="position-relative w-100 mb-2">
                         <input class="form-control border-0 w-100 ps-4 pe-5" type="text" placeholder="Enter Your Email"
                             style="height: 60px;">
@@ -215,9 +229,9 @@
             <div class="row g-5 py-5">
                 <div class="col-lg-3 col-md-6">
                     <h4 class="text-light mb-4">Our Office</h4>
-                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
-                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+012 345 67890</p>
-                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@example.com</p>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Nairobi, Kenya</p>
+                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+254 700 000000</p>
+                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>InnovateHub@gmail.com</p>
                     <div class="d-flex pt-3">
                         <a class="btn btn-square btn-primary me-2" href="#!"><i class="fab fa-x-twitter"></i></a>
                         <a class="btn btn-square btn-primary me-2" href="#!"><i class="fab fa-facebook-f"></i></a>
@@ -227,11 +241,11 @@
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <h4 class="text-light mb-4">Quick Links</h4>
-                    <a class="btn btn-link" href="#!">About Us</a>
-                    <a class="btn btn-link" href="#!">Contact Us</a>
-                    <a class="btn btn-link" href="#!">Our Services</a>
-                    <a class="btn btn-link" href="#!">Terms & Condition</a>
-                    <a class="btn btn-link" href="#!">Support</a>
+                    <a class="btn btn-link" href="about.html">About Us</a>
+                    <a class="btn btn-link" href="contact.html">Contact Us</a>
+                    <a class="btn btn-link" href="service.html">Our Services</a>
+                    <a class="btn btn-link" href="policy.html">Terms & Condition</a>
+                    <a class="btn btn-link" href="contact.html">Support</a>
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <h4 class="text-light mb-4">Business Hours</h4>
@@ -269,7 +283,7 @@
             <div class="copyright pt-5">
                 <div class="row">
                     <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                        &copy; <a class="fw-semi-bold" href="#!">Your Site Name</a>, All Right Reserved.
+                        &copy; <a class="fw-semi-bold" href="index.html">Innovate Hub</a>, All Rights Reserved.
                     </div>
                     <div class="col-md-6 text-center text-md-end">
                         <!--/*** This template is free as long as you keep the below author’s credit link/attribution link/backlink. ***/-->
@@ -286,7 +300,7 @@
 
 
     <!-- Back to Top -->
-    <a href="#!" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+
 
 
     <!-- JavaScript Libraries -->
