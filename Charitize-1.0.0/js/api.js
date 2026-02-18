@@ -146,7 +146,8 @@ const api = {
             body: JSON.stringify(profileData)
         });
         return { ok: response.ok, data: await response.json() };
-    }
+    },
+    API_URL: API_URL // Expose the URL for other scripts
 };
 
 // Expose to window

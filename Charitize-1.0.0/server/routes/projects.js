@@ -3,6 +3,54 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const Project = require('../models/Project');
 const User = require('../models/User');
+const File = require('../models/File');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+
+// @route   POST api/projects/upload
+// @desc    Upload project file to MongoDB
+// @access  Public (should be Private but easier for now)
+router.post('/upload', upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ msg: 'No file uploaded' });
+        }
+
+        const newFile = new File({
+            filename: req.file.originalname,
+            mimetype: req.file.mimetype,
+            data: req.file.buffer,
+            projectId: req.body.projectId,
+            innovatorId: req.body.innovatorId
+        });
+
+        const savedFile = await newFile.save();
+        
+        res.json({ 
+            msg: 'File uploaded to MongoDB', 
+            fileId: savedFile._id,
+            url: `/api/projects/file/${savedFile._id}` 
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   GET api/projects/file/:id
+// @desc    Get file from MongoDB
+router.get('/file/:id', async (req, res) => {
+    try {
+        const file = await File.findById(req.params.id);
+        if (!file) return res.status(404).json({ msg: 'File not found' });
+
+        res.set('Content-Type', file.mimetype);
+        res.send(file.data);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
 
 // @route   GET api/projects
 // @desc    Get all projects (for admin/public view potentially)

@@ -192,63 +192,65 @@
                 <p class="section-title bg-white text-center text-primary px-3">Expert Mentors</p>
                 <h1 class="display-6 mb-4">Guidance from Industry Leaders</h1>
             </div>
-            <div class="row g-4">
-                <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.1s">
-                    <div class="team-item d-flex h-100 p-4">
-                        <div class="team-detail pe-4">
-                            <img class="img-fluid mb-4" src="img/team-1.jpg" alt="">
-                            <h3>Dr. Sarah Jane</h3>
-                            <span>Senior Tech Advisor</span>
-                        </div>
-                        <div class="team-social bg-light d-flex flex-column justify-content-center flex-shrink-0 p-4">
-                            <a class="btn btn-square btn-primary my-2" href="#!"><i class="fab fa-linkedin-in"></i></a>
-                            <a class="btn btn-square btn-primary my-2" href="#!"><i class="fab fa-x-twitter"></i></a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.3s">
-                    <div class="team-item d-flex h-100 p-4">
-                        <div class="team-detail pe-4">
-                            <img class="img-fluid mb-4" src="img/team-2.jpg" alt="">
-                            <h3>Prof. Michael Chen</h3>
-                            <span>Robotics & AI Specialist</span>
-                        </div>
-                        <div class="team-social bg-light d-flex flex-column justify-content-center flex-shrink-0 p-4">
-                            <a class="btn btn-square btn-primary my-2" href="#!"><i class="fab fa-linkedin-in"></i></a>
-                            <a class="btn btn-square btn-primary my-2" href="#!"><i class="fab fa-x-twitter"></i></a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.5s">
-                    <div class="team-item d-flex h-100 p-4">
-                        <div class="team-detail pe-4">
-                            <img class="img-fluid mb-4" src="img/team-3.jpg" alt="">
-                            <h3>Elena Rodriguez</h3>
-                            <span>Sustainable Energy Consultant</span>
-                        </div>
-                        <div class="team-social bg-light d-flex flex-column justify-content-center flex-shrink-0 p-4">
-                            <a class="btn btn-square btn-primary my-2" href="#!"><i class="fab fa-linkedin-in"></i></a>
-                            <a class="btn btn-square btn-primary my-2" href="#!"><i class="fab fa-x-twitter"></i></a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.1s">
-                    <div class="team-item d-flex h-100 p-4">
-                        <div class="team-detail pe-4">
-                            <img class="img-fluid mb-4" src="img/team-1.jpg" alt="">
-                            <h3>David Kimani</h3>
-                            <span>Digital Transformation Lead</span>
-                        </div>
-                        <div class="team-social bg-light d-flex flex-column justify-content-center flex-shrink-0 p-4">
-                            <a class="btn btn-square btn-primary my-2" href="#!"><i class="fab fa-linkedin-in"></i></a>
-                            <a class="btn btn-square btn-primary my-2" href="#!"><i class="fab fa-x-twitter"></i></a>
-                        </div>
+            <div class="row g-4" id="mentorsContainer">
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <!-- Team End -->
+
+    <script type="module">
+        import { db } from './js/firebase-config.js';
+        import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('mentorsContainer');
+            
+            try {
+                // Fetch mentors from Firestore
+                const q = query(collection(db, "users"), where("role", "==", "mentor"));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<div class="col-12 text-center"><h3>No mentors found at the moment.</h3></div>';
+                    return;
+                }
+                
+                let html = '';
+                querySnapshot.forEach((doc) => {
+                    const mentor = doc.data();
+                    const avatar = mentor.photoURL || 'img/team-1.jpg'; // Fallback
+                    const role = mentor.profession || 'Expert Mentor';
+                    const expertise = mentor.expertise || 'Innovation';
+                    
+                    html += `
+                        <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.1s">
+                            <div class="team-item d-flex h-100 p-4">
+                                <div class="team-detail pe-4">
+                                    <img class="img-fluid mb-4" src="${avatar}" alt="${mentor.fullName}" onerror="this.src='img/team-1.jpg'">
+                                    <h3>${mentor.fullName}</h3>
+                                    <span>${role}</span>
+                                    <p class="small text-muted mt-2">${expertise}</p>
+                                </div>
+                                <div class="team-social bg-light d-flex flex-column justify-content-center flex-shrink-0 p-4">
+                                    <a class="btn btn-square btn-primary my-2" href="#!"><i class="fab fa-linkedin-in"></i></a>
+                                    <a class="btn btn-square btn-primary my-2" href="#!"><i class="fab fa-x-twitter"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                console.error("Error loading mentors:", error);
+                container.innerHTML = '<div class="col-12 text-center"><h3 class="text-danger">Failed to load mentors. Please try again later.</h3></div>';
+            }
+        });
+    </script>
 
 
     <!-- Newsletter Start -->

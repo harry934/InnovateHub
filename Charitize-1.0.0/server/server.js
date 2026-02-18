@@ -46,6 +46,15 @@ app.get('/', (req, res) => {
     res.send('InnovateHub API is running');
 });
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error(`[SERVER ERROR] ${new Date().toISOString()}:`, err.stack);
+    res.status(500).json({ 
+        msg: 'Internal Server Error',
+        error: process.env.NODE_ENV === 'production' ? 'Check logs' : err.message
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

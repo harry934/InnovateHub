@@ -39,6 +39,9 @@
     
     <!-- Nuru Assistant Styles -->
     <link href="css/nuru-assistant.css" rel="stylesheet">
+    
+    <!-- Auth UI Styles -->
+    <link href="css/auth-ui.css" rel="stylesheet">
 </head>
 
 <body>
@@ -128,54 +131,38 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <!-- Navigation Menu: Main navigation links for the website -->
                     <div class="navbar-nav me-auto" id="mainNav">
-                        <a href="/" class="nav-item nav-link active">Home</a>
+                        <a href="index.html" class="nav-item nav-link active">Home</a>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">About Us</a>
                             <div class="dropdown-menu m-0">
-                                <a href="/about#our-story" class="dropdown-item">Our Story</a>
-                                <a href="/about#our-team" class="dropdown-item">Our Team</a>
-                                <a href="/policy" class="dropdown-item">Policy</a>
+                                <a href="about.html#our-story" class="dropdown-item">Our Story</a>
+                                <a href="about.html#our-team" class="dropdown-item">Our Team</a>
+                                <a href="policy.html" class="dropdown-item">Policy</a>
                             </div>
                         </div>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Get Involved</a>
                             <div class="dropdown-menu m-0">
-                                <a href="/signup" class="dropdown-item">Submit a Project</a>
-                                <a href="/signup" class="dropdown-item">Join as a Mentor</a>
-                                <a href="/contact" class="dropdown-item">Partner With Us</a>
-                                <a href="/event" class="dropdown-item">Events</a>
+                                <a href="signup.html" class="dropdown-item">Submit a Project</a>
+                                <a href="signup.html" class="dropdown-item">Join as a Mentor</a>
+                                <a href="contact.html" class="dropdown-item">Partner With Us</a>
+                                <a href="event.html" class="dropdown-item">Events</a>
                             </div>
                         </div>
-                        <a href="/contact" class="nav-item nav-link">Contact Us</a>
+                        <a href="contact.html" class="nav-item nav-link">Contact Us</a>
                         <!-- My Dashboard Link (Hidden by default, shown via JS when logged in) -->
-                        <a href="/innovator-dashboard" class="nav-item nav-link d-none" id="navDashboardLink">My Dashboard</a>
+                        <a href="innovator-dashboard.html" class="nav-item nav-link d-none" id="navDashboardLink">My Dashboard</a>
                     </div>
                     <!-- Authentication/User Area -->
                     <div class="d-flex ms-auto align-items-center">
                         <!-- Guest View: Clearly visible and styled buttons -->
                         <div id="guestButtons" class="guest-actions d-flex">
-                            <a class="btn btn-get-started" href="/signup">GET STARTED</a>
+                            <a class="btn btn-get-started" href="signup.html">GET STARTED</a>
                         </div>
-                        <!-- Logged In User View: Professional Profile Dropdown -->
-                        <div id="userProfile" class="d-none align-items-center ms-2">
-                             <div class="dropdown">
-                                <a href="#" class="nav-link dropdown-toggle text-dark d-flex align-items-center p-0" data-bs-toggle="dropdown">
-                                    <div class="btn-square bg-light me-2 border">
-                                        <i class="fa fa-user text-primary"></i>
-                                    </div>
-                                    <div class="d-none d-sm-block">
-                                        <small class="d-block text-muted" style="font-size: 0.7rem; line-height: 1;">Logged in as</small>
-                                        <span id="userName" class="fw-bold">User</span>
-                                    </div>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end m-0 shadow border-0">
-                                    <a href="innovator-dashboard.html" class="dropdown-item"><i class="fa fa-tachometer-alt me-2 text-primary"></i>Dashboard</a>
-                                    <a href="#profile" class="dropdown-item"><i class="fa fa-id-card me-2 text-primary"></i>My Profile</a>
-                                    <a href="#settings" class="dropdown-item"><i class="fa fa-cog me-2 text-primary"></i>Settings</a>
-                                    <hr class="dropdown-divider">
-                                    <a href="javascript:void(0)" onclick="logout()" class="dropdown-item text-danger"><i class="fa fa-sign-out-alt me-2"></i>Logout</a>
-                                </div>
-                            </div>
+                        <!-- Logged In User View: Simplified Dashboard Button (Name moved to Dashboard) -->
+                        <div id="userProfile" class="d-none align-items-center ms-auto">
+                            <a href="#" id="navDashboardBtn" class="btn btn-get-started me-3" onclick="goToDashboard()">My Dashboard</a>
+                            <a href="javascript:void(0)" onclick="logout()" class="text-danger small logout-link"><i class="fa fa-sign-out-alt me-1"></i>Logout</a>
                         </div>
                     </div>
                 </div>
@@ -196,8 +183,8 @@
                             <h1 class="display-1 text-uppercase mb-3">Fuel Your Startup Journey</h1>
                             <p class="fs-5 mb-5">Join a vibrant community of student innovators. Collaborate on groundbreaking projects, share insights, and scale your ideas with collective support and peer guidance.</p>
                             <div class="d-flex">
-                                <a class="btn btn-primary py-3 px-4 me-3" href="/signup">Submit Your Project</a>
-                                <a class="btn btn-secondary py-3 px-4" href="/about">Learn More</a>
+                                <a class="btn btn-primary py-3 px-4 me-3" href="signup.html">Submit Your Project</a>
+                                <a class="btn btn-secondary py-3 px-4" href="about.html">Learn More</a>
                             </div>
                         </div>
                     </div>
@@ -216,7 +203,7 @@
                             <h1 class="display-1 text-uppercase mb-3">Innovation for Social Impact</h1>
                             <p class="fs-5 mb-5">Solve real-world challenges in our community. From education technology to sustainable local solutions, make a tangible difference through targeted innovation and community outreach.</p>
                             <div class="d-flex mt-4">
-                                <a class="btn btn-primary py-3 px-4 me-3" href="/signup">Get Started Today</a>
+                                <a class="btn btn-primary py-3 px-4 me-3" href="signup.html">Get Started Today</a>
                                 <a class="btn btn-secondary py-3 px-4" href="service.html">Our Areas</a>
                             </div>
                         </div>
@@ -936,8 +923,81 @@
     
     <!-- Innovate Hub Custom JavaScript -->
     <!-- Handles splash screen, authentication, form validation, and utility functions -->
-    <script type="module" src="js/innovate-hub.js"></script>
-    <script type="module" src="js/nuru-assistant.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="js/ui-utils.js?v=1.0.1"></script>
+    <script src="js/api.js?v=1.0.1"></script>
+    <script type="module" src="js/innovate-hub.js?v=1.0.1"></script>
+    <script type="module">
+        import authManager from './js/auth-manager.js';
+        import { goToDashboard } from './js/dashboard-router.js';
+        import { showWelcomeHint } from './js/welcome-hint.js';
+        
+        // Initialize auth manager
+        authManager.init().then(() => {
+            updateNavbar();
+            
+            // Show welcome hint if just logged in
+            showWelcomeHint();
+        });
+        
+        // Listen for auth changes
+        authManager.onAuthChange((user) => {
+            updateNavbar();
+        });
+        
+        function updateNavbar() {
+            const user = authManager.getCurrentUser();
+            const guestButtons = document.getElementById("guestButtons");
+            const userProfile = document.getElementById("userProfile");
+            const userNameEl = document.getElementById("userName");
+            
+            if (user) {
+                // User is logged in
+                if (guestButtons) guestButtons.classList.add("d-none");
+                if (userProfile) {
+                    userProfile.classList.remove("d-none");
+                    userProfile.classList.add("d-flex");
+                }
+                
+                // Update dashboard link
+                const dashboardBtn = document.getElementById("navDashboardBtn");
+                if (dashboardBtn) {
+                    dashboardBtn.onclick = (e) => {
+                        e.preventDefault();
+                        goToDashboard();
+                    };
+                }
+                
+                // Update any other dashboard links to use router
+                const otherDashboardLinks = document.querySelectorAll('a[href*="dashboard.html"]:not(#navDashboardBtn)');
+                otherDashboardLinks.forEach(link => {
+                    link.href = '#';
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        goToDashboard();
+                    };
+                });
+            } else {
+                // User is logged out
+                if (guestButtons) guestButtons.classList.remove("d-none");
+                if (userProfile) {
+                    userProfile.classList.add("d-none");
+                    userProfile.classList.remove("d-flex");
+                }
+            }
+        }
+        
+        // Expose logout function globally
+        window.logout = async function() {
+            const success = await authManager.logout();
+            if (success) {
+                window.location.reload();
+            }
+        };
+        
+        // Expose goToDashboard globally
+        window.goToDashboard = goToDashboard;
+    </script>
 </body>
 
 </html>

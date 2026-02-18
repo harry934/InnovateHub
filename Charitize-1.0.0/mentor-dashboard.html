@@ -1,323 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <title>Mentor Dashboard - Innovate Hub</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
-    <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
-
-    <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap"
-        rel="stylesheet">
-
-    <!-- Icon Font Stylesheet -->
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
-    <link href="css/style.css" rel="stylesheet">
-    
-    <!-- Innovate Hub Custom Styles -->
-    <link href="css/innovate-hub.css" rel="stylesheet">
+    <link href="css/style.css?v=2.0.0" rel="stylesheet">
+    <link href="css/innovate-hub.css?v=2.0.0" rel="stylesheet">
+    <link href="css/responsive-dashboard.css?v=2.0.0" rel="stylesheet">
 </head>
 
 <body>
-    <!-- Dashboard Container -->
     <div class="dashboard-container">
-        
-        <!-- Sidebar Navigation -->
         <div class="dashboard-sidebar">
-             <a href="/" class="logo-container text-decoration-none px-4 mb-4 mt-3">
+            <a href="/" class="logo-container text-decoration-none px-4 mb-3 mt-3">
                 <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
-                <span class="logo-text" style="color: white; font-size: 1.3rem; margin-left: 10px;">Innovate Hub</span>
+                <span class="logo-text">Innovate Hub</span>
             </a>
+            
+            <!-- User Identity -->
+            <div class="px-4 mb-4 user-identity">
+                <small class="text-muted d-block" style="font-size: 0.7rem;">Logged in as</small>
+                <div id="userDisplayName" class="fw-bold text-dark" style="font-size: 0.9rem;">Mentor</div>
+            </div>
             
             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Mentorship</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link active" href="#" onclick="showSection('requests'); return false;">
-                    Project Requests <span class="badge bg-warning text-dark ms-2 badge-pill" id="requestCount">0</span>
+                <a class="nav-link active" href="#" onclick="showSection('overview')">Overview</a>
+                <a class="nav-link" href="#" onclick="showSection('requests')">
+                    Requests <span class="badge bg-warning text-dark ms-2" id="requestCount">0</span>
                 </a>
-                <a class="nav-link" href="#" onclick="showSection('mentees'); return false;">My Mentees</a>
-                <a class="nav-link" href="#" onclick="showSection('browse'); return false;">Browse Projects</a>
+                <a class="nav-link" href="#" onclick="showSection('mentees')">My Mentees</a>
             </nav>
-
-             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Account</h6>
+            
+            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Account</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link" href="#" onclick="showSection('profile'); return false;">My Profile</a>
-                <a class="nav-link text-danger mt-2" href="#" onclick="logout(); return false;">Logout</a>
+                <a class="nav-link" href="#" onclick="showSection('profile')">
+                    <span style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>Notifications</span>
+                        <div id="notificationBell"></div>
+                    </span>
+                </a>
+                <a class="nav-link" href="#" onclick="showSection('profile')">My Profile</a>
+                <a class="nav-link text-danger mt-2" href="#" onclick="logout()">Logout</a>
             </nav>
+            
+            <div class="px-3 mt-3">
+                <small class="text-muted" style="font-size: 0.65rem;">Platform v2.0.0</small>
+            </div>
         </div>
         
-        <!-- Main Content Area -->
         <div class="dashboard-main">
+            <!-- Overview Section -->
+            <div id="overviewSection" class="dashboard-section">
+                <div class="dashboard-header mb-4">
+                    <h2>Mentor Overview</h2>
+                    <p class="text-muted">Your mentorship journey at a glance</p>
+                </div>
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="dashboard-card text-center">
+                            <i class="fa fa-users fa-3x text-primary mb-3"></i>
+                            <h5 class="mb-2">Total Mentees</h5>
+                            <p class="display-4 fw-bold" id="totalMentees">0</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="dashboard-card text-center">
+                            <i class="fa fa-clock fa-3x text-warning mb-3"></i>
+                            <h5 class="mb-2">Pending Requests</h5>
+                            <p class="display-4 fw-bold" id="pendingRequests">0</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="dashboard-card text-center">
+                            <i class="fa fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="mb-2">Completed Projects</h5>
+                            <p class="display-4 fw-bold" id="completedProjects">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            <!-- Project Requests Section -->
-            <div id="requestsSection" class="dashboard-section">
-                <div class="dashboard-header">
+            <!-- Requests Section -->
+            <div id="requestsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header mb-4">
                     <h2>Mentorship Requests</h2>
-                    <p class="text-muted">Review proposals from innovators seeking guidance</p>
+                    <p class="text-muted">Review and respond to requests</p>
                 </div>
-                <div id="requestsContainer">
-                    <div class="alert alert-info">Checking for new requests...</div>
-                </div>
+                <div id="requestsContainer"></div>
             </div>
             
             <!-- Mentees Section -->
             <div id="menteesSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>My Mentees & Projects</h2>
-                    <p class="text-muted">Directly guide your assigned innovators</p>
+                <div class="dashboard-header mb-4">
+                    <h2>My Mentees</h2>
+                    <p class="text-muted">Your active mentees and their projects</p>
                 </div>
-                <div id="menteesContainer" class="row g-4">
-                    <!-- Dynamic mentees list -->
-                </div>
+                <div id="menteesContainer"></div>
             </div>
-
-            <!-- Browse Public Projects -->
-            <div id="browseSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>Public Projects</h2>
-                    <p class="text-muted">Discover innovators looking for mentors</p>
-                </div>
-                <div id="publicProjectsContainer" class="row g-4">
-                    <!-- Public projects -->
-                </div>
-            </div>
-
+            
             <!-- Profile Section -->
             <div id="profileSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>Mentor Profile Setup</h2>
-                    <p class="text-muted">Tell innovators about your expertise</p>
+                <div class="dashboard-header mb-4">
+                    <h2>Mentor Profile</h2>
+                    <p class="text-muted">Manage your mentor profile and availability</p>
                 </div>
+                
                 <div class="dashboard-card">
-                    <form id="mentorProfileForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Profession / Role</label>
-                                <input type="text" class="form-control" name="profession" placeholder="e.g. Senior AI Researcher">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Profile Photo URL</label>
-                                <input type="url" class="form-control" name="photoURL" placeholder="https://example.com/photo.jpg">
-                            </div>
+                    <div class="mb-4">
+                        <label class="form-label">Availability Status</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="availabilityToggle">
+                            <label class="form-check-label" for="availabilityToggle">
+                                <span id="availabilityText">Available for new mentees</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <form id="profileForm">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" name="fullName" id="profileName">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Expertise Categories (Comma separated)</label>
-                            <input type="text" class="form-control" name="expertise" placeholder="AI, Robotics, Sustainability">
+                            <label class="form-label">Profession</label>
+                            <input type="text" class="form-control" name="profession" id="profileProfession">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Bio / Interests</label>
-                            <textarea class="form-control" name="bio" rows="4"></textarea>
+                            <label class="form-label">Expertise</label>
+                            <input type="text" class="form-control" name="expertise" id="profileExpertise" placeholder="e.g., Technology, Healthcare, Education">
                         </div>
-                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                        <div class="mb-3">
+                            <label class="form-label">Bio</label>
+                            <textarea class="form-control" name="bio" id="profileBio" rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-custom-signup">Update Profile</button>
                     </form>
                 </div>
             </div>
-            
         </div>
     </div>
-
-    <!-- JavaScript Libraries -->
+    
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/api.js"></script>
-    <script type="module" src="js/innovate-hub.js"></script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/components/status-badges.js"></script>
+    <script type="module" src="js/components/notification-system.js"></script>
+    <script type="module" src="js/components/empty-states.js"></script>
     
     <script type="module">
         import { auth, db } from './js/firebase-config.js';
-        import { 
-            doc, getDoc, updateDoc, collection, query, where, 
-            onSnapshot, serverTimestamp, getDocs 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        let mentorData = null;
-        let pendingRequests = [];
-        let mentees = [];
-
-        window.addEventListener('load', async function() {
-            const session = JSON.parse(sessionStorage.getItem('innovateHubUser'));
-            if (!session || session.role !== 'mentor') {
-                alert('Access Denied. Mentors only.');
-                window.location.href = '/login';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { collection, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import NotificationSystem from './js/components/notification-system.js';
+        import StatusBadge from './js/components/status-badges.js';
+        import EmptyStates from './js/components/empty-states.js';
+        
+        let currentUser = null;
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
                 return;
             }
-            
-            mentorData = session;
-            loadProfile();
-            setupListeners();
-            setupFormHandlers();
+            currentUser = user;
+            initializeDashboard();
         });
-
-        function setupListeners() {
-            // 1. Listen for project requests
-            onSnapshot(query(collection(db, "mentorshipRequests"), where("mentorId", "==", mentorData.uid), where("status", "==", "pending")), (snapshot) => {
-                pendingRequests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateRequestsUI();
-                document.getElementById('requestCount').textContent = pendingRequests.length;
-            });
-
-            // 2. Listen for assigned projects
-            onSnapshot(query(collection(db, "projects"), where("mentorId", "==", mentorData.uid)), (snapshot) => {
-                mentees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateMenteesUI();
-            });
-
-            // 3. Browse public projects
-            onSnapshot(query(collection(db, "projects"), where("visibility", "==", "public"), where("status", "==", "approved")), (snapshot) => {
-                const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updatePublicProjectsUI(projects);
-            });
-        }
-
-        async function loadProfile() {
-            const docSnap = await getDoc(doc(db, "users", mentorData.uid));
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const form = document.getElementById('mentorProfileForm');
-                form.profession.value = data.profession || '';
-                form.photoURL.value = data.photoURL || '';
-                form.expertise.value = data.expertise || '';
-                form.bio.value = data.bio || '';
+        
+        async function initializeDashboard() {
+            // Update display name
+            const userDisplayName = document.getElementById('userDisplayName');
+            if (userDisplayName) {
+                userDisplayName.textContent = currentUser.displayName || currentUser.email.split('@')[0];
             }
-        }
 
-        function setupFormHandlers() {
-            document.getElementById('mentorProfileForm').onsubmit = async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                await updateDoc(doc(db, "users", mentorData.uid), {
-                    profession: formData.get('profession'),
-                    photoURL: formData.get('photoURL'),
-                    expertise: formData.get('expertise'),
-                    bio: formData.get('bio'),
-                    updatedAt: serverTimestamp()
-                });
-                alert("Profile updated!");
-            };
-        }
-
-        function updateRequestsUI() {
-            const container = document.getElementById('requestsContainer');
-            if (pendingRequests.length === 0) {
-                container.innerHTML = '<div class="alert alert-success">No pending requests!</div>';
-                return;
-            }
-            let html = '';
-            pendingRequests.forEach(req => {
-                html += `
-                    <div class="dashboard-card mb-3">
-                        <h5>New Project Request</h5>
-                        <p class="text-muted small">From Innovator ID: ${req.innovatorId}</p>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-success" onclick="respondRequest('${req.id}', 'accepted')">Accept</button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="respondRequest('${req.id}', 'rejected')">Decline</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function updateMenteesUI() {
-            const container = document.getElementById('menteesContainer');
-            if (mentees.length === 0) {
-                container.innerHTML = '<div class="col-12 text-muted">No active mentees yet.</div>';
-                return;
-            }
-            let html = '';
-            mentees.forEach(proj => {
-                html += `
-                    <div class="col-md-6">
-                        <div class="dashboard-card">
-                            <h4>${proj.title}</h4>
-                            <p class="text-muted small">${proj.category}</p>
-                            <div class="mb-3">
-                                <label class="small fw-bold">PROGRESS</label>
-                                <div class="progress" style="height: 10px;">
-                                    <div class="progress-bar bg-success" style="width: ${proj.completionPercentage || 0}%"></div>
-                                </div>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-sm btn-primary" onclick="scheduleMeeting('${proj.id}')">Schedule Meeting</button>
-                                <button class="btn btn-sm btn-outline-dark">View Milestones</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function updatePublicProjectsUI(projects) {
-            const container = document.getElementById('publicProjectsContainer');
-            let html = '';
-            projects.forEach(p => {
-                html += `
-                    <div class="col-md-6">
-                        <div class="dashboard-card shadow-sm border-0">
-                            <h5 class="text-primary">${p.title}</h5>
-                            <p class="small text-muted mb-3">${truncateText(p.description, 100)}</p>
-                            <button class="btn btn-sm btn-custom-signup" onclick="requestToMentor('${p.id}')">Interested in Mentoring</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
+            const notificationSystem = new NotificationSystem(currentUser.uid);
+            notificationSystem.init('notificationBell');
+            
+            await loadStats();
+            await loadRequests();
         }
         
-        function truncateText(text, length) {
-            if (!text) return "";
-            return text.length > length ? text.substring(0, length) + "..." : text;
-        }
-
-        // Global exports
-        window.respondRequest = async function(id, status) {
+        async function loadStats() {
             try {
-                await updateDoc(doc(db, "mentorshipRequests", id), { status: status });
-                alert(`Request ${status}`);
-            } catch (err) {
-                alert("Action failed: " + err.message);
+                const q = query(collection(db, 'mentorshipRequests'), where('mentorId', '==', currentUser.uid));
+                const snapshot = await getDocs(q);
+                
+                const pending = snapshot.docs.filter(doc => doc.data().status === 'pending').length;
+                const accepted = snapshot.docs.filter(doc => doc.data().status === 'accepted').length;
+                
+                document.getElementById('totalMentees').textContent = accepted;
+                document.getElementById('pendingRequests').textContent = pending;
+                document.getElementById('requestCount').textContent = pending;
+            } catch (error) {
+                console.error('Error loading stats:', error);
             }
         }
-
-        window.scheduleMeeting = async function(projId) {
-            const link = prompt("Enter meeting link (Zoom/Google Meet):");
-            if (link) {
-                // Placeholder for actual meeting service
-                alert("Meeting scheduled with link: " + link);
-            }
-        }
-
-        window.requestToMentor = async function(projId) {
-            alert("Self-request logic triggered. Feature coming soon!");
-        }
-
-        window.showSection = function(sectionName) {
-            document.querySelectorAll('.dashboard-section').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-            const target = document.getElementById(sectionName + 'Section');
-            if (target) {
-                target.style.display = 'block';
-                if(window.event && window.event.currentTarget) {
-                    window.event.currentTarget.classList.add('active');
+        
+        async function loadRequests() {
+            const container = document.getElementById('requestsContainer');
+            container.innerHTML = EmptyStates.templates.loadingState();
+            
+            try {
+                const q = query(collection(db, 'mentorshipRequests'), where('mentorId', '==', currentUser.uid), where('status', '==', 'pending'));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    container.innerHTML = EmptyStates.templates.noRequests();
+                    return;
                 }
+                
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const request = { id: doc.id, ...doc.data() };
+                    container.innerHTML += `
+                        <div class="dashboard-card mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5>New Mentorship Request</h5>
+                                    ${StatusBadge.render('pending')}
+                                    <p class="text-muted mt-2">From: ${request.innovatorName || 'Innovator'}</p>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-success btn-sm" onclick="handleRequest('${request.id}', 'accepted')">Accept</button>
+                                    <button class="btn btn-danger btn-sm" onclick="handleRequest('${request.id}', 'rejected')">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading requests:', error);
+                container.innerHTML = EmptyStates.templates.errorState('Failed to load requests');
             }
         }
-
+        
+        window.handleRequest = async function(requestId, status) {
+            try {
+                await updateDoc(doc(db, 'mentorshipRequests', requestId), { status });
+                alert(`Request ${status}!`);
+                await loadRequests();
+                await loadStats();
+            } catch (error) {
+                console.error('Error updating request:', error);
+                alert('Failed to update request');
+            }
+        };
+        
+        window.showSection = function(sectionName) {
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            const section = document.getElementById(sectionName + 'Section');
+            if (section) {
+                section.style.display = 'block';
+                const activeLink = document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`);
+                if (activeLink) activeLink.classList.add('active');
+            }
+        };
+        
         window.logout = async function() {
-            await auth.signOut();
-            sessionStorage.removeItem('innovateHubUser');
-            window.location.href = '/login';
-        }
+            try {
+                await auth.signOut();
+                localStorage.removeItem('innovateHubUser');
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = 'login.html';
+            }
+        };
     </script>
 </body>
 </html>
