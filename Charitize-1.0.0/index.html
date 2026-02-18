@@ -39,6 +39,9 @@
     
     <!-- Nuru Assistant Styles -->
     <link href="css/nuru-assistant.css" rel="stylesheet">
+    
+    <!-- Auth UI Styles -->
+    <link href="css/auth-ui.css" rel="stylesheet">
 </head>
 
 <body>
@@ -156,26 +159,10 @@
                         <div id="guestButtons" class="guest-actions d-flex">
                             <a class="btn btn-get-started" href="signup.html">GET STARTED</a>
                         </div>
-                        <!-- Logged In User View: Professional Profile Dropdown -->
-                        <div id="userProfile" class="d-none align-items-center ms-2">
-                             <div class="dropdown">
-                                <a href="#" class="nav-link dropdown-toggle text-dark d-flex align-items-center p-0" data-bs-toggle="dropdown">
-                                    <div class="btn-square bg-light me-2 border">
-                                        <i class="fa fa-user text-primary"></i>
-                                    </div>
-                                    <div class="d-none d-sm-block">
-                                        <small class="d-block text-muted" style="font-size: 0.7rem; line-height: 1;">Logged in as</small>
-                                        <span id="userName" class="fw-bold">User</span>
-                                    </div>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end m-0 shadow border-0">
-                                    <a href="innovator-dashboard.html" class="dropdown-item"><i class="fa fa-tachometer-alt me-2 text-primary"></i>Dashboard</a>
-                                    <a href="#profile" class="dropdown-item"><i class="fa fa-id-card me-2 text-primary"></i>My Profile</a>
-                                    <a href="#settings" class="dropdown-item"><i class="fa fa-cog me-2 text-primary"></i>Settings</a>
-                                    <hr class="dropdown-divider">
-                                    <a href="javascript:void(0)" onclick="logout()" class="dropdown-item text-danger"><i class="fa fa-sign-out-alt me-2"></i>Logout</a>
-                                </div>
-                            </div>
+                        <!-- Logged In User View: Simplified Dashboard Button (Name moved to Dashboard) -->
+                        <div id="userProfile" class="d-none align-items-center ms-auto">
+                            <a href="#" id="navDashboardBtn" class="btn btn-get-started me-3" onclick="goToDashboard()">My Dashboard</a>
+                            <a href="javascript:void(0)" onclick="logout()" class="text-danger small logout-link"><i class="fa fa-sign-out-alt me-1"></i>Logout</a>
                         </div>
                     </div>
                 </div>
@@ -940,31 +927,76 @@
     <script src="js/ui-utils.js?v=1.0.1"></script>
     <script src="js/api.js?v=1.0.1"></script>
     <script type="module" src="js/innovate-hub.js?v=1.0.1"></script>
-    <script>
-        window.updateUIForRole = function(user) {
-            if (!user) return;
+    <script type="module">
+        import authManager from './js/auth-manager.js';
+        import { goToDashboard } from './js/dashboard-router.js';
+        import { showWelcomeHint } from './js/welcome-hint.js';
+        
+        // Initialize auth manager
+        authManager.init().then(() => {
+            updateNavbar();
             
+            // Show welcome hint if just logged in
+            showWelcomeHint();
+        });
+        
+        // Listen for auth changes
+        authManager.onAuthChange((user) => {
+            updateNavbar();
+        });
+        
+        function updateNavbar() {
+            const user = authManager.getCurrentUser();
             const guestButtons = document.getElementById("guestButtons");
             const userProfile = document.getElementById("userProfile");
-            const navDashboardLink = document.getElementById("navDashboardLink");
-            
-            if (guestButtons) guestButtons.classList.add("d-none");
-            if (userProfile) userProfile.classList.remove("d-none");
-            if (userProfile) userProfile.classList.add("d-flex");
-            
             const userNameEl = document.getElementById("userName");
-            if (userNameEl && user.fullName) {
-                userNameEl.textContent = user.fullName;
-            }
             
-            if (navDashboardLink) {
-                navDashboardLink.classList.remove("d-none");
-                let dashboardUrl = "innovator-dashboard.html";
-                if (user.role === 'admin' || user.email === 'techeagle254@gmail.com') dashboardUrl = "admin-dashboard.html";
-                else if (user.role === 'mentor') dashboardUrl = "mentor-dashboard.html";
-                navDashboardLink.href = dashboardUrl;
+            if (user) {
+                // User is logged in
+                if (guestButtons) guestButtons.classList.add("d-none");
+                if (userProfile) {
+                    userProfile.classList.remove("d-none");
+                    userProfile.classList.add("d-flex");
+                }
+                
+                // Update dashboard link
+                const dashboardBtn = document.getElementById("navDashboardBtn");
+                if (dashboardBtn) {
+                    dashboardBtn.onclick = (e) => {
+                        e.preventDefault();
+                        goToDashboard();
+                    };
+                }
+                
+                // Update any other dashboard links to use router
+                const otherDashboardLinks = document.querySelectorAll('a[href*="dashboard.html"]:not(#navDashboardBtn)');
+                otherDashboardLinks.forEach(link => {
+                    link.href = '#';
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        goToDashboard();
+                    };
+                });
+            } else {
+                // User is logged out
+                if (guestButtons) guestButtons.classList.remove("d-none");
+                if (userProfile) {
+                    userProfile.classList.add("d-none");
+                    userProfile.classList.remove("d-flex");
+                }
+            }
+        }
+        
+        // Expose logout function globally
+        window.logout = async function() {
+            const success = await authManager.logout();
+            if (success) {
+                window.location.reload();
             }
         };
+        
+        // Expose goToDashboard globally
+        window.goToDashboard = goToDashboard;
     </script>
 </body>
 

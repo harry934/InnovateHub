@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <title>Admin Dashboard - Innovate Hub</title>
@@ -10,545 +9,256 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css?v=1.0.1" rel="stylesheet">
-    
-    <!-- Innovate Hub Custom Styles -->
-    <link href="css/innovate-hub.css?v=1.0.1" rel="stylesheet">
-    <link href="css/innovate-hub.css?v=1.0.1" rel="stylesheet">
+    <link href="css/style.css?v=2.0.0" rel="stylesheet">
+    <link href="css/innovate-hub.css?v=2.0.0" rel="stylesheet">
+    <link href="css/responsive-dashboard.css?v=2.0.0" rel="stylesheet">
 </head>
 
 <body>
-    <!-- Dashboard Container -->
     <div class="dashboard-container">
-        
-        <!-- Sidebar Navigation -->
-        <div class="dashboard-sidebar bg-dark">
-             <a href="/" class="logo-container text-decoration-none px-4 mb-4 mt-3">
+        <div class="dashboard-sidebar">
+            <a href="/" class="logo-container text-decoration-none px-4 mb-3 mt-3">
                 <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
-                <span class="logo-text" style="color: white; font-size: 1.3rem; margin-left: 10px;">Innovate Hub</span>
+                <span class="logo-text">Innovate Hub</span>
             </a>
+            
+            <!-- User Identity -->
+            <div class="px-4 mb-4 user-identity">
+                <small class="text-muted d-block" style="font-size: 0.7rem;">Logged in as</small>
+                <div id="userDisplayName" class="fw-bold text-dark" style="font-size: 0.9rem;">Admin</div>
+            </div>
             
             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Management</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link active" href="#" onclick="window.showSection('overview'); return false;">System Overview</a>
-                <a class="nav-link" href="#" onclick="window.showSection('approvals'); return false;">
-                    Mentor Apps <span class="badge bg-warning text-dark ms-2 badge-pill" id="pendingCount">0</span>
+                <a class="nav-link active" href="#" onclick="showSection('overview')">Overview</a>
+                <a class="nav-link" href="#" onclick="showSection('mentorApprovals')">
+                    Mentor Apps <span class="badge bg-warning text-dark ms-2" id="pendingMentors">0</span>
                 </a>
-                <a class="nav-link" href="#" onclick="window.showSection('projectApprovals'); return false;">
-                    Project Rev. <span class="badge bg-primary ms-2 badge-pill" id="pendingProjectsCount">0</span>
+                <a class="nav-link" href="#" onclick="showSection('projectReviews')">
+                    Project Reviews <span class="badge bg-primary ms-2" id="pendingProjects">0</span>
                 </a>
-                <a class="nav-link" href="#" onclick="window.showSection('users'); return false;">All Users</a>
-                <a class="nav-link" href="#" onclick="window.showSection('events'); return false;">Events</a>
-                <a class="nav-link" href="#" onclick="window.showSection('reports'); return false;">Issue Reports</a>
+                <a class="nav-link" href="#" onclick="showSection('users')">All Users</a>
             </nav>
-
+            
             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Admin</h6>
             <nav class="nav flex-column mb-3">
-                <a href="javascript:void(0)" onclick="window.logout()" class="nav-link text-danger">
-                    <i class="fa fa-sign-out-alt me-2"></i>Logout
+                <a class="nav-link" href="#" onclick="showSection('notifications')">
+                    <span style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>Notifications</span>
+                        <div id="notificationBell"></div>
+                    </span>
                 </a>
-                <div class="px-4 mt-3">
-                    <small class="text-muted" style="font-size: 0.65rem;">Platform v1.0.1-fixed</small>
-                </div>
+                <a class="nav-link text-danger mt-2" href="#" onclick="logout()">Logout</a>
             </nav>
+            
+            <div class="px-3 mt-3">
+                <small class="text-muted" style="font-size: 0.65rem;">Platform v2.0.0</small>
+            </div>
         </div>
         
-        <!-- Main Content Area -->
         <div class="dashboard-main">
-            
             <!-- Overview Section -->
             <div id="overviewSection" class="dashboard-section">
-                <div class="dashboard-header">
+                <div class="dashboard-header mb-4">
                     <h2>System Overview</h2>
                     <p class="text-muted">Platform statistics and health</p>
                 </div>
                 
                 <div class="row g-4">
-                    <div class="col-md-4">
-                        <div class="dashboard-card text-center text-primary">
-                            <i class="fa fa-users fa-3x mb-3"></i>
-                            <h3 id="totalUsersCount">0</h3>
+                    <div class="col-md-3">
+                        <div class="dashboard-card text-center">
+                            <i class="fa fa-users fa-3x text-primary mb-3"></i>
+                            <h3 id="totalUsers">0</h3>
                             <p class="text-muted">Total Users</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="dashboard-card text-center text-success">
-                            <i class="fa fa-project-diagram fa-3x mb-3"></i>
-                            <h3 id="activeProjectsCount">0</h3>
-                            <p class="text-muted">Active Projects</p>
+                    <div class="col-md-3">
+                        <div class="dashboard-card text-center">
+                            <i class="fa fa-lightbulb fa-3x text-warning mb-3"></i>
+                            <h3 id="totalProjects">0</h3>
+                            <p class="text-muted">Projects</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="dashboard-card text-center text-warning">
-                             <i class="fa fa-chalkboard-teacher fa-3x mb-3"></i>
-                            <h3 id="pendingStatCount">0</h3>
-                            <p class="text-muted">Pending Mentors</p>
+                    <div class="col-md-3">
+                        <div class="dashboard-card text-center">
+                            <i class="fa fa-user-tie fa-3x text-success mb-3"></i>
+                            <h3 id="totalMentors">0</h3>
+                            <p class="text-muted">Mentors</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dashboard-card text-center">
+                            <i class="fa fa-handshake fa-3x text-info mb-3"></i>
+                            <h3 id="activeMentorships">0</h3>
+                            <p class="text-muted">Active Mentorships</p>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Approvals Section -->
-            <div id="approvalsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>Mentor Approvals</h2>
+            <!-- Mentor Approvals Section -->
+            <div id="mentorApprovalsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h2>Mentor Applications</h2>
                     <p class="text-muted">Review and approve mentor applications</p>
                 </div>
-                
-                <div id="approvalsContainer">
-                    <div class="alert alert-info">Loading pending applications...</div>
-                </div>
-            </div>
-
-            <!-- All Users Section -->
-            <div id="usersSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>User Management</h2>
-                    <p class="text-muted">Manage all platform users</p>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody">
-                                <!-- Dynamic content -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Project Approvals Section -->
-            <div id="projectApprovalsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>Project Approvals</h2>
-                    <p class="text-muted">Review and categorize submitted projects</p>
-                </div>
-                <div id="projectApprovalsContainer">
-                    <div class="alert alert-info">Loading pending projects...</div>
-                </div>
-            </div>
-
-            <!-- Event Management Section -->
-            <div id="eventsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <h2>Event Management</h2>
-                        <p class="text-muted">Create and manage platform events</p>
-                    </div>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
-                        <i class="fa fa-plus me-2"></i>Add Event
-                    </button>
-                </div>
-                <div id="eventsContainer" class="row g-4">
-                    <!-- Events will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Reports Section -->
-            <div id="reportsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>Mentorship Issue Reports</h2>
-                    <p class="text-muted">Review concerns raised by innovators or mentors</p>
-                </div>
-                <div id="reportsContainer">
-                    <div class="alert alert-info">No issue reports at this time.</div>
-                </div>
+                <div id="mentorApprovalsContainer"></div>
             </div>
             
-        </div>
-    </div>
-
-    <!-- Add Event Modal -->
-    <div class="modal fade" id="addEventModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New Event</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <!-- Project Reviews Section -->
+            <div id="projectReviewsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h2>Project Reviews</h2>
+                    <p class="text-muted">Review and approve submitted projects</p>
                 </div>
-                <form id="addEventForm">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Event Title</label>
-                            <input type="text" class="form-control" name="title" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" name="description" rows="3" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Date Range</label>
-                            <input type="text" class="form-control" name="date" placeholder="e.g. August 05 - August 30" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Time</label>
-                            <input type="text" class="form-control" name="time" placeholder="e.g. 09:00 AM - 16:00 PM" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Location</label>
-                            <input type="text" class="form-control" name="location" placeholder="e.g. Innovate Hub, Main Campus" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Image Link</label>
-                            <input type="url" class="form-control" name="imageLink" placeholder="https://example.com/image.jpg" required>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Event</button>
-                    </div>
-                </form>
+                <div id="projectReviewsContainer"></div>
+            </div>
+            
+            <!-- Users Section -->
+            <div id="usersSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h2>All Users</h2>
+                    <p class="text-muted">Manage platform users</p>
+                </div>
+                <div id="usersContainer"></div>
             </div>
         </div>
     </div>
-
-    <!-- JavaScript Libraries -->
+    
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/ui-utils.js?v=1.0.1"></script>
-    <script src="js/api.js?v=1.0.1"></script>
-    <script type="module" src="js/innovate-hub.js?v=1.0.1"></script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/components/status-badges.js"></script>
+    <script type="module" src="js/components/notification-system.js"></script>
+    <script type="module" src="js/components/empty-states.js"></script>
+    <script type="module" src="js/components/project-card-structured.js"></script>
     
     <script type="module">
         import { auth, db } from './js/firebase-config.js';
-        import { NotificationService } from './js/innovate-hub.js';
-        import { 
-            collection, query, where, getDocs, doc, updateDoc, 
-            deleteDoc, onSnapshot, addDoc, serverTimestamp, orderBy 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        // State
-        let allUsers = [];
-        let pendingMentors = [];
-        let pendingProjects = [];
-        let events = [];
-        let userData = null;
-
-        window.addEventListener('load', function() {
-            // Wait for auth to initialize (max 5 seconds)
-            let checkCount = 0;
-            const waitForAuth = setInterval(() => {
-                userData = window.loadFromLocalStorage("innovateHubUser");
-                if (userData && userData.loggedIn && userData.role) {
-                    clearInterval(waitForAuth);
-                    initAdminDashboard();
-                }
-                if (++checkCount > 50) { // 5 seconds
-                    clearInterval(waitForAuth);
-                    if (!userData || !userData.loggedIn) window.location.href = 'login.html';
-                    else initAdminDashboard(); // Proceed anyway if logged in but role missing (fallback)
-                }
-            }, 100);
-        });
-
-        function initAdminDashboard() {
-            if (userData.role !== 'admin' && userData.email !== 'techeagle254@gmail.com') {
-                alert('Access Denied. Admins only.');
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { collection, getDocs, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import NotificationSystem from './js/components/notification-system.js';
+        import StatusBadge from './js/components/status-badges.js';
+        import EmptyStates from './js/components/empty-states.js';
+        import StructuredProjectCard from './js/components/project-card-structured.js';
+        
+        let currentUser = null;
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
                 window.location.href = 'login.html';
                 return;
             }
-            
-            // Listen for Real-time Updates
-            setupListeners();
-            setupFormHandlers();
-            window.showSection('overview');
-        }
+            currentUser = user;
+            initializeDashboard();
+        });
+        
+        async function initializeDashboard() {
+            // Update display name
+            const userDisplayName = document.getElementById('userDisplayName');
+            if (userDisplayName) {
+                userDisplayName.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+            }
 
-        function setupListeners() {
-            // 1. Listen for all users
-            onSnapshot(collection(db, "users"), (snapshot) => {
-                allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateOverview();
-                updateUsersTable();
+            const notificationSystem = new NotificationSystem(currentUser.uid);
+            notificationSystem.init('notificationBell');
+            
+            await loadStats();
+            await loadProjectReviews();
+        }
+        
+        async function loadStats() {
+            try {
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                const projectsSnapshot = await getDocs(collection(db, 'projects'));
+                const mentorsSnapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'mentor')));
                 
-                // 2. Filter pending mentors
-                pendingMentors = allUsers.filter(u => u.role === 'mentor' && u.status === 'pending_approval');
-                updatePendingMentors();
-            });
-
-            // 2. Listen for pending projects
-            onSnapshot(query(collection(db, "projects"), where("status", "==", "pending")), (snapshot) => {
-                pendingProjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updatePendingProjects();
-                document.getElementById('pendingProjectsCount').textContent = pendingProjects.length;
-            });
-
-            // 3. Listen for events
-            onSnapshot(query(collection(db, "events"), orderBy("date", "desc")), (snapshot) => {
-                events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateEventsUI();
-            });
+                document.getElementById('totalUsers').textContent = usersSnapshot.size;
+                document.getElementById('totalProjects').textContent = projectsSnapshot.size;
+                document.getElementById('totalMentors').textContent = mentorsSnapshot.size;
+                
+                const pendingProjects = projectsSnapshot.docs.filter(doc => doc.data().status === 'pending').length;
+                document.getElementById('pendingProjects').textContent = pendingProjects;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
         }
-
-        function setupFormHandlers() {
-            document.getElementById('addEventForm').onsubmit = async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                try {
-                    await addDoc(collection(db, "events"), {
-                        title: formData.get('title'),
-                        description: formData.get('description'),
-                        date: formData.get('date'),
-                        time: formData.get('time'),
-                        location: formData.get('location'),
-                        imageLink: formData.get('imageLink'),
-                        createdAt: serverTimestamp()
+        
+        async function loadProjectReviews() {
+            const container = document.getElementById('projectReviewsContainer');
+            container.innerHTML = EmptyStates.templates.loadingState();
+            
+            try {
+                const q = query(collection(db, 'projects'), where('status', '==', 'pending'));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    container.innerHTML = EmptyStates.templates.noProjects();
+                    return;
+                }
+                
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const project = { id: doc.id, ...doc.data() };
+                    const card = StructuredProjectCard.render(project, {
+                        showActions: false,
+                        isExpanded: true
                     });
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('addEventModal'));
-                    modal.hide();
-                    e.target.reset();
-                    window.showSuccessMessage("Event added successfully!");
-                } catch (err) {
-                    window.showErrorMessage("Error adding event: " + err.message);
-                }
-            };
-        }
-
-        function updateOverview() {
-            document.getElementById('totalUsersCount').textContent = allUsers.length;
-            document.getElementById('activeProjectsCount').textContent = allUsers.filter(u => u.role === 'innovator' && u.hasActiveProject).length;
-            document.getElementById('pendingCount').textContent = pendingMentors.length;
-            document.getElementById('pendingStatCount').textContent = pendingMentors.length;
-        }
-
-        function updatePendingMentors() {
-            const container = document.getElementById('approvalsContainer');
-            if (pendingMentors.length === 0) {
-                 container.innerHTML = `
-                    <div class="dashboard-card text-center py-5">
-                        <i class="fa fa-check-circle fa-4x text-success mb-3"></i>
-                        <p class="text-muted fs-5">No pending applications.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '';
-            pendingMentors.forEach((mentor) => {
-                html += `
-                    <div class="dashboard-card mb-3">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h4 class="mb-1">${mentor.fullName}</h4>
-                                <p class="text-primary mb-1">${mentor.profession || 'Mentor'}</p>
-                                <p class="text-muted mb-2 small">${mentor.email}</p>
-                            </div>
-                            <div class="text-end">
-                                <small class="text-muted">Applied: ${new Date(mentor.createdAt?.toDate()).toLocaleDateString()}</small>
+                    
+                    container.innerHTML += `
+                        <div class="mb-4">
+                            ${card}
+                            <div class="mt-3 d-flex gap-2">
+                                <button class="btn btn-success" onclick="reviewProject('${project.id}', 'approved')">Approve</button>
+                                <button class="btn btn-danger" onclick="reviewProject('${project.id}', 'rejected')">Reject</button>
                             </div>
                         </div>
-                        <div class="bg-light p-2 rounded mb-3 small">
-                            <strong>Expertise:</strong> ${mentor.expertise || 'N/A'}
-                        </div>
-                        <div class="d-flex gap-2 justify-content-end">
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${mentor.id}')">Reject</button>
-                            <button class="btn btn-sm btn-success" onclick="approveMentor('${mentor.id}')">Approve</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function updatePendingProjects() {
-            const container = document.getElementById('projectApprovalsContainer');
-            if (pendingProjects.length === 0) {
-                container.innerHTML = '<div class="alert alert-success">No projects pending approval.</div>';
-                return;
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                container.innerHTML = EmptyStates.templates.errorState('Failed to load projects');
             }
-
-            let html = '';
-            pendingProjects.forEach(proj => {
-                html += `
-                    <div class="dashboard-card mb-3">
-                        <div class="d-flex justify-content-between">
-                            <h4>${proj.title}</h4>
-                            <span class="badge bg-info">${proj.category || 'Uncategorized'}</span>
-                        </div>
-                        <p class="text-muted">${proj.description}</p>
-                        ${proj.fileUrl ? `
-                        <div class="mb-3">
-                            <a href="${proj.fileUrl}" target="_blank" class="btn btn-sm btn-outline-info">
-                                <i class="fa fa-file-word me-1"></i> View Document (${proj.fileName || 'Doc'})
-                            </a>
-                        </div>
-                        ` : '<p class="small text-danger">No document attached</p>'}
-                        <small class="text-muted d-block mb-3">Submitted by User ID: ${proj.innovatorId}</small>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-success btn-sm" onclick="approveProject('${proj.id}')">Approve</button>
-                            <button class="btn btn-danger btn-sm" onclick="rejectProject('${proj.id}')">Reject</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
         }
-
-        function updateEventsUI() {
-            const container = document.getElementById('eventsContainer');
-            if (events.length === 0) {
-                container.innerHTML = '<div class="col-12 text-center text-muted">No events planned yet.</div>';
-                return;
-            }
-            let html = '';
-            events.forEach(ev => {
-                html += `
-                    <div class="col-md-4">
-                        <div class="dashboard-card h-100">
-                            <img src="${ev.imageLink}" class="img-fluid rounded mb-3" style="height: 150px; width: 100%; object-fit: cover;">
-                            <h5>${ev.title}</h5>
-                            <p class="small text-muted mb-1"><i class="fa fa-calendar-alt me-2 text-primary"></i>${ev.date}</p>
-                            <p class="small text-muted mb-1"><i class="fa fa-clock me-2 text-primary"></i>${ev.time || 'N/A'}</p>
-                            <p class="small text-muted mb-2"><i class="fa fa-map-marker-alt me-2 text-primary"></i>${ev.location || 'N/A'}</p>
-                            <p class="small">${ev.description}</p>
-                            <button class="btn btn-sm btn-outline-danger w-100" onclick="deleteEvent('${ev.id}')">Delete</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function updateUsersTable() {
-            const container = document.getElementById('usersTableBody');
-            if (!container) return;
-            let html = '';
-            allUsers.forEach(user => {
-                const isActive = user.status === 'active';
-                html += `
-                    <tr>
-                        <td>${user.fullName}</td>
-                        <td>${user.email}</td>
-                        <td><span class="badge ${user.role === 'admin' ? 'bg-danger' : user.role === 'mentor' ? 'bg-primary' : 'bg-info'}">${user.role}</span></td>
-                        <td><span class="badge ${isActive ? 'bg-success' : 'bg-warning'}">${user.status}</span></td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-warning" onclick="toggleUserStatus('${user.id}', '${user.status}')">
-                                    ${isActive ? 'Disable' : 'Enable'}
-                                </button>
-                                ${user.email === 'techeagle254@gmail.com' ? '' : `
-                                <button class="btn btn-outline-danger" onclick="deleteUser('${user.id}', '${user.email}')">
-                                    <i class="fa fa-trash"></i>
-                                </button>
-                                `}
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        // Global functions
-        window.approveMentor = async function(id) {
+        
+        window.reviewProject = async function(projectId, status) {
             try {
-                await updateDoc(doc(db, "users", id), { status: 'active' });
-                await NotificationService.send(id, "Your mentor application has been approved! Welcome aboard.", "success");
-                window.showSuccessMessage("Mentor approved and notified!");
-            } catch (err) {
-                window.showErrorMessage("Approval failed: " + err.message);
+                await updateDoc(doc(db, 'projects', projectId), { status });
+                alert(`Project ${status}!`);
+                await loadProjectReviews();
+                await loadStats();
+            } catch (error) {
+                console.error('Error reviewing project:', error);
+                alert('Failed to update project');
             }
-        }
-
-        window.toggleUserStatus = async function(id, currentStatus) {
-            const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
-            await updateDoc(doc(db, "users", id), { status: newStatus });
-            alert(`User account ${newStatus === 'active' ? 'enabled' : 'disabled'}.`);
-        }
-
-        window.deleteUser = async function(id, email) {
-            if (email === 'techeagle254@gmail.com') {
-                alert("The official admin account cannot be deleted.");
-                return;
-            }
-            if (confirm("Delete this user's profile forever?")) {
-                await deleteDoc(doc(db, "users", id));
-            }
-        }
-
-        window.approveProject = async function(id) {
-            try {
-                // We need to find the innovatorId first
-                const projSnap = await getDoc(doc(db, "projects", id));
-                if (projSnap.exists()) {
-                    const projData = projSnap.data();
-                    await updateDoc(doc(db, "projects", id), { status: 'approved' });
-                    await NotificationService.send(projData.innovatorId, `Your project "${projData.title}" has been approved!`, "success");
-                    window.showSuccessMessage("Project approved and innovator notified!");
-                }
-            } catch (err) {
-                window.showErrorMessage("Approval failed: " + err.message);
-            }
-        }
-
-        window.rejectProject = async function(id) {
-            const reason = prompt("Enter reason for rejection:");
-            if (reason) {
-                try {
-                    const projSnap = await getDoc(doc(db, "projects", id));
-                    if (projSnap.exists()) {
-                        const projData = projSnap.data();
-                        await updateDoc(doc(db, "projects", id), { 
-                            status: 'rejected',
-                            adminFeedback: reason
-                        });
-                        await NotificationService.send(projData.innovatorId, `Your project "${projData.title}" was rejected. Reason: ${reason}`, "error");
-                        window.showSuccessMessage("Project rejected and innovator notified.");
-                    }
-                } catch (err) {
-                    window.showErrorMessage("Rejection failed: " + err.message);
-                }
-            }
-        }
-
-        window.deleteEvent = async function(id) {
-            if (confirm("Delete this event?")) {
-                await deleteDoc(doc(db, "events", id));
-            }
-        }
-
+        };
+        
         window.showSection = function(sectionName) {
-            console.log("Navigating to section:", sectionName);
-            const sections = document.querySelectorAll('.dashboard-section');
-            const navLinks = document.querySelectorAll('.nav-link');
-            
-            sections.forEach(el => el.style.display = 'none');
-            navLinks.forEach(el => el.classList.remove('active'));
-            
-            const targetId = sectionName + 'Section';
-            const target = document.getElementById(targetId);
-            
-            if (target) {
-                target.style.display = 'block';
-                const activeNavLink = document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`);
-                if (activeNavLink) activeNavLink.classList.add('active');
-            } else {
-                console.warn(`Section not found: ${sectionName} (tried ${targetId})`);
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            const section = document.getElementById(sectionName + 'Section');
+            if (section) {
+                section.style.display = 'block';
+                const activeLink = document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`);
+                if (activeLink) activeLink.classList.add('active');
             }
-        }
-
+        };
+        
         window.logout = async function() {
             try {
                 await auth.signOut();
                 localStorage.removeItem('innovateHubUser');
                 window.location.href = 'login.html';
-            } catch (err) {
-                console.error("Logout error:", err);
+            } catch (error) {
+                console.error('Logout error:', error);
                 window.location.href = 'login.html';
             }
-        }
+        };
     </script>
 </body>
 </html>

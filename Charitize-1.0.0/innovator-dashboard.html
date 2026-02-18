@@ -1,565 +1,400 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <title>Innovator Dashboard - Innovate Hub</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
-    <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
-
-    <!-- Google Web Fonts -->
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap"
-        rel="stylesheet">
-
-    <!-- Icon Font Stylesheet -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
-    <link href="css/style.css?v=1.0.1" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap" rel="stylesheet">
     
-    <!-- Innovate Hub Custom Styles -->
-    <link href="css/innovate-hub.css?v=1.0.1" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap & Custom CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css?v=2.0.0" rel="stylesheet">
+    <link href="css/innovate-hub.css?v=2.0.0" rel="stylesheet">
+    <link href="css/responsive-dashboard.css?v=2.0.0" rel="stylesheet">
 </head>
 
 <body>
-    <!-- Dashboard Container -->
-    <!-- Uses flexbox to create sidebar + main content layout -->
     <div class="dashboard-container">
-        
-        <!-- Sidebar Navigation -->
+        <!-- Sidebar -->
         <div class="dashboard-sidebar">
-            <!-- Logo Section -->
-                <a href="/" class="logo-container text-decoration-none px-4 mb-4 mt-3">
-                    <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
-                    <span class="logo-text" style="color: white; font-size: 1.3rem; margin-left: 10px;">Innovate Hub</span>
-                </a>
+            <a href="/" class="logo-container text-decoration-none px-4 mb-3 mt-3">
+                <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
+                <span class="logo-text">Innovate Hub</span>
+            </a>
             
-            <!-- Group: Innovation Management -->
+            <!-- User Identity -->
+            <div class="px-4 mb-4 user-identity">
+                <small class="text-muted d-block" style="font-size: 0.7rem;">Logged in as</small>
+                <div id="userDisplayName" class="fw-bold text-dark" style="font-size: 0.9rem;">Innovator</div>
+            </div>
+            
             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Innovation</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link active" href="#" onclick="window.showSection('projects'); return false;">My Projects</a>
-                <a class="nav-link" href="#" onclick="window.showSection('submit'); return false;">Submit Project</a>
-                <a class="nav-link" href="#" onclick="window.showSection('mentors'); return false;">Find Mentors</a>
+                <a class="nav-link active" href="#" onclick="showSection('projects')">My Projects</a>
+                <a class="nav-link" href="#" onclick="showSection('submit')">Submit Project</a>
+                <a class="nav-link" href="#" onclick="showSection('mentors')">Find Mentors</a>
             </nav>
-
-            <!-- Group: Support & Community -->
+            
             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Support</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link" href="#" onclick="window.showSection('myMentors'); return false;">My Mentors</a>
-                <a class="nav-link" href="/event">Events</a>
+                <a class="nav-link" href="#" onclick="showSection('myMentors')">My Mentors</a>
+                <a class="nav-link" href="event.html">Events</a>
             </nav>
-
-            <!-- Group: Account -->
+            
             <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Account</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link" href="#" onclick="window.showSection('notifications'); return false;">
-                    Notifications <span class="badge bg-danger ms-2 badge-pill" id="notifCount">0</span>
+                <a class="nav-link" href="#" onclick="showSection('profile')">
+                    <span style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>Notifications</span>
+                        <div id="notificationBell"></div>
+                    </span>
                 </a>
-                <a class="nav-link" href="#" onclick="window.showSection('profile'); return false;">My Profile</a>
-                <a class="nav-link text-danger mt-2" href="#" onclick="window.logout(); return false;">Logout</a>
+                <a class="nav-link" href="#" onclick="showSection('profile')">My Profile</a>
+                <a class="nav-link text-danger mt-2" href="#" onclick="logout()">Logout</a>
             </nav>
+            
             <div class="px-3 mt-3">
-                <small class="text-muted" style="font-size: 0.65rem;">Platform v1.0.1-fixed</small>
+                <small class="text-muted" style="font-size: 0.65rem;">Platform v2.0.0</small>
             </div>
         </div>
         
-        <!-- Main Content Area -->
+        <!-- Main Content -->
         <div class="dashboard-main">
-            
-            <!-- My Projects Section (Default View) -->
+            <!-- My Projects Section -->
+            <div id="projectsSection" class="dashboard-section">
+                <div class="dashboard-header mb-4">
+                    <h2>My Projects</h2>
+                    <p class="text-muted">Track and manage your innovation projects</p>
+                </div>
+                <div id="projectsContainer"></div>
+            </div>
             
             <!-- Submit Project Section -->
             <div id="submitSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
+                <div class="dashboard-header mb-4">
                     <h2>Submit New Project</h2>
-                    <p class="text-muted">Share your innovative idea with mentors and the community</p>
+                    <p class="text-muted">Share your innovative idea with us</p>
                 </div>
                 
                 <div class="dashboard-card">
-                    <!-- Project Submission Form -->
-                    <form id="projectForm" onsubmit="window.submitProject(event); return false;">
-                        
-                        <!-- Project Title -->
-                        <div class="form-group mb-3">
-                            <label for="projectTitle" class="form-label fw-bold">Project Title *</label>
-                            <input 
-                                type="text" 
-                                class="form-control" 
-                                id="projectTitle" 
-                                placeholder="Enter a catchy title for your project"
-                                required>
+                    <form id="projectForm">
+                        <div class="mb-3">
+                            <label class="form-label">Project Title</label>
+                            <input type="text" class="form-control" name="title" required>
                         </div>
                         
-                        <!-- Project Category -->
-                        <div class="form-group mb-3">
-                            <label for="projectCategory" class="form-label fw-bold">Innovation Category *</label>
-                            <select class="form-select" id="projectCategory" required>
-                                <option value="">Select a category...</option>
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" name="category" required>
+                                <option value="">Select Category</option>
                                 <option value="technology">Technology</option>
                                 <option value="healthcare">Healthcare</option>
                                 <option value="education">Education</option>
                                 <option value="environment">Environment</option>
                                 <option value="social">Social Impact</option>
-                                <option value="business">Business</option>
                             </select>
                         </div>
                         
-                        <!-- Project Description -->
-                        <div class="form-group mb-3">
-                            <label for="projectDescription" class="form-label fw-bold">Project Description *</label>
-                            <textarea 
-                                class="form-control" 
-                                id="projectDescription" 
-                                rows="5"
-                                placeholder="Describe your project idea, the problem it solves, and your proposed solution..."
-                                required></textarea>
-                            <small class="text-muted">Minimum 50 characters</small>
+                        <div class="mb-3">
+                            <label class="form-label">Problem Statement</label>
+                            <textarea class="form-control" name="problemStatement" rows="3" required></textarea>
                         </div>
                         
-                        <!-- Project Goals -->
-                        <div class="form-group mb-3">
-                            <label for="projectGoals" class="form-label fw-bold">Project Goals</label>
-                            <textarea 
-                                class="form-control" 
-                                id="projectGoals" 
-                                rows="3"
-                                placeholder="What do you hope to achieve with this project?"></textarea>
+                        <div class="mb-3">
+                            <label class="form-label">Objectives</label>
+                            <textarea class="form-control" name="objectives" rows="3" required></textarea>
                         </div>
                         
-                        <!-- File Upload -->
-                        <div class="form-group mb-3">
-                            <label for="projectFile" class="form-label fw-bold">Supporting Documents (Word Only) *</label>
-                            <input 
-                                type="file" 
-                                class="form-control" 
-                                id="projectFile"
-                                accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                                required>
-                            <small class="text-muted">Upload your project proposal as a Word document (.doc, .docx)</small>
+                        <div class="mb-3">
+                            <label class="form-label">Proposed Solution</label>
+                            <textarea class="form-control" name="proposedSolution" rows="4" required></textarea>
                         </div>
                         
-                        <!-- Submit Button -->
-                        <div class="d-flex gap-3">
-                            <button type="submit" class="btn btn-custom-signup px-4">
-                                Submit Project
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary px-4" onclick="document.getElementById('projectForm').reset();">
-                                Reset Form
-                            </button>
+                        <div class="mb-3">
+                            <label class="form-label">Expected Impact</label>
+                            <textarea class="form-control" name="expectedImpact" rows="3" required></textarea>
                         </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Supporting Document (Optional)</label>
+                            <input type="file" class="form-control" name="document" accept=".pdf,.doc,.docx">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-custom-signup">Submit Project</button>
                     </form>
-                </div>
-            </div>
-            
-            <!-- My Projects Section -->
-            <div id="projectsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>My Projects</h2>
-                    <p class="text-muted">View and manage all your submitted projects</p>
-                </div>
-                
-                <!-- Projects Container -->
-                <!-- This div will be populated dynamically with JavaScript -->
-                <div id="projectsContainer">
-                    <!-- Projects will be added here dynamically -->
-                    <div class="dashboard-card text-center">
-                        <i class="fa fa-lightbulb fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No projects yet. Submit your first project to get started!</p>
-                        <button class="btn btn-primary" onclick="window.showSection('submit')">
-                            <i class="fa fa-plus me-2"></i>Submit Project
-                        </button>
-                    </div>
                 </div>
             </div>
             
             <!-- Find Mentors Section -->
             <div id="mentorsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>Find a Mentor</h2>
-                    <p class="text-muted">Browse experienced professionals who can help you grow</p>
-                </div>
-                <div id="mentorsContainer" class="row g-4">
-                    <div class="alert alert-info">Loading mentors...</div>
-                </div>
-            </div>
-
-            <!-- My Mentors Section -->
-            <div id="myMentorsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>My Assigned Mentors</h2>
-                    <p class="text-muted">Mentors guiding your active projects</p>
-                </div>
-                <div id="myMentorsContainer" class="row g-4">
-                    <div class="col-12 text-center text-muted">No mentors assigned yet. Go to "Find Mentors" to connect!</div>
-                </div>
-            </div>
-
-            <!-- Submit Report Section -->
-            <div id="reportSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>Submit Progress Report</h2>
-                    <p class="text-muted">Keep your mentor updated on your project's progress</p>
+                <div class="dashboard-header mb-4">
+                    <h2>Find Mentors</h2>
+                    <p class="text-muted">Connect with experienced mentors</p>
                 </div>
                 
-                <div class="dashboard-card">
-                    <form id="reportForm" onsubmit="window.submitReport(event); return false;">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Select Project *</label>
-                            <select class="form-select" required>
-                                <option value="">Choose a project...</option>
-                                <option value="1">Smart Irrigation System</option>
-                                <option value="2">AI Tutor Bot</option>
+                <div class="filter-panel mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" id="mentorCategoryFilter">
+                                <option value="">All Categories</option>
+                                <option value="technology">Technology</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="education">Education</option>
                             </select>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Report Type *</label>
-                            <select class="form-select" required>
-                                <option value="weekly">Weekly Progress</option>
-                                <option value="milestone">Milestone Completion</option>
-                                <option value="issue">Issue/Blocker</option>
+                        <div class="col-md-4">
+                            <label class="form-label">Availability</label>
+                            <select class="form-select" id="mentorAvailabilityFilter">
+                                <option value="">All</option>
+                                <option value="available">Available</option>
+                                <option value="unavailable">Unavailable</option>
                             </select>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Summary of Activities *</label>
-                            <textarea class="form-control" rows="4" placeholder="What have you accomplished since the last report?" required></textarea>
+                        <div class="col-md-4">
+                            <label class="form-label">Search</label>
+                            <input type="text" class="form-control" id="mentorSearchInput" placeholder="Search by name or expertise">
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Challenges & Blockers</label>
-                            <textarea class="form-control" rows="3" placeholder="Any issues preventing progress?"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Next Steps</label>
-                            <textarea class="form-control" rows="3" placeholder="What do you plan to do next?"></textarea>
-                        </div>
-                        <div class="form-group mb-3">
-                             <label for="reportFile" class="form-label fw-bold">Attachments</label>
-                             <input type="file" class="form-control" id="reportFile">
-                             <small class="text-muted">Upload any relevant documents or screenshots</small>
-                        </div>
-                        <button type="submit" class="btn btn-custom-signup px-5">
-                            Submit Report
-                        </button>
-                    </form>
+                    </div>
                 </div>
+                
+                <div id="mentorsContainer" class="row g-4"></div>
+            </div>
+            
+            <!-- My Mentors Section -->
+            <div id="myMentorsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h2>My Mentors</h2>
+                    <p class="text-muted">Your assigned mentors and requests</p>
+                </div>
+                <div id="myMentorsContainer"></div>
             </div>
             
             <!-- Profile Section -->
             <div id="profileSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
+                <div class="dashboard-header mb-4">
                     <h2>My Profile</h2>
                     <p class="text-muted">Manage your account information</p>
                 </div>
                 
                 <div class="dashboard-card">
-                    <p><strong>Email:</strong> <span id="userEmail">user@example.com</span></p>
-                    <p><strong>Role:</strong> Innovator</p>
-                    <p><strong>Member Since:</strong> <span id="memberSince">-</span></p>
+                    <form id="profileForm">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" name="fullName" id="profileName">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" id="profileEmail" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Institution</label>
+                            <input type="text" class="form-control" name="institution" id="profileInstitution">
+                        </div>
+                        <button type="submit" class="btn btn-custom-signup">Update Profile</button>
+                    </form>
                 </div>
             </div>
-            
-            <!-- Notifications Section -->
-            <div id="notificationsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>Notifications</h2>
-                    <p class="text-muted">Stay updated with latest activities and alerts</p>
-                </div>
-                <div id="notificationList">
-                    <div class="alert alert-info">No new notifications.</div>
-                </div>
-            </div>
-
-            <!-- Settings Section -->
-            <div id="settingsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header">
-                    <h2>Settings</h2>
-                    <p class="text-muted">Customize your experience</p>
-                </div>
-                
-                <div class="dashboard-card">
-                    <p class="text-muted">Settings panel coming soon!</p>
-                </div>
-            </div>
-            
         </div>
     </div>
-
-    <!-- JavaScript Libraries -->
+    
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JavaScript -->
-    <script src="js/ui-utils.js?v=1.0.1"></script>
-    <script src="js/api.js?v=1.0.1"></script>
-    <script type="module" src="js/innovate-hub.js?v=1.0.1"></script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/innovate-hub.js"></script>
+    <script type="module" src="js/components/status-badges.js"></script>
+    <script type="module" src="js/components/notification-system.js"></script>
+    <script type="module" src="js/components/empty-states.js"></script>
+    <script type="module" src="js/components/mentor-profile-card.js"></script>
+    <script type="module" src="js/components/project-card-structured.js"></script>
+    <script type="module" src="js/utils/auto-save-manager.js"></script>
     
     <script type="module">
         import { auth, db } from './js/firebase-config.js';
-        import { ProjectService, MentorshipService, NotificationService, requireAuth } from './js/innovate-hub.js';
-        // Importing standard helpers as well since this is a module scope
-        import { 
-            collection, query, where, onSnapshot, getDocs, 
-            doc, getDoc, updateDoc, addDoc, serverTimestamp, orderBy 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        let userData = null;
-        let myProjects = [];
-        let allMentors = [];
-
-        window.addEventListener('load', async function() {
-            // Wait for auth to initialize (max 5 seconds)
-            let checkCount = 0;
-            const waitForAuth = setInterval(() => {
-                userData = window.loadFromLocalStorage("innovateHubUser");
-                if (userData && userData.loggedIn && userData.role) {
-                    clearInterval(waitForAuth);
-                    initDashboard();
-                }
-                if (++checkCount > 50) { // 5 seconds
-                    clearInterval(waitForAuth);
-                    if (!userData || !userData.loggedIn) window.location.href = 'login.html';
-                    else initDashboard(); // Proceed anyway if logged in but role missing (fallback)
-                }
-            }, 100);
-        });
-
-        function initDashboard() {
-            if (userData.role !== 'innovator' && userData.email !== 'techeagle254@gmail.com') {
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import NotificationSystem from './js/components/notification-system.js';
+        import StructuredProjectCard from './js/components/project-card-structured.js';
+        import MentorProfileCard from './js/components/mentor-profile-card.js';
+        import EmptyStates from './js/components/empty-states.js';
+        import AutoSaveManager from './js/utils/auto-save-manager.js';
+        
+        let currentUser = null;
+        let autoSave = null;
+        
+        // Auth check
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
                 window.location.href = 'login.html';
                 return;
             }
             
-            // Populate UI with user data
-            document.getElementById('userEmail').textContent = userData.email;
+            currentUser = user;
+            initializeDashboard();
+        });
+        
+        async function initializeDashboard() {
+            // Update display name
+            const userDisplayName = document.getElementById('userDisplayName');
+            if (userDisplayName) {
+                userDisplayName.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+            }
+
+            // Initialize notification system
+            const notificationSystem = new NotificationSystem(currentUser.uid);
+            notificationSystem.init('notificationBell');
             
-            setupListeners();
-            setupFormHandlers();
+            // Load projects
+            await loadProjects();
             
-            // Set default section
-            window.showSection('projects');
-        }
-
-        window.submitReport = function(e) {
-            e.preventDefault();
-            window.showSuccessMessage("Progress report submitted successfully!");
-            e.target.reset();
-            window.showSection('projects');
-        }
-
-        function setupListeners() {
-            // 1. My Projects
-            onSnapshot(query(collection(db, "projects"), where("innovatorId", "==", userData.uid)), (snapshot) => {
-                myProjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateProjectsUI();
-            });
-
-            // 2. Available Mentors
-            onSnapshot(query(collection(db, "users"), where("role", "==", "mentor"), where("status", "==", "active")), (snapshot) => {
-                allMentors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateMentorsUI();
-            });
-
-            // 3. Notifications
-            onSnapshot(query(collection(db, "notifications"), where("userId", "==", userData.uid), orderBy("createdAt", "desc")), (snapshot) => {
-                const notifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateNotificationsUI(notifs);
-                document.getElementById('notifCount').textContent = notifs.length;
-            });
-        }
-
-        function setupFormHandlers() {
-            // Project Submission
-            document.getElementById('projectForm').onsubmit = async (e) => {
-                e.preventDefault();
-                
-                const submitBtn = e.target.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                const fileInput = document.getElementById('projectFile');
-                const file = fileInput.files[0];
-
-                if (!file) {
-                    alert("Please select a Word document to upload.");
-                    return;
-                }
-
-                const formData = {
-                    title: document.getElementById('projectTitle').value,
-                    category: document.getElementById('projectCategory').value,
-                    description: document.getElementById('projectDescription').value,
-                    goals: document.getElementById('projectGoals').value,
-                    innovatorId: userData.uid
-                };
-                
-                try {
-                    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Uploading & Submitting...';
-                    submitBtn.disabled = true;
-
-                    await ProjectService.submitProject(formData, file);
-                    
-                    window.showSuccessMessage("Project submitted successfully! Your document has been uploaded.");
-                    e.target.reset();
-                    window.showSection('projects');
-                } catch (err) {
-                    console.error("Submission error:", err);
-                    window.showErrorMessage("Error submitting project: " + err.message);
-                } finally {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                }
-            };
+            // Load mentors
+            await loadMentors();
+            
+            // Initialize auto-save for project form
+            autoSave = new AutoSaveManager('projectForm', currentUser.uid, 'project');
+            await autoSave.init();
+            
+            // Setup form submission
+            document.getElementById('projectForm').addEventListener('submit', handleProjectSubmit);
         }
         
-        window.submitProject = async function(e) {
-            e.preventDefault();
-            // This function is now defined but its body is empty in the provided edit.
-            // The actual project submission logic is in setupFormHandlers.
-            // Assuming this is a placeholder or intended for future use.
-        }
-
-        function updateProjectsUI() {
+        async function loadProjects() {
             const container = document.getElementById('projectsContainer');
-            if (myProjects.length === 0) {
-                container.innerHTML = '<div class="alert alert-info">No projects yet. Submit your first idea!</div>';
-                return;
-            }
-            let html = '';
-            myProjects.forEach(p => {
-                html += `
-                    <div class="dashboard-card mb-3">
-                        <div class="d-flex justify-content-between">
-                            <h4>${p.title}</h4>
-                            <span class="badge ${p.status === 'approved' ? 'bg-success' : 'bg-warning'}">${p.status}</span>
-                        </div>
-                        <p class="text-muted small">${p.description}</p>
-                        ${p.adminFeedback ? `<div class="alert alert-secondary py-2 small"><strong>Admin Feedback:</strong> ${p.adminFeedback}</div>` : ''}
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-primary" onclick="showAddMilestone('${p.id}')">Add Milestone</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function updateMentorsUI() {
-            const container = document.getElementById('mentorsContainer');
-            if (allMentors.length === 0) {
-                container.innerHTML = '<div class="col-12 text-muted">No mentors available at the moment.</div>';
-                return;
-            }
-            let html = '';
-            allMentors.forEach(m => {
-                html += `
-                    <div class="col-md-4">
-                        <div class="dashboard-card text-center h-100">
-                            <img src="${m.photoURL || 'img/team-1.jpg'}" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
-                            <h5>${m.fullName}</h5>
-                            <p class="text-primary small mb-1">${m.profession || 'Expert'}</p>
-                            <p class="text-muted x-small mb-3">${m.expertise || 'Various fields'}</p>
-                            <button class="btn btn-sm btn-custom-signup w-100" onclick="requestMentorship('${m.id}')">Request Mentorship</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function updateNotificationsUI(notifs) {
-            const container = document.getElementById('notificationList');
-            if (notifs.length === 0) {
-                container.innerHTML = '<p class="text-muted">No new notifications.</p>';
-                return;
-            }
-            let html = '';
-            notifs.forEach(n => {
-                html += `
-                    <div class="dashboard-card mb-2 p-3 border-start border-4 ${n.type === 'success' ? 'border-success' : 'border-primary'}">
-                        <h6 class="mb-1">${n.message}</h6>
-                        <small class="text-muted">${new Date(n.createdAt?.toDate()).toLocaleString()}</small>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        window.requestMentorship = async function(mentorId) {
-            if (myProjects.length === 0) {
-                window.showErrorMessage("Please submit a project first!");
-                return;
-            }
+            container.innerHTML = EmptyStates.templates.loadingState();
             
-            const targetProj = myProjects[0];
-            
-            if (confirm(`Send mentorship request for project: "${targetProj.title}"?`)) {
-                try {
-                    await MentorshipService.sendRequest(mentorId, targetProj.id);
-                    window.showSuccessMessage("Mentorship request sent successfully!");
-                } catch (err) {
-                    window.showErrorMessage("Request failed: " + err.message);
+            try {
+                const q = query(collection(db, 'projects'), where('userId', '==', currentUser.uid));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    container.innerHTML = EmptyStates.templates.noProjects();
+                    return;
                 }
+                
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const project = { id: doc.id, ...doc.data() };
+                    container.innerHTML += StructuredProjectCard.render(project, {
+                        showActions: true,
+                        isExpanded: false
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                container.innerHTML = EmptyStates.templates.errorState('Failed to load projects');
             }
         }
-
-        window.showAddMilestone = function(projId) {
-            const milestone = prompt("What's the milestone goal?");
-            if (milestone) {
-                // Simplified: Just show SUCCESS for now
-                window.showSuccessMessage(`Milestone "${milestone}" added successfully! (Feature in progress)`);
+        
+        async function loadMentors() {
+            const container = document.getElementById('mentorsContainer');
+            container.innerHTML = EmptyStates.templates.loadingState();
+            
+            try {
+                const q = query(collection(db, 'users'), where('role', '==', 'mentor'), where('onboardingCompleted', '==', true));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    container.innerHTML = EmptyStates.templates.noMentors();
+                    return;
+                }
+                
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const mentor = { id: doc.id, ...doc.data() };
+                    container.innerHTML += MentorProfileCard.render(mentor, {
+                        showRequestButton: true,
+                        showAvailability: true,
+                        cardClass: 'col-md-6 col-lg-4'
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading mentors:', error);
+                container.innerHTML = EmptyStates.templates.errorState('Failed to load mentors');
             }
         }
-
+        
+        async function handleProjectSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            try {
+                await addDoc(collection(db, 'projects'), {
+                    userId: currentUser.uid,
+                    title: formData.get('title'),
+                    category: formData.get('category'),
+                    problemStatement: formData.get('problemStatement'),
+                    objectives: formData.get('objectives'),
+                    proposedSolution: formData.get('proposedSolution'),
+                    expectedImpact: formData.get('expectedImpact'),
+                    status: 'pending',
+                    createdAt: serverTimestamp()
+                });
+                
+                alert('Project submitted successfully!');
+                e.target.reset();
+                if (autoSave) await autoSave.clearDraft();
+                showSection('projects');
+                await loadProjects();
+            } catch (error) {
+                console.error('Error submitting project:', error);
+                alert('Failed to submit project. Please try again.');
+            }
+        }
+        
+        // Section navigation
         window.showSection = function(sectionName) {
-            console.log("Navigating to section:", sectionName);
-            // Find all sections
-            const sections = document.querySelectorAll('.dashboard-section');
-            const navLinks = document.querySelectorAll('.nav-link');
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.style.display = 'none';
+            });
             
-            // Hide all sections
-            sections.forEach(el => el.style.display = 'none');
-            // Remove active class from all links
-            navLinks.forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
             
-            const mapping = {
-                'projects': 'projectsSection',
-                'submit': 'submitSection',
-                'mentors': 'mentorsSection',
-                'myMentors': 'myMentorsSection',
-                'notifications': 'notificationsSection',
-                'profile': 'profileSection',
-                'report': 'reportSection',
-                'settings': 'settingsSection'
-            };
-            
-            const targetId = mapping[sectionName] || sectionName + 'Section';
-            const target = document.getElementById(targetId);
-            
-            if (target) {
-                target.style.display = 'block';
-                // Update active link
-                const activeNavLink = document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`);
-                if (activeNavLink) activeNavLink.classList.add('active');
-            } else {
-                console.warn(`Section not found: ${sectionName} (mapped to ${targetId})`);
+            const section = document.getElementById(sectionName + 'Section');
+            if (section) {
+                section.style.display = 'block';
+                const activeLink = document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`);
+                if (activeLink) activeLink.classList.add('active');
             }
-        }
-
+        };
+        
+        // Logout
         window.logout = async function() {
             try {
                 await auth.signOut();
                 localStorage.removeItem('innovateHubUser');
                 window.location.href = 'login.html';
-            } catch (err) {
-                console.error("Logout error:", err);
+            } catch (error) {
+                console.error('Logout error:', error);
                 window.location.href = 'login.html';
             }
-        }
+        };
+        
+        // Request mentorship
+        window.requestMentorship = async function(mentorId) {
+            try {
+                await addDoc(collection(db, 'mentorshipRequests'), {
+                    innovatorId: currentUser.uid,
+                    mentorId: mentorId,
+                    status: 'pending',
+                    createdAt: serverTimestamp()
+                });
+                alert('Mentorship request sent!');
+            } catch (error) {
+                console.error('Error sending request:', error);
+                alert('Failed to send request. Please try again.');
+            }
+        };
     </script>
-</body></html>
-
+</body>
 </html>

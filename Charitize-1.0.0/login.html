@@ -448,30 +448,34 @@
         }
       });
 
-      async function getRedirectUrl(user) {
-        // Admin email check (hardcoded as fallback/priority)
-        if (user.email === 'admin@innovatehub.com' || user.email === 'techeagle254@gmail.com') {
-            return "admin-dashboard.html";
-        }
-
+      async function handleSuccessfulLogin(user) {
         try {
-            // Immediate check for Firestore doc (timeout after 3 seconds)
-            const userDocPromise = getDoc(doc(db, "users", user.uid));
-            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 3000));
-            
-            const userDoc = await Promise.race([userDocPromise, timeoutPromise]);
-            
-            if (userDoc && userDoc.exists()) {
-                const data = userDoc.data();
-                if (data.role === 'admin') return "admin-dashboard.html";
-                if (data.role === 'mentor') return "mentor-dashboard.html";
-                if (data.role === 'innovator') return "innovator-dashboard.html";
-            }
+          // Fetch user data from Firestore
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          
+          let userData = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || user.email.split('@')[0],
+            role: 'innovator' // default
+          };
+          
+          if (userDoc && userDoc.exists()) {
+            userData = { ...userData, ...userDoc.data() };
+          }
+          
+          // Store user data in localStorage
+          localStorage.setItem('innovateHubUser', JSON.stringify(userData));
+          localStorage.setItem('justLoggedIn', 'true');
+          
+          // Always redirect to homepage
+          return "index.html";
         } catch (err) {
-            console.error("Error fetching role for redirect:", err);
+          console.error("Error in handleSuccessfulLogin:", err);
+          // Still redirect to homepage even on error
+          localStorage.setItem('justLoggedIn', 'true');
+          return "index.html";
         }
-        
-        return "innovator-dashboard.html"; // Default
       }
 
       window.handleGoogleLogin = async function () {
@@ -484,8 +488,8 @@
           const result = await signInWithPopup(auth, googleProvider);
           const user = result.user;
           
-          showSuccessMessage("Login successful! Welcome back.");
-          const redirectUrl = await getRedirectUrl(user);
+          showSuccessMessage("Login successful! Redirecting to homepage...");
+          const redirectUrl = await handleSuccessfulLogin(user);
           console.log("Google Login Success, redirecting to:", redirectUrl);
           setTimeout(() => (window.location.href = redirectUrl), 1000);
         } catch (error) {
@@ -519,8 +523,8 @@
           );
           const user = userCredential.user;
           
-          showSuccessMessage("Login successful! Welcome back.");
-          const redirectUrl = await getRedirectUrl(user);
+          showSuccessMessage("Login successful! Redirecting to homepage...");
+          const redirectUrl = await handleSuccessfulLogin(user);
           console.log("Email Login Success, redirecting to:", redirectUrl);
           setTimeout(() => (window.location.href = redirectUrl), 1000);
         } catch (error) {

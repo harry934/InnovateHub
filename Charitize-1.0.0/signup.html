@@ -862,8 +862,9 @@
 
                   await setDoc(doc(db, "users", user.uid), profileData);
 
-                  // Set session
-                  window.saveToLocalStorage('innovateHubUser', { ...profileData, loggedIn: true });
+                  // Set session and redirect
+                  localStorage.setItem('innovateHubUser', JSON.stringify(profileData));
+                  localStorage.setItem('justLoggedIn', 'true');
 
                   const welcomeMsg = role === 'mentor' ?
                       'Application submitted! Pending admin approval.' :
@@ -872,7 +873,7 @@
                   window.showSuccessMessage(welcomeMsg);
 
                   setTimeout(() => {
-                      window.location.href = role === 'mentor' ? 'index.html' : 'innovator-dashboard.html';
+                      window.location.href = 'index.html';
                   }, 2000);
 
               } catch (error) {

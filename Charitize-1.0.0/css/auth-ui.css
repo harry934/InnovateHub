@@ -1,0 +1,134 @@
+/* ========================================
+   AUTH UI STYLES
+   Styles for authentication-related UI
+   ======================================== */
+
+/* Logged In Navigation */
+#loggedInNav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#userName {
+    color: #1a5e4f;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.logout-link {
+    text-decoration: none;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+}
+
+.logout-link:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+/* Welcome Hint */
+.welcome-hint {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+    animation: slideInRight 0.3s ease-out;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.welcome-hint-content {
+    background: linear-gradient(135deg, #1a5e4f 0%, #14493e 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 400px;
+}
+
+.welcome-hint-content i {
+    font-size: 1.5rem;
+    color: #f3a813;
+}
+
+.welcome-hint-content span {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.welcome-hint-content strong {
+    color: #f3a813;
+}
+
+.welcome-hint-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.welcome-hint-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .welcome-hint {
+        top: 70px;
+        right: 10px;
+        left: 10px;
+    }
+    
+    .welcome-hint-content {
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    #loggedInNav {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+    
+    #userName {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .welcome-hint-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .welcome-hint-close {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+    }
+}
