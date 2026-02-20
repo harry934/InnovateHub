@@ -18,7 +18,7 @@
 
     // Sticky Navbar
     $(window).scroll(function () {
-        if ($(this).scrollTop() > 90) {
+        if ($(this).scrollTop() > 45) {
             $('.nav-bar').addClass('fixed-top navbar-scrolled');
             if ($(window).width() >= 992) {
                 $('.nav-bar').css('padding', '0');
