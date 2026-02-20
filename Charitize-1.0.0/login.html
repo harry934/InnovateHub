@@ -43,6 +43,9 @@
 
     <!-- Innovate Hub Custom Styles -->
     <link href="css/innovate-hub.css" rel="stylesheet" />
+    
+    <!-- Mobile Enhancement Styles -->
+    <link href="css/mobile-nav.css" rel="stylesheet">
 
     <!-- Page-specific styles -->
     <style>
@@ -357,11 +360,60 @@
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Innovate Hub JavaScript -->
-    <script src="js/ui-utils.js?v=1.0.1"></script>
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+
+    <!-- Nuru-Assistant -->
+    <script src="js/nuru-assistant.js"></script>
     <script src="js/shared-ui.js"></script>
     <script src="js/api.js?v=1.0.1"></script>
     <script type="module" src="js/innovate-hub.js?v=1.0.1"></script>
+
+    <!-- Mobile Hamburger Menu Enhancement Script -->
+    <script>
+    (function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            var navCollapse = document.getElementById('navbarCollapse');
+            var toggler = document.querySelector('.navbar-toggler');
+            if (!navCollapse || !toggler) return;
+
+            // Inject custom 3-bar icon into toggler
+            if (!toggler.querySelector('.mob-icon')) {
+                var icon = document.createElement('span');
+                icon.className = 'mob-icon';
+                icon.innerHTML = '<span></span><span></span><span></span>';
+                toggler.appendChild(icon);
+            }
+
+            // Inject overlay div
+            var overlay = document.getElementById('mobileNavOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'mobileNavOverlay';
+                overlay.className = 'mobile-nav-overlay';
+                document.body.appendChild(overlay);
+            }
+
+            // Bootstrap events
+            navCollapse.addEventListener('show.bs.collapse', function() {
+                document.body.classList.add('mob-menu-open');
+                overlay.classList.add('active');
+            });
+
+            navCollapse.addEventListener('hide.bs.collapse', function() {
+                document.body.classList.remove('mob-menu-open');
+                overlay.classList.remove('active');
+            });
+
+            // Click overlay to close
+            overlay.addEventListener('click', function() {
+                var bsCollapse = bootstrap.Collapse.getInstance(navCollapse);
+                if (bsCollapse) bsCollapse.hide();
+                else new bootstrap.Collapse(navCollapse).hide();
+            });
+        });
+    })();
+    </script>
 
     <!-- Login Logic -->
     <script type="module">

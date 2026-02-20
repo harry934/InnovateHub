@@ -1,71 +1,205 @@
 /**
- * Nuru Assistant - Intelligent Chat Widget Logic
- * Features: Auto-greeting, Knowledge-based responses, UI interactions.
+ * Nuru-Assistant - AI-Powered Chat Widget
+ * Version: 2.0.0
+ * Features: Context-aware responses, role-based knowledge, multi-turn conversation,
+ *           smart intent detection, proactive suggestions, persistent history.
  */
 
-// Knowledge base for Nuru
+// ============================================================
+//  CONTEXT DETECTION — which page is Nuru running on?
+// ============================================================
+const NURU_PAGE_CONTEXT = (() => {
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes('mentor-dashboard')) return 'mentor';
+    if (path.includes('innovator-dashboard')) return 'innovator';
+    return 'public'; // home page and other public pages
+})();
+
+// ============================================================
+//  ENHANCED KNOWLEDGE BASE
+// ============================================================
 const NURU_KNOWLEDGE = {
-    greetings: [
-        "Jambo! I'm Nuru, your Innovate Hub guide. How can I help you today?", 
-        "Hello! I'm Nuru. I'm here to answer your questions and help you navigate our community.", 
-        "Welcome to Innovate Hub! I'm Nuru, and I'd be delighted to assist you."
-    ],
-    clarify_prefix: "I'm not entirely sure I caught that, but I can help you with: ",
-    fallback_suggest: "I want to make sure I give you the best guidance. Would you like to know about our projects, how to join, or maybe speak with a mentor?",
-    out_of_scope: "That’s a great question! For the most accurate and up-to-date information, please submit it through our Contact section so our team can assist you directly.",
+    // ── Greetings (context-aware) ─────────────────────────
+    greetings: {
+        public: [
+            "Jambo! I'm Nuru-Assistant, your Innovate Hub guide. How can I help you today?",
+            "Hello! I'm Nuru-Assistant. Whether you're new or returning, I'm here to help you navigate our platform.",
+            "Welcome to Innovate Hub! I'm Nuru-Assistant — your AI assistant for all things innovation. Ask me anything!"
+        ],
+        innovator: [
+            "Hey there, innovator! I'm Nuru-Assistant. Need help submitting a project, finding a mentor, or understanding how our platform works?",
+            "Welcome to your dashboard! I'm Nuru-Assistant — ask me tips on writing a strong project proposal or how to get matched with a mentor.",
+            "Hi! I'm Nuru-Assistant. I'm here to guide you through your innovation journey. What are you working on today?"
+        ],
+        mentor: [
+            "Hello, Mentor! I'm Nuru-Assistant. I can help you navigate requests, give feedback tips, or answer any platform questions.",
+            "Welcome back! I'm Nuru-Assistant — your guide for managing mentees, scheduling sessions, and making the most of your impact.",
+            "Hi! I'm Nuru-Assistant. Need help reviewing a mentorship request or structuring your feedback? I'm here for you."
+        ]
+    },
+
+    clarify_prefix: "I'm not entirely sure I caught that — but here's what I can help with: ",
+    fallback_suggest: "Great question! I'd love to help. Try asking me about submitting projects, finding mentors, events, or how our platform works.",
+    out_of_scope: "That's a great question! For the most accurate info, please reach out through our Contact section and our team will assist you directly.",
+
+    // ── Universal triggers (all contexts) ────────────────
     triggers: [
         {
+            id: 'hi',
+            keywords: ['hi', 'hello', 'hey', 'jambo', 'greetings', 'morning', 'afternoon', 'evening', 'yo'],
+            contexts: ['public', 'innovator', 'mentor'],
+            response: "Jambo! It's great to hear from you. I'm Nuru-Assistant, and I'm here to help you navigate Innovate Hub. What are you looking to do today? \n\nI can help with project submissions, finding mentors, or even just showing you around!",
+            links: []
+        },
+        {
+            id: 'thanks',
+            keywords: ['thanks', 'thank you', 'asante', 'merci', 'cool', 'awesome', 'great'],
+            contexts: ['public', 'innovator', 'mentor'],
+            response: "You're very welcome! I'm always happy to help. Is there anything else you'd like to explore?",
+            links: []
+        },
+        {
             id: 'about',
-            keywords: ['about', 'what', 'website', 'websitge', 'purpose', 'do', 'hub', 'innovate'],
-            response: "Innovate Hub is a premier platform for all innovators. We turn ideas into reality by connecting people of all ages with mentors, project partners, and essential resources. We're excited to see what you build!",
-            links: [{ label: "Learn More", url: "/about" }]
+            keywords: ['what is', 'about', 'who are you', 'tell me about', 'overview', 'info'],
+            contexts: ['public', 'innovator', 'mentor'],
+            response: "Innovate Hub is a premier platform for student and youth innovators. We connect innovators with experienced mentors, provide project submission tools, and host innovation events — all to turn ideas into real-world impact.",
+            links: [{ label: "Our Story", url: "about.html" }]
         },
         {
             id: 'join',
-            keywords: ['join', 'signup', 'register', 'account', 'create', 'start', 'regster'],
-            response: "We'd love to have you! You can sign up as an Innovator to share your projects, or as a Mentor to guide others. It's a supportive universal community for everyone and we're here to help you get started.",
-            links: [{ label: "Start Registration", url: "/signup" }]
+            keywords: ['join', 'signup', 'sign up', 'register', 'create account', 'get started', 'how to join'],
+            contexts: ['public'],
+            response: "Joining is free! You can register as an **Innovator** to submit your project ideas and get matched with mentors, or as a **Mentor** to guide the next generation of innovators.",
+            links: [{ label: "Register Now", url: "signup.html" }, { label: "Learn More", url: "about.html" }]
+        },
+        {
+            id: 'submit_project',
+            keywords: ['submit', 'project', 'idea', 'upload', 'new project', 'add project', 'proposal'],
+            contexts: ['public', 'innovator'],
+            response: "To submit a project:\n• Go to your Innovator Dashboard\n• Click 'Submit Project' in the sidebar\n• Fill in the title, problem statement, objectives, proposed solution, and expected impact\n• Attach any supporting documents (optional)\n• Hit Submit!\n\nOur team reviews all submissions within 48 hours.",
+            links: [{ label: "Go to Submit Project", url: "innovator-dashboard.html" }]
         },
         {
             id: 'mentor',
-            keywords: ['mentor', 'mentorship', 'guide', 'expert', 'help me'],
-            response: "Our mentorship program connects people with industry experts. Mentors provide guidance on project scaling, technical hurdles, and personal growth. That sounds like a great way to start your journey!",
-            links: [{ label: "Join as Mentor", url: "/signup" }]
+            keywords: ['mentor', 'mentorship', 'find mentor', 'get mentored', 'expert', 'guidance', 'coach'],
+            contexts: ['public', 'innovator'],
+            response: "Our mentorship program pairs innovators with industry experts across technology, healthcare, agriculture, robotics, and more!\n\n• Browse mentors by expertise in your dashboard\n• Send a mentorship request linked to your project\n• Wait for the mentor to accept and schedule a session\n\nTip: A strong project submission increases your chances of getting matched!",
+            links: [{ label: "Find Mentors", url: "innovator-dashboard.html" }]
         },
         {
-            id: 'project',
-            keywords: ['project', 'submit', 'idea', 'innovation', 'share', 'list', 'work on', 'suggest'],
-            response: "Looking for inspiration? Based on our community interests, you could work on ideas like: \n• Community Sustainability Tracker\n• Global Peer-to-Peer Learning Hub\n• Innovation Event Platform\nThat sounds like it could be a game-changer!",
-            links: [{ label: "Submit Your Project", url: "/innovator-dashboard" }]
+            id: 'mentorship_request',
+            keywords: ['request', 'pending request', 'how to accept', 'approve', 'reject request', 'mentee request'],
+            contexts: ['mentor'],
+            response: "To manage mentorship requests:\n• Go to **Requests** in your sidebar\n• Review each innovator's project details\n• Click **Accept** to begin mentoring, or **Reject** with a reason\n\nAccepted mentees will appear under 'My Mentees'. You can track their progress and give structured feedback from there.",
+            links: []
         },
         {
-            id: 'navigation',
-            keywords: ['where', 'pages', 'go', 'contact', 'home', 'services'],
-            response: "I can guide you anywhere! You can check our 'About Us' to see our story, or visit 'Contact Us' if you need directions. Let me know if you need help finding anything else.",
-            links: [
-                { label: "About Us", url: "/about" },
-                { label: "Contact Us", url: "/contact" }
-            ]
+            id: 'mentees',
+            keywords: ['mentee', 'my mentees', 'mentees list', 'assigned', 'who am i mentoring', 'students'],
+            contexts: ['mentor'],
+            response: "Your active mentees are listed under the **My Mentees** section. Here you can:\n• View each mentee's project\n• Track progress and milestones\n• Leave structured feedback\n• Schedule sessions via the Schedule section\n\nNeed to give feedback? Head to the Feedback Center!",
+            links: []
+        },
+        {
+            id: 'feedback',
+            keywords: ['feedback', 'review project', 'comment', 'evaluate', 'assess', 'grade', 'rate project'],
+            contexts: ['mentor'],
+            response: "The **Feedback Center** lets you leave structured feedback on mentee projects. Good feedback should:\n• Acknowledge what's strong in the idea\n• Identify specific areas for improvement\n• Suggest concrete next steps\n• Be encouraging and constructive\n\nGreat feedback helps innovators grow faster!",
+            links: []
+        },
+        {
+            id: 'schedule',
+            keywords: ['schedule', 'availability', 'meeting', 'session', 'zoom', 'calendar', 'book', 'appointment'],
+            contexts: ['mentor'],
+            response: "To set your availability:\n• Go to **Schedule** in your sidebar\n• Enter your weekly availability (e.g. 'Mondays 10am–12pm')\n• Add your Zoom or meeting link\n• Save — mentees will see your schedule when requesting sessions.",
+            links: []
+        },
+        {
+            id: 'profile',
+            keywords: ['profile', 'update profile', 'edit profile', 'bio', 'skills', 'picture', 'photo', 'name'],
+            contexts: ['public', 'innovator', 'mentor'],
+            response: "You can update your profile from the **My Profile** section in your dashboard sidebar. You can set:\n• Full name & bio\n• Institution/organization\n• Skills and interests\n• Profile photo\n\nA complete profile helps mentors find and trust you!",
+            links: []
+        },
+        {
+            id: 'events',
+            keywords: ['event', 'events', 'bootcamp', 'exhibition', 'stem', 'demo', 'workshop', 'competition'],
+            contexts: ['public', 'innovator', 'mentor'],
+            response: "Innovate Hub hosts exciting innovation events throughout the year:\n• **STEM Exhibition** — August 12–15 at Kenyatta University\n• **Innovation Bootcamp** — September 5–10 at Innovate Hub HQ\n• **Tech Outreach Demos** — October 20–22 at Regional STEM Centers\n\nCheck our Events page for registration details!",
+            links: [{ label: "View Events", url: "event.html" }]
         },
         {
             id: 'cost',
-            keywords: ['cost', 'price', 'free', 'pay', 'money'],
-            response: "Innovation should be accessible! Innovate Hub is completely free for all community members and mentors. We're here to support your growth without any financial barriers."
+            keywords: ['cost', 'price', 'fee', 'free', 'pay', 'money', 'charges'],
+            contexts: ['public', 'innovator', 'mentor'],
+            response: "Innovate Hub is completely **free** for all community members — innovators, mentors, and partners. We believe innovation support should be accessible to every aspiring changemaker.",
+            links: []
+        },
+        {
+            id: 'contact',
+            keywords: ['contact', 'reach', 'email', 'phone', 'support', 'help desk', 'talk to someone'],
+            contexts: ['public', 'innovator', 'mentor'],
+            response: "You can reach the Innovate Hub team via:\n• 📧 InnovateHub@gmail.com\n• 📞 +254 700 000000\n• 📍 Nairobi, Kenya\n\nOr use our Contact page to send us a message directly.",
+            links: [{ label: "Contact Us", url: "contact.html" }]
+        },
+        {
+            id: 'notifications',
+            keywords: ['notification', 'alert', 'update', 'bell', 'unread', 'messages'],
+            contexts: ['innovator', 'mentor'],
+            response: "Your notifications are in the **Notifications** section on the sidebar. You'll receive alerts for:\n• New mentorship request updates\n• Feedback on your projects (innovators)\n• New mentee requests (mentors)\n• Platform announcements",
+            links: []
+        },
+        {
+            id: 'login',
+            keywords: ['login', 'log in', 'sign in', 'password', 'forgot password', 'cant login', 'access'],
+            contexts: ['public'],
+            response: "To log in, visit our Login page. If you've forgotten your password, use the 'Forgot Password' option on the login form.\n\nStill having issues? Contact our support team at InnovateHub@gmail.com.",
+            links: [{ label: "Go to Login", url: "login.html" }]
+        },
+        {
+            id: 'tips_innovator',
+            keywords: ['tip', 'advice', 'improve', 'better project', 'how to succeed', 'best practice', 'recommendation'],
+            contexts: ['innovator'],
+            response: "Here are some tips to succeed as an innovator on our platform:\n\n✅ **Write a clear problem statement** — explain the exact problem you're solving\n✅ **Set measurable objectives** — be specific about what success looks like\n✅ **Explain your proposed solution** step by step\n✅ **Attach supporting documents** — diagrams, research, or prototypes go a long way\n✅ **Request a mentor** early — their guidance will shape your project positively\n\nGood luck! 🚀",
+            links: []
+        },
+        {
+            id: 'tips_mentor',
+            keywords: ['tip', 'advice', 'how to mentor', 'effective', 'guide mentee', 'best mentor', 'help innovator'],
+            contexts: ['mentor'],
+            response: "Tips for being an effective mentor:\n\n✅ **Respond to requests promptly** — innovators are eager to start\n✅ **Read the full project before giving feedback**\n✅ **Give specific, actionable feedback** (not just 'good job')\n✅ **Set clear session expectations** — agenda, duration, follow-up\n✅ **Encourage, don't overwhelm** — guide one step at a time\n\nYour expertise changes lives! 🌟",
+            links: []
+        },
+        {
+            id: 'navigation',
+            keywords: ['where', 'find', 'go to', 'navigate', 'page', 'section', 'how do i get to'],
+            contexts: ['public', 'innovator', 'mentor'],
+            response: "I can guide you anywhere! What section are you looking for?\n\n• **Home** — index.html\n• **About Us** — about.html\n• **Events** — event.html\n• **Contact Us** — contact.html\n• **Your Dashboard** — innovator-dashboard.html or mentor-dashboard.html",
+            links: [
+                { label: "Home", url: "index.html" },
+                { label: "About Us", url: "about.html" },
+                { label: "Contact Us", url: "contact.html" }
+            ]
         }
     ]
 };
 
+// ============================================================
+//  NURU ASSISTANT CLASS
+// ============================================================
 class NuruAssistant {
     constructor() {
         this.isOpen = false;
         this.isHidden = false;
+        this.context = NURU_PAGE_CONTEXT;
         this.lastInteraction = Date.now();
-        this.chatHistory = JSON.parse(localStorage.getItem('nuru_history')) || [];
+        this.conversationHistory = []; // Track conversation for multi-turn
+        this.chatHistory = JSON.parse(localStorage.getItem('nuru_history_v2')) || [];
         this.initUI();
         this.addEventListeners();
         this.startAnimationEngine();
-        
-        // Auto-greet if no history
+
+        // Auto-greet if no history, else restore
         if (this.chatHistory.length === 0) {
             setTimeout(() => {
                 this.playAnimation('wave');
@@ -76,34 +210,37 @@ class NuruAssistant {
         }
     }
 
+    // ── UI Initialization ──────────────────────────────────
     initUI() {
         const widgetHTML = `
-            <button class="nuru-assistant-toggle" id="nuruToggle">
-                <span class="nuru-name-tag">Nuru Assistant</span>
-                <img src="img/nuru-avatar.svg" alt="Nuru Avatar">
+            <button class="nuru-assistant-toggle" id="nuruToggle" aria-label="Open Nuru-Assistant AI" aria-expanded="false">
+                <span class="nuru-name-tag">Nuru-Assistant – AI Guide</span>
+                <img src="img/nuru-avatar.svg" alt="Nuru Assistant Avatar">
             </button>
-            <div class="nuru-chat-window" id="nuruWindow">
+            <div class="nuru-chat-window" id="nuruWindow" role="dialog" aria-label="Nuru AI Chat" aria-hidden="true">
                 <div class="nuru-chat-header">
-                
-                    <div class="nuru-header-info">
-                        <h5>Nuru Assistant</h5>
-                        <div class="nuru-header-status">Online • Ready to help</div>
+                    <div class="nuru-header-avatar" aria-hidden="true">
+                        <img src="img/nuru-avatar.svg" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:contain;">
                     </div>
-                    <button class="nuru-close" id="nuruClose">&times;</button>
+                    <div class="nuru-header-info">
+                        <h5>Nuru-Assistant</h5>
+                        <div class="nuru-header-status">✦ AI Guide &bull; Always here to help</div>
+                    </div>
+                    <button class="nuru-close" id="nuruClose" aria-label="Close chat">&times;</button>
                 </div>
-                <div class="nuru-messages" id="nuruMessages"></div>
+                <div class="nuru-messages" id="nuruMessages" aria-live="polite" aria-atomic="false"></div>
                 <div class="nuru-input-area">
                     <div class="nuru-input-container">
-                        <input type="text" id="nuruInput" placeholder="Ask me something...">
+                        <input type="text" id="nuruInput" placeholder="Ask me anything…" autocomplete="off" aria-label="Type your message">
                     </div>
-                    <button class="nuru-send-btn" id="nuruSend">
-                        <i class="fa fa-paper-plane"></i>
+                    <button class="nuru-send-btn" id="nuruSend" aria-label="Send message">
+                        <i class="fa fa-paper-plane" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
         `;
         document.body.insertAdjacentHTML('beforeend', widgetHTML);
-        
+
         this.toggleBtn = document.getElementById('nuruToggle');
         this.chatWindow = document.getElementById('nuruWindow');
         this.closeBtn = document.getElementById('nuruClose');
@@ -111,35 +248,34 @@ class NuruAssistant {
         this.inputField = document.getElementById('nuruInput');
         this.sendBtn = document.getElementById('nuruSend');
 
-        // Initial state: hide behind corner
+        // Initial state
         this.toggleBtn.classList.add('nuru-pos-br', 'nuru-peek-active');
-        
-        // Start the greeting sequence after a short delay
+
+        // Greeting sequence
         setTimeout(() => this.triggerGreetingSequence(), 1000);
     }
 
+    // ── Greeting sequence animation ──────────────────────
     triggerGreetingSequence() {
         const toggle = this.toggleBtn;
-        const nameTag = document.querySelector('.nuru-name-tag');
-        
-        // Step 1: Stationery Greeting
+        const nameTag = toggle.querySelector('.nuru-name-tag');
+
         toggle.classList.remove('nuru-peek-active');
         toggle.classList.add('nuru-say-hi');
-        if (nameTag) nameTag.textContent = "Hi I'm Nuru";
-        
+        if (nameTag) nameTag.textContent = "Hi, I'm Nuru-Assistant!";
+
         setTimeout(() => {
-            // Step 2: Hide (Peek)
             toggle.classList.remove('nuru-say-hi');
-            if (nameTag) nameTag.textContent = "Nuru Assistant";
+            if (nameTag) nameTag.textContent = "Nuru-Assistant – AI Guide";
             toggle.classList.add('nuru-peek-active');
-            
+
             setTimeout(() => {
-                // Step 3: Reveal Smoothly
                 toggle.classList.remove('nuru-peek-active');
             }, 3000);
-        }, 3000);
+        }, 3500);
     }
 
+    // ── Event Listeners ───────────────────────────────────
     addEventListeners() {
         this.toggleBtn.onclick = () => this.toggleChat();
         this.closeBtn.onclick = () => this.toggleChat();
@@ -148,20 +284,32 @@ class NuruAssistant {
             if (e.key === 'Enter') this.handleSendMessage();
             this.lastInteraction = Date.now();
         };
-        
-        // Peek and show logic
+
+        // Re-appear on scroll
         window.addEventListener('scroll', () => {
             this.lastInteraction = Date.now();
             if (this.isHidden && window.scrollY > 300) {
                 this.showAssistant();
             }
         });
+
+        // Close on click outside
+        document.addEventListener('mousedown', (e) => {
+            if (this.isOpen &&
+                !this.chatWindow.contains(e.target) &&
+                !this.toggleBtn.contains(e.target)) {
+                this.toggleChat();
+            }
+        });
     }
 
+    // ── Toggle Chat Window ────────────────────────────────
     toggleChat() {
         this.isOpen = !this.isOpen;
         this.chatWindow.classList.toggle('active', this.isOpen);
-        this.toggleBtn.classList.remove('nuru-peek');
+        this.toggleBtn.setAttribute('aria-expanded', this.isOpen);
+        this.chatWindow.setAttribute('aria-hidden', !this.isOpen);
+
         if (this.isOpen) {
             this.inputField.focus();
             this.scrollToBottom();
@@ -173,16 +321,15 @@ class NuruAssistant {
     hideAssistant() {
         this.isOpen = false;
         this.chatWindow.classList.remove('active');
-        this.toggleBtn.classList.add('nuru-hide');
+        this.toggleBtn.style.opacity = '0';
+        this.toggleBtn.style.pointerEvents = 'none';
         this.isHidden = true;
-        this.lastInteraction = Date.now();
     }
 
     showAssistant() {
-        this.toggleBtn.classList.remove('nuru-hide');
-        this.toggleBtn.classList.add('nuru-reappear');
+        this.toggleBtn.style.opacity = '1';
+        this.toggleBtn.style.pointerEvents = 'auto';
         this.isHidden = false;
-        setTimeout(() => this.toggleBtn.classList.remove('nuru-reappear'), 600);
     }
 
     playAnimation(type) {
@@ -190,27 +337,54 @@ class NuruAssistant {
         setTimeout(() => this.toggleBtn.classList.remove(`nuru-${type}`), 1500);
     }
 
+    // ── Animation Engine (idle behaviours) ───────────────
     startAnimationEngine() {
         setInterval(() => {
-            const timeSinceLastAction = Date.now() - this.lastInteraction;
+            const timeSince = Date.now() - this.lastInteraction;
             if (!this.isOpen && !this.isHidden) {
-                if (timeSinceLastAction > 8000) {
-                    // Enter peek state if inactive
+                if (timeSince > 10000) {
                     this.toggleBtn.classList.add('nuru-peek-active');
                 } else {
                     this.toggleBtn.classList.remove('nuru-peek-active');
-                    const rand = Math.random();
-                    if (rand > 0.8) this.playAnimation('attention');
+                    if (Math.random() > 0.85) this.playAnimation('attention');
                 }
             }
         }, 5000);
     }
 
+    // ── Greeting ──────────────────────────────────────────
     greet() {
-        const randomGreeting = NURU_KNOWLEDGE.greetings[Math.floor(Math.random() * NURU_KNOWLEDGE.greetings.length)];
-        this.addMessage(randomGreeting, 'bot');
+        const greetings = NURU_KNOWLEDGE.greetings[this.context];
+        const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+        // Add context-specific quick actions
+        const quickLinks = this.getQuickActions();
+        this.addMessage(greeting, 'bot', quickLinks);
     }
 
+    // Quick-action buttons based on context
+    getQuickActions() {
+        if (this.context === 'innovator') {
+            return [
+                { label: "Submit a Project", url: "#", action: "submit project" },
+                { label: "Find a Mentor", url: "#", action: "find mentor" },
+                { label: "Get Tips", url: "#", action: "tips for innovators" }
+            ];
+        }
+        if (this.context === 'mentor') {
+            return [
+                { label: "View Requests", url: "#", action: "mentorship requests" },
+                { label: "Feedback Tips", url: "#", action: "feedback tips" },
+                { label: "Set Schedule", url: "#", action: "schedule" }
+            ];
+        }
+        return [
+            { label: "About the Hub", url: "#", action: "about" },
+            { label: "Events", url: "#", action: "events" },
+            { label: "Join as Innovator", url: "#", action: "join" }
+        ];
+    }
+
+    // ── Message Handling ──────────────────────────────────
     handleSendMessage() {
         const text = this.inputField.value.trim();
         if (!text) return;
@@ -218,63 +392,76 @@ class NuruAssistant {
         this.addMessage(text, 'user');
         this.inputField.value = '';
         this.lastInteraction = Date.now();
-        
+
+        // Track conversation for multi-turn context
+        this.conversationHistory.push({ role: 'user', text });
+
         this.showTyping();
 
+        // Simulate intelligent processing delay (feels more natural)
+        const delay = 800 + Math.random() * 700;
         setTimeout(() => {
             this.removeTyping();
             const result = this.getResponse(text);
-            this.addMessage(result.response, 'bot', result.links);
-            this.playAnimation('wave'); // Happy she found an answer
-        }, 1500);
+            this.addMessage(result.response, 'bot', result.links || []);
+            this.conversationHistory.push({ role: 'bot', text: result.response });
+            this.playAnimation('wave');
+        }, delay);
     }
 
+    // ── Response Engine ───────────────────────────────────
     getResponse(input) {
         const text = input.toLowerCase().trim();
-        
-        // Handle specific requested mapping: "what is this websitge about"
-        if (text.includes('websitge') || (text.includes('website') && text.includes('about'))) {
-            return NURU_KNOWLEDGE.triggers.find(t => t.id === 'about');
-        }
 
-        // Fuzzy Scoring System
-        let scores = NURU_KNOWLEDGE.triggers.map(trigger => {
+        // Filter triggers valid for current context
+        const contextTriggers = NURU_KNOWLEDGE.triggers.filter(t =>
+            t.contexts.includes(this.context) || t.contexts.includes('public')
+        );
+
+        // Weighted fuzzy scoring
+        let scores = contextTriggers.map(trigger => {
             let score = 0;
             trigger.keywords.forEach(keyword => {
-                // Direct include
-                if (text.includes(keyword)) score += 2;
-                // Partial word match (slang/typos)
-                else if (keyword.length > 3 && text.split(' ').some(word => word.includes(keyword.substring(0, 4)))) score += 1;
+                if (text.includes(keyword)) {
+                    score += keyword.split(' ').length > 1 ? 4 : 2; // multi-word = stronger match
+                } else if (keyword.length > 3 && text.split(' ').some(w => w.startsWith(keyword.substring(0, 4)))) {
+                    score += 1; // partial/typo match
+                }
             });
             return { trigger, score };
         });
 
-        // Filter and sort by score
         const matches = scores.filter(s => s.score > 0).sort((a, b) => b.score - a.score);
 
+        // Strong match
         if (matches.length > 0 && matches[0].score >= 2) {
-            return matches[0].trigger;
-        }
-
-        // Proactive Suggestion Logic (No "I don't understand")
-        if (matches.length > 0) {
-            const suggestions = matches.slice(0, 2).map(m => m.trigger.id);
             return {
-                response: `${NURU_KNOWLEDGE.clarify_prefix} ${suggestions.join(' or ')}. Is it one of those?`,
-                links: matches.slice(0, 2).map(m => ({ label: `About ${m.trigger.id.charAt(0).toUpperCase() + m.trigger.id.slice(1)}`, url: "#" }))
+                response: matches[0].trigger.response,
+                links: matches[0].trigger.links || []
             };
         }
 
-        // Final fallback: proactive guidance instead of generic refusal
-        return { 
+        // Weak match — suggest options
+        if (matches.length > 0) {
+            const topIds = matches.slice(0, 2).map(m => m.trigger.id);
+            return {
+                response: `${NURU_KNOWLEDGE.clarify_prefix}${topIds.join(' or ')}. Which sounds right?`,
+                links: matches.slice(0, 2).map(m => ({
+                    label: m.trigger.id.replace(/_/g, ' '),
+                    url: '#',
+                    action: m.trigger.keywords[0]
+                }))
+            };
+        }
+
+        // Fallback
+        return {
             response: NURU_KNOWLEDGE.fallback_suggest,
-            links: [
-                { label: "Tell me about Hub", url: "#" },
-                { label: "Show me Pages", url: "#" }
-            ]
+            links: this.getQuickActions().slice(0, 2)
         };
     }
 
+    // ── Message Rendering ─────────────────────────────────
     addMessage(text, sender, links = []) {
         const msg = { text, sender, links, time: new Date().toISOString() };
         this.chatHistory.push(msg);
@@ -284,41 +471,48 @@ class NuruAssistant {
     }
 
     renderMsg(msg) {
-        const msgWrapper = document.createElement('div');
-        msgWrapper.className = `nuru-msg-wrapper nuru-msg-${msg.sender}`;
+        const wrapper = document.createElement('div');
+        wrapper.className = `nuru-msg-wrapper nuru-msg-${msg.sender}`;
 
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'nuru-msg-content';
-        
-        const textDiv = document.createElement('div');
-        textDiv.className = 'nuru-msg-text';
-        textDiv.textContent = msg.text;
-        contentDiv.appendChild(textDiv);
+        const content = document.createElement('div');
+
+        const bubble = document.createElement('div');
+        bubble.className = 'nuru-msg-text';
+        // Support newlines from knowledge base responses
+        bubble.innerHTML = msg.text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // bold **text**
+            .replace(/\n/g, '<br>'); // line breaks
+
+        content.appendChild(bubble);
 
         if (msg.links && msg.links.length > 0) {
             const btnGroup = document.createElement('div');
             btnGroup.className = 'nuru-btn-group';
-            
+
             msg.links.forEach(link => {
                 const btn = document.createElement('a');
                 btn.className = 'nuru-action-btn';
-                btn.href = link.url;
-                btn.textContent = `👉 ${link.label}`;
-                btnGroup.appendChild(btn);
-                
-                if (link.url === '#') {
-                    btn.onclick = (e) => {
+                btn.href = link.url === '#' ? 'javascript:void(0)' : link.url;
+                btn.textContent = `→ ${link.label}`;
+
+                if (link.url === '#' || link.action) {
+                    btn.addEventListener('click', (e) => {
                         e.preventDefault();
-                        this.inputField.value = link.label.replace('About ', '');
+                        const query = link.action || link.label;
+                        this.inputField.value = query;
                         this.handleSendMessage();
-                    };
+                    });
                 }
+                btnGroup.appendChild(btn);
             });
-            contentDiv.appendChild(btnGroup);
+            content.appendChild(btnGroup);
         }
 
-        msgWrapper.appendChild(contentDiv);
-        this.messagesContainer.appendChild(msgWrapper);
+        wrapper.appendChild(content);
+        this.messagesContainer.appendChild(wrapper);
     }
 
     renderHistory() {
@@ -327,7 +521,15 @@ class NuruAssistant {
     }
 
     saveHistory() {
-        localStorage.setItem('nuru_history', JSON.stringify(this.chatHistory));
+        // Keep only last 30 messages to prevent local storage bloat
+        if (this.chatHistory.length > 30) {
+            this.chatHistory = this.chatHistory.slice(-30);
+        }
+        try {
+            localStorage.setItem('nuru_history_v2', JSON.stringify(this.chatHistory));
+        } catch (e) {
+            console.warn('Nuru-Assistant: Could not save history', e);
+        }
     }
 
     scrollToBottom() {
@@ -338,6 +540,7 @@ class NuruAssistant {
         const div = document.createElement('div');
         div.id = 'nuruTyping';
         div.className = 'typing-indicator';
+        div.setAttribute('aria-label', 'Nuru-Assistant is typing');
         div.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
         this.messagesContainer.appendChild(div);
         this.scrollToBottom();
@@ -349,7 +552,7 @@ class NuruAssistant {
     }
 }
 
-// Initialize when DOM is ready
+// ── Initialize Nuru ────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     window.nuru = new NuruAssistant();
 });

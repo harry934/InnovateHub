@@ -942,47 +942,58 @@
 
 /* Scrolled state overrides */
 .nav-bar.navbar-scrolled {
-  background: rgba(26, 94, 79, 0.75) !important; /* Slightly more transparent */
-  backdrop-filter: blur(15px); /* Stronger blur for better effect */
+  background: rgba(26, 94, 79, 0.8) !important; /* Glassy brand green */
+  backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Focused Scroll: Hide main navigation links on desktop scroll */
+@media (min-width: 992px) {
+  .nav-bar.navbar-scrolled #mainNav {
+    display: none !important;
+  }
+}
+
+/* CRITICAL: Overriding bg-primary on the inner navbar during scroll */
 .nav-bar.navbar-scrolled .navbar {
-  background: transparent !important; /* Force inner navbar to be transparent */
+  background: transparent !important;
   padding-top: 5px !important;
   padding-bottom: 5px !important;
 }
 
-/* Hide navigation links on scroll for focus */
-.nav-bar.navbar-scrolled #navbarCollapse .navbar-nav {
-  display: none !important;
-}
+@media (min-width: 992px) {
+  /* Desktop: Reveal logo on scroll */
+  .nav-bar.navbar-scrolled .sticky-logo {
+    opacity: 1;
+    visibility: visible;
+    display: flex !important;
+  }
 
-/* Reveal logo inside navbar on scroll */
-.sticky-logo {
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  display: none !important; /* Initial desktop state */
-}
+  /* Desktop: Hide logo until scroll */
+  .sticky-logo {
+    opacity: 0;
+    visibility: hidden;
+  }
 
-.nav-bar.navbar-scrolled .sticky-logo {
-  opacity: 1;
-  visibility: visible;
-  display: flex !important;
-}
-
-/* Ensure the 'GET STARTED' button stays right-aligned */
-.nav-bar.navbar-scrolled .navbar-collapse {
-  justify-content: space-between;
-}
-
-@media (max-width: 991.98px) {
-  .nav-bar.navbar-scrolled {
-    padding: 0 !important; /* Full width on mobile scroll */
+  /* Desktop: Alignment */
+  .nav-bar.navbar-scrolled .navbar-collapse {
+    justify-content: space-between;
   }
 }
+
+/* Mobile Header Refinement: Ensure logo and toggler are side-by-side naturally */
+@media (max-width: 991.98px) {
+  .sticky-logo {
+    display: flex !important; /* Always visible to flex-align with hamburger */
+    opacity: 1 !important;
+    visibility: visible !important;
+    margin: 0 !important;
+  }
+}
+
+
 
 /* ========================================
    14. RECONSTRUCTING LOGO PRELOADER (HIGH-END)
@@ -1102,3 +1113,5 @@
 /* ========================================
    15. OTHER STYLES
    ======================================== */
+
+

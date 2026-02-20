@@ -34,7 +34,10 @@
     <!-- Innovate Hub Custom Styles -->
     <link href="css/innovate-hub.css" rel="stylesheet">
     
-    <!-- Nuru Assistant Styles -->
+    <!-- Mobile Enhancement Styles -->
+    <link href="css/mobile-nav.css" rel="stylesheet">
+    
+    <!-- Nuru-Assistant Styles -->
     <link href="css/nuru-assistant.css" rel="stylesheet">
 </head>
 
@@ -109,14 +112,18 @@
     <div class="container-fluid bg-secondary px-0 wow fadeIn" data-wow-delay="0.1s">
         <div class="nav-bar">
             <nav class="navbar navbar-expand-lg bg-primary navbar-dark px-4 py-lg-0">
-                <a href="/" class="navbar-brand d-none d-lg-flex align-items-center ms-0 me-auto sticky-logo">
+                <a href="index.html" class="navbar-brand d-flex align-items-center ms-0 me-auto sticky-logo">
                     <img src="img/logo.svg" alt="Innovate Hub" style="width: 35px; height: 35px;">
                     <span class="logo-text ms-2" style="font-size: 1.2rem; color: white;">Innovate Hub</span>
                 </a>
-                <h4 class="d-lg-none m-0">Menu</h4>
+                <!-- Menu text removed -->
                 <button type="button" class="navbar-toggler me-0" data-bs-toggle="collapse"
                     data-bs-target="#navbarCollapse">
-                    <span class="navbar-toggler-icon"></span>
+                    <div class="mob-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav me-auto">
@@ -215,8 +222,8 @@
                         <div class="avatar-lg bg-primary text-white rounded-circle mb-4" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
                             <i class="fa fa-robot"></i>
                         </div>
-                        <h2 class="mb-3">Meet Nuru Assistant</h2>
-                        <p class="mb-4 fs-5 text-muted">We've upgraded our support! Nuru is our intelligent assistant ready to guide you, answer questions about projects, or help with your account instantly.</p>
+                        <h2 class="mb-3">Meet Nuru-Assistant</h2>
+                        <p class="mb-4 fs-5 text-muted">We've upgraded our support! Nuru-Assistant is our intelligent assistant ready to guide you, answer questions about projects, or help with your account instantly. </p>
                         
                         <div class="alert alert-info border-0 shadow-sm mb-4">
                             <i class="fa fa-info-circle me-2"></i> Click the chat bubble in the bottom right corner to start a conversation.
@@ -348,6 +355,52 @@
     <script src="js/ui-utils.js"></script>
     <script src="js/shared-ui.js"></script>
     <script type="module" src="js/innovate-hub.js"></script>
+
+    <!-- Mobile Hamburger Menu Enhancement Script -->
+    <script>
+    (function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            var navCollapse = document.getElementById('navbarCollapse');
+            var toggler = document.querySelector('.navbar-toggler');
+            if (!navCollapse || !toggler) return;
+
+            // Inject custom 3-bar icon into toggler
+            if (!toggler.querySelector('.mob-icon')) {
+                var icon = document.createElement('span');
+                icon.className = 'mob-icon';
+                icon.innerHTML = '<span></span><span></span><span></span>';
+                toggler.appendChild(icon);
+            }
+
+            // Inject overlay div
+            var overlay = document.getElementById('mobileNavOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'mobileNavOverlay';
+                overlay.className = 'mobile-nav-overlay';
+                document.body.appendChild(overlay);
+            }
+
+            // Bootstrap events
+            navCollapse.addEventListener('show.bs.collapse', function() {
+                document.body.classList.add('mob-menu-open');
+                overlay.classList.add('active');
+            });
+
+            navCollapse.addEventListener('hide.bs.collapse', function() {
+                document.body.classList.remove('mob-menu-open');
+                overlay.classList.remove('active');
+            });
+
+            // Click overlay to close
+            overlay.addEventListener('click', function() {
+                var bsCollapse = bootstrap.Collapse.getInstance(navCollapse);
+                if (bsCollapse) bsCollapse.hide();
+                else new bootstrap.Collapse(navCollapse).hide();
+            });
+        });
+    })();
+    </script>
     <script type="module" src="js/nuru-assistant.js"></script>
 </body>
 

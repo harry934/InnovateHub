@@ -17,6 +17,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap"
         rel="stylesheet">
 
+    <!-- Nuru-Assistant Styles -->
+    <link href="css/nuru-assistant.css" rel="stylesheet">
+
     <!-- Icon Font Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
@@ -33,6 +36,9 @@
     
     <!-- Innovate Hub Custom Styles -->
     <link href="css/innovate-hub.css" rel="stylesheet">
+    
+    <!-- Mobile Enhancement Styles -->
+    <link href="css/mobile-nav.css" rel="stylesheet">
 </head>
 
 <body>
@@ -106,14 +112,18 @@
     <div class="container-fluid bg-secondary px-0 wow fadeIn" data-wow-delay="0.1s">
         <div class="nav-bar">
             <nav class="navbar navbar-expand-lg bg-primary navbar-dark px-4 py-lg-0">
-                <a href="index.html" class="navbar-brand d-none d-lg-flex align-items-center ms-0 me-auto sticky-logo">
+                <a href="index.html" class="navbar-brand d-flex align-items-center ms-0 me-auto sticky-logo">
                     <img src="img/logo.svg" alt="Innovate Hub" style="width: 35px; height: 35px;">
                     <span class="logo-text ms-2" style="font-size: 1.2rem; color: white;">Innovate Hub</span>
                 </a>
-                <h4 class="d-lg-none m-0">Menu</h4>
+                <!-- Menu text removed -->
                 <button type="button" class="navbar-toggler me-0" data-bs-toggle="collapse"
                     data-bs-target="#navbarCollapse">
-                    <span class="navbar-toggler-icon"></span>
+                    <div class="mob-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav me-auto">
@@ -324,9 +334,58 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+
+    <!-- Nuru-Assistant -->
+    <script src="js/nuru-assistant.js"></script>
     <script src="js/ui-utils.js"></script>
     <script src="js/shared-ui.js"></script>
     <script type="module" src="js/innovate-hub.js"></script>
+
+    <!-- Mobile Hamburger Menu Enhancement Script -->
+    <script>
+    (function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            var navCollapse = document.getElementById('navbarCollapse');
+            var toggler = document.querySelector('.navbar-toggler');
+            if (!navCollapse || !toggler) return;
+
+            // Inject custom 3-bar icon into toggler
+            if (!toggler.querySelector('.mob-icon')) {
+                var icon = document.createElement('span');
+                icon.className = 'mob-icon';
+                icon.innerHTML = '<span></span><span></span><span></span>';
+                toggler.appendChild(icon);
+            }
+
+            // Inject overlay div
+            var overlay = document.getElementById('mobileNavOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'mobileNavOverlay';
+                overlay.className = 'mobile-nav-overlay';
+                document.body.appendChild(overlay);
+            }
+
+            // Bootstrap events
+            navCollapse.addEventListener('show.bs.collapse', function() {
+                document.body.classList.add('mob-menu-open');
+                overlay.classList.add('active');
+            });
+
+            navCollapse.addEventListener('hide.bs.collapse', function() {
+                document.body.classList.remove('mob-menu-open');
+                overlay.classList.remove('active');
+            });
+
+            // Click overlay to close
+            overlay.addEventListener('click', function() {
+                var bsCollapse = bootstrap.Collapse.getInstance(navCollapse);
+                if (bsCollapse) bsCollapse.hide();
+                else new bootstrap.Collapse(navCollapse).hide();
+            });
+        });
+    })();
+    </script>
 </body>
 
 </html>

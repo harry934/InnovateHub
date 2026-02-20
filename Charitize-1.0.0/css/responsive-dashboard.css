@@ -17,6 +17,12 @@
         overflow-y: visible;
     }
 
+    .mobile-dashboard-header {
+        background-color: #1a5e4f !important;
+        margin-bottom: 0 !important;
+        z-index: 1030;
+    }
+
     .dashboard-main {
         margin-left: 0;
         padding: 1.5rem;

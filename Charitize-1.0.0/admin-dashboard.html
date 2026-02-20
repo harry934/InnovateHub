@@ -13,16 +13,32 @@
     <link href="css/style.css?v=2.0.0" rel="stylesheet">
     <link href="css/innovate-hub.css?v=2.0.0" rel="stylesheet">
     <link href="css/responsive-dashboard.css?v=2.0.0" rel="stylesheet">
+    <link href="css/mobile-nav.css" rel="stylesheet">
 </head>
 
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
         <div class="dashboard-sidebar">
-            <a href="/" class="logo-container text-decoration-none px-4 mb-3 mt-3">
-                <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
-                <span class="logo-text">Innovate Hub</span>
-            </a>
+            <div class="d-flex align-items-center justify-content-between px-4 py-3 d-lg-none border-bottom mb-2 mobile-dashboard-header">
+                <a href="/" class="logo-container text-decoration-none p-0 m-0">
+                    <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
+                    <span class="logo-text ms-2">Innovate Hub</span>
+                </a>
+                <button type="button" class="navbar-toggler p-0 border-0" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                    <div class="mob-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <a href="/" class="logo-container text-decoration-none px-4 mb-3 mt-3 d-none d-lg-flex">
+                    <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
+                    <span class="logo-text">Innovate Hub</span>
+                </a>
             
             <!-- User Identity -->
             <div class="px-4 mb-4 user-identity border-bottom pb-3">
@@ -72,10 +88,11 @@
                 </a>
             </nav>
             
-            <div class="px-3 mt-3">
+            <div class="px-3 mt-3 pb-3">
                 <small class="text-muted" style="font-size: 0.65rem;">Platform v2.0.0</small>
             </div>
         </div>
+    </div>
         
         <!-- Main Content -->
         <div class="dashboard-main">
@@ -203,5 +220,54 @@
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/ui-utils.js"></script>
     <script type="module" src="js/admin-dashboard.js"></script>
+
+    <!-- Nuru-Assistant -->
+    <script src="js/nuru-assistant.js"></script>
+
+    <!-- Mobile Hamburger Menu Enhancement Script -->
+    <script>
+    (function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            var navCollapse = document.getElementById('navbarCollapse');
+            var toggler = document.querySelector('.navbar-toggler');
+            if (!navCollapse || !toggler) return;
+
+            // Inject custom 3-bar icon into toggler
+            if (!toggler.querySelector('.mob-icon')) {
+                var icon = document.createElement('span');
+                icon.className = 'mob-icon';
+                icon.innerHTML = '<span></span><span></span><span></span>';
+                toggler.appendChild(icon);
+            }
+
+            // Inject overlay div
+            var overlay = document.getElementById('mobileNavOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'mobileNavOverlay';
+                overlay.className = 'mobile-nav-overlay';
+                document.body.appendChild(overlay);
+            }
+
+            // Bootstrap events
+            navCollapse.addEventListener('show.bs.collapse', function() {
+                document.body.classList.add('mob-menu-open');
+                overlay.classList.add('active');
+            });
+
+            navCollapse.addEventListener('hide.bs.collapse', function() {
+                document.body.classList.remove('mob-menu-open');
+                overlay.classList.remove('active');
+            });
+
+            // Click overlay to close
+            overlay.addEventListener('click', function() {
+                var bsCollapse = bootstrap.Collapse.getInstance(navCollapse);
+                if (bsCollapse) bsCollapse.hide();
+                else new bootstrap.Collapse(navCollapse).hide();
+            });
+        });
+    })();
+    </script>
 </body>
 </html>

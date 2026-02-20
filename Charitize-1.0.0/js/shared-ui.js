@@ -11,15 +11,13 @@
         const preloader = document.getElementById("logo-preloader");
         if (!preloader) return;
 
-        // Check if this is a navigation from within the site
-        const wasNavigated = sessionStorage.getItem("wasNavigated") === "true";
+        // Detect if the page was reloaded (refreshed) or a direct entry
+        const navEntries = performance.getEntriesByType("navigation");
+        const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
+        const isInitial = navEntries.length > 0 && navEntries[0].type === "navigate" && !document.referrer.includes(window.location.origin);
         
-        if (wasNavigated) {
-            // Immediately hide if it was a navigation (ignoring clicks)
-            preloader.style.display = 'none';
-            sessionStorage.removeItem("wasNavigated");
-        } else {
-            // Show animation for full refreshes or initial entry
+        // Show preloader ONLY on refresh or direct entry from outside the platform
+        if (isReload || isInitial) {
             preloader.classList.add("active");
             
             const hidePreloader = () => {
@@ -36,10 +34,13 @@
             setTimeout(() => {
                 if (preloader) preloader.style.display = 'none';
             }, 5000);
+        } else {
+            // Internal navigation: hide immediately
+            preloader.style.display = 'none';
         }
     };
 
-    // 2. NAVIGATION CLICK LISTENER
+    // 2. NAVIGATION CLICK LISTENER (Kept for other potential uses, though preloader now uses Performance API)
     const initNavigationListener = () => {
         document.addEventListener("click", function(e) {
             const link = e.target.closest("a");
@@ -48,9 +49,9 @@
                 link.href.includes(window.location.origin) && 
                 !link.href.includes("#") && 
                 link.target !== "_blank" &&
-                !link.getAttribute("onclick") // Don't flag JS-based actions like logout
+                !link.getAttribute("onclick")
             ) {
-                sessionStorage.setItem("wasNavigated", "true");
+                // We could still use this flag if needed for other UI states
             }
         });
     };

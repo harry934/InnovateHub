@@ -73,7 +73,12 @@
 /*** Top Bar ***/
 .top-bar {
     height: 90px;
-    padding: 0 90px;
+}
+
+@media (min-width: 992px) {
+    .top-bar {
+        padding: 0 90px;
+    }
 }
 
 .top-bar h6 {
@@ -83,8 +88,13 @@
 
 /*** Nav Bar ***/
 .nav-bar {
-    padding: 0 90px;
     transition: .5s;
+}
+
+@media (min-width: 992px) {
+    .nav-bar {
+        padding: 0 90px;
+    }
 }
 
 .navbar .navbar-nav .nav-link {

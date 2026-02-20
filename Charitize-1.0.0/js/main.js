@@ -19,9 +19,17 @@
     // Sticky Navbar
     $(window).scroll(function () {
         if ($(this).scrollTop() > 90) {
-            $('.nav-bar').addClass('fixed-top navbar-scrolled').css('padding', '0');
+            $('.nav-bar').addClass('fixed-top navbar-scrolled');
+            if ($(window).width() >= 992) {
+                $('.nav-bar').css('padding', '0');
+            }
         } else {
-            $('.nav-bar').removeClass('fixed-top navbar-scrolled').css('padding', '0px 90px');
+            $('.nav-bar').removeClass('fixed-top navbar-scrolled');
+            if ($(window).width() >= 992) {
+                $('.nav-bar').css('padding', '0px 90px');
+            } else {
+                $('.nav-bar').css('padding', '0');
+            }
         }
     });
     

@@ -1,0 +1,253 @@
+/* ========================================
+   MOBILE HAMBURGER MENU ENHANCEMENT
+   SCOPE: max-width 1024px ONLY
+   Stand-alone stylesheet for clean implementation
+   ======================================== */
+
+@media (max-width: 1024px) {
+
+  /* ── Body scroll-lock when menu is open ── */
+  body.mob-menu-open {
+    overflow: hidden !important;
+  }
+
+  /* Hide redundant Top Bar on mobile to favor sticky navbar branding */
+  .top-bar {
+    display: none !important;
+  }
+
+  /* ── Mobile Header: Layout Preservation ────────────────── */
+  .nav-bar {
+    width: 100%;
+    height: 75px; 
+    padding: 0;
+    display: flex;
+    align-items: center;
+    z-index: 1030;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ── Overlay backdrop ───────────────────── */
+  .mobile-nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1029;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  .mobile-nav-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Force the inner navbar to be a flex container for side-by-side layout */
+  .navbar {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    background: transparent !important;
+    position: relative !important;
+  }
+
+  /* ── Custom morphing hamburger icon (X animation) ──────── */
+  .navbar-toggler .mob-icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 26px;
+    height: 18px;
+    pointer-events: none;
+  }
+
+  .navbar-toggler .mob-icon span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: #fff;
+    border-radius: 2px;
+    transform-origin: center;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                opacity 0.3s ease,
+                width 0.3s ease;
+  }
+
+  /* X state morph (triggered by aria-expanded) */
+  .navbar-toggler[aria-expanded="true"] .mob-icon span:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+
+  .navbar-toggler[aria-expanded="true"] .mob-icon span:nth-child(2) {
+    opacity: 0;
+    width: 0;
+  }
+
+  .navbar-toggler[aria-expanded="true"] .mob-icon span:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+
+  /* ── Navbar toggler base ───── */
+  .navbar-toggler {
+    position: static !important;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050 !important;
+    box-shadow: none !important;
+  }
+
+  .navbar-toggler:focus {
+    text-decoration: none;
+    outline: 0;
+    box-shadow: none !important;
+  }
+
+  /* ── The collapsible nav panel ──────────── */
+  .navbar-collapse {
+    /* CRITICAL: Overriding Bootstrap's display:none/none toggle */
+    display: flex !important; 
+    position: fixed !important;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(85vw, 320px);
+    height: 100vh !important;
+    background: linear-gradient(160deg, #1a5e4f 0%, #14493e 100%) !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    padding: 100px 24px 40px 24px !important; /* Increased top padding to avoid X button */
+    z-index: 1040 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    transform: translateX(105%);
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
+    visibility: hidden;
+    margin: 0 !important;
+  }
+
+  /* Handle show/hide states */
+  .navbar-collapse.show {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .navbar-collapse.collapsing {
+    transform: translateX(105%);
+    visibility: visible !important;
+    height: 100vh !important;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
+  }
+
+  /* ── Nav links inside mobile panel ─────── */
+  .navbar-collapse .navbar-nav {
+    display: flex !important; /* Ensure visibility */
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Force all nav-items/nav-links to be visible */
+  .navbar-collapse .navbar-nav .nav-item,
+  .navbar-collapse .navbar-nav .nav-link {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Remove staggered entrance properties for now to ensure absolute visibility */
+  .navbar-collapse .nav-item {
+    width: 100% !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+
+  .navbar-collapse .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 1.1rem !important;
+    font-weight: 600;
+    padding: 12px 16px !important;
+    border-radius: 8px;
+    transition: background 0.3s, color 0.3s;
+    width: 100% !important;
+  }
+
+  .navbar-collapse .nav-link:hover,
+  .navbar-collapse .nav-link.active {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #f3a813 !important;
+  }
+
+  /* Auth buttons */
+  .navbar-collapse .ms-auto {
+    width: 100% !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-top: 30px !important;
+    padding-top: 20px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.4s ease 0.4s, transform 0.4s ease 0.4s;
+  }
+
+  .navbar-collapse.show .ms-auto {
+    opacity: 1;
+    transform: none;
+  }
+
+  .navbar-collapse .btn-get-started,
+  .navbar-collapse .btn-custom-login,
+  .navbar-collapse .btn-custom-signup {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    justify-content: center !important;
+  }
+
+
+
+  /* Removed "Menu" label styles for cleaner UI */
+  
+  .logo-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .logo-icon {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .logo-text {
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.3px !important;
+  }
+}
