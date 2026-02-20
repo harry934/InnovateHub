@@ -295,13 +295,16 @@
 /* Dashboard Sidebar */
 .dashboard-sidebar {
   width: 250px;
-  background: #1a5e4f; /* Dark Green Brand Color */
+  background: #1a5e4f; /* Brand Dark Green */
   color: white;
-  padding: 1.5rem 0;
+  min-height: 100vh;
   position: fixed;
-  height: 100vh;
-  overflow-y: auto;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-heading {
@@ -312,25 +315,41 @@
 
 /* Sidebar Navigation Links */
 .dashboard-sidebar .nav-link {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.8) !important;
   padding: 0.8rem 1.5rem;
-  transition: all 0.2s ease;
-  border-left: 4px solid transparent;
-  font-family: "Open Sans", sans-serif;
   font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  border-left: 4px solid transparent;
+}
+
+.dashboard-sidebar .nav-link i {
+  width: 20px;
+  font-size: 1.1rem;
+  opacity: 0.7;
 }
 
 .dashboard-sidebar .nav-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-left-color: rgba(255, 255, 255, 0.3);
+  color: #f3a813 !important;
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: rgba(243, 168, 19, 0.5);
+}
+
+.dashboard-sidebar .nav-link:hover i {
+  opacity: 1;
 }
 
 .dashboard-sidebar .nav-link.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: #f3a813; /* Orange Brand Color for Active */
+  color: #f3a813 !important;
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 600;
   border-left-color: #f3a813;
-  font-weight: 700;
+}
+
+.dashboard-sidebar .nav-link.active i {
+  opacity: 1;
 }
 
 .dashboard-sidebar .nav-link.text-danger:hover {
@@ -1078,3 +1097,8 @@
     filter: drop-shadow(0 0 45px rgba(243, 168, 19, 0.3));
   }
 }
+
+
+/* ========================================
+   15. OTHER STYLES
+   ======================================== */

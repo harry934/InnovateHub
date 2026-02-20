@@ -256,18 +256,18 @@ window.toggleProjectCard = function(projectId) {
     const button = document.querySelector(`#${cardId} .toggle-expand-btn`);
 
     if (summary && sections && button) {
-        const isExpanded = !summary.classList.contains('d-none');
+        const isCurrentlyExpanded = summary.classList.contains('d-none');
         
-        if (isExpanded) {
-            // Collapse
-            summary.classList.add('d-none');
-            sections.classList.remove('d-none');
-            button.innerHTML = '<i class="fa fa-chevron-up"></i> Collapse';
-        } else {
-            // Expand
+        if (isCurrentlyExpanded) {
+            // Collapse it
             summary.classList.remove('d-none');
             sections.classList.add('d-none');
             button.innerHTML = '<i class="fa fa-chevron-down"></i> Expand';
+        } else {
+            // Expand it
+            summary.classList.add('d-none');
+            sections.classList.remove('d-none');
+            button.innerHTML = '<i class="fa fa-chevron-up"></i> Collapse';
         }
     }
 };

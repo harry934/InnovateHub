@@ -186,6 +186,69 @@ export class NotificationSystem {
         this.unreadCount = this.notifications.filter(n => !n.read).length;
         this.updateBadge();
         this.updateDropdownList();
+        
+        // Update list if container exists
+        if (this.listContainerId) {
+            this.updateFullList();
+        }
+    }
+
+    /**
+     * Bind a container for full list view
+     * @param {string} containerId 
+     */
+    bindFullList(containerId) {
+        this.listContainerId = containerId;
+        this.updateFullList();
+    }
+
+    /**
+     * Update the full notification list view
+     */
+    updateFullList() {
+        const listContainer = document.getElementById(this.listContainerId);
+        if (!listContainer) return;
+
+        if (this.notifications.length === 0) {
+            listContainer.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fa fa-bell-slash fa-3x text-light mb-3"></i>
+                    <p class="text-muted">No notifications yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        listContainer.innerHTML = this.notifications.map(notif => `
+            <div class="list-group-item list-group-item-action p-3 border-bottom mb-2 rounded shadow-sm notification-page-item" 
+                 data-notif-id="${notif.id}"
+                 style="border-left: 5px solid ${this.getTypeColor(notif.type)}; background: ${notif.read ? '#fff' : '#f0f7f5'}; cursor: pointer;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1 ${notif.read ? 'fw-normal' : 'fw-bold'}">${notif.message}</h6>
+                        <small class="text-muted"><i class="fa fa-clock me-1"></i>${this.formatTimestamp(notif.createdAt?.toDate ? notif.createdAt.toDate() : new Date())}</small>
+                    </div>
+                    ${!notif.read ? '<span class="badge bg-success rounded-pill">New</span>' : ''}
+                </div>
+            </div>
+        `).join('');
+
+        // Add click handlers for full list
+        listContainer.querySelectorAll('.notification-page-item').forEach(item => {
+            item.addEventListener('click', () => {
+                this.markAsRead(item.dataset.notifId);
+            });
+        });
+    }
+
+    getTypeColor(type) {
+        const typeColors = {
+            success: '#1a5e4f',
+            error: '#dc3545',
+            warning: '#f3a813',
+            info: '#0dcaf0'
+        };
+        return typeColors[type] || '#6c757d';
     }
 
     /**

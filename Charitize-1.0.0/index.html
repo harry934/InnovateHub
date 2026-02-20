@@ -159,11 +159,9 @@
                         <div id="guestButtons" class="guest-actions d-flex">
                             <a class="btn btn-get-started" href="signup.html">GET STARTED</a>
                         </div>
-                        <!-- Logged In User View: Simplified Dashboard Button (Name moved to Dashboard) -->
-                        <div id="userProfile" class="d-none align-items-center ms-auto">
-                            <a href="#" id="navDashboardBtn" class="btn btn-get-started me-3" onclick="goToDashboard()">My Dashboard</a>
-                            <a href="javascript:void(0)" onclick="logout()" class="text-danger small logout-link"><i class="fa fa-sign-out-alt me-1"></i>Logout</a>
-                        </div>
+                        <!-- Logged In User View: Simplified Dashboard Button -->
+                        <a class="btn btn-get-started me-3 d-none" href="javascript:void(0)" onclick="goToDashboard()" id="navDashboardBtn">MY DASHBOARD</a>
+                        <a href="javascript:void(0)" onclick="logout()" class="text-danger small logout-link d-none"><i class="fa fa-sign-out-alt me-1"></i>Logout</a>
                     </div>
                 </div>
             </nav>
@@ -925,78 +923,16 @@
     <!-- Handles splash screen, authentication, form validation, and utility functions -->
     <!-- Custom JavaScript -->
     <script src="js/ui-utils.js?v=1.0.1"></script>
+    <script src="js/shared-ui.js?v=1.0.1"></script>
     <script src="js/api.js?v=1.0.1"></script>
     <script type="module" src="js/innovate-hub.js?v=1.0.1"></script>
     <script type="module">
-        import authManager from './js/auth-manager.js';
-        import { goToDashboard } from './js/dashboard-router.js';
         import { showWelcomeHint } from './js/welcome-hint.js';
         
-        // Initialize auth manager
-        authManager.init().then(() => {
-            updateNavbar();
-            
-            // Show welcome hint if just logged in
+        // Wait for DOM to show welcome hint if applicable
+        document.addEventListener("DOMContentLoaded", () => {
             showWelcomeHint();
         });
-        
-        // Listen for auth changes
-        authManager.onAuthChange((user) => {
-            updateNavbar();
-        });
-        
-        function updateNavbar() {
-            const user = authManager.getCurrentUser();
-            const guestButtons = document.getElementById("guestButtons");
-            const userProfile = document.getElementById("userProfile");
-            const userNameEl = document.getElementById("userName");
-            
-            if (user) {
-                // User is logged in
-                if (guestButtons) guestButtons.classList.add("d-none");
-                if (userProfile) {
-                    userProfile.classList.remove("d-none");
-                    userProfile.classList.add("d-flex");
-                }
-                
-                // Update dashboard link
-                const dashboardBtn = document.getElementById("navDashboardBtn");
-                if (dashboardBtn) {
-                    dashboardBtn.onclick = (e) => {
-                        e.preventDefault();
-                        goToDashboard();
-                    };
-                }
-                
-                // Update any other dashboard links to use router
-                const otherDashboardLinks = document.querySelectorAll('a[href*="dashboard.html"]:not(#navDashboardBtn)');
-                otherDashboardLinks.forEach(link => {
-                    link.href = '#';
-                    link.onclick = (e) => {
-                        e.preventDefault();
-                        goToDashboard();
-                    };
-                });
-            } else {
-                // User is logged out
-                if (guestButtons) guestButtons.classList.remove("d-none");
-                if (userProfile) {
-                    userProfile.classList.add("d-none");
-                    userProfile.classList.remove("d-flex");
-                }
-            }
-        }
-        
-        // Expose logout function globally
-        window.logout = async function() {
-            const success = await authManager.logout();
-            if (success) {
-                window.location.reload();
-            }
-        };
-        
-        // Expose goToDashboard globally
-        window.goToDashboard = goToDashboard;
     </script>
 </body>
 

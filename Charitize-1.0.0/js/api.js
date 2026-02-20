@@ -147,6 +147,19 @@ const api = {
         });
         return { ok: response.ok, data: await response.json() };
     },
+
+    uploadProjectFile: async (file, projectId, innovatorId) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('projectId', projectId);
+        formData.append('innovatorId', innovatorId);
+
+        const response = await fetch(`${API_URL}/projects/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        return { ok: response.ok, data: await response.json() };
+    },
     API_URL: API_URL // Expose the URL for other scripts
 };
 

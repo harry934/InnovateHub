@@ -5,44 +5,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// 1. SPLASH SCREEN CONTROL (PRELOADER)
-(function() {
-    const initPreloader = () => {
-        const preloader = document.getElementById("logo-preloader");
-        if (!preloader) return;
-        const wasNavigated = sessionStorage.getItem("wasNavigated");
-        sessionStorage.removeItem("wasNavigated");
-        if (wasNavigated) {
-            preloader.remove();
-        } else {
-            preloader.classList.add("active");
-            const hidePreloader = () => {
-                preloader.classList.remove("active");
-                preloader.classList.add("fade-out");
-                setTimeout(() => { if(preloader && preloader.parentNode) preloader.remove(); }, 1000);
-            };
-            setTimeout(hidePreloader, 2000);
-            setTimeout(() => { if (preloader && preloader.parentNode) preloader.remove(); }, 4000);
-        }
-    };
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initPreloader);
-    } else {
-        initPreloader();
-    }
-})();
+// 1. UI INITIALIZATION HANDLED BY shared-ui.js
+// (Splash screen, preloader, and navbar toggles are now in shared-ui.js)
 
-// Navigation listener to set flag
-document.addEventListener("click", function(e) {
-    const link = e.target.closest("a");
-    if (link && 
-        link.href && 
-        link.href.includes(window.location.origin) && 
-        !link.href.includes("#") && 
-        link.target !== "_blank") {
-        sessionStorage.setItem("wasNavigated", "true");
-    }
-});
 
 /**
  * Real-time Firebase Auth Listener
@@ -75,6 +40,7 @@ onAuthStateChanged(auth, async (user) => {
 
             // 3. Save and move on (UI update handled by dashboards/landing)
             window.saveToLocalStorage("innovateHubUser", sessionData);
+            if (typeof window.updateNavbarUI === 'function') window.updateNavbarUI(sessionData);
             if (typeof window.updateUIForRole === 'function') window.updateUIForRole(sessionData);
         } catch (error) {
             console.error("Error fetching user profile:", error);
@@ -83,6 +49,7 @@ onAuthStateChanged(auth, async (user) => {
         }
     } else {
         localStorage.removeItem("innovateHubUser");
+        if (typeof window.updateNavbarUI === 'function') window.updateNavbarUI(null);
     }
 });
 
@@ -100,10 +67,12 @@ window.logout = async function() {
     try {
         await signOut(auth);
         localStorage.removeItem("innovateHubUser");
+        if (typeof window.updateNavbarUI === 'function') window.updateNavbarUI(null);
         window.location.href = "login.html";
     } catch (error) {
         console.error("Logout error:", error);
         localStorage.removeItem("innovateHubUser");
+        if (typeof window.updateNavbarUI === 'function') window.updateNavbarUI(null);
         window.location.href = "login.html";
     }
 };
@@ -125,22 +94,28 @@ export const ProjectService = {
             updatedAt: serverTimestamp()
         });
 
-        // 2. Upload File to Firebase Storage
+        // 2. Upload File to MongoDB (Replacement for Firebase Storage)
         if (file) {
-            const fileName = `projects/${projectRef.id}_${file.name}`;
-            const fileRef = ref(storage, fileName);
-            
             try {
-                const uploadResult = await uploadBytes(fileRef, file);
-                const fileUrl = await getDownloadURL(uploadResult.ref);
+                // Use the API helper to upload to MongoDB
+                const response = await window.api.uploadProjectFile(file, projectRef.id, auth.currentUser.uid);
                 
-                // 3. Update Firestore with final URL
-                await updateDoc(doc(db, "projects", projectRef.id), {
-                    fileUrl: fileUrl,
-                    fileName: file.name
-                });
+                if (response && response.ok) {
+                    const baseUrl = window.api ? window.api.API_URL : 'https://innovatehub.up.railway.app/api';
+                    // Update Firestore with the MongoDB file reference
+                    await updateDoc(doc(db, "projects", projectRef.id), {
+                        mongodbFileId: response.data.fileId,
+                        fileName: file.name,
+                        fileStorageType: 'mongodb',
+                        fileUrl: `${baseUrl}/projects/file/${response.data.fileId}`
+                    });
+                } else {
+                    const errorMsg = response && response.data ? response.data.msg : "Failed to upload project document to MongoDB.";
+                    console.error("MongoDB Upload Failed:", errorMsg);
+                    throw new Error(errorMsg);
+                }
             } catch (err) {
-                console.error("Firebase Storage Upload Error:", err);
+                console.error("Project File Upload Error:", err);
                 throw new Error("Failed to upload project document.");
             }
         }
@@ -172,8 +147,6 @@ export const NotificationService = {
     }
 };
 
-export { requireAuth };
-
 // Export Services to Window for non-module scripts
 window.ProjectService = ProjectService;
 window.MentorshipService = MentorshipService;
@@ -181,7 +154,7 @@ window.NotificationService = NotificationService;
 
 // Log initialization message
 console.log(
-  "%cInnovate Hub Platform",
+  "%cInnovate Hub Platform v2.0.1 (Fix)",
   "color: #667eea; font-size: 20px; font-weight: bold;",
 );
 console.log(
