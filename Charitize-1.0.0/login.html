@@ -228,16 +228,21 @@
       .line::after { right: 0; }
 
       @media (max-width: 768px) {
+        .login-container {
+          padding: 1rem;
+          justify-content: flex-start;
+          padding-top: 4rem;
+        }
         .form {
-          width: 90%;
+          width: 100%;
+          max-width: 400px;
+          padding: 20px;
         }
         .back-home {
-          position: static;
-          margin-bottom: 1rem;
-        }
-        .login-container {
-          flex-direction: column;
-          padding-top: 5rem;
+          position: absolute;
+          top: 1rem;
+          left: 1rem;
+          margin-bottom: 0;
         }
       }
     </style>

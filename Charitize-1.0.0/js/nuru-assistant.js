@@ -214,7 +214,7 @@ class NuruAssistant {
     initUI() {
         const widgetHTML = `
             <button class="nuru-assistant-toggle" id="nuruToggle" aria-label="Open Nuru-Assistant AI" aria-expanded="false">
-                <span class="nuru-name-tag">Nuru-Assistant – AI Guide</span>
+                <span class="nuru-name-tag">Nuru-Assistant</span>
                 <img src="img/nuru-avatar.svg" alt="Nuru Assistant Avatar">
             </button>
             <div class="nuru-chat-window" id="nuruWindow" role="dialog" aria-label="Nuru AI Chat" aria-hidden="true">
@@ -224,7 +224,7 @@ class NuruAssistant {
                     </div>
                     <div class="nuru-header-info">
                         <h5>Nuru-Assistant</h5>
-                        <div class="nuru-header-status">✦ AI Guide &bull; Always here to help</div>
+                        <div class="nuru-header-status">✦ AI Assistant &bull; Always here to help</div>
                     </div>
                     <button class="nuru-close" id="nuruClose" aria-label="Close chat">&times;</button>
                 </div>
@@ -266,7 +266,7 @@ class NuruAssistant {
 
         setTimeout(() => {
             toggle.classList.remove('nuru-say-hi');
-            if (nameTag) nameTag.textContent = "Nuru-Assistant – AI Guide";
+            if (nameTag) nameTag.textContent = "Nuru-Assistant";
             toggle.classList.add('nuru-peek-active');
 
             setTimeout(() => {
