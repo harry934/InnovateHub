@@ -966,6 +966,16 @@
 /* Re-apply the glassy background to the ONLY parent that matters */
 div.nav-bar.fixed-top.navbar-scrolled {
   background: rgba(26, 94, 79, 0.85) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+}
+
+/* Specific override for Dashboard Mobile Header when scrolled */
+.mobile-dashboard-header.navbar-scrolled {
+  background: rgba(26, 94, 79, 0.85) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Focused Scroll: Hide main navigation links on desktop scroll */

@@ -5,360 +5,364 @@
 
 /* Tablet and Below (992px) */
 @media (max-width: 992px) {
-    /* Dashboard Layout */
-    .dashboard-container {
-        flex-direction: column;
-    }
+  /* Dashboard Layout */
+  .dashboard-container {
+    flex-direction: column;
+  }
 
-    .dashboard-sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        overflow-y: visible;
-    }
+  .dashboard-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    overflow-y: visible;
+  }
 
-    .mobile-dashboard-header {
-        background-color: #1a5e4f !important;
-        margin-bottom: 0 !important;
-        z-index: 1030;
-    }
+  .mobile-dashboard-header {
+    background-color: #1a5e4f;
+    margin-bottom: 0 !important;
+    z-index: 1030;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-    .dashboard-main {
-        margin-left: 0;
-        padding: 1.5rem;
-    }
+  .dashboard-main {
+    margin-left: 0;
+    padding: 1.5rem;
+  }
 
-    /* Sidebar Navigation */
-    .sidebar-heading {
-        display: none; /* Hide headings on mobile for cleaner look */
-    }
+  /* Sidebar Navigation */
+  .sidebar-heading {
+    display: none; /* Hide headings on mobile for cleaner look */
+  }
 
-    .dashboard-sidebar .nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        padding: 0 1rem;
-    }
+  .dashboard-sidebar .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0 1rem;
+  }
 
-    .dashboard-sidebar .nav-link {
-        flex: 1 1 auto;
-        text-align: center;
-        padding: 0.6rem 1rem;
-        font-size: 0.85rem;
-    }
+  .dashboard-sidebar .nav-link {
+    flex: 1 1 auto;
+    text-align: center;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
 
-    /* Cards */
-    .dashboard-card {
-        margin-bottom: 1rem;
-    }
+  /* Cards */
+  .dashboard-card {
+    margin-bottom: 1rem;
+  }
 
-    /* Notification Dropdown */
-    .notification-dropdown {
-        width: calc(100vw - 40px);
-        right: 20px;
-        left: 20px;
-    }
+  /* Notification Dropdown */
+  .notification-dropdown {
+    width: calc(100vw - 40px);
+    right: 20px;
+    left: 20px;
+  }
 
-    /* Project Cards */
-    .project-card-structured {
-        margin-bottom: 1rem;
-    }
+  /* Project Cards */
+  .project-card-structured {
+    margin-bottom: 1rem;
+  }
 
-    /* Mentor Cards */
-    .mentor-profile-card {
-        margin-bottom: 1rem;
-    }
+  /* Mentor Cards */
+  .mentor-profile-card {
+    margin-bottom: 1rem;
+  }
 
-    /* Category Cards */
-    .category-card {
-        margin-bottom: 1rem;
-    }
+  /* Category Cards */
+  .category-card {
+    margin-bottom: 1rem;
+  }
 
-    /* Tables */
-    .table-responsive {
-        overflow-x: auto;
-    }
+  /* Tables */
+  .table-responsive {
+    overflow-x: auto;
+  }
 
-    /* Forms */
-    .form-control, .form-select {
-        font-size: 16px; /* Prevent zoom on iOS */
-    }
+  /* Forms */
+  .form-control,
+  .form-select {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
 }
 
 /* Mobile (768px and below) */
 @media (max-width: 768px) {
-    /* Typography */
-    h1 {
-        font-size: 1.75rem;
-    }
+  /* Typography */
+  h1 {
+    font-size: 1.75rem;
+  }
 
-    h2 {
-        font-size: 1.5rem;
-    }
+  h2 {
+    font-size: 1.5rem;
+  }
 
-    h3 {
-        font-size: 1.25rem;
-    }
+  h3 {
+    font-size: 1.25rem;
+  }
 
-    /* Dashboard Main */
-    .dashboard-main {
-        padding: 1rem;
-    }
+  /* Dashboard Main */
+  .dashboard-main {
+    padding: 1rem;
+  }
 
-    /* Dashboard Header */
-    .dashboard-header {
-        margin-bottom: 1.5rem;
-    }
+  /* Dashboard Header */
+  .dashboard-header {
+    margin-bottom: 1.5rem;
+  }
 
-    .dashboard-header h2 {
-        font-size: 1.5rem;
-    }
+  .dashboard-header h2 {
+    font-size: 1.5rem;
+  }
 
-    /* Cards */
-    .dashboard-card {
-        padding: 1rem;
-    }
+  /* Cards */
+  .dashboard-card {
+    padding: 1rem;
+  }
 
-    /* Buttons */
-    .btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-    }
+  /* Buttons */
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
 
-    .btn-custom-signup,
-    .btn-custom-login {
-        padding: 8px 20px;
-        font-size: 0.9rem;
-    }
+  .btn-custom-signup,
+  .btn-custom-login {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+  }
 
-    /* Sidebar Logo */
-    .logo-text {
-        font-size: 1.1rem !important;
-    }
+  /* Sidebar Logo */
+  .logo-text {
+    font-size: 1.1rem !important;
+  }
 
-    /* Stats Cards */
-    .dashboard-card .display-4 {
-        font-size: 2rem;
-    }
+  /* Stats Cards */
+  .dashboard-card .display-4 {
+    font-size: 2rem;
+  }
 
-    /* Project Sections */
-    .project-section {
-        padding: 0.75rem;
-        font-size: 0.9rem;
-    }
+  /* Project Sections */
+  .project-section {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
 
-    /* Mentor Avatar */
-    .mentor-avatar {
-        width: 80px !important;
-        height: 80px !important;
-    }
+  /* Mentor Avatar */
+  .mentor-avatar {
+    width: 80px !important;
+    height: 80px !important;
+  }
 
-    /* Auto-save Indicator */
-    .auto-save-indicator {
-        top: 10px;
-        right: 10px;
-        font-size: 0.75rem;
-        padding: 0.4rem 0.8rem;
-    }
+  /* Auto-save Indicator */
+  .auto-save-indicator {
+    top: 10px;
+    right: 10px;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+  }
 
-    /* Filter Panel */
-    .filter-panel {
-        padding: 1rem;
-    }
+  /* Filter Panel */
+  .filter-panel {
+    padding: 1rem;
+  }
 
-    /* Quick Actions */
-    .quick-actions {
-        flex-direction: column;
-    }
+  /* Quick Actions */
+  .quick-actions {
+    flex-direction: column;
+  }
 
-    .quick-action-btn {
-        width: 100%;
-    }
+  .quick-action-btn {
+    width: 100%;
+  }
 }
 
 /* Small Mobile (576px and below) */
 @media (max-width: 576px) {
-    /* Dashboard Sidebar */
-    .dashboard-sidebar {
-        padding: 1rem 0;
-    }
+  /* Dashboard Sidebar */
+  .dashboard-sidebar {
+    padding: 1rem 0;
+  }
 
-    .dashboard-sidebar .nav {
-        flex-direction: column;
-        padding: 0;
-    }
+  .dashboard-sidebar .nav {
+    flex-direction: column;
+    padding: 0;
+  }
 
-    .dashboard-sidebar .nav-link {
-        border-left: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        text-align: left;
-    }
+  .dashboard-sidebar .nav-link {
+    border-left: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+  }
 
-    /* Logo */
-    .logo-container {
-        padding: 0 1rem !important;
-        margin-bottom: 1rem !important;
-    }
+  /* Logo */
+  .logo-container {
+    padding: 0 1rem !important;
+    margin-bottom: 1rem !important;
+  }
 
-    .logo-text {
-        font-size: 1rem !important;
-    }
+  .logo-text {
+    font-size: 1rem !important;
+  }
 
-    /* Dashboard Main */
-    .dashboard-main {
-        padding: 0.75rem;
-    }
+  /* Dashboard Main */
+  .dashboard-main {
+    padding: 0.75rem;
+  }
 
-    /* Cards */
-    .dashboard-card {
-        padding: 0.75rem;
-    }
+  /* Cards */
+  .dashboard-card {
+    padding: 0.75rem;
+  }
 
-    /* Typography */
-    h1 {
-        font-size: 1.5rem;
-    }
+  /* Typography */
+  h1 {
+    font-size: 1.5rem;
+  }
 
-    h2 {
-        font-size: 1.25rem;
-    }
+  h2 {
+    font-size: 1.25rem;
+  }
 
-    h3 {
-        font-size: 1.1rem;
-    }
+  h3 {
+    font-size: 1.1rem;
+  }
 
-    /* Buttons */
-    .btn {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
+  /* Buttons */
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
 
-    .btn-group {
-        flex-direction: column;
-    }
+  .btn-group {
+    flex-direction: column;
+  }
 
-    /* Project Card Header */
-    .project-card-header {
-        flex-direction: column;
-        align-items: flex-start !important;
-    }
+  /* Project Card Header */
+  .project-card-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
 
-    .project-card-header .toggle-expand-btn {
-        margin-top: 0.5rem;
-        width: 100%;
-    }
+  .project-card-header .toggle-expand-btn {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
 
-    /* Mentor Card */
-    .mentor-avatar {
-        width: 60px !important;
-        height: 60px !important;
-    }
+  /* Mentor Card */
+  .mentor-avatar {
+    width: 60px !important;
+    height: 60px !important;
+  }
 
-    /* Notification Dropdown */
-    .notification-dropdown {
-        width: calc(100vw - 20px);
-        right: 10px;
-        left: 10px;
-    }
+  /* Notification Dropdown */
+  .notification-dropdown {
+    width: calc(100vw - 20px);
+    right: 10px;
+    left: 10px;
+  }
 
-    /* Tables */
-    table {
-        font-size: 0.85rem;
-    }
+  /* Tables */
+  table {
+    font-size: 0.85rem;
+  }
 
-    /* Forms */
-    .form-label {
-        font-size: 0.9rem;
-    }
+  /* Forms */
+  .form-label {
+    font-size: 0.9rem;
+  }
 
-    .form-control, .form-select, textarea {
-        font-size: 16px !important; /* Prevent zoom on iOS */
-    }
+  .form-control,
+  .form-select,
+  textarea {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
 
-    /* Stats Display */
-    .dashboard-card .display-4 {
-        font-size: 1.5rem;
-    }
+  /* Stats Display */
+  .dashboard-card .display-4 {
+    font-size: 1.5rem;
+  }
 
-    /* Empty States */
-    .empty-state {
-        padding: 40px 15px;
-    }
+  /* Empty States */
+  .empty-state {
+    padding: 40px 15px;
+  }
 
-    .empty-state-icon {
-        font-size: 3rem;
-    }
+  .empty-state-icon {
+    font-size: 3rem;
+  }
 
-    .empty-state-message {
-        font-size: 1rem;
-    }
+  .empty-state-message {
+    font-size: 1rem;
+  }
 
-    /* Category Cards */
-    .category-card-icon {
-        font-size: 2rem;
-    }
+  /* Category Cards */
+  .category-card-icon {
+    font-size: 2rem;
+  }
 
-    .category-card-count {
-        font-size: 1.5rem;
-    }
+  .category-card-count {
+    font-size: 1.5rem;
+  }
 }
 
 /* Landscape Mobile */
 @media (max-width: 768px) and (orientation: landscape) {
-    .dashboard-sidebar {
-        height: auto;
-        max-height: none;
-    }
+  .dashboard-sidebar {
+    height: auto;
+    max-height: none;
+  }
 
-    .dashboard-sidebar .nav {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
+  .dashboard-sidebar .nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 }
 
 /* Print Styles */
 @media print {
-    .dashboard-sidebar,
-    .notification-bell-wrapper,
-    .auto-save-indicator,
-    .quick-actions,
-    .btn {
-        display: none !important;
-    }
+  .dashboard-sidebar,
+  .notification-bell-wrapper,
+  .auto-save-indicator,
+  .quick-actions,
+  .btn {
+    display: none !important;
+  }
 
-    .dashboard-main {
-        margin-left: 0;
-        padding: 0;
-    }
+  .dashboard-main {
+    margin-left: 0;
+    padding: 0;
+  }
 
-    .dashboard-card {
-        break-inside: avoid;
-        page-break-inside: avoid;
-    }
+  .dashboard-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }
 
 /* High DPI Displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    .dashboard-card {
-        border: 1px solid #e9ecef;
-    }
+  .dashboard-card {
+    border: 1px solid #e9ecef;
+  }
 }
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Dark Mode Support (Future Ready) */
 @media (prefers-color-scheme: dark) {
-    /* Uncomment when implementing dark mode */
-    /*
+  /* Uncomment when implementing dark mode */
+  /*
     .dashboard-main {
         background: #1a1a1a;
         color: #ffffff;
