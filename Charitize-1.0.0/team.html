@@ -107,9 +107,9 @@
 
 
     <!-- Navbar Start -->
-    <div class="container-fluid bg-secondary px-0 wow fadeIn" data-wow-delay="0.1s">
+    <div class="container-fluid bg-primary px-0 wow fadeIn" data-wow-delay="0.1s">
         <div class="nav-bar">
-            <nav class="navbar navbar-expand-lg navbar-dark px-4 py-lg-0">
+            <nav class="navbar navbar-expand-lg bg-primary navbar-dark sticky-top p-0">
                 <a href="/" class="navbar-brand d-flex align-items-center ms-0 me-auto sticky-logo">
                     <img src="img/logo.svg" alt="Innovate Hub" style="width: 35px; height: 35px;">
                     <span class="logo-text ms-2" style="font-size: 1.2rem; color: white;">Innovate Hub</span>
@@ -145,7 +145,7 @@
                         </div>
                         <a href="contact.html" class="nav-item nav-link">Contact Us</a>
                         <!-- My Dashboard Link (Hidden by default, shown via JS when logged in) -->
-                        <a href="innovator-dashboard.html" class="nav-item nav-link d-none" id="navDashboardLink">My Dashboard</a>
+                        <a href="innovator-dashboard.html" class="nav-item nav-link d-none logged-in-only" id="navDashboardLink">My Dashboard</a>
                     </div>
                     <!-- Authentication/User Area -->
                     <div class="d-flex ms-auto align-items-center">
@@ -154,8 +154,8 @@
                             <a class="btn btn-get-started" href="signup.html">GET STARTED</a>
                         </div>
                         <!-- Logged In User View: Simplified Dashboard Button -->
-                        <a class="btn btn-get-started me-3 d-none" href="javascript:void(0)" onclick="goToDashboard()" id="navDashboardBtn">MY DASHBOARD</a>
-                        <a href="javascript:void(0)" onclick="logout()" class="text-danger small logout-link d-none"><i class="fa fa-sign-out-alt me-1"></i>Logout</a>
+                        <a class="btn btn-get-started me-3 d-none logged-in-only" href="javascript:void(0)" onclick="goToDashboard()" id="navDashboardBtn">MY DASHBOARD</a>
+                        <a href="javascript:void(0)" onclick="logout()" class="text-danger small logout-link d-none logged-in-only"><i class="fa fa-sign-out-alt me-1"></i>Logout</a>
                     </div>
                 </div>
             </nav>
@@ -382,13 +382,16 @@
     <script src="lib/counterup/counterup.min.js"></script>
 
     <!-- Template Javascript -->
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=2.1.2"></script>
 
     <!-- Nuru-Assistant -->
-    <script src="js/main.js?v=2.1.0"></script>
-    <script src="js/ui-utils.js"></script>
-    <script src="js/shared-ui.js?v=2.1.0"></script>
-    <script type="module" src="js/innovate-hub.js"></script>
+    <script src="js/nuru-assistant.js?v=2.1.2"></script>
+    
+    <!-- Innovate Hub Custom JavaScript -->
+    <script src="js/ui-utils.js?v=2.1.2"></script>
+    <script src="js/shared-ui.js?v=2.1.2"></script>
+    <script src="js/api.js?v=2.1.2"></script>
+    <script type="module" src="js/innovate-hub.js?v=2.1.2"></script>
 
     <!-- Mobile Hamburger Menu Enhancement Script -->
     <script>

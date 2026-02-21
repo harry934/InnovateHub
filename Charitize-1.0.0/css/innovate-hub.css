@@ -295,8 +295,8 @@
 /* Dashboard Sidebar */
 .dashboard-sidebar {
   width: 250px;
-  background: #1a5e4f; /* Brand Dark Green */
-  color: white;
+  background: #f3a813; /* Original Yellow */
+  color: #000000;
   min-height: 100vh;
   position: fixed;
   left: 0;
@@ -315,20 +315,24 @@
 
 /* Sidebar Navigation Links */
 .dashboard-sidebar .nav-link {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: rgba(0, 0, 0, 0.8) !important;
   padding: 0.8rem 1.5rem;
-  font-weight: 500;
-  font-size: 0.95rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
   display: flex;
   align-items: center;
-  border-left: 4px solid transparent;
 }
 
 .dashboard-sidebar .nav-link i {
   width: 20px;
-  font-size: 1.1rem;
-  opacity: 0.7;
+}
+
+.dashboard-sidebar .nav-link:hover,
+.dashboard-sidebar .nav-link.active {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1a5e4f !important;
+  border-left: 3px solid #1a5e4f;
 }
 
 .dashboard-sidebar .nav-link:hover {
@@ -964,7 +968,21 @@
 }
 
 /* Re-apply the glassy background to the ONLY parent that matters */
-/* Ensure Dashboard elements are hidden by default and respect d-none */
+/* Brand Identity: Original Yellow/Orange */
+.bg-primary {
+  background-color: #f3a813 !important;
+}
+
+/* Auth State Visibility Logic */
+.logged-in-only {
+  display: none !important;
+}
+
+body.user-logged-in .logged-in-only {
+  display: flex !important; /* or block, depending on context, but flex is used for our buttons */
+}
+
+/* Force hidden state for specific IDs as ultimate fallback */
 #navDashboardBtn.d-none, 
 #navDashboardLink.d-none,
 .logout-link.d-none {

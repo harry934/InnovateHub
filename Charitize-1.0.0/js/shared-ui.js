@@ -69,11 +69,13 @@
         const navDashboardLink = document.getElementById("navDashboardLink");
 
         if (user && user.loggedIn === true) {
+            document.body.classList.add("user-logged-in");
             if (guestButtons) guestButtons.classList.add("d-none");
             if (navDashboardBtn) navDashboardBtn.classList.remove("d-none");
             if (logoutLink) logoutLink.classList.remove("d-none");
             if (navDashboardLink) navDashboardLink.classList.remove("d-none");
         } else {
+            document.body.classList.remove("user-logged-in");
             if (guestButtons) guestButtons.classList.remove("d-none");
             if (navDashboardBtn) navDashboardBtn.classList.add("d-none");
             if (logoutLink) logoutLink.classList.add("d-none");
