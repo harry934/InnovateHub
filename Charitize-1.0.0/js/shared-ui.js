@@ -68,7 +68,7 @@
         const logoutLink = document.querySelector(".logout-link");
         const navDashboardLink = document.getElementById("navDashboardLink");
 
-        if (user && user.loggedIn) {
+        if (user && user.loggedIn === true) {
             if (guestButtons) guestButtons.classList.add("d-none");
             if (navDashboardBtn) navDashboardBtn.classList.remove("d-none");
             if (logoutLink) logoutLink.classList.remove("d-none");
@@ -78,6 +78,10 @@
             if (navDashboardBtn) navDashboardBtn.classList.add("d-none");
             if (logoutLink) logoutLink.classList.add("d-none");
             if (navDashboardLink) navDashboardLink.classList.add("d-none");
+            // Clear potentially stale localStorage if no loggedIn flag
+            if (!user || user.loggedIn !== true) {
+                localStorage.removeItem("innovateHubUser");
+            }
         }
     };
 

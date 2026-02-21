@@ -964,6 +964,13 @@
 }
 
 /* Re-apply the glassy background to the ONLY parent that matters */
+/* Ensure Dashboard elements are hidden by default and respect d-none */
+#navDashboardBtn.d-none, 
+#navDashboardLink.d-none,
+.logout-link.d-none {
+  display: none !important;
+}
+
 div.nav-bar.fixed-top.navbar-scrolled {
   background: rgba(26, 94, 79, 0.85) !important;
   backdrop-filter: blur(15px) !important;

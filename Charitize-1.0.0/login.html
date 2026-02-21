@@ -47,6 +47,9 @@
     <!-- Mobile Enhancement Styles -->
     <link href="css/mobile-nav.css" rel="stylesheet">
 
+    <!-- Nuru Assistant Styles -->
+    <link href="css/nuru-assistant.css" rel="stylesheet">
+
     <!-- Page-specific styles -->
     <style>
       /* Login Page Specific Styles */
@@ -453,7 +456,9 @@
           };
           
           if (userDoc && userDoc.exists()) {
-            userData = { ...userData, ...userDoc.data() };
+            userData = { ...userData, ...userDoc.data(), loggedIn: true };
+          } else {
+            userData.loggedIn = true;
           }
           
           // Store user data in localStorage
