@@ -10,88 +10,126 @@
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css?v=2.0.0" rel="stylesheet">
-    <link href="css/innovate-hub.css?v=2.0.0" rel="stylesheet">
-    <link href="css/responsive-dashboard.css?v=2.0.0" rel="stylesheet">
+    <link href="css/style.css?v=2.1.0" rel="stylesheet">
+    <link href="css/innovate-hub.css?v=2.1.0" rel="stylesheet">
+    <link href="css/responsive-dashboard.css?v=2.1.0" rel="stylesheet">
+    <link href="css/mobile-nav.css?v=2.1.0" rel="stylesheet">
 </head>
 
 <body>
     <div class="dashboard-container">
+        <!-- Sidebar -->
         <div class="dashboard-sidebar">
-            <a href="/" class="logo-container text-decoration-none px-4 mb-3 mt-3">
-                <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
-                <span class="logo-text">Innovate Hub</span>
-            </a>
+            <div class="d-flex align-items-center justify-content-between px-4 py-3 d-lg-none border-bottom mb-2 mobile-dashboard-header bg-primary nav-bar">
+                <a href="/" class="logo-container text-decoration-none p-0 m-0">
+                    <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
+                    <span class="logo-text ms-2 text-dark">Innovate Hub</span>
+                </a>
+                <button type="button" class="navbar-toggler p-0 border-0" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                    <div class="mob-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <a href="/" class="logo-container text-decoration-none px-4 mb-3 mt-3 d-none d-lg-flex">
+                    <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
+                    <span class="logo-text text-dark">Innovate Hub</span>
+                </a>
             
             <!-- User Identity -->
-            <div class="px-4 mb-4 user-identity">
+            <div class="px-4 mb-4 user-identity border-bottom pb-3">
                 <small class="text-muted d-block" style="font-size: 0.7rem;">Logged in as</small>
-                <div id="userDisplayName" class="fw-bold text-dark" style="font-size: 0.9rem;">Admin</div>
+                <div id="userDisplayName" class="fw-bold text-dark" style="font-size: 0.9rem;">Administrator</div>
             </div>
             
-            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Management</h6>
+            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small" style="color: #1a5e4f; font-weight: 700;">Management</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link active" href="#" onclick="showSection('overview')">Overview</a>
+                <a class="nav-link active" href="#" onclick="showSection('overview')">
+                    <i class="fa fa-th-large me-2 small"></i>Overview
+                </a>
                 <a class="nav-link" href="#" onclick="showSection('mentorApprovals')">
-                    Mentor Apps <span class="badge bg-warning text-dark ms-2" id="pendingMentors">0</span>
+                    <i class="fa fa-user-check me-2 small"></i>Mentors <span class="badge bg-warning text-dark ms-2" id="pendingMentors">0</span>
                 </a>
                 <a class="nav-link" href="#" onclick="showSection('projectReviews')">
-                    Project Reviews <span class="badge bg-primary ms-2" id="pendingProjects">0</span>
+                    <i class="fa fa-lightbulb me-2 small"></i>Projects <span class="badge bg-primary ms-2" id="pendingProjects">0</span>
                 </a>
-                <a class="nav-link" href="#" onclick="showSection('users')">All Users</a>
+                <a class="nav-link" href="#" onclick="showSection('rejectionRequests')">
+                    <i class="fa fa-times-circle me-2 small"></i>Rejections <span class="badge bg-danger ms-2" id="pendingRejections">0</span>
+                </a>
             </nav>
             
-            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small text-muted">Admin</h6>
+            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small" style="color: #1a5e4f; font-weight: 700;">Platform</h6>
+            <nav class="nav flex-column mb-3">
+                <a class="nav-link" href="#" onclick="showSection('users')">
+                    <i class="fa fa-users me-2 small"></i>All Users
+                </a>
+                <a class="nav-link" href="#" onclick="showSection('events')">
+                    <i class="fa fa-calendar me-2 small"></i>Events
+                </a>
+                <a class="nav-link" href="#" onclick="showSection('reports')">
+                    <i class="fa fa-flag me-2 small"></i>Reports
+                </a>
+            </nav>
+
+            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small" style="color: #1a5e4f; font-weight: 700;">Account</h6>
             <nav class="nav flex-column mb-3">
                 <a class="nav-link" href="#" onclick="showSection('notifications')">
                     <span style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span>Notifications</span>
+                        <i class="fa fa-bell me-2 small"></i><span>Notifications</span>
                         <div id="notificationBell"></div>
                     </span>
                 </a>
-                <a class="nav-link text-danger mt-2" href="#" onclick="logout()">Logout</a>
+                <a href="javascript:void(0)" onclick="logout()" class="nav-link text-danger mt-3">
+                    <i class="fa fa-sign-out-alt me-2"></i>Logout
+                </a>
             </nav>
             
-            <div class="px-3 mt-3">
+            <div class="px-3 mt-3 pb-3">
                 <small class="text-muted" style="font-size: 0.65rem;">Platform v2.0.0</small>
             </div>
         </div>
+    </div>
         
+        <!-- Main Content -->
         <div class="dashboard-main">
             <!-- Overview Section -->
             <div id="overviewSection" class="dashboard-section">
                 <div class="dashboard-header mb-4">
-                    <h2>System Overview</h2>
-                    <p class="text-muted">Platform statistics and health</p>
+                    <h2>Admin Overview</h2>
+                    <p class="text-muted">Global platform statistics and management</p>
                 </div>
                 
-                <div class="row g-4">
+                <div class="row g-4 mb-4">
                     <div class="col-md-3">
-                        <div class="dashboard-card text-center">
+                        <div class="dashboard-card text-center h-100">
                             <i class="fa fa-users fa-3x text-primary mb-3"></i>
-                            <h3 id="totalUsers">0</h3>
-                            <p class="text-muted">Total Users</p>
+                            <h5 class="mb-2">Total Users</h5>
+                            <p class="display-4 fw-bold" id="totalUsers">0</p>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="dashboard-card text-center">
+                        <div class="dashboard-card text-center h-100">
                             <i class="fa fa-lightbulb fa-3x text-warning mb-3"></i>
-                            <h3 id="totalProjects">0</h3>
-                            <p class="text-muted">Projects</p>
+                            <h5 class="mb-2">Projects</h5>
+                            <p class="display-4 fw-bold" id="totalProjects">0</p>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="dashboard-card text-center">
+                        <div class="dashboard-card text-center h-100">
                             <i class="fa fa-user-tie fa-3x text-success mb-3"></i>
-                            <h3 id="totalMentors">0</h3>
-                            <p class="text-muted">Mentors</p>
+                            <h5 class="mb-2">Active Mentors</h5>
+                            <p class="display-4 fw-bold" id="totalMentors">0</p>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="dashboard-card text-center">
+                        <div class="dashboard-card text-center h-100">
                             <i class="fa fa-handshake fa-3x text-info mb-3"></i>
-                            <h3 id="activeMentorships">0</h3>
-                            <p class="text-muted">Active Mentorships</p>
+                            <h5 class="mb-2">Mentorships</h5>
+                            <p class="display-4 fw-bold" id="activeMentorships">0</p>
                         </div>
                     </div>
                 </div>
@@ -101,164 +139,137 @@
             <div id="mentorApprovalsSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
                     <h2>Mentor Applications</h2>
-                    <p class="text-muted">Review and approve mentor applications</p>
+                    <p class="text-muted">Review and approve new mentor registrations</p>
                 </div>
-                <div id="mentorApprovalsContainer"></div>
+                <div id="mentorApprovalsContainer" class="dashboard-card p-4">
+                    <!-- Loaded via JS -->
+                </div>
             </div>
             
             <!-- Project Reviews Section -->
             <div id="projectReviewsSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
                     <h2>Project Reviews</h2>
-                    <p class="text-muted">Review and approve submitted projects</p>
+                    <p class="text-muted">Approve or reject submitted innovation projects</p>
                 </div>
-                <div id="projectReviewsContainer"></div>
+                <div id="projectReviewsContainer">
+                    <!-- Loaded via JS -->
+                </div>
             </div>
-            
+
+            <!-- Rejection Requests Section -->
+            <div id="rejectionRequestsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h2>Rejection Requests</h2>
+                    <p class="text-muted">Review mentorship termination requests from mentors</p>
+                </div>
+                <div id="rejectionRequestsContainer">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+
             <!-- Users Section -->
             <div id="usersSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
-                    <h2>All Users</h2>
-                    <p class="text-muted">Manage platform users</p>
+                    <h2>User Management</h2>
+                    <p class="text-muted">Manage platform users and access levels</p>
                 </div>
-                <div id="usersContainer"></div>
+                <div id="usersContainer" class="dashboard-card p-4">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+
+            <!-- Events Section -->
+            <div id="eventsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h2>Platform Events</h2>
+                    <p class="text-muted">Manage innovation events and workshops</p>
+                </div>
+                <div id="eventsContainer" class="dashboard-card p-5 text-center text-muted">
+                    <i class="fa fa-calendar-plus fa-3x mb-3"></i>
+                    <p>Event management module is currently under maintenance.</p>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div id="reportsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h2>Reports & Analytics</h2>
+                    <p class="text-muted">Global platform activity and audit logs</p>
+                </div>
+                <div id="reportsContainer" class="dashboard-card p-5 text-center text-muted">
+                    <i class="fa fa-chart-line fa-3x mb-3"></i>
+                    <p>Advanced reports module is currently under maintenance.</p>
+                </div>
+            </div>
+
+            <!-- Notifications Section -->
+            <div id="notificationsSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h2>System Notifications</h2>
+                    <p class="text-muted">Review important platform activity logs</p>
+                </div>
+                <div id="notificationsContainer">
+                    <!-- Loaded via NotificationSystem -->
+                </div>
             </div>
         </div>
     </div>
-    
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="js/firebase-config.js"></script>
-    <script type="module" src="js/components/status-badges.js"></script>
-    <script type="module" src="js/components/notification-system.js"></script>
-    <script type="module" src="js/components/empty-states.js"></script>
-    <script type="module" src="js/components/project-card-structured.js"></script>
-    
-    <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { collection, getDocs, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import NotificationSystem from './js/components/notification-system.js';
-        import StatusBadge from './js/components/status-badges.js';
-        import EmptyStates from './js/components/empty-states.js';
-        import StructuredProjectCard from './js/components/project-card-structured.js';
-        
-        let currentUser = null;
-        
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-            currentUser = user;
-            initializeDashboard();
-        });
-        
-        async function initializeDashboard() {
-            // Update display name
-            const userDisplayName = document.getElementById('userDisplayName');
-            if (userDisplayName) {
-                userDisplayName.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+
+    <!-- Scripts -->
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/ui-utils.js?v=2.1.2"></script>
+    <script src="js/shared-ui.js?v=2.1.2"></script>
+    <script src="js/api.js?v=2.1.2"></script>
+    <script type="module" src="js/admin-dashboard.js?v=2.1.2"></script>
+    <script type="module" src="js/innovate-hub.js?v=2.1.2"></script>
+    <!-- Nuru-Assistant -->
+    <script src="js/nuru-assistant.js"></script>
+
+    <!-- Mobile Hamburger Menu Enhancement Script -->
+    <script>
+    (function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            var navCollapse = document.getElementById('navbarCollapse');
+            var toggler = document.querySelector('.navbar-toggler');
+            if (!navCollapse || !toggler) return;
+
+            // Inject custom 3-bar icon into toggler
+            if (!toggler.querySelector('.mob-icon')) {
+                var icon = document.createElement('span');
+                icon.className = 'mob-icon';
+                icon.innerHTML = '<span></span><span></span><span></span>';
+                toggler.appendChild(icon);
             }
 
-            const notificationSystem = new NotificationSystem(currentUser.uid);
-            notificationSystem.init('notificationBell');
-            
-            await loadStats();
-            await loadProjectReviews();
-        }
-        
-        async function loadStats() {
-            try {
-                const usersSnapshot = await getDocs(collection(db, 'users'));
-                const projectsSnapshot = await getDocs(collection(db, 'projects'));
-                const mentorsSnapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'mentor')));
-                
-                document.getElementById('totalUsers').textContent = usersSnapshot.size;
-                document.getElementById('totalProjects').textContent = projectsSnapshot.size;
-                document.getElementById('totalMentors').textContent = mentorsSnapshot.size;
-                
-                const pendingProjects = projectsSnapshot.docs.filter(doc => doc.data().status === 'pending').length;
-                document.getElementById('pendingProjects').textContent = pendingProjects;
-            } catch (error) {
-                console.error('Error loading stats:', error);
+            // Inject overlay div
+            var overlay = document.getElementById('mobileNavOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'mobileNavOverlay';
+                overlay.className = 'mobile-nav-overlay';
+                document.body.appendChild(overlay);
             }
-        }
-        
-        async function loadProjectReviews() {
-            const container = document.getElementById('projectReviewsContainer');
-            container.innerHTML = EmptyStates.templates.loadingState();
-            
-            try {
-                const q = query(collection(db, 'projects'), where('status', '==', 'pending'));
-                const snapshot = await getDocs(q);
-                
-                if (snapshot.empty) {
-                    container.innerHTML = EmptyStates.templates.noProjects();
-                    return;
-                }
-                
-                container.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const project = { id: doc.id, ...doc.data() };
-                    const card = StructuredProjectCard.render(project, {
-                        showActions: false,
-                        isExpanded: true
-                    });
-                    
-                    container.innerHTML += `
-                        <div class="mb-4">
-                            ${card}
-                            <div class="mt-3 d-flex gap-2">
-                                <button class="btn btn-success" onclick="reviewProject('${project.id}', 'approved')">Approve</button>
-                                <button class="btn btn-danger" onclick="reviewProject('${project.id}', 'rejected')">Reject</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            } catch (error) {
-                console.error('Error loading projects:', error);
-                container.innerHTML = EmptyStates.templates.errorState('Failed to load projects');
-            }
-        }
-        
-        window.reviewProject = async function(projectId, status) {
-            try {
-                await updateDoc(doc(db, 'projects', projectId), { status });
-                alert(`Project ${status}!`);
-                await loadProjectReviews();
-                await loadStats();
-            } catch (error) {
-                console.error('Error reviewing project:', error);
-                alert('Failed to update project');
-            }
-        };
-        
-        window.showSection = function(sectionName) {
-            document.querySelectorAll('.dashboard-section').forEach(section => {
-                section.style.display = 'none';
+
+            // Bootstrap events
+            navCollapse.addEventListener('show.bs.collapse', function() {
+                document.body.classList.add('mob-menu-open');
+                overlay.classList.add('active');
             });
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
+
+            navCollapse.addEventListener('hide.bs.collapse', function() {
+                document.body.classList.remove('mob-menu-open');
+                overlay.classList.remove('active');
             });
-            const section = document.getElementById(sectionName + 'Section');
-            if (section) {
-                section.style.display = 'block';
-                const activeLink = document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`);
-                if (activeLink) activeLink.classList.add('active');
-            }
-        };
-        
-        window.logout = async function() {
-            try {
-                await auth.signOut();
-                localStorage.removeItem('innovateHubUser');
-                window.location.href = 'login.html';
-            } catch (error) {
-                console.error('Logout error:', error);
-                window.location.href = 'login.html';
-            }
-        };
+
+            // Click overlay to close
+            overlay.addEventListener('click', function() {
+                var bsCollapse = bootstrap.Collapse.getInstance(navCollapse);
+                if (bsCollapse) bsCollapse.hide();
+                else new bootstrap.Collapse(navCollapse).hide();
+            });
+        });
+    })();
     </script>
 </body>
 </html>

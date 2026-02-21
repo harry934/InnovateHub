@@ -295,13 +295,16 @@
 /* Dashboard Sidebar */
 .dashboard-sidebar {
   width: 250px;
-  background: #1a5e4f; /* Dark Green Brand Color */
-  color: white;
-  padding: 1.5rem 0;
+  background: #f3a813; /* Original Yellow */
+  color: #000000;
+  min-height: 100vh;
   position: fixed;
-  height: 100vh;
-  overflow-y: auto;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-heading {
@@ -312,25 +315,45 @@
 
 /* Sidebar Navigation Links */
 .dashboard-sidebar .nav-link {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.8) !important;
   padding: 0.8rem 1.5rem;
+  font-weight: 600;
   transition: all 0.2s ease;
-  border-left: 4px solid transparent;
-  font-family: "Open Sans", sans-serif;
-  font-weight: 500;
+  border-left: 3px solid transparent;
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-sidebar .nav-link i {
+  width: 20px;
+}
+
+.dashboard-sidebar .nav-link:hover,
+.dashboard-sidebar .nav-link.active {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1a5e4f !important;
+  border-left: 3px solid #1a5e4f;
 }
 
 .dashboard-sidebar .nav-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-left-color: rgba(255, 255, 255, 0.3);
+  color: #f3a813 !important;
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: rgba(243, 168, 19, 0.5);
+}
+
+.dashboard-sidebar .nav-link:hover i {
+  opacity: 1;
 }
 
 .dashboard-sidebar .nav-link.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: #f3a813; /* Orange Brand Color for Active */
+  color: #f3a813 !important;
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 600;
   border-left-color: #f3a813;
-  font-weight: 700;
+}
+
+.dashboard-sidebar .nav-link.active i {
+  opacity: 1;
 }
 
 .dashboard-sidebar .nav-link.text-danger:hover {
@@ -921,49 +944,109 @@
   transition: all 0.5s ease;
 }
 
-/* Scrolled state overrides */
+/* ───── Bulletproof Sticky Navbar Re-implementation ───── */
 .nav-bar.navbar-scrolled {
-  background: rgba(26, 94, 79, 0.75) !important; /* Slightly more transparent */
-  backdrop-filter: blur(15px); /* Stronger blur for better effect */
-  -webkit-backdrop-filter: blur(15px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  background: rgba(26, 94, 79, 0.8) !important; /* Glassy brand green */
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  z-index: 1050 !important;
 }
 
+/* Force transparency on ALL containers when scrolled */
+.nav-bar.navbar-scrolled,
+.nav-bar.navbar-scrolled .navbar,
+.nav-bar.navbar-scrolled .container-fluid,
+.nav-bar.navbar-scrolled .container {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Re-apply the glassy background to the ONLY parent that matters */
+/* Brand Identity: Original Yellow/Orange */
+.bg-primary {
+  background-color: #f3a813 !important;
+}
+
+/* Auth State Visibility Logic */
+.logged-in-only {
+  display: none !important;
+}
+
+body.user-logged-in .logged-in-only {
+  display: flex !important; /* or block, depending on context, but flex is used for our buttons */
+}
+
+/* Force hidden state for specific IDs as ultimate fallback */
+#navDashboardBtn.d-none, 
+#navDashboardLink.d-none,
+.logout-link.d-none {
+  display: none !important;
+}
+
+div.nav-bar.fixed-top.navbar-scrolled {
+  background: rgba(26, 94, 79, 0.85) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+}
+
+/* Specific override for Dashboard Mobile Header when scrolled */
+.mobile-dashboard-header.navbar-scrolled {
+  background: rgba(26, 94, 79, 0.85) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Focused Scroll: Hide main navigation links on desktop scroll */
+@media (min-width: 992px) {
+  .nav-bar.navbar-scrolled #mainNav {
+    display: none !important;
+  }
+}
+
+/* Ensure Logo and CTA remain visible and correctly padded on scroll */
 .nav-bar.navbar-scrolled .navbar {
-  background: transparent !important; /* Force inner navbar to be transparent */
   padding-top: 5px !important;
   padding-bottom: 5px !important;
 }
 
-/* Hide navigation links on scroll for focus */
-.nav-bar.navbar-scrolled #navbarCollapse .navbar-nav {
-  display: none !important;
-}
+@media (min-width: 992px) {
+  /* Desktop: Reveal logo on scroll */
+  .nav-bar.navbar-scrolled .sticky-logo {
+    opacity: 1;
+    visibility: visible;
+    display: flex !important;
+  }
 
-/* Reveal logo inside navbar on scroll */
-.sticky-logo {
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  display: none !important; /* Initial desktop state */
-}
+  /* Desktop: Hide logo until scroll */
+  .sticky-logo {
+    opacity: 0;
+    visibility: hidden;
+  }
 
-.nav-bar.navbar-scrolled .sticky-logo {
-  opacity: 1;
-  visibility: visible;
-  display: flex !important;
-}
-
-/* Ensure the 'GET STARTED' button stays right-aligned */
-.nav-bar.navbar-scrolled .navbar-collapse {
-  justify-content: space-between;
-}
-
-@media (max-width: 991.98px) {
-  .nav-bar.navbar-scrolled {
-    padding: 0 !important; /* Full width on mobile scroll */
+  /* Desktop: Alignment */
+  .nav-bar.navbar-scrolled .navbar-collapse {
+    justify-content: space-between;
   }
 }
+
+/* Mobile Header Refinement: Ensure logo and toggler are side-by-side naturally */
+@media (max-width: 991.98px) {
+  .sticky-logo {
+    display: flex !important; /* Always visible to flex-align with hamburger */
+    opacity: 1 !important;
+    visibility: visible !important;
+    margin: 0 !important;
+  }
+}
+
+
 
 /* ========================================
    14. RECONSTRUCTING LOGO PRELOADER (HIGH-END)
@@ -1078,3 +1161,10 @@
     filter: drop-shadow(0 0 45px rgba(243, 168, 19, 0.3));
   }
 }
+
+
+/* ========================================
+   15. OTHER STYLES
+   ======================================== */
+
+

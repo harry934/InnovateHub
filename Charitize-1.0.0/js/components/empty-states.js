@@ -123,11 +123,13 @@ export const EmptyStates = {
             hint: 'Your work will be auto-saved as you type'
         }),
 
-        errorState: (errorMessage = 'Something went wrong') => EmptyStates.render({
-            icon: 'fa-exclamation-triangle',
-            message: 'Oops!',
-            hint: errorMessage
-        }),
+        errorState: (msg) => `
+        <div class="text-center py-5 text-danger">
+            <i class="fa fa-exclamation-circle fa-3x mb-3"></i>
+            <h3>Failed to load</h3>
+            <p>${msg || 'Something went wrong. Please try again later.'}</p>
+        </div>
+    `,
 
         loadingState: () => `
             <div class="loading-state" style="

@@ -35,13 +35,16 @@
     
     <!-- Innovate Hub Custom Styles -->
     <!-- Custom CSS file with splash screen, badges, dashboard styles, and AI chat -->
-    <link href="css/innovate-hub.css" rel="stylesheet">
+    <link href="css/innovate-hub.css?v=2.1.0" rel="stylesheet">
     
-    <!-- Nuru Assistant Styles -->
-    <link href="css/nuru-assistant.css" rel="stylesheet">
+    <!-- Nuru-Assistant Styles -->
+    <link href="css/nuru-assistant.css?v=2.1.0" rel="stylesheet">
+    
+    <!-- Mobile Enhancement Styles -->
+    <link href="css/mobile-nav.css?v=2.1.0" rel="stylesheet">
     
     <!-- Auth UI Styles -->
-    <link href="css/auth-ui.css" rel="stylesheet">
+    <link href="css/auth-ui.css?v=2.1.0" rel="stylesheet">
 </head>
 
 <body>
@@ -118,15 +121,19 @@
     <!-- Navbar Start -->
     <div class="container-fluid bg-secondary px-0 wow fadeIn" data-wow-delay="0.1s">
         <div class="nav-bar">
-            <nav class="navbar navbar-expand-lg bg-primary navbar-dark px-4 py-lg-0">
-                <a href="index.html" class="navbar-brand d-none d-lg-flex align-items-center ms-0 me-auto sticky-logo">
+            <nav class="navbar navbar-expand-lg bg-primary navbar-dark sticky-top p-0">
+                <a href="index.html" class="navbar-brand d-flex align-items-center ms-0 me-auto sticky-logo">
                     <img src="img/logo.svg" alt="Innovate Hub" style="width: 35px; height: 35px;">
                     <span class="logo-text ms-2" style="font-size: 1.2rem; color: white;">Innovate Hub</span>
                 </a>
-                <h4 class="d-lg-none m-0">Menu</h4>
+                <!-- Menu text removed -->
                 <button type="button" class="navbar-toggler me-0" data-bs-toggle="collapse"
                     data-bs-target="#navbarCollapse">
-                    <span class="navbar-toggler-icon"></span>
+                    <div class="mob-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <!-- Navigation Menu: Main navigation links for the website -->
@@ -151,7 +158,7 @@
                         </div>
                         <a href="contact.html" class="nav-item nav-link">Contact Us</a>
                         <!-- My Dashboard Link (Hidden by default, shown via JS when logged in) -->
-                        <a href="innovator-dashboard.html" class="nav-item nav-link d-none" id="navDashboardLink">My Dashboard</a>
+                        <a href="innovator-dashboard.html" class="nav-item nav-link d-none logged-in-only" id="navDashboardLink">My Dashboard</a>
                     </div>
                     <!-- Authentication/User Area -->
                     <div class="d-flex ms-auto align-items-center">
@@ -159,11 +166,9 @@
                         <div id="guestButtons" class="guest-actions d-flex">
                             <a class="btn btn-get-started" href="signup.html">GET STARTED</a>
                         </div>
-                        <!-- Logged In User View: Simplified Dashboard Button (Name moved to Dashboard) -->
-                        <div id="userProfile" class="d-none align-items-center ms-auto">
-                            <a href="#" id="navDashboardBtn" class="btn btn-get-started me-3" onclick="goToDashboard()">My Dashboard</a>
-                            <a href="javascript:void(0)" onclick="logout()" class="text-danger small logout-link"><i class="fa fa-sign-out-alt me-1"></i>Logout</a>
-                        </div>
+                        <!-- Logged In User View: Simplified Dashboard Button -->
+                        <a class="btn btn-get-started me-3 d-none logged-in-only" href="javascript:void(0)" onclick="goToDashboard()" id="navDashboardBtn">MY DASHBOARD</a>
+                        <a href="javascript:void(0)" onclick="logout()" class="text-danger small logout-link d-none logged-in-only"><i class="fa fa-sign-out-alt me-1"></i>Logout</a>
                     </div>
                 </div>
             </nav>
@@ -919,85 +924,73 @@
     <script src="lib/counterup/counterup.min.js"></script>
 
     <!-- Template Javascript -->
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=2.1.2"></script>
+
+    <!-- Nuru-Assistant -->
+    <script src="js/nuru-assistant.js?v=2.1.2"></script>
     
     <!-- Innovate Hub Custom JavaScript -->
     <!-- Handles splash screen, authentication, form validation, and utility functions -->
     <!-- Custom JavaScript -->
-    <script src="js/ui-utils.js?v=1.0.1"></script>
-    <script src="js/api.js?v=1.0.1"></script>
-    <script type="module" src="js/innovate-hub.js?v=1.0.1"></script>
+    <script src="js/ui-utils.js?v=2.1.2"></script>
+    <script src="js/shared-ui.js?v=2.1.2"></script>
+    <script src="js/api.js?v=2.1.2"></script>
+    <script type="module" src="js/innovate-hub.js?v=2.1.2"></script>
     <script type="module">
-        import authManager from './js/auth-manager.js';
-        import { goToDashboard } from './js/dashboard-router.js';
         import { showWelcomeHint } from './js/welcome-hint.js';
         
-        // Initialize auth manager
-        authManager.init().then(() => {
-            updateNavbar();
-            
-            // Show welcome hint if just logged in
+        // Wait for DOM to show welcome hint if applicable
+        document.addEventListener("DOMContentLoaded", () => {
             showWelcomeHint();
         });
-        
-        // Listen for auth changes
-        authManager.onAuthChange((user) => {
-            updateNavbar();
-        });
-        
-        function updateNavbar() {
-            const user = authManager.getCurrentUser();
-            const guestButtons = document.getElementById("guestButtons");
-            const userProfile = document.getElementById("userProfile");
-            const userNameEl = document.getElementById("userName");
-            
-            if (user) {
-                // User is logged in
-                if (guestButtons) guestButtons.classList.add("d-none");
-                if (userProfile) {
-                    userProfile.classList.remove("d-none");
-                    userProfile.classList.add("d-flex");
-                }
-                
-                // Update dashboard link
-                const dashboardBtn = document.getElementById("navDashboardBtn");
-                if (dashboardBtn) {
-                    dashboardBtn.onclick = (e) => {
-                        e.preventDefault();
-                        goToDashboard();
-                    };
-                }
-                
-                // Update any other dashboard links to use router
-                const otherDashboardLinks = document.querySelectorAll('a[href*="dashboard.html"]:not(#navDashboardBtn)');
-                otherDashboardLinks.forEach(link => {
-                    link.href = '#';
-                    link.onclick = (e) => {
-                        e.preventDefault();
-                        goToDashboard();
-                    };
-                });
-            } else {
-                // User is logged out
-                if (guestButtons) guestButtons.classList.remove("d-none");
-                if (userProfile) {
-                    userProfile.classList.add("d-none");
-                    userProfile.classList.remove("d-flex");
-                }
-            }
-        }
-        
-        // Expose logout function globally
-        window.logout = async function() {
-            const success = await authManager.logout();
-            if (success) {
-                window.location.reload();
-            }
-        };
-        
-        // Expose goToDashboard globally
-        window.goToDashboard = goToDashboard;
     </script>
+
+    <!-- Mobile Hamburger Menu Enhancement Script -->
+    <script>
+    (function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            var navCollapse = document.getElementById('navbarCollapse');
+            var toggler = document.querySelector('.navbar-toggler');
+            if (!navCollapse || !toggler) return;
+
+            // Inject custom 3-bar icon into toggler
+            if (!toggler.querySelector('.mob-icon')) {
+                var icon = document.createElement('span');
+                icon.className = 'mob-icon';
+                icon.innerHTML = '<span></span><span></span><span></span>';
+                toggler.appendChild(icon);
+            }
+
+            // Inject overlay div
+            var overlay = document.getElementById('mobileNavOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'mobileNavOverlay';
+                overlay.className = 'mobile-nav-overlay';
+                document.body.appendChild(overlay);
+            }
+
+            // Bootstrap events
+            navCollapse.addEventListener('show.bs.collapse', function() {
+                document.body.classList.add('mob-menu-open');
+                overlay.classList.add('active');
+            });
+
+            navCollapse.addEventListener('hide.bs.collapse', function() {
+                document.body.classList.remove('mob-menu-open');
+                overlay.classList.remove('active');
+            });
+
+            // Click overlay to close
+            overlay.addEventListener('click', function() {
+                var bsCollapse = bootstrap.Collapse.getInstance(navCollapse);
+                if (bsCollapse) bsCollapse.hide();
+                else new bootstrap.Collapse(navCollapse).hide();
+            });
+        });
+    })();
+    </script>
+
 </body>
 
 </html>
