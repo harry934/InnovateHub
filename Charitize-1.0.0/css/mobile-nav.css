@@ -23,9 +23,7 @@
     display: flex;
     align-items: center;
     z-index: 1030;
-    transition:
-      background 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s ease;
     /* Base state: NO blur - blur is only added via .navbar-scrolled on scroll */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -58,13 +56,19 @@
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    justify-content: space-between !important;
+    justify-content: center !important; /* CENTER INITIALLY */
     align-items: center !important;
     width: 100% !important;
     height: 100% !important;
     padding: 0 20px !important;
     margin: 0 !important;
+    background: transparent !important; /* Hide yellow bg initially */
     position: relative !important;
+  }
+
+  /* Restore space-between when scrolled so toggler sits on right */
+  .nav-bar.navbar-scrolled .navbar {
+    justify-content: space-between !important;
   }
 
   /* ── Custom morphing hamburger icon (X animation) ──────── */
@@ -113,11 +117,16 @@
     margin: 0 !important;
     border: none !important;
     background: transparent !important;
-    display: flex !important;
+    display: none !important; /* HIDDEN INITIALLY AS REQUESTED */
     align-items: center;
     justify-content: center;
     z-index: 1050 !important;
     box-shadow: none !important;
+  }
+
+  /* Show hamburger menu only when scrolled */
+  .nav-bar.navbar-scrolled .navbar-toggler {
+    display: flex !important;
   }
 
   .navbar-toggler:focus {
