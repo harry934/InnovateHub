@@ -5,7 +5,6 @@
    ======================================== */
 
 @media (max-width: 1024px) {
-
   /* ── Body scroll-lock when menu is open ── */
   body.mob-menu-open {
     overflow: hidden !important;
@@ -19,12 +18,21 @@
   /* ── Mobile Header: Layout Preservation ────────────────── */
   .nav-bar {
     width: 100%;
-    height: 75px; 
+    height: 75px;
     padding: 0;
     display: flex;
     align-items: center;
     z-index: 1030;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s ease;
+    /* Base state: NO blur - blur is only added via .navbar-scrolled on scroll */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* ── Fix for mobile blur when menu open: ensure absolute clarity ── */
+  body.mob-menu-open .nav-bar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   /* ── Overlay backdrop ───────────────────── */
@@ -36,8 +44,6 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.35s ease;
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
   }
 
   .mobile-nav-overlay.active {
@@ -50,14 +56,19 @@
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    justify-content: space-between !important;
+    justify-content: center !important; /* CENTER INITIALLY */
     align-items: center !important;
     width: 100% !important;
     height: 100% !important;
     padding: 0 20px !important;
     margin: 0 !important;
-    background: transparent !important;
+    background: transparent !important; /* Hide yellow bg initially */
     position: relative !important;
+  }
+
+  /* Restore space-between when scrolled so toggler sits on right */
+  .nav-bar.navbar-scrolled .navbar {
+    justify-content: space-between !important;
   }
 
   /* ── Custom morphing hamburger icon (X animation) ──────── */
@@ -77,9 +88,10 @@
     background-color: #fff;
     border-radius: 2px;
     transform-origin: center;
-    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
-                opacity 0.3s ease,
-                width 0.3s ease;
+    transition:
+      transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+      opacity 0.3s ease,
+      width 0.3s ease;
   }
 
   /* X state morph (triggered by aria-expanded) */
@@ -105,11 +117,16 @@
     margin: 0 !important;
     border: none !important;
     background: transparent !important;
-    display: flex !important;
+    display: none !important; /* HIDDEN INITIALLY AS REQUESTED */
     align-items: center;
     justify-content: center;
     z-index: 1050 !important;
     box-shadow: none !important;
+  }
+
+  /* Show hamburger menu only when scrolled */
+  .nav-bar.navbar-scrolled .navbar-toggler {
+    display: flex !important;
   }
 
   .navbar-toggler:focus {
@@ -121,7 +138,7 @@
   /* ── The collapsible nav panel ──────────── */
   .navbar-collapse {
     /* CRITICAL: Overriding Bootstrap's display:none/none toggle */
-    display: flex !important; 
+    display: flex !important;
     position: fixed !important;
     top: 0;
     right: 0;
@@ -168,6 +185,11 @@
     padding-top: 20px !important;
     padding-bottom: 20px !important;
     border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    /* Ensure items remain visible while user scrolls within the panel */
+    overflow: visible !important;
+    max-height: none !important;
+    position: relative !important;
+    z-index: 1 !important;
   }
 
   /* Force all nav-items/nav-links to be visible */
@@ -185,14 +207,15 @@
     transition: none !important;
   }
 
-
   .navbar-collapse .nav-link {
     color: rgba(255, 255, 255, 0.9) !important;
     font-size: 1.1rem !important;
     font-weight: 600;
     padding: 12px 16px !important;
     border-radius: 8px;
-    transition: background 0.3s, color 0.3s;
+    transition:
+      background 0.3s,
+      color 0.3s;
     width: 100% !important;
   }
 
@@ -212,7 +235,9 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
     opacity: 0;
     transform: translateY(15px);
-    transition: opacity 0.4s ease 0.4s, transform 0.4s ease 0.4s;
+    transition:
+      opacity 0.4s ease 0.4s,
+      transform 0.4s ease 0.4s;
   }
 
   .navbar-collapse.show .ms-auto {
@@ -230,10 +255,8 @@
     justify-content: center !important;
   }
 
-
-
   /* Removed "Menu" label styles for cleaner UI */
-  
+
   .logo-container {
     display: flex !important;
     align-items: center !important;

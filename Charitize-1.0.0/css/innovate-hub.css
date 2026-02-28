@@ -1,7 +1,18 @@
 /* ========================================
-   INNOVATE HUB CUSTOM STYLES
-   Additional styles for Innovate Hub platform
+   1. NAVBAR CONFIGURATION
    ======================================== */
+/* YOU CAN ADJUST THE HEIGHT AND WIDTH OF THE NAVBAR HERE */
+:root {
+  --nav-height: 70px; /* Main navbar height (Initial Yellow State) */
+  --nav-scrolled-height: 65px; /* Height of the navbar when scrolled down (Green State) */
+  --nav-max-width: 1200px; /* Standard container width */
+  --nav-horizontal-padding: 15px; /* Padding from edges */
+  --nav-menu-offset: -140px; /* Space between the Logo and the HOME link */
+  --nav-item-gap: 20px; /* Gap between nav items */
+  --nav-active-highlight: rgba(26, 94, 79, 0.1); /* Green hover effect */
+  --nav-glass-bg: rgba(243, 168, 19, 0.95); /* Original yellow */
+  --nav-glass-blur: 15px; /* Blur intensity */
+}
 
 /* ========================================
    2. ENHANCED LOGO STYLING
@@ -339,10 +350,6 @@
   color: #f3a813 !important;
   background: rgba(255, 255, 255, 0.05);
   border-left-color: rgba(243, 168, 19, 0.5);
-}
-
-.dashboard-sidebar .nav-link:hover i {
-  opacity: 1;
 }
 
 .dashboard-sidebar .nav-link.active {
@@ -937,16 +944,16 @@
 }
 /* ========================================
    13. TRANSFORMING STICKY NAVBAR
-   Scroll-based refinement: Transparent-ish, slim, and focused
    ======================================== */
 
 .nav-bar {
-  transition: all 0.5s ease;
+  transition: background 0.4s ease, box-shadow 0.4s ease;
 }
 
-/* ───── Bulletproof Sticky Navbar Re-implementation ───── */
+/* ── SCROLLED STATE: shared across all breakpoints ────────
+   Green brand background with glassmorphism. */
 .nav-bar.navbar-scrolled {
-  background: rgba(26, 94, 79, 0.8) !important; /* Glassy brand green */
+  background: rgba(26, 94, 79, 0.8) !important; /* Brand green */
   backdrop-filter: blur(15px) !important;
   -webkit-backdrop-filter: blur(15px) !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
@@ -958,8 +965,7 @@
   z-index: 1050 !important;
 }
 
-/* Force transparency on ALL containers when scrolled */
-.nav-bar.navbar-scrolled,
+/* Keep inner elements transparent so the parent bg shows through */
 .nav-bar.navbar-scrolled .navbar,
 .nav-bar.navbar-scrolled .container-fluid,
 .nav-bar.navbar-scrolled .container {
@@ -967,7 +973,12 @@
   background-image: none !important;
 }
 
-/* Re-apply the glassy background to the ONLY parent that matters */
+/* ── Ensure Logo / CTA padded nicely when scrolled ── */
+.nav-bar.navbar-scrolled .navbar {
+  display: flex !important;
+  justify-content: space-between !important;
+}
+
 /* Brand Identity: Original Yellow/Orange */
 .bg-primary {
   background-color: #f3a813 !important;
@@ -979,41 +990,22 @@
 }
 
 body.user-logged-in .logged-in-only {
-  display: flex !important; /* or block, depending on context, but flex is used for our buttons */
+  display: flex !important;
 }
 
-/* Force hidden state for specific IDs as ultimate fallback */
-#navDashboardBtn.d-none, 
+/* Force hidden state for specific IDs */
+#navDashboardBtn.d-none,
 #navDashboardLink.d-none,
 .logout-link.d-none {
   display: none !important;
 }
 
-div.nav-bar.fixed-top.navbar-scrolled {
-  background: rgba(26, 94, 79, 0.85) !important;
-  backdrop-filter: blur(15px) !important;
-  -webkit-backdrop-filter: blur(15px) !important;
-}
-
-/* Specific override for Dashboard Mobile Header when scrolled */
+/* Dashboard mobile header when scrolled */
 .mobile-dashboard-header.navbar-scrolled {
-  background: rgba(26, 94, 79, 0.85) !important;
+  background: rgba(26, 94, 79, 0.8) !important;
   backdrop-filter: blur(15px) !important;
   -webkit-backdrop-filter: blur(15px) !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Focused Scroll: Hide main navigation links on desktop scroll */
-@media (min-width: 992px) {
-  .nav-bar.navbar-scrolled #mainNav {
-    display: none !important;
-  }
-}
-
-/* Ensure Logo and CTA remain visible and correctly padded on scroll */
-.nav-bar.navbar-scrolled .navbar {
-  padding-top: 5px !important;
-  padding-bottom: 5px !important;
 }
 
 @media (min-width: 992px) {
@@ -1030,23 +1022,130 @@ div.nav-bar.fixed-top.navbar-scrolled {
     visibility: hidden;
   }
 
-  /* Desktop: Alignment */
+  /* ========================================
+     REFACTORED DESKTOP NAVBAR (FULL WIDTH + CENTERED CONTAINER)
+     Spans full width, content stays centered via max-width.
+     ======================================== */
+
+  .nav-bar {
+    width: 100% !important;
+    padding: 0 !important; /* Managed by inner container */
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+  }
+
+  .navbar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: var(--nav-height) !important;
+    max-width: var(--nav-max-width) !important;
+    margin: 0 auto !important; /* Final horizontal centering */
+    width: 100% !important;
+    padding: 0 var(--nav-horizontal-padding) !important; /* Managed edge padding */
+    transition: all 0.4s ease !important;
+  }
+
+  .navbar-collapse {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 !important;
+  }
+
+  /* 1. Logo (Leftmost) */
+  .navbar-brand {
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 10;
+  }
+
+  /* 2. Navigation Content Column (Force Center or Left-Aligned) */
+  #mainNav {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important; /* Start right after the logo/offset */
+    gap: var(--nav-item-gap) !important; /* Rely on gap instead of space-evenly */
+    margin-left: var(--nav-menu-offset) !important; /* User-adjustable space before HOME */
+    flex-grow: 1 !important; /* Expands to push brand/auth to edges */
+  }
+
+  .nav-item.nav-link {
+    margin: 0 !important;
+    padding: 10px 18px !important;
+    font-weight: 500 !important;
+    border-radius: 6px;
+    white-space: nowrap !important;
+    transition: all 0.3s ease;
+  }
+
+  /* Active/Hover states */
+  .nav-item.nav-link:hover,
+  .nav-item.nav-link.active {
+    background: var(--nav-active-highlight) !important;
+    color: #1a5e4f !important; /* Dark green text on yellow background */
+  }
+
+  /* 3. Auth Buttons Column (Rightmost) */
+  .navbar-collapse .ms-auto,
+  .navbar .d-flex.ms-auto {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+    margin: 0 !important;
+    margin-left: initial !important; /* Reset Bootstrap ms-auto */
+    z-index: 10;
+  }
+
+  /* ── DESKTOP SCROLL REFINEMENTS ────────────────────────── */
+  .nav-bar.navbar-scrolled {
+    z-index: 1030 !important;
+  }
+
+  .nav-bar.navbar-scrolled .navbar {
+    height: var(--nav-scrolled-height) !important;
+    justify-content: space-between !important;
+    max-width: var(--nav-max-width) !important;
+    margin: 0 auto;
+    padding: 0 var(--nav-horizontal-padding) !important;
+  }
+
+  /* Sticky Logo Pinned Left */
+  .nav-bar.navbar-scrolled .sticky-logo {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+    margin-right: auto !important;
+  }
+
+  /* Nav Links - HIDDEN ON SCROLL AS REQUESTED */
+  .nav-bar.navbar-scrolled #mainNav {
+    display: none !important;
+  }
+
+  /* Auth Buttons / CTA Pinned Right */
   .nav-bar.navbar-scrolled .navbar-collapse {
-    justify-content: space-between;
+    justify-content: flex-end !important;
+    flex-grow: 1 !important;
+  }
+
+  .nav-bar.navbar-scrolled .navbar-collapse .ms-auto {
+    margin-left: auto !important;
   }
 }
 
-/* Mobile Header Refinement: Ensure logo and toggler are side-by-side naturally */
+/* Mobile Header Refinement: Ensure logo and toggler are always visible */
 @media (max-width: 991.98px) {
   .sticky-logo {
-    display: flex !important; /* Always visible to flex-align with hamburger */
+    display: flex !important;
     opacity: 1 !important;
     visibility: visible !important;
     margin: 0 !important;
   }
 }
-
-
 
 /* ========================================
    14. RECONSTRUCTING LOGO PRELOADER (HIGH-END)
@@ -1162,9 +1261,6 @@ div.nav-bar.fixed-top.navbar-scrolled {
   }
 }
 
-
 /* ========================================
    15. OTHER STYLES
    ======================================== */
-
-
