@@ -62,24 +62,20 @@
         if (!user) {
             user = window.loadFromLocalStorage("innovateHubUser");
         }
-
         const guestButtons = document.getElementById("guestButtons");
         const navDashboardBtn = document.getElementById("navDashboardBtn");
         const logoutLink = document.querySelector(".logout-link");
-        const navDashboardLink = document.getElementById("navDashboardLink");
 
         if (user && user.loggedIn === true) {
             document.body.classList.add("user-logged-in");
             if (guestButtons) guestButtons.classList.add("d-none");
             if (navDashboardBtn) navDashboardBtn.classList.remove("d-none");
             if (logoutLink) logoutLink.classList.remove("d-none");
-            if (navDashboardLink) navDashboardLink.classList.remove("d-none");
         } else {
             document.body.classList.remove("user-logged-in");
             if (guestButtons) guestButtons.classList.remove("d-none");
             if (navDashboardBtn) navDashboardBtn.classList.add("d-none");
             if (logoutLink) logoutLink.classList.add("d-none");
-            if (navDashboardLink) navDashboardLink.classList.add("d-none");
             // Clear potentially stale localStorage if no loggedIn flag
             if (!user || user.loggedIn !== true) {
                 localStorage.removeItem("innovateHubUser");
@@ -100,48 +96,20 @@
             return;
         }
         
-        // If not on index.html, redirect there with a flag
-        if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
-            window.location.href = 'index.html?dashboard=true';
-            return;
-        }
-        
-        // We are on index.html: Hide main content, show dashboard
-        const mainContent = document.getElementById('main-website-content');
-        const dashboardContainer = document.getElementById('unified-dashboard-container');
-        
-        if (mainContent && dashboardContainer) {
-            mainContent.classList.add('d-none');
-            dashboardContainer.classList.remove('d-none');
-            
-            // Set role class for CSS display toggles in sidebar
-            document.body.classList.remove('role-innovator', 'role-mentor');
-            document.body.classList.add(`role-${user.role}`);
-            
-            // Show default section based on role
-            if (user.role === 'mentor') {
-                if(typeof window.showDashboardSection === 'function') window.showDashboardSection('overview');
-            } else {
-                if(typeof window.showDashboardSection === 'function') window.showDashboardSection('projects');
-            }
-            
-            // Scroll to top
-            window.scrollTo(0, 0);
-        }
+        // Redirect to the dedicated dashboard page
+        window.location.href = 'dashboard.html';
     };
     
     // Check URL for dashboard flag on load
     window.checkDashboardFlag = function() {
+        // Only redirect if NOT already on the dashboard page
+        if (window.location.pathname.endsWith('dashboard.html')) return;
+
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('dashboard') === 'true') {
-            // Clean URL
+            // Clean URL and redirect to the new dedicated dashboard page
             window.history.replaceState({}, document.title, window.location.pathname);
-            // Delay slightly to ensure auth finishes
-            setTimeout(() => {
-                if(window.loadFromLocalStorage("innovateHubUser")) {
-                    window.goToDashboard();
-                }
-            }, 500);
+            window.location.href = 'dashboard.html';
         }
     };
 

@@ -77,14 +77,14 @@ const NURU_KNOWLEDGE = {
             keywords: ['submit', 'project', 'idea', 'upload', 'new project', 'add project', 'proposal'],
             contexts: ['public', 'innovator'],
             response: "To submit a project:\n• Go to your Dashboard\n• Click 'Submit Project' in the sidebar\n• Fill in the title, problem statement, objectives, proposed solution, and expected impact\n• Attach any supporting documents (optional)\n• Hit Submit!\n\nOur team reviews all submissions within 48 hours.",
-            links: [{ label: "Go to Dashboard", url: "index.html?dashboard=true" }]
+            links: [{ label: "Go to Dashboard", url: "dashboard.html" }]
         },
         {
             id: 'mentor',
             keywords: ['mentor', 'mentorship', 'find mentor', 'get mentored', 'expert', 'guidance', 'coach'],
             contexts: ['public', 'innovator'],
             response: "Our mentorship program pairs innovators with industry experts across technology, healthcare, agriculture, robotics, and more!\n\n• Browse mentors by expertise in your dashboard\n• Send a mentorship request linked to your project\n• Wait for the mentor to accept and schedule a session\n\nTip: A strong project submission increases your chances of getting matched!",
-            links: [{ label: "Go to Dashboard", url: "index.html?dashboard=true" }]
+            links: [{ label: "Go to Dashboard", url: "dashboard.html" }]
         },
         {
             id: 'mentorship_request',
