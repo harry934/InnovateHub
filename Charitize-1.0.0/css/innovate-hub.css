@@ -1,18 +1,15 @@
 /* ========================================
-   1. NAVBAR CONFIGURATION (Adjust lengths here)
+   1. NAVBAR CONFIGURATION
    ======================================== */
+/* YOU CAN ADJUST THE HEIGHT AND WIDTH OF THE NAVBAR HERE */
 :root {
-  --nav-height: 85px; /* Main navbar height */
-  --nav-max-width: 1320px; /* Standard Bootstrap container width for alignment */
-  --nav-horizontal-padding: 25px; /* Padding from container edges */
-  --nav-item-gap: 35px; /* Consistent gap between nav items */
-  --nav-active-highlight: rgba(
-    26,
-    94,
-    79,
-    0.1
-  ); /* Subtle dark green highlight on yellow */
-  --nav-glass-bg: rgba(243, 168, 19, 0.95); /* Premium yellow brand color */
+  --nav-height: 80px; /* Main navbar height (Initial Yellow State) */
+  --nav-scrolled-height: 65px; /* Height of the navbar when scrolled down (Green State) */
+  --nav-max-width: 1200px; /* Standard container width */
+  --nav-horizontal-padding: 15px; /* Padding from edges */
+  --nav-item-gap: 30px; /* Gap between nav items */
+  --nav-active-highlight: rgba(26, 94, 79, 0.1); /* Green hover effect */
+  --nav-glass-bg: rgba(243, 168, 19, 0.95); /* Original yellow */
   --nav-glass-blur: 15px; /* Blur intensity */
 }
 
@@ -1108,7 +1105,7 @@ body.user-logged-in .logged-in-only {
   }
 
   .nav-bar.navbar-scrolled .navbar {
-    height: calc(var(--nav-height) - 15px) !important;
+    height: var(--nav-scrolled-height) !important;
     justify-content: space-between !important;
     max-width: var(--nav-max-width) !important;
     margin: 0 auto;
@@ -1123,11 +1120,9 @@ body.user-logged-in .logged-in-only {
     margin-right: auto !important;
   }
 
-  /* Nav Links Centered */
+  /* Nav Links - HIDDEN ON SCROLL AS REQUESTED */
   .nav-bar.navbar-scrolled #mainNav {
-    display: flex !important;
-    flex-grow: 1 !important;
-    justify-content: center !important;
+    display: none !important;
   }
 
   /* Auth Buttons / CTA Pinned Right */
