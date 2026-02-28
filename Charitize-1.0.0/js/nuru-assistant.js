@@ -8,11 +8,11 @@
 // ============================================================
 //  CONTEXT DETECTION — which page is Nuru running on?
 // ============================================================
+// ============================================================
+//  CONTEXT DETECTION — which page is Nuru running on?
+// ============================================================
 const NURU_PAGE_CONTEXT = (() => {
-    const path = window.location.pathname.toLowerCase();
-    if (path.includes('mentor-dashboard')) return 'mentor';
-    if (path.includes('innovator-dashboard')) return 'innovator';
-    return 'public'; // home page and other public pages
+    return 'public'; // Since dashboard is natively on public pages now, context is mostly unified unless checking user role
 })();
 
 // ============================================================
@@ -76,15 +76,15 @@ const NURU_KNOWLEDGE = {
             id: 'submit_project',
             keywords: ['submit', 'project', 'idea', 'upload', 'new project', 'add project', 'proposal'],
             contexts: ['public', 'innovator'],
-            response: "To submit a project:\n• Go to your Innovator Dashboard\n• Click 'Submit Project' in the sidebar\n• Fill in the title, problem statement, objectives, proposed solution, and expected impact\n• Attach any supporting documents (optional)\n• Hit Submit!\n\nOur team reviews all submissions within 48 hours.",
-            links: [{ label: "Go to Submit Project", url: "innovator-dashboard.html" }]
+            response: "To submit a project:\n• Go to your Dashboard\n• Click 'Submit Project' in the sidebar\n• Fill in the title, problem statement, objectives, proposed solution, and expected impact\n• Attach any supporting documents (optional)\n• Hit Submit!\n\nOur team reviews all submissions within 48 hours.",
+            links: [{ label: "Go to Dashboard", url: "index.html?dashboard=true" }]
         },
         {
             id: 'mentor',
             keywords: ['mentor', 'mentorship', 'find mentor', 'get mentored', 'expert', 'guidance', 'coach'],
             contexts: ['public', 'innovator'],
             response: "Our mentorship program pairs innovators with industry experts across technology, healthcare, agriculture, robotics, and more!\n\n• Browse mentors by expertise in your dashboard\n• Send a mentorship request linked to your project\n• Wait for the mentor to accept and schedule a session\n\nTip: A strong project submission increases your chances of getting matched!",
-            links: [{ label: "Find Mentors", url: "innovator-dashboard.html" }]
+            links: [{ label: "Go to Dashboard", url: "index.html?dashboard=true" }]
         },
         {
             id: 'mentorship_request',
@@ -174,7 +174,7 @@ const NURU_KNOWLEDGE = {
             id: 'navigation',
             keywords: ['where', 'find', 'go to', 'navigate', 'page', 'section', 'how do i get to'],
             contexts: ['public', 'innovator', 'mentor'],
-            response: "I can guide you anywhere! What section are you looking for?\n\n• **Home** — index.html\n• **About Us** — about.html\n• **Events** — event.html\n• **Contact Us** — contact.html\n• **Your Dashboard** — innovator-dashboard.html or mentor-dashboard.html",
+            response: "I can guide you anywhere! What section are you looking for?\n\n• **Home** — index.html\n• **About Us** — about.html\n• **Events** — event.html\n• **Contact Us** — contact.html\n• **Your Dashboard** — index.html?dashboard=true",
             links: [
                 { label: "Home", url: "index.html" },
                 { label: "About Us", url: "about.html" },

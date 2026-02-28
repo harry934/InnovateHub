@@ -438,6 +438,15 @@
         }
       });
 
+      // Global error/success handlers
+      window.showErrorMessage = function(msg) {
+          alert('Error: ' + msg); 
+      };
+      
+      window.showSuccessMessage = function(msg) {
+          console.log('Success: ' + msg);
+      };
+
       async function handleSuccessfulLogin(user) {
         try {
           // Fetch user data from Firestore

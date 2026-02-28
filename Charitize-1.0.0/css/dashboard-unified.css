@@ -1,0 +1,238 @@
+/* 
+   dashboard-unified.css
+   Custom CSS for the Unified Dashboard Layout 
+   (Translating Tailwind design patterns to vanilla CSS to ensure Bootstrap compatibility)
+*/
+
+/* --- MAIN LAYOUT --- */
+#unified-dashboard-container {
+    display: flex;
+    min-height: calc(100vh - var(--nav-scrolled-height, 65px));
+    margin-top: var(--nav-scrolled-height, 65px);
+    background-color: #f8f9fa;
+    position: relative;
+    overflow-x: hidden;
+}
+
+#unified-dashboard-main {
+    flex-grow: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    width: 100%;
+}
+
+/* --- SIDEBAR CONTAINER --- */
+.ud-sidebar {
+    width: 256px; /* w-64 */
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem; /* gap-1 */
+    border-right: 1px solid #e5e7eb; /* border-r instead of l for standard LTR sidebar */
+    padding: 1rem 0.5rem;
+    margin: 0;
+    list-style: none;
+    background-color: #ffffff;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    z-index: 10;
+    /* Fixed for desktop, standard flow for flex */
+    flex-shrink: 0;
+}
+
+/* --- SIDEBAR ITEM (The morphing card) --- */
+.ud-sidebar-item {
+    width: 60px; /* Initially collapsed (w-14ish) */
+    overflow: hidden;
+    border-radius: 0.5rem; /* rounded-lg */
+    border-left: 2px solid transparent; 
+    background-color: #ffffff;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 0.25rem;
+}
+
+/* Hover & Active/Focus State Expansion */
+.ud-sidebar-item:hover,
+.ud-sidebar-item:focus-within,
+.ud-sidebar-item.active {
+    width: 100%; /* expands to full sidebar width (256px) */
+    border-color: #e5e7eb;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05); /* shadow-lg */
+}
+
+/* Active Highlight */
+.ud-sidebar-item.active {
+    border-left-color: var(--primary);
+    background-color: #f8fafc;
+}
+
+/* --- SIDEBAR BUTTON --- */
+.ud-sidebar-btn {
+    display: flex;
+    width: 100%;
+    cursor: pointer;
+    align-items: center;
+    gap: 0.75rem; /* gap-2.5 */
+    padding: 0.5rem 0.75rem; /* px-3 py-2 */
+    text-align: left;
+    transition: all 0.2s ease;
+    background: transparent;
+    border: none;
+    outline: none;
+    white-space: nowrap; /* Prevent text wrapping during transition */
+    color: #4b5563;
+}
+
+.ud-sidebar-btn:active {
+    transform: scale(0.97); /* active:scale-95 */
+}
+
+/* Theme color variants for the button text */
+.ud-sidebar-item.theme-purple .ud-sidebar-btn { color: #6b21a8; } /* text-purple-800 */
+.ud-sidebar-item.theme-blue .ud-sidebar-btn { color: #1e40af; } /* text-blue-800 */
+.ud-sidebar-item.theme-green .ud-sidebar-btn { color: #166534; } /* text-green-800 */
+.ud-sidebar-item.theme-orange .ud-sidebar-btn { color: #c2410c; } 
+.ud-sidebar-item.theme-primary .ud-sidebar-btn { color: var(--primary); } 
+
+/* --- ICON BOX --- */
+.ud-icon-box {
+    border-radius: 0.5rem;
+    border: 2px solid;
+    padding: 0.25rem; /* p-1 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+}
+
+.ud-icon-box svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.5;
+}
+
+/* Theme color variants for the icon box */
+.ud-sidebar-item.theme-purple .ud-icon-box { 
+    border-color: #d8b4fe; /* border-purple-300 */
+    background-color: #f3e8ff; /* bg-purple-100 */
+}
+.ud-sidebar-item.theme-blue .ud-icon-box { 
+    border-color: #93c5fd; 
+    background-color: #dbeafe; 
+}
+.ud-sidebar-item.theme-green .ud-icon-box { 
+    border-color: #86efac; 
+    background-color: #dcfce7; 
+}
+.ud-sidebar-item.theme-orange .ud-icon-box { 
+    border-color: #fdba74; 
+    background-color: #ffedd5; 
+}
+.ud-sidebar-item.theme-primary .ud-icon-box { 
+    border-color: rgba(243, 168, 19, 0.4); 
+    background-color: rgba(243, 168, 19, 0.1); 
+}
+
+.ud-btn-text {
+    font-weight: 600; /* font-semibold */
+    font-size: 0.95rem;
+    opacity: 0; /* Hidden when collapsed */
+    transform: translateX(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.ud-sidebar-item:hover .ud-btn-text,
+.ud-sidebar-item:focus-within .ud-btn-text,
+.ud-sidebar-item.active .ud-btn-text {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* --- DROPDOWN (Grid animation) --- */
+.ud-dropdown {
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    transition: grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Open state using JS '.open' class instead of strictly peer-focus to allow internal clicks */
+.ud-sidebar-item.open .ud-dropdown {
+    grid-template-rows: 1fr;
+}
+
+.ud-dropdown-inner {
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Custom Dropdown Content Styling to match design */
+.ud-dropdown-inner ul {
+    list-style: none;
+    padding: 0 1rem 1rem 1rem;
+    margin: 0;
+    border-top: 1px solid #f3f4f6;
+}
+
+.ud-dropdown-inner li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.ud-dropdown-inner li:last-child {
+    border-bottom: none;
+}
+
+/* Role-Specific Display Toggles */
+.innovator-only, .mentor-only {
+    display: none !important;
+}
+
+.role-innovator .innovator-only {
+    display: block !important;
+}
+.role-innovator .innovator-only.d-flex {
+    display: flex !important;
+}
+.role-innovator .innovator-only.ud-sidebar-item {
+    display: block !important; /* Overriding for list items */
+}
+
+.role-mentor .mentor-only {
+    display: block !important;
+}
+.role-mentor .mentor-only.d-flex {
+    display: flex !important;
+}
+.role-mentor .mentor-only.ud-sidebar-item {
+    display: block !important;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 991.98px) {
+    #unified-dashboard-container {
+        flex-direction: column;
+    }
+    .ud-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 1rem;
+        flex-direction: row;
+        overflow-x: auto;
+    }
+    .ud-sidebar-item {
+        margin-bottom: 0;
+        margin-right: 0.5rem;
+    }
+    .ud-dropdown {
+        position: absolute;
+        background: white;
+        width: 200px;
+        z-index: 100;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        border-radius: 0.5rem;
+        top: 100%;
+        left: 0;
+    }
+}

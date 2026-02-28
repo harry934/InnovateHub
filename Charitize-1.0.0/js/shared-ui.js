@@ -90,16 +90,58 @@
     // 4. GLOBAL UI ACTIONS
     window.goToDashboard = function() {
         const user = window.loadFromLocalStorage("innovateHubUser");
-        if (user && user.role) {
-            if (user.role === 'admin') {
-                window.location.href = 'admin-dashboard.html';
-            } else if (user.role === 'mentor') {
-                window.location.href = 'mentor-dashboard.html';
+        if (!user || !user.role) {
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        if (user.role === 'admin') {
+            window.location.href = 'admin-dashboard.html';
+            return;
+        }
+        
+        // If not on index.html, redirect there with a flag
+        if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
+            window.location.href = 'index.html?dashboard=true';
+            return;
+        }
+        
+        // We are on index.html: Hide main content, show dashboard
+        const mainContent = document.getElementById('main-website-content');
+        const dashboardContainer = document.getElementById('unified-dashboard-container');
+        
+        if (mainContent && dashboardContainer) {
+            mainContent.classList.add('d-none');
+            dashboardContainer.classList.remove('d-none');
+            
+            // Set role class for CSS display toggles in sidebar
+            document.body.classList.remove('role-innovator', 'role-mentor');
+            document.body.classList.add(`role-${user.role}`);
+            
+            // Show default section based on role
+            if (user.role === 'mentor') {
+                if(typeof window.showDashboardSection === 'function') window.showDashboardSection('overview');
             } else {
-                window.location.href = 'innovator-dashboard.html';
+                if(typeof window.showDashboardSection === 'function') window.showDashboardSection('projects');
             }
-        } else {
-            window.location.href = 'innovator-dashboard.html';
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+    };
+    
+    // Check URL for dashboard flag on load
+    window.checkDashboardFlag = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('dashboard') === 'true') {
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            // Delay slightly to ensure auth finishes
+            setTimeout(() => {
+                if(window.loadFromLocalStorage("innovateHubUser")) {
+                    window.goToDashboard();
+                }
+            }, 500);
         }
     };
 
@@ -109,11 +151,13 @@
             handlePreloader();
             initNavigationListener();
             window.updateNavbarUI();
+            window.checkDashboardFlag();
         });
     } else {
         handlePreloader();
         initNavigationListener();
         window.updateNavbarUI();
+        window.checkDashboardFlag();
     }
 
 })();

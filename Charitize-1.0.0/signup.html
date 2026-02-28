@@ -663,6 +663,15 @@
       let currentStep = 1;
       let confirmationResult = null;
 
+      // Global error/success handlers
+      window.showErrorMessage = function(msg) {
+          alert('Error: ' + msg); 
+      };
+      
+      window.showSuccessMessage = function(msg) {
+          console.log('Success: ' + msg);
+      };
+
       // Check for role or Google redirect on load
       window.addEventListener('load', async () => {
           const urlParams = new URLSearchParams(window.location.search);
