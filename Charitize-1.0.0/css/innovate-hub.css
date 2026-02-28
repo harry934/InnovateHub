@@ -2,13 +2,18 @@
    1. NAVBAR CONFIGURATION (Adjust lengths here)
    ======================================== */
 :root {
-  --nav-height: 85px;                /* Main navbar height */
-  --nav-max-width: 1320px;           /* Standard Bootstrap container width for alignment */
-  --nav-horizontal-padding: 25px;    /* Padding from container edges */
-  --nav-item-gap: 35px;              /* Consistent gap between nav items */
-  --nav-active-highlight: rgba(26, 94, 79, 0.1); /* Subtle dark green highlight on yellow */
-  --nav-glass-bg: rgba(243, 168, 19, 0.95);   /* Premium yellow brand color */
-  --nav-glass-blur: 15px;            /* Blur intensity */
+  --nav-height: 85px; /* Main navbar height */
+  --nav-max-width: 1320px; /* Standard Bootstrap container width for alignment */
+  --nav-horizontal-padding: 25px; /* Padding from container edges */
+  --nav-item-gap: 35px; /* Consistent gap between nav items */
+  --nav-active-highlight: rgba(
+    26,
+    94,
+    79,
+    0.1
+  ); /* Subtle dark green highlight on yellow */
+  --nav-glass-bg: rgba(243, 168, 19, 0.95); /* Premium yellow brand color */
+  --nav-glass-blur: 15px; /* Blur intensity */
 }
 
 /* ========================================
@@ -941,16 +946,16 @@
 }
 /* ========================================
    13. TRANSFORMING STICKY NAVBAR
-   Scroll-based refinement: Transparent-ish, slim, and focused
    ======================================== */
 
 .nav-bar {
-  transition: all 0.5s ease;
+  transition: background 0.4s ease, box-shadow 0.4s ease;
 }
 
-/* ───── Bulletproof Sticky Navbar Re-implementation ───── */
+/* ── SCROLLED STATE: shared across all breakpoints ────────
+   Green brand background with glassmorphism. */
 .nav-bar.navbar-scrolled {
-  background: rgba(26, 94, 79, 0.8) !important; /* Glassy brand green */
+  background: rgba(26, 94, 79, 0.8) !important; /* Brand green */
   backdrop-filter: blur(15px) !important;
   -webkit-backdrop-filter: blur(15px) !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
@@ -962,8 +967,7 @@
   z-index: 1050 !important;
 }
 
-/* Force transparency on ALL containers when scrolled */
-.nav-bar.navbar-scrolled,
+/* Keep inner elements transparent so the parent bg shows through */
 .nav-bar.navbar-scrolled .navbar,
 .nav-bar.navbar-scrolled .container-fluid,
 .nav-bar.navbar-scrolled .container {
@@ -971,7 +975,12 @@
   background-image: none !important;
 }
 
-/* Re-apply the glassy background to the ONLY parent that matters */
+/* ── Ensure Logo / CTA padded nicely when scrolled ── */
+.nav-bar.navbar-scrolled .navbar {
+  display: flex !important;
+  justify-content: space-between !important;
+}
+
 /* Brand Identity: Original Yellow/Orange */
 .bg-primary {
   background-color: #f3a813 !important;
@@ -983,42 +992,22 @@
 }
 
 body.user-logged-in .logged-in-only {
-  display: flex !important; /* or block, depending on context, but flex is used for our buttons */
+  display: flex !important;
 }
 
-/* Force hidden state for specific IDs as ultimate fallback */
-#navDashboardBtn.d-none, 
+/* Force hidden state for specific IDs */
+#navDashboardBtn.d-none,
 #navDashboardLink.d-none,
 .logout-link.d-none {
   display: none !important;
 }
 
-div.nav-bar.fixed-top.navbar-scrolled {
-  background: rgba(26, 94, 79, 0.85) !important;
-  backdrop-filter: blur(15px) !important;
-  -webkit-backdrop-filter: blur(15px) !important;
-}
-
-/* Specific override for Dashboard Mobile Header when scrolled */
+/* Dashboard mobile header when scrolled */
 .mobile-dashboard-header.navbar-scrolled {
-  background: rgba(26, 94, 79, 0.85) !important;
+  background: rgba(26, 94, 79, 0.8) !important;
   backdrop-filter: blur(15px) !important;
   -webkit-backdrop-filter: blur(15px) !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Focused Scroll: Hide main navigation links on desktop scroll */
-@media (min-width: 992px) {
-  .nav-bar.navbar-scrolled #mainNav {
-    display: none !important;
-  }
-}
-
-/* Ensure Logo and CTA remain visible and correctly padded on scroll */
-.nav-bar.navbar-scrolled .navbar {
-  padding: 5px var(--nav-side-padding) !important;
-  display: flex !important;
-  justify-content: space-between !important;
 }
 
 @media (min-width: 992px) {
@@ -1039,7 +1028,7 @@ div.nav-bar.fixed-top.navbar-scrolled {
      REFACTORED DESKTOP NAVBAR (FULL WIDTH + CENTERED CONTAINER)
      Spans full width, content stays centered via max-width.
      ======================================== */
-  
+
   .nav-bar {
     width: 100% !important;
     padding: 0 !important; /* Managed by inner container */
@@ -1055,7 +1044,6 @@ div.nav-bar.fixed-top.navbar-scrolled {
     margin: 0 auto !important; /* Final horizontal centering */
     width: 100% !important;
     padding: 0 var(--nav-horizontal-padding) !important; /* Managed edge padding */
-    background: transparent !important;
     transition: all 0.4s ease !important;
   }
 
@@ -1081,8 +1069,8 @@ div.nav-bar.fixed-top.navbar-scrolled {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: center !important;
-    gap: var(--nav-item-gap) !important;
+    justify-content: space-evenly !important;
+    gap: 0 !important; /* space-evenly handles spacing, no extra gap needed */
     flex-grow: 1 !important; /* Expands to push brand/auth to edges */
     margin: 0 !important;
   }
@@ -1114,62 +1102,54 @@ div.nav-bar.fixed-top.navbar-scrolled {
     z-index: 10;
   }
 
-  /* ========================================
-     STRIKE/STICKY SCROLL REFINEMENTS (GLASSMORPHISM)
-     ======================================== */
-  
+  /* ── DESKTOP SCROLL REFINEMENTS ────────────────────────── */
   .nav-bar.navbar-scrolled {
-    background: var(--nav-glass-bg) !important;
-    backdrop-filter: blur(var(--nav-glass-blur)) !important;
-    -webkit-backdrop-filter: blur(var(--nav-glass-blur)) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
-    position: fixed !important;
-    top: 0 !important;
     z-index: 1030 !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
 
   .nav-bar.navbar-scrolled .navbar {
     height: calc(var(--nav-height) - 15px) !important;
+    justify-content: space-between !important;
+    max-width: var(--nav-max-width) !important;
+    margin: 0 auto;
+    padding: 0 var(--nav-horizontal-padding) !important;
   }
 
-  /* Reveal Logo on Scroll */
+  /* Sticky Logo Pinned Left */
   .nav-bar.navbar-scrolled .sticky-logo {
     opacity: 1 !important;
     visibility: visible !important;
     display: flex !important;
+    margin-right: auto !important;
   }
 
-  /* Ensure links remain visible on scroll for full navigation access */
+  /* Nav Links Centered */
   .nav-bar.navbar-scrolled #mainNav {
     display: flex !important;
+    flex-grow: 1 !important;
+    justify-content: center !important;
   }
 
+  /* Auth Buttons / CTA Pinned Right */
   .nav-bar.navbar-scrolled .navbar-collapse {
-    justify-content: flex-end !important; /* CTA shifts to traditional far-right */
+    justify-content: flex-end !important;
+    flex-grow: 1 !important;
+  }
+
+  .nav-bar.navbar-scrolled .navbar-collapse .ms-auto {
+    margin-left: auto !important;
   }
 }
 
-  /* Option: User requested "Balanced Spacing" on scroll too. 
-     We keep our absolute-side logic which is the most balanced. */
-  
-  /* Ensure links are hidden on scroll if that's the preferred "Focused Scroll" UX */
-  .nav-bar.navbar-scrolled #mainNav {
-    display: none !important;
-  }
-}
-
-/* Mobile Header Refinement: Ensure logo and toggler are side-by-side naturally */
+/* Mobile Header Refinement: Ensure logo and toggler are always visible */
 @media (max-width: 991.98px) {
   .sticky-logo {
-    display: flex !important; /* Always visible to flex-align with hamburger */
+    display: flex !important;
     opacity: 1 !important;
     visibility: visible !important;
     margin: 0 !important;
   }
 }
-
-
 
 /* ========================================
    14. RECONSTRUCTING LOGO PRELOADER (HIGH-END)
@@ -1285,9 +1265,6 @@ div.nav-bar.fixed-top.navbar-scrolled {
   }
 }
 
-
 /* ========================================
    15. OTHER STYLES
    ======================================== */
-
-
