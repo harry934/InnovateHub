@@ -27,14 +27,19 @@ class MentorDashboard {
 
   init() {
     onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "login.html";
-        return;
+      if (!user) return; // Redirects handled by global scripts
+      
+      try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists() && userDoc.data().role === 'mentor') {
+              this.currentUser = user;
+              await this.checkProfileCompletion();
+              await this.initializeUI(); // Wait for UI init to attach listeners
+              this.loadDashboardData();
+          }
+      } catch (err) {
+          console.error("Error verifying mentor role:", err);
       }
-      this.currentUser = user;
-      await this.checkProfileCompletion();
-      await this.initializeUI(); // Wait for UI init to attach listeners
-      this.loadDashboardData();
     });
   }
 

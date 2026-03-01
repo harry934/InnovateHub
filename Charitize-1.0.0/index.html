@@ -35,16 +35,20 @@
     
     <!-- Innovate Hub Custom Styles -->
     <!-- Custom CSS file with splash screen, badges, dashboard styles, and AI chat -->
-    <link href="css/innovate-hub.css?v=2.7.2" rel="stylesheet">
+    <link href="css/innovate-hub.css?v=3.0.0" rel="stylesheet">
     
     <!-- Nuru-Assistant Styles -->
-    <link href="css/nuru-assistant.css?v=2.1.0" rel="stylesheet">
+    <link href="css/nuru-assistant.css?v=3.0.0" rel="stylesheet">
     
     <!-- Mobile Enhancement Styles -->
-    <link href="css/mobile-nav.css?v=2.8.0" rel="stylesheet">
+    <link href="css/mobile-nav.css?v=3.0.0" rel="stylesheet">
     
     <!-- Auth UI Styles -->
-    <link href="css/auth-ui.css?v=2.1.0" rel="stylesheet">
+    <link href="css/auth-ui.css?v=3.0.0" rel="stylesheet">
+    
+    <!-- Unified Dashboard Styles -->
+    <link href="css/responsive-dashboard.css?v=3.0.0" rel="stylesheet">
+    <link href="css/dashboard-unified.css?v=3.0.0" rel="stylesheet">
 </head>
 
 <body>
@@ -157,8 +161,7 @@
                             </div>
                         </div>
                         <a href="contact.html" class="nav-item nav-link">Contact Us</a>
-                        <!-- My Dashboard Link (Hidden by default, shown via JS when logged in) -->
-                        <a href="innovator-dashboard.html" class="nav-item nav-link d-none logged-in-only" id="navDashboardLink">My Dashboard</a>
+
                     </div>
                     <!-- Authentication/User Area -->
                     <div class="d-flex ms-auto align-items-center">
@@ -167,7 +170,7 @@
                             <a class="btn btn-get-started" href="signup.html">GET STARTED</a>
                         </div>
                         <!-- Logged In User View: Simplified Dashboard Button -->
-                        <a class="btn btn-get-started me-3 d-none logged-in-only" href="javascript:void(0)" onclick="goToDashboard()" id="navDashboardBtn">MY DASHBOARD</a>
+                        <a class="btn btn-get-started me-3 d-none logged-in-only" href="dashboard.html" id="navDashboardBtn">MY DASHBOARD</a>
                         <a href="javascript:void(0)" onclick="logout()" class="text-danger small logout-link d-none logged-in-only"><i class="fa fa-sign-out-alt me-1"></i>Logout</a>
                     </div>
                 </div>
@@ -176,6 +179,8 @@
     </div>
     <!-- Navbar End -->
 
+    <!-- Main Website Content Wrapper -->
+    <div id="main-website-content">
 
     <!-- Carousel Start -->
     <div class="container-fluid p-0 wow fadeIn" data-wow-delay="0.1s">
@@ -835,6 +840,12 @@
     </div>
     <!-- Newsletter End -->
 
+    </div>
+    <!-- Main Website Content Wrapper End -->
+
+    <!-- Unified Dashboard Start -->
+    </div>
+    <!-- Unified Dashboard End -->
 
     <!-- Footer Start -->
     <div class="container-fluid footer py-5 wow fadeIn" data-wow-delay="0.1s">
@@ -924,26 +935,19 @@
     <script src="lib/counterup/counterup.min.js"></script>
 
     <!-- Template Javascript -->
-    <script src="js/main.js?v=2.5.0"></script>
+    <script src="js/main.js?v=3.0.0"></script>
 
     <!-- Nuru-Assistant -->
-    <script src="js/nuru-assistant.js?v=2.1.6"></script>
+    <script src="js/nuru-assistant.js?v=3.0.0"></script>
     
     <!-- Innovate Hub Custom JavaScript -->
     <!-- Handles splash screen, authentication, form validation, and utility functions -->
     <!-- Custom JavaScript -->
-    <script src="js/ui-utils.js?v=2.1.6"></script>
-    <script src="js/shared-ui.js?v=2.1.6"></script>
-    <script src="js/api.js?v=2.1.6"></script>
-    <script type="module" src="js/innovate-hub.js?v=2.1.6"></script>
-    <script type="module">
-        import { showWelcomeHint } from './js/welcome-hint.js';
-        
-        // Wait for DOM to show welcome hint if applicable
-        document.addEventListener("DOMContentLoaded", () => {
-            showWelcomeHint();
-        });
-    </script>
+    <script src="js/ui-utils.js?v=3.0.0"></script>
+    <script src="js/shared-ui.js?v=3.0.0"></script>
+    <script src="js/api.js?v=3.0.0"></script>
+    <script type="module" src="js/innovate-hub.js?v=3.0.0"></script>
+    <!-- Dashboard scripts moved to dashboard.html -->
 
     <!-- Mobile Hamburger Menu Enhancement Script -->
     <script>

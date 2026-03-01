@@ -5,21 +5,29 @@
     <title>Admin Dashboard - Innovate Hub</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link href="img/favicon.ico" rel="icon">
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap & Custom CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css?v=2.1.0" rel="stylesheet">
-    <link href="css/innovate-hub.css?v=2.7.2" rel="stylesheet">
+    <link href="css/innovate-hub.css?v=2.9.0" rel="stylesheet">
     <link href="css/responsive-dashboard.css?v=2.1.0" rel="stylesheet">
-    <link href="css/mobile-nav.css?v=2.8.0" rel="stylesheet">
+    <link href="css/nuru-assistant.css" rel="stylesheet">
+    <link href="css/mobile-nav.css?v=2.9.0" rel="stylesheet">
 </head>
 
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
         <div class="dashboard-sidebar">
+            <!-- Mobile Toggle Header -->
             <div class="d-flex align-items-center justify-content-between px-4 py-3 d-lg-none border-bottom mb-2 mobile-dashboard-header bg-primary nav-bar">
                 <a href="/" class="logo-container text-decoration-none p-0 m-0">
                     <img src="img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
@@ -41,189 +49,696 @@
                 </a>
             
             <!-- User Identity -->
-            <div class="px-4 mb-4 user-identity border-bottom pb-3">
-                <small class="text-muted d-block" style="font-size: 0.7rem;">Logged in as</small>
-                <div id="userDisplayName" class="fw-bold text-dark" style="font-size: 0.9rem;">Administrator</div>
+            <div class="px-4 mb-4 user-identity">
+                <small class="text-dark d-block" style="font-size: 0.7rem; opacity: 0.8;">Logged in as</small>
+                <div id="userDisplayName" class="fw-bold text-dark" style="font-size: 1rem; letter-spacing: 0.5px;">Admin</div>
             </div>
             
-            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small" style="color: #1a5e4f; font-weight: 700;">Management</h6>
+            <h6 class="sidebar-heading px-4 mt-2 mb-2 text-uppercase small" style="color: var(--bs-primary); letter-spacing: 1.5px; font-weight: 700;">Innovation</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link active" href="#" onclick="showSection('overview')">
-                    <i class="fa fa-th-large me-2 small"></i>Overview
-                </a>
-                <a class="nav-link" href="#" onclick="showSection('mentorApprovals')">
-                    <i class="fa fa-user-check me-2 small"></i>Mentors <span class="badge bg-warning text-dark ms-2" id="pendingMentors">0</span>
-                </a>
-                <a class="nav-link" href="#" onclick="showSection('projectReviews')">
-                    <i class="fa fa-lightbulb me-2 small"></i>Projects <span class="badge bg-primary ms-2" id="pendingProjects">0</span>
-                </a>
-                <a class="nav-link" href="#" onclick="showSection('rejectionRequests')">
-                    <i class="fa fa-times-circle me-2 small"></i>Rejections <span class="badge bg-danger ms-2" id="pendingRejections">0</span>
-                </a>
+                <a class="nav-link active" href="#" onclick="showSection('projects')"><i class="fa fa-folder-open me-2"></i>My Projects</a>
+                <a class="nav-link" href="#" onclick="showSection('submit')"><i class="fa fa-plus-circle me-2"></i>Submit Project</a>
+                <a class="nav-link" href="#" onclick="showSection('mentors')"><i class="fa fa-search me-2"></i>Find Mentors</a>
             </nav>
             
-            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small" style="color: #1a5e4f; font-weight: 700;">Platform</h6>
+            <h6 class="sidebar-heading px-4 mt-2 mb-2 text-uppercase small" style="color: var(--bs-primary); letter-spacing: 1.5px; font-weight: 700;">Support</h6>
             <nav class="nav flex-column mb-3">
-                <a class="nav-link" href="#" onclick="showSection('users')">
-                    <i class="fa fa-users me-2 small"></i>All Users
-                </a>
-                <a class="nav-link" href="#" onclick="showSection('events')">
-                    <i class="fa fa-calendar me-2 small"></i>Events
-                </a>
-                <a class="nav-link" href="#" onclick="showSection('reports')">
-                    <i class="fa fa-flag me-2 small"></i>Reports
-                </a>
-            </nav>
-
-            <h6 class="sidebar-heading px-4 mt-2 mb-1 text-uppercase small" style="color: #1a5e4f; font-weight: 700;">Account</h6>
-            <nav class="nav flex-column mb-3">
-                <a class="nav-link" href="#" onclick="showSection('notifications')">
-                    <span style="display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa fa-bell me-2 small"></i><span>Notifications</span>
-                        <div id="notificationBell"></div>
-                    </span>
-                </a>
-                <a href="javascript:void(0)" onclick="logout()" class="nav-link text-danger mt-3">
-                    <i class="fa fa-sign-out-alt me-2"></i>Logout
-                </a>
+                <a class="nav-link" href="#" onclick="showSection('myMentors')"><i class="fa fa-user-tie me-2"></i>My Mentors</a>
+                <a class="nav-link" href="event.html"><i class="fa fa-calendar-alt me-2"></i>Events</a>
+                <a class="nav-link" href="#" onclick="showSection('notifications')"><i class="fa fa-bell me-2"></i>Notifications</a>
             </nav>
             
-            <div class="px-3 mt-3 pb-3">
-                <small class="text-muted" style="font-size: 0.65rem;">Platform v2.0.0</small>
+            <h6 class="sidebar-heading px-4 mt-2 mb-2 text-uppercase small" style="color: var(--bs-primary); letter-spacing: 1.5px; font-weight: 700;">Account</h6>
+            <nav class="nav flex-column mb-3">
+                <a class="nav-link" href="#" onclick="showSection('profile')"><i class="fa fa-user-circle me-2"></i>My Profile</a>
+                <a class="nav-link text-danger mt-3" href="javascript:void(0)" onclick="logout()"><i class="fa fa-sign-out-alt me-2"></i>Logout</a>
+            </nav>
+            
+                <div class="px-3 mt-3">
+                    <small class="text-muted" style="font-size: 0.65rem;">Platform v2.0.0</small>
+                </div>
             </div>
         </div>
-    </div>
         
         <!-- Main Content -->
         <div class="dashboard-main">
-            <!-- Overview Section -->
-            <div id="overviewSection" class="dashboard-section">
+            <!-- My Projects Section -->
+            <div id="projectsSection" class="dashboard-section">
                 <div class="dashboard-header mb-4">
-                    <h2>Admin Overview</h2>
-                    <p class="text-muted">Global platform statistics and management</p>
+                    <h2>My Projects</h2>
+                    <p class="text-muted">Track and manage your innovation projects</p>
+                </div>
+                <div id="projectsContainer"></div>
+            </div>
+            
+            <!-- Submit Project Section -->
+            <div id="submitSection" class="dashboard-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h2>Submit New Project</h2>
+                    <p class="text-muted">Share your innovative idea with us</p>
                 </div>
                 
-                <div class="row g-4 mb-4">
-                    <div class="col-md-3">
-                        <div class="dashboard-card text-center h-100">
-                            <i class="fa fa-users fa-3x text-primary mb-3"></i>
-                            <h5 class="mb-2">Total Users</h5>
-                            <p class="display-4 fw-bold" id="totalUsers">0</p>
+                <div class="dashboard-card">
+                    <form id="projectForm">
+                        <div class="mb-3">
+                            <label class="form-label">Project Title</label>
+                            <input type="text" class="form-control" name="title" required>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="dashboard-card text-center h-100">
-                            <i class="fa fa-lightbulb fa-3x text-warning mb-3"></i>
-                            <h5 class="mb-2">Projects</h5>
-                            <p class="display-4 fw-bold" id="totalProjects">0</p>
+                        
+                        <div class="mb-3">
+                            <label class="form-label d-block">Project Categories (Select any that apply)</label>
+                            <div class="d-flex flex-wrap gap-3 p-3 border" style="background: #f8f9fa;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="categories" value="technology" id="catTech">
+                                    <label class="form-check-label" for="catTech">Technology</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="categories" value="healthcare" id="catHealth">
+                                    <label class="form-check-label" for="catHealth">Healthcare</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="categories" value="education" id="catEdu">
+                                    <label class="form-check-label" for="catEdu">Education</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="categories" value="environment" id="catEnv">
+                                    <label class="form-check-label" for="catEnv">Environment</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="categories" value="social" id="catSocial">
+                                    <label class="form-check-label" for="catSocial">Social Impact</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="categories" value="agriculture" id="catAgri">
+                                    <label class="form-check-label" for="catAgri">AgriTech</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="categories" value="robotics" id="catRobo">
+                                    <label class="form-check-label" for="catRobo">Robotics</label>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="dashboard-card text-center h-100">
-                            <i class="fa fa-user-tie fa-3x text-success mb-3"></i>
-                            <h5 class="mb-2">Active Mentors</h5>
-                            <p class="display-4 fw-bold" id="totalMentors">0</p>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Problem Statement</label>
+                            <textarea class="form-control" name="problemStatement" rows="3" required></textarea>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="dashboard-card text-center h-100">
-                            <i class="fa fa-handshake fa-3x text-info mb-3"></i>
-                            <h5 class="mb-2">Mentorships</h5>
-                            <p class="display-4 fw-bold" id="activeMentorships">0</p>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Objectives</label>
+                            <textarea class="form-control" name="objectives" rows="3" required></textarea>
                         </div>
-                    </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Proposed Solution</label>
+                            <textarea class="form-control" name="proposedSolution" rows="4" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Expected Impact</label>
+                            <textarea class="form-control" name="expectedImpact" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Supporting Document (Optional)</label>
+                            <input type="file" class="form-control" name="document" accept=".pdf,.doc,.docx">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-custom-signup">Submit Project</button>
+                    </form>
                 </div>
             </div>
             
-            <!-- Mentor Approvals Section -->
-            <div id="mentorApprovalsSection" class="dashboard-section" style="display: none;">
+            <!-- Find Mentors Section -->
+            <div id="mentorsSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
-                    <h2>Mentor Applications</h2>
-                    <p class="text-muted">Review and approve new mentor registrations</p>
+                    <h2>Find Mentors</h2>
+                    <p class="text-muted">Connect with experienced mentors</p>
                 </div>
-                <div id="mentorApprovalsContainer" class="dashboard-card p-4">
-                    <!-- Loaded via JS -->
+                
+                <div class="filter-panel mb-4 p-3 bg-white shadow-sm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Filter by Categories</label>
+                            <div id="mentorCategoryCheckboxes" class="d-flex flex-wrap gap-2">
+                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="technology">Technology</span>
+                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="healthcare">Healthcare</span>
+                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="education">Education</span>
+                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="environment">Environment</span>
+                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="agriculture">AgriTech</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Search Mentors</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa fa-search"></i></span>
+                                <input type="text" class="form-control" id="mentorSearchInput" placeholder="Search by name, expertise or institution">
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                
+                <div id="mentorsContainer" class="row g-4"></div>
             </div>
             
-            <!-- Project Reviews Section -->
-            <div id="projectReviewsSection" class="dashboard-section" style="display: none;">
+            <!-- My Mentors Section -->
+            <div id="myMentorsSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
-                    <h2>Project Reviews</h2>
-                    <p class="text-muted">Approve or reject submitted innovation projects</p>
+                    <h2>My Mentors</h2>
+                    <p class="text-muted">Your assigned mentors and requests</p>
                 </div>
-                <div id="projectReviewsContainer">
-                    <!-- Loaded via JS -->
-                </div>
+                <div id="myMentorsContainer"></div>
             </div>
-
-            <!-- Rejection Requests Section -->
-            <div id="rejectionRequestsSection" class="dashboard-section" style="display: none;">
+            
+            <!-- Profile Section -->
+            <div id="profileSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
-                    <h2>Rejection Requests</h2>
-                    <p class="text-muted">Review mentorship termination requests from mentors</p>
+                    <h2>My Profile</h2>
+                    <p class="text-muted">Manage your professional admin profile</p>
                 </div>
-                <div id="rejectionRequestsContainer">
-                    <!-- Loaded via JS -->
-                </div>
-            </div>
-
-            <!-- Users Section -->
-            <div id="usersSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>User Management</h2>
-                    <p class="text-muted">Manage platform users and access levels</p>
-                </div>
-                <div id="usersContainer" class="dashboard-card p-4">
-                    <!-- Loaded via JS -->
-                </div>
-            </div>
-
-            <!-- Events Section -->
-            <div id="eventsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>Platform Events</h2>
-                    <p class="text-muted">Manage innovation events and workshops</p>
-                </div>
-                <div id="eventsContainer" class="dashboard-card p-5 text-center text-muted">
-                    <i class="fa fa-calendar-plus fa-3x mb-3"></i>
-                    <p>Event management module is currently under maintenance.</p>
-                </div>
-            </div>
-
-            <!-- Reports Section -->
-            <div id="reportsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>Reports & Analytics</h2>
-                    <p class="text-muted">Global platform activity and audit logs</p>
-                </div>
-                <div id="reportsContainer" class="dashboard-card p-5 text-center text-muted">
-                    <i class="fa fa-chart-line fa-3x mb-3"></i>
-                    <p>Advanced reports module is currently under maintenance.</p>
+                
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="dashboard-card text-center">
+                            <div class="profile-pic-wrapper mb-3">
+                                <img id="profilePreview" src="img/user-default.png" alt="Profile Picture" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
+                                <div class="mt-3">
+                                    <label class="btn btn-sm btn-outline-primary" for="profilePicInput">
+                                        <i class="fa fa-camera me-1"></i> Change Photo
+                                    </label>
+                                    <input type="file" id="profilePicInput" hidden accept="image/*">
+                                </div>
+                            </div>
+                            <h4 id="profileDisplayNameDisplay">Admin Name</h4>
+                            <p class="text-muted small">Admin</p>
+                            <hr>
+                            <div class="text-start">
+                                <h6 class="small fw-bold">Skills</h6>
+                                <div id="skillsBadgeContainer" class="d-flex flex-wrap gap-1">
+                                    <!-- Skills will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="dashboard-card">
+                            <form id="profileForm">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" name="fullName" id="profileName" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="email" id="profileEmail" readonly>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Bio</label>
+                                    <textarea class="form-control" name="bio" id="profileBio" rows="3" placeholder="Tell us about yourself..."></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Institution / Organization</label>
+                                    <input type="text" class="form-control" name="institution" id="profileInstitution">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Skills (comma separated)</label>
+                                    <input type="text" class="form-control" name="skills" id="profileSkills" placeholder="e.g. Python, UX Design, Robotics">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Interests</label>
+                                    <input type="text" class="form-control" name="interests" id="profileInterests" placeholder="e.g. AI for social good, Clean Energy">
+                                </div>
+                                <button type="submit" class="btn btn-custom-signup">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Notifications Section -->
             <div id="notificationsSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
-                    <h2>System Notifications</h2>
-                    <p class="text-muted">Review important platform activity logs</p>
+                    <h2>Notifications</h2>
+                    <p class="text-muted">Stay updated with your latest alerts and feedback</p>
                 </div>
-                <div id="notificationsContainer">
-                    <!-- Loaded via NotificationSystem -->
+                <div class="dashboard-card">
+                    <div id="notificationsPageList" class="list-group list-group-flush">
+                        <!-- Notifications will be loaded here -->
+                        <div class="text-center py-5">
+                            <i class="fa fa-bell-slash fa-3x text-light mb-3"></i>
+                            <p class="text-muted">No notifications yet</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <!-- Scripts -->
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/ui-utils.js?v=2.1.4"></script>
-    <script src="js/shared-ui.js?v=2.1.4"></script>
-    <script src="js/api.js?v=2.1.4"></script>
-    <script type="module" src="js/admin-dashboard.js?v=2.1.4"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/ui-utils.js?v=2.1.2"></script>
+    <script src="js/shared-ui.js?v=2.1.2"></script>
+    <script src="js/api.js?v=2.1.2"></script>
+    <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/innovate-hub.js?v=2.1.4"></script>
-    <!-- Nuru-Assistant -->
+    <script type="module" src="js/components/status-badges.js"></script>
+    <script type="module" src="js/components/notification-system.js"></script>
+    <script type="module" src="js/components/empty-states.js"></script>
+    <script type="module" src="js/components/mentor-profile-card.js"></script>
+    <script type="module" src="js/components/project-card-structured.js"></script>
+    <script type="module" src="js/utils/auto-save-manager.js"></script>
+    
+    <script>
+        // Section navigation - Global (Non-module for robustness)
+        window.showSection = function(sectionName) {
+            console.log('Switching to section:', sectionName);
+            // Hide all sections
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show target section
+            const section = document.getElementById(sectionName + 'Section');
+            if (section) {
+                section.style.display = 'block';
+                
+                // Find and highlight the correct link
+                let activeLink = document.querySelector(`.nav-link[onclick*="showSection('${sectionName}')"]`);
+                if (!activeLink) {
+                    activeLink = document.querySelector(`.nav-link[onclick*="${sectionName}"]`);
+                }
+                
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+            } else {
+                console.warn('Section not found:', sectionName + 'Section');
+                if (sectionName !== 'projects') window.showSection('projects');
+            }
+            
+            // Scroll to top of main content
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+    </script>
+
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import NotificationSystem from './js/components/notification-system.js';
+        import StructuredProjectCard from './js/components/project-card-structured.js';
+        import MentorProfileCard from './js/components/mentor-profile-card.js';
+        import EmptyStates from './js/components/empty-states.js';
+        import AutoSaveManager from './js/utils/auto-save-manager.js';
+        import { ProjectService } from './js/innovate-hub.js';
+
+        // Logout - Global
+        window.logout = async function() {
+            try {
+                await auth.signOut();
+                localStorage.removeItem('innovateHubUser');
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = 'login.html';
+            }
+        };
+
+        let currentUser = null;
+        let autoSave = null;
+        
+        // Auth check
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            currentUser = user;
+            try {
+                await initializeDashboard();
+            } catch (err) {
+                console.error("Critical Dashboard Init Error:", err);
+                window.showSection('projects');
+            }
+        });
+        
+        async function initializeDashboard() {
+            // UI elements
+            const userDisplayName = document.getElementById('userDisplayName');
+            const profileDisplayNameDisplay = document.getElementById('profileDisplayNameDisplay');
+            const profilePreview = document.getElementById('profilePreview');
+
+            // Default display name
+            const initialName = currentUser.displayName || currentUser.email.split('@')[0];
+            if (userDisplayName) userDisplayName.textContent = initialName;
+            if (profileDisplayNameDisplay) profileDisplayNameDisplay.textContent = initialName;
+
+            // Load additional profile info from Firestore
+            try {
+                const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    
+                    const realName = data.fullName || initialName;
+                    if (userDisplayName) userDisplayName.textContent = realName;
+                    if (profileDisplayNameDisplay) profileDisplayNameDisplay.textContent = realName;
+
+                    if (document.getElementById('profileName')) document.getElementById('profileName').value = data.fullName || '';
+                    if (document.getElementById('profileBio')) document.getElementById('profileBio').value = data.bio || '';
+                    if (document.getElementById('profileInstitution')) document.getElementById('profileInstitution').value = data.institution || '';
+                    if (document.getElementById('profileSkills')) document.getElementById('profileSkills').value = (data.skills || []).join(', ');
+                    if (document.getElementById('profileInterests')) document.getElementById('profileInterests').value = (data.interests || []).join(', ');
+                    
+                    if (data.photoURL && profilePreview) {
+                        profilePreview.src = data.photoURL;
+                    }
+
+                    // Render skills badges
+                    const skillsContainer = document.getElementById('skillsBadgeContainer');
+                    if (skillsContainer && data.skills) {
+                        skillsContainer.innerHTML = data.skills.map(s => `<span class="badge bg-primary-soft text-primary p-2">${s}</span>`).join('');
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading profile from Firestore:", err);
+            }
+
+            if (document.getElementById('profileEmail')) document.getElementById('profileEmail').value = currentUser.email;
+
+            // Initialize notification system
+            try {
+                const notificationSystem = new NotificationSystem(currentUser.uid);
+                notificationSystem.init('notificationBell');
+                notificationSystem.bindFullList('notificationsPageList');
+            } catch (err) {
+                console.warn("Notification system init failed:", err);
+            }
+            
+            // Load projects
+            await loadProjects();
+            
+            // Load mentors
+            await loadMentors();
+            
+            // Initialize auto-save for project form
+            try {
+                autoSave = new AutoSaveManager('projectForm', currentUser.uid, 'project');
+                await autoSave.init();
+            } catch (err) {
+                console.warn("AutoSave init failed:", err);
+            }
+            
+            // Setup form submission
+            const projectForm = document.getElementById('projectForm');
+            if (projectForm) projectForm.addEventListener('submit', handleProjectSubmit);
+            
+            const profileForm = document.getElementById('profileForm');
+            if (profileForm) profileForm.addEventListener('submit', handleProfileUpdate);
+            
+            // Filter Pills Handling
+            document.querySelectorAll('.category-filter-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    pill.classList.toggle('bg-primary');
+                    pill.classList.toggle('text-white');
+                    pill.classList.toggle('bg-light');
+                    pill.classList.toggle('text-dark');
+                    loadMentors(); 
+                });
+            });
+
+            // Search input handling
+            const mentorSearchInput = document.getElementById('mentorSearchInput');
+            if (mentorSearchInput) {
+                mentorSearchInput.addEventListener('input', debounce(() => loadMentors(), 500));
+            }
+
+            // Profile Picture Upload Handling
+            const profilePicInput = document.getElementById('profilePicInput');
+            if (profilePicInput) {
+                profilePicInput.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (re) => {
+                        const preview = document.getElementById('profilePreview');
+                        if (preview) preview.src = re.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                    
+                    const preview = document.getElementById('profilePreview');
+                    if (preview) preview.style.opacity = '0.5';
+
+                    try {
+                        const response = await window.api.uploadProjectFile(file, 'profile', currentUser.uid);
+                        if (response && response.ok) {
+                            const baseUrl = window.api ? window.api.API_URL : 'https://innovatehub.up.railway.app/api';
+                            const photoURL = `${baseUrl}/projects/file/${response.data.fileId}`;
+                            
+                            const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+                            await updateProfile(currentUser, { photoURL });
+                            
+                            await updateDoc(doc(db, "users", currentUser.uid), { 
+                                photoURL, 
+                                updatedAt: serverTimestamp() 
+                            });
+                            
+                            alert('Profile picture updated!');
+                        } else {
+                            throw new Error("Upload failed.");
+                        }
+                    } catch (err) {
+                        console.error("Profile pic upload failed:", err);
+                        alert('Failed to update profile picture.');
+                    } finally {
+                        if (preview) preview.style.opacity = '1';
+                    }
+                });
+            }
+        }
+        
+        async function loadProjects() {
+            const container = document.getElementById('projectsContainer');
+            if (!container) return;
+            container.innerHTML = EmptyStates.templates.loadingState();
+            
+            try {
+                const q = query(collection(db, 'projects'), where('adminId', '==', currentUser.uid));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    container.innerHTML = EmptyStates.templates.noProjects();
+                    return;
+                }
+                
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const project = { id: doc.id, ...doc.data() };
+                    container.innerHTML += StructuredProjectCard.render(project, {
+                        showActions: true,
+                        isExpanded: false
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                container.innerHTML = EmptyStates.templates.errorState('Failed to load projects');
+            }
+        }
+        
+        async function loadMentors() {
+            const container = document.getElementById('mentorsContainer');
+            if (!container) return;
+            container.innerHTML = EmptyStates.templates.loadingState();
+            
+            try {
+                const selectedCategories = Array.from(document.querySelectorAll('.category-filter-pill.bg-primary'))
+                    .map(pill => pill.dataset.value);
+                
+                const searchInput = document.getElementById('mentorSearchInput');
+                const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+                const q = query(collection(db, 'users'), where('role', '==', 'mentor'));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    container.innerHTML = EmptyStates.templates.noMentors();
+                    return;
+                }
+                
+                let mentors = [];
+                snapshot.forEach(doc => {
+                    const mentor = { id: doc.id, ...doc.data() };
+                    
+                    const matchesCategory = selectedCategories.length === 0 || 
+                        selectedCategories.some(c => (mentor.categories || []).includes(c) || (mentor.expertise || '').toLowerCase().includes(c));
+                    
+                    const matchesSearch = !searchTerm || 
+                        mentor.fullName?.toLowerCase().includes(searchTerm) || 
+                        mentor.expertise?.toLowerCase().includes(searchTerm) ||
+                        mentor.institution?.toLowerCase().includes(searchTerm);
+
+                    if (matchesCategory && matchesSearch) mentors.push(mentor);
+                });
+                
+                if (mentors.length === 0) {
+                    container.innerHTML = EmptyStates.templates.noMentors();
+                    return;
+                }
+
+                container.innerHTML = '';
+                mentors.forEach(mentor => {
+                    container.innerHTML += MentorProfileCard.render(mentor, {
+                        showRequestButton: true,
+                        showAvailability: true, 
+                        cardClass: 'col-md-6 col-lg-4'
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading mentors:', error);
+                container.innerHTML = EmptyStates.templates.errorState('Failed to load mentors');
+            }
+        }
+        
+        async function handleProjectSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            
+            const categories = Array.from(form.querySelectorAll('input[name="categories"]:checked'))
+                .map(cb => cb.value);
+            
+            if (categories.length === 0) {
+                alert('Please select at least one category.');
+                return;
+            }
+
+            const fileInput = form.querySelector('input[name="document"]');
+            const file = fileInput.files ? fileInput.files[0] : null;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Submitting...';
+
+            const projectData = {
+                adminId: currentUser.uid,
+                userId: currentUser.uid,
+                title: form.title.value,
+                categories: categories,
+                problemStatement: form.problemStatement.value,
+                objectives: form.objectives.value,
+                proposedSolution: form.proposedSolution.value,
+                expectedImpact: form.expectedImpact.value
+            };
+            
+            try {
+                await ProjectService.submitProject(projectData, file);
+                alert('Project submitted successfully!');
+                form.reset();
+                if (autoSave) await autoSave.clearDraft();
+                window.showSection('projects');
+                await loadProjects();
+            } catch (error) {
+                console.error('Error submitting project:', error);
+                alert('Failed to submit project: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit Project';
+            }
+        }
+
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            
+            submitBtn.disabled = true;
+            
+            const skills = form.skills.value.split(',').map(s => s.trim()).filter(s => s !== '');
+            const profileData = {
+                fullName: form.fullName.value,
+                bio: form.bio.value,
+                institution: form.institution.value,
+                skills: skills,
+                interests: form.interests.value,
+                updatedAt: serverTimestamp()
+            };
+
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid), profileData);
+                alert('Profile updated!');
+                await initializeDashboard();
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert('Failed to update profile.');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+        
+        window.requestMentorship = async function(mentorId) {
+            try {
+                // Fetch projects to select from
+                const q = query(collection(db, 'projects'), where('adminId', '==', currentUser.uid));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    alert('Please submit a project first before requesting mentorship. Go to "Submit Project" section.');
+                    if (typeof showSection === 'function') showSection('submit-project');
+                    return;
+                }
+                
+                let projectId = snapshot.docs[0].id;
+                
+                // If multiple projects, ask which one
+                if (snapshot.size > 1) {
+                    const projects = snapshot.docs.map(d => ({id: d.id, title: d.data().title}));
+                    const projectList = projects.map((p, i) => `${i+1}. ${p.title}`).join('\n');
+                    const choice = prompt(`Which project is this mentorship for?\n\n${projectList}\n\nEnter number (default 1):`, '1');
+                    
+                    if (choice === null) return; // User cancelled
+                    
+                    const index = parseInt(choice) - 1;
+                    if (projects[index]) {
+                        projectId = projects[index].id;
+                    }
+                }
+
+                if (typeof MentorshipService !== 'undefined' && MentorshipService.sendRequest) {
+                    await MentorshipService.sendRequest(mentorId, projectId);
+                } else {
+                    // Fallback for direct addDoc if service missing
+                    await addDoc(collection(db, 'mentorshipRequests'), {
+                        adminId: currentUser.uid,
+                        mentorId: mentorId,
+                        projectId: projectId,
+                        status: 'pending',
+                        createdAt: serverTimestamp()
+                    });
+                }
+                
+                alert('Mentorship request sent successfully!');
+            } catch (error) {
+                console.error('Error sending request:', error);
+                alert('Failed to send request: ' + error.message);
+            }
+        };
+    </script>
+    <!-- Nuru-Assistant (context: admin dashboard) -->
     <script src="js/nuru-assistant.js"></script>
 
     <!-- Mobile Hamburger Menu Enhancement Script -->

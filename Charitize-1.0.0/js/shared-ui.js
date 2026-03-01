@@ -62,24 +62,20 @@
         if (!user) {
             user = window.loadFromLocalStorage("innovateHubUser");
         }
-
         const guestButtons = document.getElementById("guestButtons");
         const navDashboardBtn = document.getElementById("navDashboardBtn");
         const logoutLink = document.querySelector(".logout-link");
-        const navDashboardLink = document.getElementById("navDashboardLink");
 
         if (user && user.loggedIn === true) {
             document.body.classList.add("user-logged-in");
             if (guestButtons) guestButtons.classList.add("d-none");
             if (navDashboardBtn) navDashboardBtn.classList.remove("d-none");
             if (logoutLink) logoutLink.classList.remove("d-none");
-            if (navDashboardLink) navDashboardLink.classList.remove("d-none");
         } else {
             document.body.classList.remove("user-logged-in");
             if (guestButtons) guestButtons.classList.remove("d-none");
             if (navDashboardBtn) navDashboardBtn.classList.add("d-none");
             if (logoutLink) logoutLink.classList.add("d-none");
-            if (navDashboardLink) navDashboardLink.classList.add("d-none");
             // Clear potentially stale localStorage if no loggedIn flag
             if (!user || user.loggedIn !== true) {
                 localStorage.removeItem("innovateHubUser");
@@ -90,16 +86,30 @@
     // 4. GLOBAL UI ACTIONS
     window.goToDashboard = function() {
         const user = window.loadFromLocalStorage("innovateHubUser");
-        if (user && user.role) {
-            if (user.role === 'admin') {
-                window.location.href = 'admin-dashboard.html';
-            } else if (user.role === 'mentor') {
-                window.location.href = 'mentor-dashboard.html';
-            } else {
-                window.location.href = 'innovator-dashboard.html';
-            }
-        } else {
-            window.location.href = 'innovator-dashboard.html';
+        if (!user || !user.role) {
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        if (user.role === 'admin') {
+            window.location.href = 'admin-dashboard.html';
+            return;
+        }
+        
+        // Redirect to the dedicated dashboard page
+        window.location.href = 'dashboard.html';
+    };
+    
+    // Check URL for dashboard flag on load
+    window.checkDashboardFlag = function() {
+        // Only redirect if NOT already on the dashboard page
+        if (window.location.pathname.endsWith('dashboard.html')) return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('dashboard') === 'true') {
+            // Clean URL and redirect to the new dedicated dashboard page
+            window.history.replaceState({}, document.title, window.location.pathname);
+            window.location.href = 'dashboard.html';
         }
     };
 
@@ -109,11 +119,13 @@
             handlePreloader();
             initNavigationListener();
             window.updateNavbarUI();
+            window.checkDashboardFlag();
         });
     } else {
         handlePreloader();
         initNavigationListener();
         window.updateNavbarUI();
+        window.checkDashboardFlag();
     }
 
 })();
