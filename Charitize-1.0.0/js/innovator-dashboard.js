@@ -1,14 +1,14 @@
 
 // Auto-extracted from innovator-dashboard.html
-import { auth, db } from './js/firebase-config.js';
+import { auth, db } from './firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import NotificationSystem from './js/components/notification-system.js';
-        import StructuredProjectCard from './js/components/project-card-structured.js';
-        import MentorProfileCard from './js/components/mentor-profile-card.js';
-        import EmptyStates from './js/components/empty-states.js';
-        import AutoSaveManager from './js/utils/auto-save-manager.js';
-        import { ProjectService } from './js/innovate-hub.js';
+        import NotificationSystem from './components/notification-system.js';
+        import StructuredProjectCard from './components/project-card-structured.js';
+        import MentorProfileCard from './components/mentor-profile-card.js';
+        import EmptyStates from './components/empty-states.js';
+        import AutoSaveManager from './utils/auto-save-manager.js';
+        import { ProjectService } from './innovate-hub.js';
 
         // Logout - Global
         window.logout = async function() {

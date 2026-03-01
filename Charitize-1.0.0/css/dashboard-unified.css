@@ -7,8 +7,8 @@
 /* --- MAIN LAYOUT --- */
 #unified-dashboard-container {
     display: flex;
-    min-height: calc(100vh - var(--nav-scrolled-height, 65px));
-    margin-top: var(--nav-scrolled-height, 65px);
+    min-height: calc(100vh - 160px); /* Adjust for Topbar + Navbar */
+    margin-top: 0;
     background-color: #f8f9fa;
     position: relative;
     overflow-x: hidden;
