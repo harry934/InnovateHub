@@ -1,12 +1,7 @@
 {
   "hosting": {
     "public": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      "server/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "server/**"],
     "cleanUrls": true,
     "trailingSlash": false,
     "rewrites": [
@@ -22,6 +17,10 @@
       {
         "source": "/admin-dashboard",
         "destination": "/admin-dashboard.html"
+      },
+      {
+        "source": "/dashboard",
+        "destination": "/dashboard.html"
       },
       {
         "source": "**",

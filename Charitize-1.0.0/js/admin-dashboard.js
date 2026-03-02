@@ -42,8 +42,14 @@ class AdminDashboard {
 
     updateUserDisplay() {
         const userDisplayName = document.getElementById('userDisplayName');
+        const name = this.currentUser.displayName || this.currentUser.email.split('@')[0];
         if (userDisplayName) {
-            userDisplayName.textContent = this.currentUser.displayName || this.currentUser.email.split('@')[0];
+            userDisplayName.textContent = name;
+        }
+
+        // Refresh Profile Circle Initials
+        if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
+            window.StaggeredMenu.updateInitials(name);
         }
     }
 

@@ -86,6 +86,15 @@ function truncateText(text, max) {
     return text.substring(0, max) + "...";
 }
 
+// 6. Initials Helper
+function getInitials(name) {
+    if (!name) return 'US';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 0) return 'US';
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
 // Expose to window explicitly
 window.showSuccessMessage = showSuccessMessage;
 window.showErrorMessage = showErrorMessage;
@@ -96,5 +105,6 @@ window.validateForm = validateForm;
 window.generateUniqueId = generateUniqueId;
 window.formatDate = formatDate;
 window.truncateText = truncateText;
+window.getInitials = getInitials;
 
 console.log("UI Utilities initialized ✓");

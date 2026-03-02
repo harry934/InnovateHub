@@ -10,6 +10,73 @@ import { auth, db } from './firebase-config.js';
         import AutoSaveManager from './utils/auto-save-manager.js';
         import { ProjectService } from './innovate-hub.js';
 
+        const dashboardCards = [
+            { 
+                title: 'My Projects', 
+                icon: 'fa-project-diagram', 
+                id: 'projects', 
+                section: 'projects',
+                types: ['Manage', 'Track']
+            },
+            { 
+                title: 'Submit Project', 
+                icon: 'fa-plus-circle', 
+                id: 'submit', 
+                section: 'submit',
+                types: ['Innovate', 'Submit']
+            },
+            { 
+                title: 'Find Mentors', 
+                icon: 'fa-user-md', 
+                id: 'mentors', 
+                section: 'mentors',
+                types: ['Connect', 'Experts']
+            },
+            { 
+                title: 'My Mentors', 
+                icon: 'fa-users', 
+                id: 'myMentors', 
+                section: 'myMentors',
+                types: ['Assigned', 'Requests']
+            },
+            {
+                title: 'Account Settings',
+                icon: 'fa-user-cog',
+                id: 'profile',
+                section: 'profile',
+                types: ['Profile', 'Settings']
+            }
+        ];
+
+        function renderQuickAccessCards() {
+            const container = document.getElementById('dashboardCardsGrid');
+            if (!container) return;
+            
+            container.innerHTML = dashboardCards.map(card => `
+                <article class="article-wrapper" onclick="showDashboardSection('${card.section}')">
+                  <div class="rounded-lg container-project d-flex align-items-center justify-content-center" style="height: 100px;">
+                    <i class="fa ${card.icon} fa-3x text-primary"></i>
+                  </div>
+
+                  <div class="project-info">
+                    <div class="flex-pr">
+                      <div class="project-title text-nowrap">${card.title}</div>
+                      <div class="project-hover">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor">
+                          <line y2="12" x2="19" y1="12" x1="5"></line>
+                          <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                      </div>
+                    </div>
+
+                    <div class="types">
+                      ${card.types.map(t => `<span class="project-type">• ${t}</span>`).join('')}
+                    </div>
+                  </div>
+                </article>
+            `).join('');
+        }
+
         // Logout - Global
         window.logout = async function() {
             try {
@@ -79,6 +146,11 @@ import { auth, db } from './firebase-config.js';
                     if (skillsContainer && data.skills) {
                         skillsContainer.innerHTML = data.skills.map(s => `<span class="badge bg-primary-soft text-primary p-2">${s}</span>`).join('');
                     }
+
+                    // Refresh Profile Circle Initials
+                    if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
+                        window.StaggeredMenu.updateInitials(realName);
+                    }
                 }
             } catch (err) {
                 console.error("Error loading profile from Firestore:", err);
@@ -100,6 +172,43 @@ import { auth, db } from './firebase-config.js';
             
             // Load mentors
             await loadMentors();
+
+            // Initialize CardNav
+            const navItems = [
+                { 
+                    label: 'Projects', 
+                    bgColor: '#1a5e4f', 
+                    textColor: '#fff', 
+                    links: [
+                        { label: 'My Projects', href: 'javascript:showDashboardSection("projects")' }, 
+                        { label: 'Submit New', href: 'javascript:showDashboardSection("submit")' }
+                    ] 
+                },
+                { 
+                    label: 'Mentors', 
+                    bgColor: '#f3a813', 
+                    textColor: '#000', 
+                    links: [
+                        { label: 'Find Mentors', href: 'javascript:showDashboardSection("mentors")' }, 
+                        { label: 'My Mentors', href: 'javascript:showDashboardSection("myMentors")' }
+                    ] 
+                },
+                { 
+                    label: 'Account', 
+                    bgColor: '#121331', 
+                    textColor: '#fff', 
+                    links: [
+                        { label: 'My Profile', href: 'javascript:showDashboardSection("profile")' }, 
+                        { label: 'Notifications', href: 'javascript:showDashboardSection("notifications")' }
+                    ] 
+                }
+            ];
+
+            /* CardNav removed in favor of standard navbar + landing cards */
+
+            // Global section switcher enhancement is already handled in dashboard.html
+            // We just need to make sure renderQuickAccessCards is called
+            renderQuickAccessCards();
             
             // Initialize auto-save for project form
             try {
@@ -325,6 +434,12 @@ import { auth, db } from './firebase-config.js';
 
             try {
                 await updateDoc(doc(db, "users", currentUser.uid), profileData);
+                
+                // Update local storage if needed (optional, but keep consistent)
+                const storedUser = JSON.parse(localStorage.getItem('innovateHubUser') || '{}');
+                storedUser.fullName = profileData.fullName;
+                localStorage.setItem('innovateHubUser', JSON.stringify(storedUser));
+
                 alert('Profile updated!');
                 await initializeDashboard();
             } catch (error) {

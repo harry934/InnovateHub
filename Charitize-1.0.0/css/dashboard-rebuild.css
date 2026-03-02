@@ -1,0 +1,556 @@
+/* ================================================================
+   INNOVATE HUB — Dashboard Stylesheet
+   Clean rewrite for aesthetic consistency & navigation fixes
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap');
+
+/* ── TOKENS ────────────────────────────────────────────────── */
+:root {
+    --brand-green:   #1a5e4f;
+    --brand-green-2: #134740;
+    --brand-yellow:  #f3a813;
+    --brand-dark:    #121331;
+    --bg-page:       #f0f4f2;      /* warm off-white, brand-tinted */
+    --bg-card:       rgba(255,255,255,0.88);
+    --shadow-sm:     0 4px 16px rgba(26,94,79,.08);
+    --shadow-md:     0 12px 40px rgba(26,94,79,.12);
+    --radius-card:   22px;
+    --radius-sm:     12px;
+    --font-head:     'Josefin Sans', sans-serif;
+    --font-body:     'Open Sans', sans-serif;
+}
+
+/* ── RESET / BASE ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: var(--font-body);
+    background-color: var(--bg-page);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6,
+.logo-text, .project-title, .section-header {
+    font-family: var(--font-head);
+}
+
+/* ── BACKGROUND AESTHETIC ───────────────────────────────────── */
+
+/* Subtle diagonal texture overlay or radial mesh */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        radial-gradient(ellipse 80% 60% at 10% 0%,   rgba(26,94,79,.06)  0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 100%,  rgba(243,168,19,.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 50% 50%,   rgba(26,94,79,.03)  0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Animated floating shapes - Original Minimal */
+body::after {
+    content: '';
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    top: -150px;
+    right: -150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,94,79,.05) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+    animation: floatBlobMinimal 20s ease-in-out infinite alternate;
+}
+
+@keyframes floatBlobMinimal {
+    0%   { transform: translate(0,0) scale(1);      }
+    100% { transform: translate(-40px,40px) scale(1.05); }
+}
+
+/* Yellow accent blob bottom-left */
+.page-blob {
+    position: fixed;
+    bottom: -150px;
+    left: -150px;
+    width: 450px;
+    height: 450px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(243,168,19,.05) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+    animation: floatBlobMinimal 25s ease-in-out infinite alternate-reverse;
+}
+
+/* Ensure all content sits above the background layer */
+nav, main, .glass-panel, section, #dashboardQuickAccess {
+    position: relative;
+    z-index: 10;
+}
+
+/* ── NAVBAR ─────────────────────────────────────────────────── */
+.navbar-green {
+    background-color: var(--brand-green) !important;
+    padding: 12px 0;
+    box-shadow: 0 2px 16px rgba(0,0,0,.18);
+    z-index: 1050;
+}
+
+.logo-container-rebuild {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.logo-text-rebuild {
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+/* Profile avatar circle in nav */
+.nav-profile-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--brand-yellow);
+    color: var(--brand-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-family: var(--font-head);
+    font-size: .9rem;
+    flex-shrink: 0;
+}
+
+/* Notification button */
+.nav-notif-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    line-height: 0;
+}
+
+/* ── LOGOUT BUTTON ──────────────────────────────────────────── */
+/*  Pill-shaped, brand green border, expands to show text on hover  */
+.nav-logout-btn {
+    display:         flex;
+    align-items:     center;
+    gap:             8px;
+    padding:         8px 14px;
+    background:      rgba(255,255,255,.12);
+    border:          1.5px solid rgba(255,255,255,.35);
+    border-radius:   50px;
+    color:           #fff;
+    font-family:     var(--font-head);
+    font-weight:     600;
+    font-size:       .85rem;
+    letter-spacing:  0.3px;
+    cursor:          pointer;
+    transition:      background .3s, border-color .3s, color .3s;
+    white-space:     nowrap;
+    margin-left:     12px;
+}
+
+.nav-logout-btn:hover {
+    background:   var(--brand-yellow);
+    border-color: var(--brand-yellow);
+    color:        var(--brand-dark);
+}
+
+.nav-logout-btn svg {
+    width:      18px;
+    height:     18px;
+    flex-shrink: 0;
+    transition: fill .3s;
+    fill:       #fff;
+}
+
+.nav-logout-btn:hover svg {
+    fill: var(--brand-dark);
+}
+
+/* ── HAMBURGER TOGGLE ───────────────────────────────────────── */
+/*  Uses Bootstrap's built-in toggler + custom icon bars  */
+.nav-menu-btn {
+    background:   transparent;
+    border:       1.5px solid rgba(255,255,255,.35);
+    border-radius: 10px;
+    padding:       8px 10px;
+    cursor:        pointer;
+    display:       flex;
+    flex-direction: column;
+    gap:           5px;
+    margin-left:   10px;
+    transition:    background .3s, border-color .3s;
+}
+
+.nav-menu-btn:hover {
+    background:   rgba(255,255,255,.12);
+    border-color: var(--brand-yellow);
+}
+
+.nav-menu-btn .bar {
+    display:       block;
+    width:         22px;
+    height:        2.5px;
+    background:    #fff;
+    border-radius: 4px;
+    transition:    transform .35s cubic-bezier(.4,0,.2,1),
+                   opacity   .35s ease,
+                   width     .35s ease;
+    transform-origin: center;
+}
+
+/* X state — toggled via JS adding .is-open class */
+.nav-menu-btn.is-open .bar:nth-child(1) { transform: translateY(7.5px) rotate(45deg);  }
+.nav-menu-btn.is-open .bar:nth-child(2) { opacity: 0; width: 0;                         }
+.nav-menu-btn.is-open .bar:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
+
+/* ── OFFCANVAS PANEL ────────────────────────────────────────── */
+.offcanvas {
+    width: 280px !important;
+    border-left: 3px solid var(--brand-yellow);
+    z-index: 1060;
+}
+
+.bg-green-dark {
+    background-color: var(--brand-green-2) !important;
+}
+
+.offcanvas-body .list-group-item {
+    border: none;
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: .95rem;
+    color: var(--brand-green);
+    padding: 14px 20px;
+    transition: background .2s, color .2s;
+}
+
+.offcanvas-body .list-group-item:hover {
+    background-color: rgba(26,94,79,.08);
+    color: var(--brand-yellow);
+}
+
+/* ── DASHBOARD GRID – QUICK ACCESS CARDS ────────────────────── */
+.dashboard-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 32px;
+    padding: 48px 0;
+    width: 100%;
+}
+
+.article-wrapper {
+    background: var(--bg-card);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: var(--radius-card);
+    padding: 14px;
+    border: 1px solid rgba(26,94,79,.1);
+    cursor: pointer;
+    transition: transform .45s cubic-bezier(.23,1,.32,1),
+                box-shadow .45s ease,
+                border-color .45s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.article-wrapper:hover {
+    transform: translateY(-12px) translateX(-4px);
+    box-shadow: 0 20px 48px rgba(0,0,0,.13),
+                6px 6px 0 var(--brand-green),
+                12px 12px 0 var(--brand-yellow);
+    border-color: rgba(243,168,19,.4);
+}
+
+.container-project {
+    width: 100%;
+    height: 185px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(145deg, #e9f4f0 0%, #d2ebe3 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: background .4s;
+    border: 1px solid rgba(26,94,79,.08);
+}
+
+.article-wrapper:hover .container-project {
+    background: #fff;
+}
+
+.project-info {
+    padding: 16px 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.flex-pr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.project-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--brand-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.project-hover {
+    color: var(--brand-green);
+    opacity: .45;
+    transition: opacity .3s, transform .3s, color .3s;
+    line-height: 0;
+}
+
+.article-wrapper:hover .project-hover {
+    opacity: 1;
+    transform: translateX(5px);
+    color: var(--brand-yellow);
+}
+
+.types {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+.project-type {
+    background: rgba(26,94,79,.09);
+    color: var(--brand-green);
+    font-weight: 700;
+    padding: 4px 11px;
+    border-radius: 20px;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+/* ── DASHBOARD SECTIONS ─────────────────────────────────────── */
+.dashboard-section {
+    padding: 24px 0;
+}
+
+/* Welcome / hero strip */
+.dashboard-hero {
+    background: linear-gradient(120deg, var(--brand-green) 0%, var(--brand-green-2) 100%);
+    border-radius: 24px;
+    padding: 36px 48px;
+    color: #fff;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.dashboard-hero::after {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: rgba(243,168,19,.15);
+    pointer-events: none;
+}
+
+.dashboard-hero h2 {
+    color: #fff;
+    font-size: 1.9rem;
+    margin-bottom: 6px;
+}
+
+.dashboard-hero p {
+    opacity: .8;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Glass panels for sub-sections */
+.glass-panel {
+    background: rgba(255,255,255,.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 48px;
+    border: 1px solid rgba(255,255,255,.5);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 36px;
+}
+
+.section-header h2 {
+    color: var(--brand-green);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.brand-divider {
+    width: 56px;
+    height: 5px;
+    background: var(--brand-yellow);
+    border: none;
+    border-radius: 10px;
+    opacity: 1;
+    margin: 16px 0 28px;
+}
+
+/* ── FORMS ──────────────────────────────────────────────────── */
+.premium-form-group {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.premium-form-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #dde4e1;
+    padding: 12px 0 6px;
+    font-size: 1rem;
+    color: var(--brand-dark);
+    outline: none;
+    font-family: var(--font-body);
+    transition: border-color .35s;
+}
+
+.premium-form-input:focus {
+    border-bottom-color: var(--brand-green);
+}
+
+.premium-form-label {
+    position: absolute;
+    top: 12px;
+    left: 0;
+    font-size: .9rem;
+    color: #7a9b91;
+    font-family: var(--font-head);
+    pointer-events: none;
+    transition: top .25s, font-size .25s, color .25s;
+}
+
+.premium-form-input:focus ~ .premium-form-label,
+.premium-form-input:not(:placeholder-shown) ~ .premium-form-label {
+    top: -10px;
+    font-size: .75rem;
+    color: var(--brand-green);
+}
+
+.premium-input-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 100%;
+}
+
+.premium-input-bar::before,
+.premium-input-bar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: var(--brand-green);
+    transition: width .35s ease;
+}
+.premium-input-bar::before { left: 50%; }
+.premium-input-bar::after  { right: 50%; }
+
+.premium-form-input:focus ~ .premium-input-bar::before,
+.premium-form-input:focus ~ .premium-input-bar::after {
+    width: 50%;
+}
+
+/* ── BUTTONS ────────────────────────────────────────────────── */
+.btn-primary {
+    background:    var(--brand-green) !important;
+    border:        none !important;
+    border-radius: 14px !important;
+    padding:       12px 32px !important;
+    font-family:   var(--font-head) !important;
+    font-weight:   700 !important;
+    transition:    all .3s !important;
+    box-shadow:    0 4px 16px rgba(26,94,79,.2) !important;
+}
+
+.btn-primary:hover {
+    background:   var(--brand-green-2) !important;
+    transform:    translateY(-2px) !important;
+    box-shadow:   0 10px 24px rgba(26,94,79,.3) !important;
+}
+
+/* ── EMPTY STATES & LOADERS ─────────────────────────────────── */
+.no-data-msg {
+    text-align: center;
+    padding: 60px 40px;
+    background: rgba(255,255,255,.7);
+    border: 2px dashed rgba(26,94,79,.2);
+    border-radius: var(--radius-card);
+    color: #6c757d;
+    font-size: 1.05rem;
+}
+
+/* Premium animated dot loader */
+.premium-loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    height: 100px;
+}
+
+.premium-loader-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--brand-green);
+    animation: dotJump .8s ease-in-out infinite;
+}
+
+.premium-loader-dot:nth-child(2) {
+    background: var(--brand-yellow);
+    animation-delay: .2s;
+}
+
+.premium-loader-dot:nth-child(3) {
+    background: var(--brand-green);
+    animation-delay: .4s;
+}
+
+@keyframes dotJump {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-18px); }
+}
+
+/* ── OFFCANVAS MOBILE LOGOUT ────────────────────────────────── */
+.btn-danger {
+    background:    #c0392b !important;
+    border:        none !important;
+    border-radius: 10px !important;
+    font-family:   var(--font-head) !important;
+    font-weight:   700 !important;
+}
+
+/* ── RESPONSIVE ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .glass-panel        { padding: 28px 20px; }
+    .dashboard-hero     { padding: 24px 20px; }
+    .dashboard-hero h2  { font-size: 1.4rem; }
+}
