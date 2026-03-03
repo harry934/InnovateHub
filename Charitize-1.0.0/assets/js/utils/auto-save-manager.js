@@ -3,7 +3,7 @@
  * Automatically saves form data to Firestore drafts collection
  */
 
-import { db } from '../firebase-config.js';
+import { db } from '../core/firebase-config.js';
 import { doc, setDoc, getDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 export class AutoSaveManager {

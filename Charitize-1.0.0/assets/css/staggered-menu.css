@@ -1,0 +1,316 @@
+:root {
+  --sm-accent: #1a5e4f;
+  --sm-bg-panel: #ffffff;
+  --sm-text-primary: #1a1a1a;
+  --sm-text-secondary: #666666;
+  --sm-transition: 0.6s cubic-bezier(0.85, 0, 0.15, 1);
+  --sm-num-opacity: 0;
+}
+
+.staggered-menu-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0; /* Expanded by JS when open */
+  z-index: 100000; /* Priority depth */
+  pointer-events: none;
+}
+
+.staggered-menu-wrapper[data-open] {
+  height: 100vh;
+  pointer-events: auto;
+}
+
+/* Pre-layers (Staggered Backgrounds) */
+.sm-prelayers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sm-prelayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: translateX(100%);
+  will-change: transform;
+}
+
+.staggered-menu-wrapper[data-position="left"] .sm-prelayer {
+  transform: translateX(-100%);
+}
+
+/* Header (Logo + Toggle) */
+.staggered-menu-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2.5rem;
+  z-index: 10010; /* Above the panel (10005) */
+  pointer-events: auto;
+  background: rgba(26, 94, 79, 0.9); /* Transparent Green with blur */
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  height: 90px;
+  color: #ffffff;
+}
+
+.sm-logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sm-logo-img {
+  height: 42px;
+  width: auto;
+  opacity: 1 !important;
+}
+
+.sm-site-name {
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #f3a813; /* Brand Yellow */
+  letter-spacing: -0.5px;
+}
+
+/* Header Action Styles (Restored) */
+.sm-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.sm-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.nav-notif-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff !important;
+  font-size: 1.2rem;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notif-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 9px;
+  height: 9px;
+  background: #f3a813;
+  border-radius: 50%;
+  border: 1.5px solid #1a5e4f;
+}
+
+.nav-profile-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #f3a813 !important;
+  color: #1a5e4f !important;
+  display: grid; 
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.nav-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Toggle Button */
+.sm-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  color: inherit;
+  outline: none;
+  z-index: 10020;
+}
+
+.sm-toggle-textWrap {
+  height: 1.2rem;
+  overflow: hidden;
+  position: relative;
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.sm-toggle-textInner {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.5s var(--sm-transition);
+}
+
+.sm-toggle-line {
+  height: 1.2rem;
+  line-height: 1.2rem;
+}
+
+/* Icon (Line to X) */
+.sm-icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.sm-icon-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  transition: transform 0.3s ease;
+}
+
+.sm-icon-line-v {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+/* ==============================================
+   PANEL — Editorial Bold Menu (side drawer)
+   ============================================== */
+.staggered-menu-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: auto;
+  width: 420px;
+  max-width: 94vw;
+  height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 10005;
+  padding: 0 2.5rem;
+  box-shadow: -4px 0 40px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sm-panel-inner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 5rem 0 3rem;
+}
+
+.sm-panel-section-label {
+  display: none; /* not used in this design */
+}
+
+.sm-panel-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sm-panel-itemWrap {
+  overflow: visible;
+}
+
+/* Each nav link — large bold uppercase editorial style */
+.sm-panel-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
+  text-decoration: none;
+  color: #1a1a1a;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: clamp(1.3rem, 3.2vw, 2.2rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  padding: 0.6rem 0;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.sm-panel-item:hover {
+  color: #1a5e4f; /* Brand Green on hover */
+}
+
+/* Superscript number — positioned right after the label, small and elevated */
+.sm-item-num {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1a5e4f; /* Brand Green */
+  vertical-align: super;
+  margin-left: 0.3rem;
+  letter-spacing: 0.5px;
+  position: relative;
+  top: -0.4em;
+}
+
+.sm-panel-item:hover .sm-item-num {
+  color: #f3a813; /* Brand Yellow on hover */
+}
+
+.sm-panel-itemLabel {
+  display: inline;
+}
+
+/* No dividers, no footer in editorial mode */
+.sm-panel-divider { display: none; }
+.sm-panel-footer { display: none; }
+
+/* Responsiveness */
+@media (max-width: 768px) {
+  .staggered-menu-header {
+    padding: 0 1.25rem;
+  }
+  .staggered-menu-panel {
+    padding: 0 1.5rem;
+  }
+  .sm-panel-item {
+    font-size: clamp(1.5rem, 8vw, 2.2rem);
+  }
+}

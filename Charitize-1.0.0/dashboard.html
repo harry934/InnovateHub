@@ -1,906 +1,672 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>My Dashboard - Innovate Hub</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
-
-    <!-- Favicon -->
-    <link href="img/favicon.ico" rel="icon">
+  <head>
+    <meta charset="utf-8" />
+    <title>Dashboard - Innovate Hub</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link href="assets/img/favicon.ico" rel="icon" />
 
     <!-- Google Web Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap"
-        rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Icon Font Stylesheet -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
 
     <!-- Libraries Stylesheet -->
-    <link href="lib/animate/animate.min.css" rel="stylesheet">
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="assets/lib/animate/animate.min.css" rel="stylesheet" />
+    <link href="assets/css/bootstrap.min.css?v=2.6.0" rel="stylesheet" />
+    <link href="assets/css/style.css?v=2.6.0" rel="stylesheet" />
+    <link href="assets/css/staggered-menu.css?v=2.6.0" rel="stylesheet" />
+    <link href="assets/css/dashboard-rebuild.css?v=2.6.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=2.6.0" rel="stylesheet" />
+    <link href="assets/css/nuru-assistant.css?v=2.6.0" rel="stylesheet" />
 
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  </head>
 
-    <!-- Template Stylesheet -->
-    <link href="css/style.css?v=3.0.0" rel="stylesheet">
-    
-    <!-- Innovate Hub Custom Styles -->
-    <!-- Custom CSS file with splash screen, badges, dashboard styles, and AI chat -->
-    <link href="css/innovate-hub.css?v=3.0.0" rel="stylesheet">
-    
-    <!-- Nuru-Assistant Styles -->
-    <link href="css/nuru-assistant.css?v=3.0.0" rel="stylesheet">
-    
-    <!-- Mobile Enhancement Styles -->
-    <link href="css/mobile-nav.css?v=3.0.0" rel="stylesheet">
-    
-    <!-- Auth UI Styles -->
-    <link href="css/auth-ui.css?v=3.0.0" rel="stylesheet">
-    
-    <!-- Unified Dashboard Styles -->
-    <link href="css/responsive-dashboard.css?v=3.0.0" rel="stylesheet">
-    <link href="css/dashboard-unified.css?v=3.0.0" rel="stylesheet">
-    
-    <style>
-        /* Adjust dashboard to fit under the common header */
-        #unified-dashboard-container {
-            min-height: calc(100vh - 160px);
-            display: flex;
-            margin-top: 0 !important;
-        }
-        #unified-dashboard-main {
-            flex-grow: 1;
-            padding: 2rem;
-            background: #f8f9fa;
-        }
-        @media (min-width: 992px) {
-            .ud-sidebar {
-                height: calc(100vh - 160px);
-                position: sticky;
-                top: 75px; /* Navbar height */
-            }
-        }
-    </style>
-</head>
+  <body>
+    <!-- Minimalist Header Bridge (Staggered Menu will inject the actual header) -->
+    <div style="height: 100px"></div>
 
-<body class="bg-light">
-    <!-- Logo Preloader Start -->
-    <div id="logo-preloader">
-        <div class="preloader-content">
-            <svg class="preloader-logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path class="hexagon-path" d="M20 4L33.8564 12V28L20 36L6.14359 28V12L20 4Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
-                <circle class="hub-circle" cx="20" cy="20" r="5" fill="#F3A813"/>
-                <line class="connect-line line-1" x1="20" y1="4" x2="20" y2="15" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                <line class="connect-line line-2" x1="33.8564" y1="28" x2="24.3301" y2="22.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                <line class="connect-line line-3" x1="6.14359" y1="28" x2="15.6699" y2="22.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+    <!-- Animated background elements -->
+    <div class="page-blob"></div>
+
+    <!-- Dashboard Landing Page -->
+    <div id="dashboardQuickAccess" class="py-5">
+      <div class="container text-center mb-5 mt-4">
+        <h1 class="display-4 fw-bold mb-2">Dashboard</h1>
+        <p class="text-muted lead">
+          Quick access to your innovation tools and mentorship.
+        </p>
+      </div>
+      <div class="container">
+        <div class="dashboard-grid-container" id="dashboardCardsGrid">
+          <!-- Role-based cards injected by JS -->
         </div>
+      </div>
     </div>
-    <!-- Logo Preloader End -->
 
-    <!-- Topbar Start -->
-    <div class="container-fluid bg-secondary top-bar wow fadeIn" data-wow-delay="0.1s">
-        <div class="row align-items-center h-100">
-            <div class="col-lg-4 text-center text-lg-start">
-                <!-- Logo/Branding: Main site logo with icon and text -->
-                <a href="index.html" class="logo-container text-decoration-none">
-                    <!-- New minimalist SVG logo icon -->
-                    <img src="img/logo.svg" alt="Innovate Hub Logo" class="logo-icon" style="width: 40px; height: 40px;">
-                    <!-- Platform name with solid brand color -->
-                    <span class="logo-text">Innovate Hub</span>
-                </a>
-            </div>
-            <div class="col-lg-8 d-none d-lg-block">
-                <div class="row">
-                    <div class="col-lg-4">
-                        <div class="d-flex justify-content-end">
-                            <div class="flex-shrink-0 btn-square bg-primary">
-                                <i class="fa fa-phone-alt text-dark"></i>
-                            </div>
-                            <div class="ms-2">
-                                <h6 class="text-primary mb-0">Call Us</h6>
-                                <span class="text-white">+254 700 000000</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="d-flex justify-content-end">
-                            <div class="flex-shrink-0 btn-square bg-primary">
-                                <i class="fa fa-envelope-open text-dark"></i>
-                            </div>
-                            <div class="ms-2">
-                                <h6 class="text-primary mb-0">Mail Us</h6>
-                                <span class="text-white">InnovateHub@gmail.com</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="d-flex justify-content-end">
-                            <div class="flex-shrink-0 btn-square bg-primary">
-                                <i class="fa fa-map-marker-alt text-dark"></i>
-                            </div>
-                            <div class="ms-2">
-                                <h6 class="text-primary mb-0">Address</h6>
-                                <span class="text-white">Nairobi, Kenya</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Container for dynamic sections -->
+    <div id="activeSectionContainer" style="display: none">
+      <div class="container py-5">
+        <div class="mb-5">
+          <button
+            class="btn btn-outline-secondary px-4"
+            onclick="showDashboardSection('home')"
+          >
+            <i class="fa fa-arrow-left me-2"></i> Back to Dashboard
+          </button>
         </div>
-    </div>
-    <!-- Topbar End -->
 
-
-    <!-- Navbar Start -->
-    <div class="container-fluid bg-secondary px-0 wow fadeIn" data-wow-delay="0.1s">
-        <div class="nav-bar">
-            <nav class="navbar navbar-expand-lg bg-primary navbar-dark sticky-top">
-                <a href="index.html" class="navbar-brand d-flex align-items-center ms-0 me-auto sticky-logo">
-                    <img src="img/logo.svg" alt="Innovate Hub" style="width: 35px; height: 35px;">
-                    <span class="logo-text ms-2" style="font-size: 1.2rem; color: white;">Innovate Hub</span>
-                </a>
-                <!-- Menu text removed -->
-                <button type="button" class="navbar-toggler me-0" data-bs-toggle="collapse"
-                    data-bs-target="#navbarCollapse">
-                    <div class="mob-icon">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarCollapse">
-                    <!-- Navigation Menu: Main navigation links for the website -->
-                    <div class="navbar-nav" id="mainNav">
-                        <a href="index.html" class="nav-item nav-link">Home</a>
-                        <div class="nav-item dropdown">
-                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">About Us</a>
-                            <div class="dropdown-menu m-0">
-                                <a href="about.html#our-story" class="dropdown-item">Our Story</a>
-                                <a href="about.html#our-team" class="dropdown-item">Our Team</a>
-                                <a href="policy.html" class="dropdown-item">Policy</a>
-                            </div>
-                        </div>
-                        <div class="nav-item dropdown">
-                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Get Involved</a>
-                            <div class="dropdown-menu m-0">
-                                <a href="signup.html" class="dropdown-item">Submit a Project</a>
-                                <a href="signup.html" class="dropdown-item">Join as a Mentor</a>
-                                <a href="contact.html" class="dropdown-item">Partner With Us</a>
-                                <a href="event.html" class="dropdown-item">Events</a>
-                            </div>
-                        </div>
-                        <a href="contact.html" class="nav-item nav-link">Contact Us</a>
-
-                    </div>
-                    <!-- Authentication/User Area -->
-                    <div class="d-flex ms-auto align-items-center">
-                        <!-- Guest View: Clearly visible and styled buttons -->
-                        <div id="guestButtons" class="guest-actions d-flex">
-                            <a class="btn btn-get-started" href="signup.html">GET STARTED</a>
-                        </div>
-                        <!-- Logged In User View: Simplified Dashboard Button -->
-                        <a class="btn btn-get-started me-3 logged-in-only" href="dashboard.html" id="navDashboardBtn">MY DASHBOARD</a>
-                        <a href="javascript:void(0)" onclick="logout()" class="text-danger small logout-link d-none logged-in-only"><i class="fa fa-sign-out-alt me-1"></i>Logout</a>
-                    </div>
-                </div>
-            </nav>
+        <!-- Innovator: My Projects (Focus Panel) -->
+        <div
+          id="projectsSection"
+          class="dashboard-section"
+          style="display: none"
+        >
+          <div class="section-header mb-4">
+            <h2 class="display-6 fw-bold">My Projects</h2>
+            <p class="text-muted">
+              Track and manage your submitted innovation projects
+            </p>
+            <hr class="brand-divider" />
+          </div>
+          <div id="projectsContainer"></div>
         </div>
-    </div>
-    <!-- Navbar End -->
 
-    <div id="unified-dashboard-container">
-        <!-- Custom CSS Translated Sidebar -->
-        <ul class="ud-sidebar">
-            <!-- Innovator Overviews & Actions -->
-            <li class="ud-sidebar-item theme-primary innovator-only active">
-                <button class="ud-sidebar-btn" onclick="showDashboardSection('projects')">
-                    <div class="ud-icon-box"><i class="fa fa-folder-open"></i></div>
-                    <div class="ud-btn-text">My Projects</div>
-                </button>
-            </li>
-            <li class="ud-sidebar-item theme-green innovator-only">
-                <button class="ud-sidebar-btn" onclick="showDashboardSection('submit')">
-                    <div class="ud-icon-box"><i class="fa fa-plus-circle"></i></div>
-                    <div class="ud-btn-text">Submit Project</div>
-                </button>
-            </li>
-            <li class="ud-sidebar-item theme-blue innovator-only">
-                <button class="ud-sidebar-btn" onclick="showDashboardSection('mentors')">
-                    <div class="ud-icon-box"><i class="fa fa-search"></i></div>
-                    <div class="ud-btn-text">Find Mentors</div>
-                </button>
-            </li>
-            <li class="ud-sidebar-item theme-orange innovator-only">
-                <button class="ud-sidebar-btn" onclick="showDashboardSection('myMentors')">
-                    <div class="ud-icon-box"><i class="fa fa-user-tie"></i></div>
-                    <div class="ud-btn-text">My Mentors</div>
-                </button>
-            </li>
-
-            <!-- Mentor Overviews & Actions -->
-            <li class="ud-sidebar-item theme-primary mentor-only">
-                <button class="ud-sidebar-btn" onclick="showDashboardSection('overview')">
-                    <div class="ud-icon-box"><i class="fa fa-tachometer-alt"></i></div>
-                    <div class="ud-btn-text">Overview</div>
-                </button>
-            </li>
-            <li class="ud-sidebar-item theme-purple mentor-only">
-                <button class="ud-sidebar-btn" onclick="showDashboardSection('requests')">
-                    <div class="ud-icon-box"><i class="fa fa-envelope-open-text"></i></div>
-                    <div class="ud-btn-text">Requests <span class="badge bg-warning text-dark ms-2" id="requestCount">0</span></div>
-                </button>
-            </li>
-            <li class="ud-sidebar-item theme-blue mentor-only">
-                <button class="ud-sidebar-btn" onclick="showDashboardSection('mentees')">
-                    <div class="ud-icon-box"><i class="fa fa-users"></i></div>
-                    <div class="ud-btn-text">My Mentees</div>
-                </button>
-            </li>
-            <li class="ud-sidebar-item theme-orange mentor-only">
-                <button class="ud-sidebar-btn" onclick="showDashboardSection('feedback')">
-                    <div class="ud-icon-box"><i class="fa fa-comments"></i></div>
-                    <div class="ud-btn-text">Feedback Center</div>
-                </button>
-            </li>
-            <li class="ud-sidebar-item theme-green mentor-only">
-                <button class="ud-sidebar-btn" onclick="showDashboardSection('schedule')">
-                    <div class="ud-icon-box"><i class="fa fa-calendar-alt"></i></div>
-                    <div class="ud-btn-text">Schedule</div>
-                </button>
-            </li>
-
-            <!-- Shared Actions -->
-            <li class="ud-sidebar-item theme-purple">
-                <button class="ud-sidebar-btn" onclick="showDashboardSection('notifications')">
-                    <div class="ud-icon-box">
-                        <i class="fa fa-bell"></i>
-                    </div>
-                    <div class="ud-btn-text">Notifications</div>
-                </button>
-            </li>
-
-            <!-- Profile Dropdown morphing card item -->
-            <li class="ud-sidebar-item theme-blue">
-                <button class="ud-sidebar-btn" onclick="this.parentElement.classList.toggle('open')">
-                    <div class="ud-icon-box">
-                        <i class="fa fa-user-circle"></i>
-                    </div>
-                    <div class="ud-btn-text">Account Settings</div>
-                </button>
-                <div class="ud-dropdown">
-                    <div class="ud-dropdown-inner">
-                        <ul>
-                            <li>
-                                <a href="javascript:void(0)" class="text-decoration-none text-dark d-flex justify-content-between align-items-center" onclick="showDashboardSection(document.body.classList.contains('role-mentor') ? 'mentorProfile' : 'profile')">
-                                    <span class="font-semibold">My Profile</span>
-                                    <i class="fa fa-chevron-right small text-muted"></i>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0)" class="text-decoration-none text-danger d-flex justify-content-between align-items-center mt-2" onclick="logout()">
-                                    <span class="font-semibold">Logout</span>
-                                    <i class="fa fa-sign-out-alt"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Return to Website -->
-            <li class="ud-sidebar-item theme-green mt-auto">
-                <a href="index.html" class="ud-sidebar-btn text-decoration-none">
-                    <div class="ud-icon-box">
-                        <i class="fa fa-arrow-left"></i>
-                    </div>
-                    <div class="ud-btn-text">Back to Website</div>
-                </a>
-            </li>
-        </ul>
-
-        <!-- Main Dashboard Content Area -->
-        <div id="unified-dashboard-main">
-            
-            <!-- My Projects Section -->
-            <div id="projectsSection" class="dashboard-section">
-                <div class="dashboard-header mb-4">
-                    <h2>My Projects</h2>
-                    <p class="text-muted">Track and manage your innovation projects</p>
-                </div>
-                <div id="projectsContainer"></div>
-            </div>
-            
-            <!-- Submit Project Section -->
-            <div id="submitSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>Submit New Project</h2>
-                    <p class="text-muted">Share your innovative idea with us</p>
-                </div>
-                
-                <div class="dashboard-card">
-                    <form id="projectForm">
-                        <div class="mb-3">
-                            <label class="form-label">Project Title</label>
-                            <input type="text" class="form-control" name="title" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label d-block">Project Categories (Select any that apply)</label>
-                            <div class="d-flex flex-wrap gap-3 p-3 border" style="background: #f8f9fa;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="technology" id="catTech">
-                                    <label class="form-check-label" for="catTech">Technology</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="healthcare" id="catHealth">
-                                    <label class="form-check-label" for="catHealth">Healthcare</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="education" id="catEdu">
-                                    <label class="form-check-label" for="catEdu">Education</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="environment" id="catEnv">
-                                    <label class="form-check-label" for="catEnv">Environment</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="social" id="catSocial">
-                                    <label class="form-check-label" for="catSocial">Social Impact</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="agriculture" id="catAgri">
-                                    <label class="form-check-label" for="catAgri">AgriTech</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="robotics" id="catRobo">
-                                    <label class="form-check-label" for="catRobo">Robotics</label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Problem Statement</label>
-                            <textarea class="form-control" name="problemStatement" rows="3" required></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Objectives</label>
-                            <textarea class="form-control" name="objectives" rows="3" required></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Proposed Solution</label>
-                            <textarea class="form-control" name="proposedSolution" rows="4" required></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Expected Impact</label>
-                            <textarea class="form-control" name="expectedImpact" rows="3" required></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Supporting Document (Optional)</label>
-                            <input type="file" class="form-control" name="document" accept=".pdf,.doc,.docx">
-                        </div>
-                        
-                        <button type="submit" class="btn btn-custom-signup">Submit Project</button>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Find Mentors Section -->
-            <div id="mentorsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>Find Mentors</h2>
-                    <p class="text-muted">Connect with experienced mentors</p>
-                </div>
-                
-                <div class="filter-panel mb-4 p-3 bg-white shadow-sm">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Filter by Categories</label>
-                            <div id="mentorCategoryCheckboxes" class="d-flex flex-wrap gap-2">
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="technology">Technology</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="healthcare">Healthcare</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="education">Education</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="environment">Environment</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="agriculture">AgriTech</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Search Mentors</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa fa-search"></i></span>
-                                <input type="text" class="form-control" id="mentorSearchInput" placeholder="Search by name, expertise or institution">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="mentorsContainer" class="row g-4"></div>
-            </div>
-            
-            <!-- My Mentors Section -->
-            <div id="myMentorsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>My Mentors</h2>
-                    <p class="text-muted">Your assigned mentors and requests</p>
-                </div>
-                <div id="myMentorsContainer"></div>
-            </div>
-            
-            <!-- Profile Section -->
-            <div id="profileSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>My Profile</h2>
-                    <p class="text-muted">Manage your professional innovator profile</p>
-                </div>
-                
-                <div class="row">
-                    <div class="col-lg-4">
-                        <div class="dashboard-card text-center">
-                            <div class="profile-pic-wrapper mb-3">
-                                <img id="profilePreview" src="img/user-default.png" alt="Profile Picture" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
-                                <div class="mt-3">
-                                    <label class="btn btn-sm btn-outline-primary" for="profilePicInput">
-                                        <i class="fa fa-camera me-1"></i> Change Photo
-                                    </label>
-                                    <input type="file" id="profilePicInput" hidden accept="image/*">
-                                </div>
-                            </div>
-                            <h4 id="profileDisplayNameDisplay">Innovator Name</h4>
-                            <p class="text-muted small">Innovator</p>
-                            <hr>
-                            <div class="text-start">
-                                <h6 class="small fw-bold">Skills</h6>
-                                <div id="skillsBadgeContainer" class="d-flex flex-wrap gap-1">
-                                    <!-- Skills will be loaded here -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-8">
-                        <div class="dashboard-card">
-                            <form id="profileForm">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Full Name</label>
-                                        <input type="text" class="form-control" name="fullName" id="profileName" required>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Email</label>
-                                        <input type="email" class="form-control" name="email" id="profileEmail" readonly>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Bio</label>
-                                    <textarea class="form-control" name="bio" id="profileBio" rows="3" placeholder="Tell us about yourself..."></textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Institution / Organization</label>
-                                    <input type="text" class="form-control" name="institution" id="profileInstitution">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Skills (comma separated)</label>
-                                    <input type="text" class="form-control" name="skills" id="profileSkills" placeholder="e.g. Python, UX Design, Robotics">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Interests</label>
-                                    <input type="text" class="form-control" name="interests" id="profileInterests" placeholder="e.g. AI for social good, Clean Energy">
-                                </div>
-                                <button type="submit" class="btn btn-custom-signup">Save Changes</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notifications Section -->
-            <div id="notificationsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>Notifications</h2>
-                    <p class="text-muted">Stay updated with your latest alerts and feedback</p>
-                </div>
-                <div class="dashboard-card">
-                    <div id="notificationsPageList" class="list-group list-group-flush">
-                        <!-- Notifications will be loaded here -->
-                        <div class="text-center py-5">
-                            <i class="fa fa-bell-slash fa-3x text-light mb-3"></i>
-                            <p class="text-muted">No notifications yet</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Overview Section -->
-          <div id="overviewSection" class="dashboard-section" style="display: none;">
-            <div class="dashboard-header mb-4">
-              <h2>Mentor Overview</h2>
-              <p class="text-muted">Your mentorship journey at a glance</p>
-            </div>
-
-            <div class="row g-4 mb-4">
-              <div class="col-md-4">
-                <div class="dashboard-card text-center">
-                  <i class="fa fa-users fa-3x text-primary mb-3"></i>
-                  <h5 class="mb-2">Total Mentees</h5>
-                  <p class="display-4 fw-bold" id="totalMentees">0</p>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="dashboard-card text-center">
-                  <i class="fa fa-clock fa-3x text-warning mb-3"></i>
-                  <h5 class="mb-2">Pending Requests</h5>
-                  <p class="display-4 fw-bold" id="pendingRequests">0</p>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="dashboard-card text-center">
-                  <i class="fa fa-check-circle fa-3x text-success mb-3"></i>
-                  <h5 class="mb-2">Completed Projects</h5>
-                  <p class="display-4 fw-bold" id="completedProjects">0</p>
-                </div>
-              </div>
-            </div>
+        <!-- Innovator: Submit Project (Focus Panel) -->
+        <div id="submitSection" class="dashboard-section" style="display: none">
+          <div class="section-header mb-4">
+            <h2 class="display-6 fw-bold">Submit New Project</h2>
+            <p class="text-muted">Share your vision with the community</p>
+            <hr class="brand-divider" />
           </div>
-
-          <!-- Requests Section -->
-          <div
-            id="requestsSection"
-            class="dashboard-section"
-            style="display: none"
-          >
-            <div class="dashboard-header mb-4">
-              <h2>Mentorship Requests</h2>
-              <p class="text-muted">Review and respond to requests</p>
-            </div>
-            <div id="requestsContainer"></div>
-          </div>
-
-          <!-- Mentees Section -->
-          <div
-            id="menteesSection"
-            class="dashboard-section"
-            style="display: none"
-          >
-            <div class="dashboard-header mb-4">
-              <h2>My Mentees</h2>
-              <p class="text-muted">Your active mentees and their projects</p>
-            </div>
-            <div id="menteesContainer"></div>
-          </div>
-
-          <!-- Feedback Section -->
-          <div
-            id="feedbackSection"
-            class="dashboard-section"
-            style="display: none"
-          >
-            <div class="dashboard-header mb-4">
-              <h2>Feedback Center</h2>
-              <p class="text-muted">Manage feedback on mentee projects</p>
-            </div>
-            <div id="feedbackContainer">
-              <div class="text-center py-5 text-muted">
-                <i class="fa fa-comments fa-3x mb-3"></i>
-                <p>Select a mentee project to view and give feedback.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Schedule Section -->
-          <div
-            id="scheduleSection"
-            class="dashboard-section"
-            style="display: none"
-          >
-            <div class="dashboard-header mb-4">
-              <h2>My Schedule</h2>
-              <p class="text-muted">Manage your availability and meetings</p>
-            </div>
-            <div class="dashboard-card">
-              <form id="scheduleForm">
-                <div class="mb-3">
-                  <label class="form-label">Weekly Availability</label>
-                  <textarea
-                    class="form-control"
-                    id="weeklyAvailability"
-                    rows="3"
-                    placeholder="e.g. Mondays 10am-12pm, Thursdays 2pm-4pm"
-                  ></textarea>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Zoom/Meeting Link</label>
+          <div class="submit-card-wrapper">
+            <div
+              class="card border-0 shadow-lg p-5"
+              style="border-radius: 20px"
+            >
+              <form id="projectForm">
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Project Title</label>
                   <input
                     type="text"
                     class="form-control"
-                    id="meetingLink"
-                    placeholder="https://zoom.us/j/..."
+                    name="title"
+                    required
                   />
-                  <small class="text-muted"
-                    >Share your personal meeting room link for sessions.</small
+                </div>
+
+                <div class="mb-5">
+                  <label class="form-label d-block fw-bold mb-3"
+                    >Project Categories</label
                   >
+                  <div
+                    class="d-flex flex-wrap gap-3 p-4 bg-light rounded shadow-sm border"
+                  >
+                    <div class="form-check me-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="categories"
+                        value="technology"
+                        id="catTech"
+                      /><label class="form-check-label" for="catTech"
+                        >Technology</label
+                      >
+                    </div>
+                    <div class="form-check me-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="categories"
+                        value="healthcare"
+                        id="catHealth"
+                      /><label class="form-check-label" for="catHealth"
+                        >Healthcare</label
+                      >
+                    </div>
+                    <div class="form-check me-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="categories"
+                        value="education"
+                        id="catEdu"
+                      /><label class="form-check-label" for="catEdu"
+                        >Education</label
+                      >
+                    </div>
+                    <div class="form-check me-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="categories"
+                        value="environment"
+                        id="catEnv"
+                      /><label class="form-check-label" for="catEnv"
+                        >Environment</label
+                      >
+                    </div>
+                    <div class="form-check me-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="categories"
+                        value="social"
+                        id="catSocial"
+                      /><label class="form-check-label" for="catSocial"
+                        >Social Impact</label
+                      >
+                    </div>
+                  </div>
                 </div>
-                <button type="submit" class="btn btn-primary">
-                  Update Schedule
-                </button>
-              </form>
-            </div>
-          </div>
 
-          <!-- Profile Section (Mentor) -->
-          <div
-            id="mentorProfileSection"
-            class="dashboard-section"
-            style="display: none"
-          >
-            <div class="dashboard-header mb-4">
-              <h2>Mentor Profile</h2>
-              <p class="text-muted">
-                Manage your mentor profile and availability
-              </p>
-            </div>
-
-            <div class="dashboard-card">
-              <div class="mb-4">
-                <label class="form-label">Availability Status</label>
-                <div class="form-check form-switch">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="availabilityToggle"
-                  />
-                  <label class="form-check-label" for="availabilityToggle">
-                    <span id="availabilityText">Available for new mentees</span>
-                  </label>
-                </div>
-              </div>
-
-              <form id="mentorProfileForm">
-                <div class="mb-3">
-                  <label class="form-label">Full Name</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="fullName"
-                    id="mentorProfileName"
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Profession/Title</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="profession"
-                    id="profileProfession"
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Expertise</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="expertise"
-                    id="profileExpertise"
-                    placeholder="e.g., Technology, Healthcare, Education"
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Bio</label>
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Problem Statement</label>
                   <textarea
                     class="form-control"
-                    name="bio"
-                    id="mentorProfileBio"
-                    rows="4"
+                    name="problemStatement"
+                    rows="2"
+                    required
                   ></textarea>
                 </div>
-                <button type="submit" class="btn btn-custom-signup">
-                  Update Profile
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Objectives</label>
+                  <textarea
+                    class="form-control"
+                    name="objectives"
+                    rows="2"
+                    required
+                  ></textarea>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Proposed Solution</label>
+                  <textarea
+                    class="form-control"
+                    name="proposedSolution"
+                    rows="3"
+                    required
+                  ></textarea>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Expected Impact</label>
+                  <textarea
+                    class="form-control"
+                    name="expectedImpact"
+                    rows="2"
+                    required
+                  ></textarea>
+                </div>
+
+                <div class="mb-5">
+                  <label class="form-label fw-bold"
+                    >Supporting Document (Optional)</label
+                  >
+                  <input
+                    type="file"
+                    class="form-control"
+                    name="document"
+                    accept=".pdf,.doc,.docx"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  class="btn btn-primary w-100 py-3 fw-bold shadow-lg"
+                  style="
+                    border-radius: 15px;
+                    font-size: 1.1rem;
+                    background: #1a5e4f;
+                    border: none;
+                  "
+                >
+                  Launch Project Entry
                 </button>
               </form>
             </div>
           </div>
         </div>
-    </div>
-    <!-- Unified Dashboard End -->
 
-    <!-- ONBOARDING MODAL -->
+        <!-- Innovator: Find Mentors (Focus Panel) -->
+        <div
+          id="mentorsSection"
+          class="dashboard-section"
+          style="display: none"
+        >
+          <div class="mb-4">
+            <h2 class="display-6 fw-bold">Find Mentors</h2>
+            <p class="text-muted">
+              Connect with experienced experts in your field
+            </p>
+          </div>
+          <div class="mb-5 p-4 bg-white rounded shadow-sm border">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="mentorSearchInput"
+                  placeholder="Search by name, expertise or institution"
+                />
+              </div>
+              <div class="col-md-6" id="mentorCategoryCheckboxes">
+                <!-- Category pills injected here -->
+              </div>
+            </div>
+          </div>
+          <div id="mentorsContainer" class="row g-4"></div>
+        </div>
+
+        <!-- Innovator: My Mentors (Focus Panel) -->
+        <div
+          id="myMentorsSection"
+          class="dashboard-section"
+          style="display: none"
+        >
+          <div class="mb-4">
+            <h2 class="display-6 fw-bold">My Mentors</h2>
+            <p class="text-muted">
+              Your active mentorship connections and pending requests
+            </p>
+          </div>
+          <div id="myMentorsContainer"></div>
+        </div>
+
+        <!-- Shared: Profile (Focus Panel) -->
+        <div
+          id="profileSection"
+          class="dashboard-section"
+          style="display: none"
+        >
+          <div class="mb-4">
+            <h2 class="display-6 fw-bold">My Profile</h2>
+            <p class="text-muted">
+              Manage your personal information and professional bio
+            </p>
+          </div>
+          <div class="row g-5">
+            <div class="col-lg-4 text-center">
+              <div class="p-4 bg-white rounded shadow-sm border">
+                <div class="position-relative d-inline-block mb-4">
+                  <img
+                    id="profilePreview"
+                    src="assets/img/user-default.png"
+                    alt="Profile"
+                    class="rounded-circle border"
+                    style="
+                      width: 180px;
+                      height: 180px;
+                      object-fit: cover;
+                      border: 5px solid #fff !important;
+                      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+                    "
+                  />
+                  <label
+                    class="btn btn-primary position-absolute bottom-0 end-0 rounded-circle p-2"
+                    for="profilePicInput"
+                    style="
+                      width: 45px;
+                      height: 45px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    <i class="fa fa-camera"></i>
+                  </label>
+                  <input type="file" id="profilePicInput" hidden />
+                </div>
+                <h3 id="profileDisplayNameDisplay" class="fw-bold mb-2">
+                  User Name
+                </h3>
+                <div
+                  id="skillsBadgeContainer"
+                  class="d-flex flex-wrap justify-content-center gap-2 mt-3"
+                ></div>
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <div class="p-5 bg-white rounded shadow-sm border">
+                <form id="profileForm">
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <label class="form-label">Full Name</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="profileName"
+                        name="fullName"
+                        required
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Email Address</label>
+                      <input
+                        type="email"
+                        class="form-control"
+                        id="profileEmail"
+                        name="email"
+                        readonly
+                      />
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Professional Bio</label>
+                      <textarea
+                        class="form-control"
+                        id="profileBio"
+                        name="bio"
+                        rows="3"
+                      ></textarea>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label"
+                        >Institution / Organization</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="profileInstitution"
+                        name="institution"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Profession / Role</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="profileProfession"
+                        name="profession"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Skills (Innovator)</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="profileSkills"
+                        name="skills"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Expertise (Mentor)</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="profileExpertise"
+                        name="expertise"
+                      />
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Innovation Interests</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="profileInterests"
+                        name="interests"
+                      />
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary mt-4 w-100 py-3">
+                    Update Profile
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mentor: Overview (Focus Panel) -->
+        <div
+          id="overviewSection"
+          class="dashboard-section"
+          style="display: none"
+        >
+          <div class="mb-4">
+            <h2 class="display-6 fw-bold">Impact Overview</h2>
+            <p class="text-muted">Your mentorship contributions at a glance</p>
+          </div>
+          <div class="row g-4">
+            <div class="col-md-4">
+              <div
+                class="card border-0 shadow-sm p-4 text-center rounded border-start border-5 border-primary"
+              >
+                <h5>Total Mentees</h5>
+                <h2
+                  class="display-4 fw-bold mb-0"
+                  id="totalMentees"
+                  style="color: #1a5e4f"
+                >
+                  0
+                </h2>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div
+                class="card border-0 shadow-sm p-4 text-center rounded border-start border-5 border-warning"
+              >
+                <h5>Pending Requests</h5>
+                <h2
+                  class="display-4 fw-bold mb-0 text-warning"
+                  id="pendingRequests"
+                >
+                  0
+                </h2>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div
+                class="card border-0 shadow-sm p-4 text-center rounded border-start border-5 border-success"
+              >
+                <h5>Impact Created</h5>
+                <h2
+                  class="display-4 fw-bold mb-0 text-success"
+                  id="completedProjects"
+                >
+                  0
+                </h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mentor: Requests (Focus Panel) -->
+        <div
+          id="requestsSection"
+          class="dashboard-section"
+          style="display: none"
+        >
+          <div class="mb-4">
+            <h2 class="display-6 fw-bold">Mentorship Requests</h2>
+            <p class="text-muted">Innovators seeking your expert guidance</p>
+          </div>
+          <div id="requestsContainer"></div>
+        </div>
+
+        <!-- Mentor: Mentees (Focus Panel) -->
+        <div
+          id="menteesSection"
+          class="dashboard-section"
+          style="display: none"
+        >
+          <div class="mb-4">
+            <h2 class="display-6 fw-bold">My Mentees</h2>
+            <p class="text-muted">Innovators currently under your wing</p>
+          </div>
+          <div id="menteesContainer"></div>
+        </div>
+
+        <!-- Shared: Notifications (Focus Panel) -->
+        <div
+          id="notificationsSection"
+          class="dashboard-section"
+          style="display: none"
+        >
+          <div class="mb-4">
+            <h2 class="display-6 fw-bold">Notifications</h2>
+            <p class="text-muted">Stay updated with your latest activities</p>
+          </div>
+          <div
+            id="notificationsPageList"
+            class="list-group list-group-flush border rounded overflow-hidden shadow-sm"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modals -->
     <div
       class="modal fade"
       id="onboardingModal"
       tabindex="-1"
-      aria-labelledby="onboardingModalLabel"
       aria-hidden="true"
       data-bs-backdrop="static"
-      data-bs-keyboard="false"
     >
       <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
+        <div class="modal-content">
           <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title" id="onboardingModalLabel">
-              <i class="fa fa-rocket me-2"></i>Welcome to Mentor Onboarding
-            </h5>
+            <h5>Mentor Onboarding</h5>
           </div>
           <div class="modal-body p-4">
-            <p class="text-muted mb-4">
-              Please complete your profile to start mentoring innovators. This
-              information helps us match you with the right mentees.
-            </p>
-
-            <!-- Progress Bar -->
-            <div class="progress mb-4" style="height: 10px">
-              <div
-                id="onboardingProgress"
-                class="progress-bar bg-success"
-                role="progressbar"
-                style="width: 20%"
-                aria-valuenow="20"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              ></div>
-            </div>
-
-            <h5 id="onboardingTitle" class="mb-3 fw-bold">
-              Step 1: Areas of Expertise
-            </h5>
-
-            <div id="onboardingStepContainer">
-              <!-- Step Content Injected Here -->
-            </div>
+            <div id="onboardingStepContainer"></div>
           </div>
-          <div class="modal-footer bg-light">
-            <button
-              type="button"
-              class="btn btn-outline-secondary"
-              id="prevStepBtn"
-              disabled
-            >
-              Back
-            </button>
-            <button type="button" class="btn btn-primary px-4" id="nextStepBtn">
-              Next
-            </button>
+          <div class="modal-footer">
+            <button class="btn btn-primary" id="nextStepBtn">Next</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- REJECTION MODAL -->
-    <div
-      class="modal fade"
-      id="rejectionModal"
-      tabindex="-1"
-      aria-labelledby="rejectionModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title" id="rejectionModalLabel">
-              <i class="fa fa-exclamation-triangle me-2"></i>Reject Mentorship
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body p-4">
-            <p class="text-muted mb-3">
-              Please provide a reason for rejecting this mentorship. This will
-              be reviewed by the admin.
-            </p>
-            <div class="form-group mb-0">
-              <label class="form-label">Reason for Rejection</label>
-              <textarea
-                class="form-control"
-                id="rejectionReason"
-                rows="4"
-                placeholder="e.g. Schedule conflicts, change in project scope, etc."
-                required
-              ></textarea>
-            </div>
-          </div>
-          <div class="modal-footer bg-light">
-            <button
-              type="button"
-              class="btn btn-outline-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              class="btn btn-danger px-4"
-              id="confirmRejectionBtn"
-            >
-              Submit Rejection Request
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- JS Libraries -->
+    <script src="assets/js/pages/main.js?v=2.6.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=2.6.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=2.6.0"></script>
+    <script src="assets/js/core/api.js?v=2.6.0"></script>
+    <script
+      type="module"
+      src="assets/js/pages/innovate-hub.js?v=2.6.0"
+    ></script>
+    <script src="assets/js/components/staggered-menu.js?v=2.6.0"></script>
+    <script
+      type="module"
+      src="assets/js/pages/innovator-dashboard.js?v=2.6.0"
+    ></script>
+    <script
+      type="module"
+      src="assets/js/pages/mentor-dashboard.js?v=2.6.0"
+    ></script>
+    <script src="assets/js/components/nuru-assistant.js?v=2.6.0"></script>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/wow/wow.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/counterup/counterup.min.js"></script>
-
-    <!-- Template Javascript -->
-    <script src="js/main.js?v=3.0.0"></script>
-    <script src="js/nuru-assistant.js?v=3.0.0"></script>
-    
-    <!-- Custom JavaScript -->
-    <script src="js/ui-utils.js?v=3.0.0"></script>
-    <script src="js/shared-ui.js?v=3.0.0"></script>
-    <script src="js/api.js?v=3.0.0"></script>
-    <script type="module" src="js/innovate-hub.js?v=3.0.0"></script>
-    <script type="module" src="js/innovator-dashboard.js?v=3.0.0"></script>
-    <script type="module" src="js/mentor-dashboard.js?v=3.0.0"></script>
-
-    <!-- Global Dashboard Navigation Logic -->
     <script>
-        window.showDashboardSection = function(sectionName) {
-            console.log('Switching to dashboard section:', sectionName);
-            // Hide all sections
-            document.querySelectorAll('.dashboard-section').forEach(section => {
-                section.style.display = 'none';
+      document.addEventListener("DOMContentLoaded", () => {
+        const user = JSON.parse(localStorage.getItem("innovateHubUser"));
+        const role = user ? user.role : "innovator";
+
+        const siteItems = [
+          { label: "Home Page", link: "index.html" },
+          { label: "About Us", link: "about.html" },
+          { label: "Contact Us", link: "contact.html" },
+        ];
+
+        const roleItems =
+          role === "mentor"
+            ? [
+                {
+                  label: "My Overview",
+                  link: "javascript:showDashboardSection('home')",
+                },
+                {
+                  label: "Mentee Requests",
+                  link: "javascript:showDashboardSection('requests')",
+                },
+                {
+                  label: "Active Mentees",
+                  link: "javascript:showDashboardSection('mentees')",
+                },
+              ]
+            : [
+                {
+                  label: "Find a Mentor",
+                  link: "javascript:showDashboardSection('mentors')",
+                },
+              ];
+
+        const profileItems = [
+          {
+            label: "My Profile",
+            link: "javascript:showDashboardSection('profile')",
+          },
+          { label: "Sign Out", link: "javascript:logout()" },
+        ];
+
+        StaggeredMenu.init({
+          items: [...siteItems, ...roleItems, ...profileItems],
+          colors: ["#1a5e4f", "#f3a813", "#1a5e4f"],
+          accentColor: "#1a5e4f",
+          logoUrl: "assets/img/logo.svg",
+          menuButtonColor: "#ffffff",
+          openMenuButtonColor: "#ffffff",
+        });
+
+        window.showDashboardSection = function (sectionId) {
+          const quickAccess = document.getElementById("dashboardQuickAccess");
+          const container = document.getElementById("activeSectionContainer");
+          const sections = document.querySelectorAll(".dashboard-section");
+
+          if (sectionId === "home" || !sectionId) {
+            quickAccess.style.display = "block";
+            container.style.display = "none";
+            window.scrollTo({ top: 0, behavior: "smooth" });
+
+            // GSAP Card Entry
+            gsap.from(".article-wrapper", {
+              duration: 0.8,
+              y: 50,
+              opacity: 0,
+              stagger: 0.1,
+              ease: "power2.out",
             });
-            
-            // Remove active class from all sidebar buttons
-            document.querySelectorAll('.ud-sidebar-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Show target section
-            const section = document.getElementById(sectionName + 'Section');
-            if (section) {
-                section.style.display = 'block';
-                
-                // Highlight corresponding sidebar button
-                const activeBtn = document.querySelector(`.ud-sidebar-btn[onclick*="showDashboardSection('${sectionName}')"]`);
-                if (activeBtn && activeBtn.parentElement) {
-                    activeBtn.parentElement.classList.add('active');
-                }
+          } else {
+            quickAccess.style.display = "none";
+            container.style.display = "block";
+            sections.forEach((s) => (s.style.display = "none"));
+            const target =
+              document.getElementById(sectionId + "Section") ||
+              document.getElementById(sectionId);
+            if (target) {
+              target.style.display = "block";
+              // GSAP Section Entry
+              gsap.from(target, {
+                duration: 0.6,
+                y: 30,
+                opacity: 0,
+                ease: "power2.out",
+              });
             }
-            
-            // Scroll to top of main content
-            const mainContent = document.getElementById('unified-dashboard-main');
-            if (mainContent) mainContent.scrollTo({ top: 0, behavior: 'smooth' });
-            else window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
         };
 
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', () => {
-            const user = JSON.parse(localStorage.getItem("innovateHubUser"));
-            if (!user || !user.role) {
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            document.body.classList.add(`role-${user.role}`);
-            
-            // Show default section
-            if (user.role === 'mentor') {
-                window.showDashboardSection('overview');
-            } else {
-                window.showDashboardSection('projects');
-            }
-        });
+        if (user && user.role) document.body.classList.add(`role-${user.role}`);
+        window.showDashboardSection("home");
+      });
     </script>
-
-</body>
-
+  </body>
 </html>

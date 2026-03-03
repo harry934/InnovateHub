@@ -24,40 +24,37 @@ export const EmptyStates = {
         } = options;
 
         const actionButton = actionText && actionHandler ? `
-            <button class="btn btn-custom-signup mt-3" onclick="(${actionHandler.toString()})()">
+            <button class="btn btn-primary mt-4 px-5 py-2 fw-bold shadow-sm" style="border-radius: 12px; font-family: 'Josefin Sans', sans-serif;" onclick="(${actionHandler.toString()})()">
                 ${actionText}
             </button>
         ` : '';
 
         return `
-            <div class="empty-state" style="
+            <div class="empty-state-card" style="
                 text-align: center;
-                padding: 60px 20px;
-                color: #6c757d;
+                padding: 60px 40px;
+                background: #ffffff;
+                border-radius: 24px;
+                box-shadow: 0 15px 45px rgba(0,0,0,0.06);
+                border: 1px solid rgba(0,0,0,0.05);
+                max-width: 550px;
+                margin: 50px auto;
+                transition: transform 0.3s ease;
             ">
-                <i class="fa ${icon} empty-state-icon" style="
-                    font-size: 4rem;
-                    color: #dee2e6;
-                    margin-bottom: 1rem;
-                    display: block;
-                "></i>
-                <p class="empty-state-message" style="
-                    font-size: 1.1rem;
-                    margin-bottom: 0.5rem;
-                    color: #495057;
-                    font-weight: 500;
+                <div class="empty-state-icon-bg" style="
+                    width: 90px;
+                    height: 90px;
+                    background: rgba(26, 94, 79, 0.08); /* Matches brand green */
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 25px;
                 ">
-                    ${message}
-                </p>
-                ${hint ? `
-                    <p class="empty-state-hint" style="
-                        font-size: 0.9rem;
-                        color: #adb5bd;
-                        margin-bottom: 0;
-                    ">
-                        ${hint}
-                    </p>
-                ` : ''}
+                    <i class="fa ${icon}" style="font-size: 2.8rem; color: #1a5e4f;"></i>
+                </div>
+                <h2 style="font-family: 'Josefin Sans', sans-serif; color: #1a5e4f; font-weight: 700; margin-bottom: 12px; font-size: 1.75rem;">${message}</h2>
+                <p style="color: #6c757d; font-size: 1.1rem; line-height: 1.6; margin-bottom: 0;">${hint}</p>
                 ${actionButton}
             </div>
         `;
@@ -132,21 +129,12 @@ export const EmptyStates = {
     `,
 
         loadingState: () => `
-            <div class="loading-state" style="
-                text-align: center;
-                padding: 60px 20px;
-                color: #6c757d;
-            ">
-                <i class="fa fa-spinner fa-spin" style="
-                    font-size: 3rem;
-                    color: #1a5e4f;
-                    margin-bottom: 1rem;
-                    display: block;
-                "></i>
-                <p style="font-size: 1rem; color: #6c757d;">
-                    Loading...
-                </p>
+            <div class="premium-loader-container">
+                <div class="premium-loader-dot"></div>
+                <div class="premium-loader-dot"></div>
+                <div class="premium-loader-dot"></div>
             </div>
+            <p class="text-center" style="font-family: 'Josefin Sans', sans-serif; color: #1a5e4f; font-weight: 600; margin-top: -10px;">Loading Innovation...</p>
         `
     }
 };

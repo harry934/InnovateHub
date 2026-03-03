@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase-config.js";
+import { auth, db } from "../core/firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
   doc,
@@ -11,9 +11,76 @@ import {
   getDocs,
   addDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import NotificationSystem from "./components/notification-system.js";
-import StatusBadge from "./components/status-badges.js";
-import EmptyStates from "./components/empty-states.js";
+import NotificationSystem from "../components/notification-system.js";
+import StatusBadge from "../components/status-badges.js";
+import EmptyStates from "../components/empty-states.js";
+
+const dashboardCards = [
+    { 
+        title: 'Overview', 
+        icon: 'fa-chart-line', 
+        id: 'overview', 
+        section: 'overview',
+        types: ['Stats', 'Metrics']
+    },
+    { 
+        title: 'Requests', 
+        icon: 'fa-envelope-open-text', 
+        id: 'requests', 
+        section: 'requests',
+        types: ['New', 'Review']
+    },
+    { 
+        title: 'My Mentees', 
+        icon: 'fa-user-friends', 
+        id: 'mentees', 
+        section: 'mentees',
+        types: ['Manage', 'Active']
+    },
+    { 
+        title: 'Schedule', 
+        icon: 'fa-calendar-alt', 
+        id: 'schedule', 
+        section: 'schedule',
+        types: ['Availability', 'Meetings']
+    },
+    {
+        title: 'Account Settings',
+        icon: 'fa-user-cog',
+        id: 'profile',
+        section: 'mentorProfile',
+        types: ['Profile', 'Settings']
+    }
+];
+
+function renderQuickAccessCards() {
+    const container = document.getElementById('dashboardCardsGrid');
+    if (!container) return;
+    
+    container.innerHTML = dashboardCards.map(card => `
+        <article class="article-wrapper" onclick="showDashboardSection('${card.section}')">
+          <div class="rounded-lg container-project d-flex align-items-center justify-content-center" style="height: 100px;">
+            <i class="fa ${card.icon} fa-3x text-primary"></i>
+          </div>
+
+          <div class="project-info">
+            <div class="flex-pr">
+              <div class="project-title text-nowrap">${card.title}</div>
+              <div class="project-hover">
+                <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor">
+                  <line y2="12" x2="19" y1="12" x1="5"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </div>
+            </div>
+
+            <div class="types">
+              ${card.types.map(t => `<span class="project-type">• ${t}</span>`).join('')}
+            </div>
+          </div>
+        </article>
+    `).join('');
+}
 
 class MentorDashboard {
   constructor() {
@@ -70,6 +137,11 @@ class MentorDashboard {
   updateUserIdentity(name) {
     const el = document.getElementById("userDisplayName");
     if (el) el.textContent = name;
+    
+    // Refresh Profile Circle Initials
+    if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
+        window.StaggeredMenu.updateInitials(name);
+    }
   }
   
   populateProfileForms(data) {
@@ -301,25 +373,54 @@ class MentorDashboard {
     if (this.uiInitialized) return;
     this.uiInitialized = true;
 
-    // Navigation Logic
-    window.showSection = (sectionName) => {
-      document
-        .querySelectorAll(".dashboard-section")
-        .forEach((s) => (s.style.display = "none"));
-      const target = document.getElementById(`${sectionName}Section`);
-      if (target) target.style.display = "block";
+    // Navigation Logic handled in dashboard.html
+    // We just need to make sure renderQuickAccessCards is called
+    renderQuickAccessCards();
 
-      document
-        .querySelectorAll(".nav-link")
-        .forEach((l) => l.classList.remove("active"));
-      // Try to find the link that calls this section
-      const link = document.querySelector(
-        `.nav-link[onclick*="${sectionName}"]`,
-      );
-      if (link) link.classList.add("active");
+    // Initialize CardNav for Mentor
+    const navItems = [
+        { 
+            label: 'Mentorship', 
+            bgColor: '#1a5e4f', 
+            textColor: '#fff', 
+            links: [
+                { label: 'Overview', href: 'javascript:showDashboardSection("overview")' }, 
+                { label: 'Requests', href: 'javascript:showDashboardSection("requests")' }
+            ] 
+        },
+        { 
+            label: 'Management', 
+            bgColor: '#f3a813', 
+            textColor: '#000', 
+            links: [
+                { label: 'My Mentees', href: 'javascript:showDashboardSection("mentees")' }, 
+                { label: 'Schedule', href: 'javascript:showDashboardSection("schedule")' }
+            ] 
+        },
+        { 
+            label: 'Account', 
+            bgColor: '#121331', 
+            textColor: '#fff', 
+            links: [
+                { label: 'Profile', href: 'javascript:showDashboardSection("mentorProfile")' }, 
+                { label: 'Notifications', href: 'javascript:showDashboardSection("notifications")' }
+            ] 
+        }
+    ];
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    };
+    /* CardNav removed in favor of standard navbar + landing cards */
+    /*
+    new CardNav({
+        user: { name: this.currentUser.displayName || this.currentUser.email.split('@')[0] },
+        items: navItems,
+        baseColor: '#1a5e4f',
+        buttonBgColor: '#f3a813',
+        buttonTextColor: '#000'
+    });
+    */
+
+    // Render Quick Access Cards
+    renderQuickAccessCards();
 
     // Global Logout - Use existing window.logout if present to avoid duplication
     if (!window.logout) {

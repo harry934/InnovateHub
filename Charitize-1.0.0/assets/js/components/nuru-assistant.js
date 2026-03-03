@@ -6,13 +6,16 @@
  */
 
 // ============================================================
-//  CONTEXT DETECTION — which page is Nuru running on?
-// ============================================================
-// ============================================================
-//  CONTEXT DETECTION — which page is Nuru running on?
+//  CONTEXT DETECTION — auto-detect user role for role-aware responses
 // ============================================================
 const NURU_PAGE_CONTEXT = (() => {
-    return 'public'; // Since dashboard is natively on public pages now, context is mostly unified unless checking user role
+    try {
+        const user = JSON.parse(localStorage.getItem('innovateHubUser'));
+        if (user && user.role) {
+            return user.role; // 'innovator' or 'mentor'
+        }
+    } catch (e) { /* ignore parse errors */ }
+    return 'public'; // fallback for logged-out users
 })();
 
 // ============================================================
