@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase-config.js";
+import { auth, db } from "../core/firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
   doc,
@@ -11,9 +11,9 @@ import {
   getDocs,
   addDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import NotificationSystem from "./components/notification-system.js";
-import StatusBadge from "./components/status-badges.js";
-import EmptyStates from "./components/empty-states.js";
+import NotificationSystem from "../components/notification-system.js";
+import StatusBadge from "../components/status-badges.js";
+import EmptyStates from "../components/empty-states.js";
 
 const dashboardCards = [
     { 

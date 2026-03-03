@@ -3,9 +3,20 @@
  * Handles automatic expiration of mentorship requests
  */
 
-import { db } from '../firebase-config.js';
-import { collection, query, where, getDocs, updateDoc, doc, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { NotificationService } from '../innovate-hub.js';
+import { auth, db } from '../core/firebase-config.js';
+import { 
+    collection, 
+    addDoc, 
+    query, 
+    where, 
+    getDocs, 
+    orderBy, 
+    limit,
+    Timestamp,
+    updateDoc, // Kept as it's used in expireRequest
+    doc // Kept as it's used in expireRequest
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { NotificationService } from '../pages/innovate-hub.js';
 
 export class RequestExpirationService {
     static EXPIRATION_DAYS = 7; // Configurable expiration period
