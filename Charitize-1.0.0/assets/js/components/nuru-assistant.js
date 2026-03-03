@@ -1,5 +1,5 @@
 /**
- * Nuru-Assistant - AI-Powered Chat Widget
+ * Nuru Assistant - AI-Powered Chat Widget
  * Version: 2.0.0
  * Features: Context-aware responses, role-based knowledge, multi-turn conversation,
  *           smart intent detection, proactive suggestions, persistent history.
@@ -25,19 +25,19 @@ const NURU_KNOWLEDGE = {
     // ── Greetings (context-aware) ─────────────────────────
     greetings: {
         public: [
-            "Jambo! I'm Nuru-Assistant, your Innovate Hub guide. How can I help you today?",
-            "Hello! I'm Nuru-Assistant. Whether you're new or returning, I'm here to help you navigate our platform.",
-            "Welcome to Innovate Hub! I'm Nuru-Assistant — your AI assistant for all things innovation. Ask me anything!"
+            "Jambo! I'm Nuru Assistant, your Innovate Hub guide. How can I help you today?",
+            "Hello! I'm Nuru Assistant. Whether you're new or returning, I'm here to help you navigate our platform.",
+            "Welcome to Innovate Hub! I'm Nuru Assistant — your AI assistant for all things innovation. Ask me anything!"
         ],
         innovator: [
-            "Hey there, innovator! I'm Nuru-Assistant. Need help submitting a project, finding a mentor, or understanding how our platform works?",
-            "Welcome to your dashboard! I'm Nuru-Assistant — ask me tips on writing a strong project proposal or how to get matched with a mentor.",
-            "Hi! I'm Nuru-Assistant. I'm here to guide you through your innovation journey. What are you working on today?"
+            "Hey there, innovator! I'm Nuru Assistant. Need help submitting a project, finding a mentor, or understanding how our platform works?",
+            "Welcome to your dashboard! I'm Nuru Assistant — ask me tips on writing a strong project proposal or how to get matched with a mentor.",
+            "Hi! I'm Nuru Assistant. I'm here to guide you through your innovation journey. What are you working on today?"
         ],
         mentor: [
-            "Hello, Mentor! I'm Nuru-Assistant. I can help you navigate requests, give feedback tips, or answer any platform questions.",
-            "Welcome back! I'm Nuru-Assistant — your guide for managing mentees, scheduling sessions, and making the most of your impact.",
-            "Hi! I'm Nuru-Assistant. Need help reviewing a mentorship request or structuring your feedback? I'm here for you."
+            "Hello, Mentor! I'm Nuru Assistant. I can help you navigate requests, give feedback tips, or answer any platform questions.",
+            "Welcome back! I'm Nuru Assistant — your guide for managing mentees, scheduling sessions, and making the most of your impact.",
+            "Hi! I'm Nuru Assistant. Need help reviewing a mentorship request or structuring your feedback? I'm here for you."
         ]
     },
 
@@ -51,7 +51,7 @@ const NURU_KNOWLEDGE = {
             id: 'hi',
             keywords: ['hi', 'hello', 'hey', 'jambo', 'greetings', 'morning', 'afternoon', 'evening', 'yo'],
             contexts: ['public', 'innovator', 'mentor'],
-            response: "Jambo! It's great to hear from you. I'm Nuru-Assistant, and I'm here to help you navigate Innovate Hub. What are you looking to do today? \n\nI can help with project submissions, finding mentors, or even just showing you around!",
+            response: "Jambo! It's great to hear from you. I'm Nuru Assistant, and I'm here to help you navigate Innovate Hub. What are you looking to do today? \n\nI can help with project submissions, finding mentors, or even just showing you around!",
             links: []
         },
         {
@@ -216,17 +216,17 @@ class NuruAssistant {
     // ── UI Initialization ──────────────────────────────────
     initUI() {
         const widgetHTML = `
-            <button class="nuru-assistant-toggle" id="nuruToggle" aria-label="Open Nuru-Assistant AI" aria-expanded="false">
-                <span class="nuru-name-tag">Nuru-Assistant</span>
-                <img src="img/nuru-avatar.svg" alt="Nuru Assistant Avatar">
+            <button class="nuru-assistant-toggle" id="nuruToggle" aria-label="Open Nuru Assistant AI" aria-expanded="false">
+                <span class="nuru-name-tag">Nuru Assistant</span>
+                <img src="assets/img/nuru-avatar.svg" alt="Nuru Assistant Avatar">
             </button>
             <div class="nuru-chat-window" id="nuruWindow" role="dialog" aria-label="Nuru AI Chat" aria-hidden="true">
                 <div class="nuru-chat-header">
                     <div class="nuru-header-avatar" aria-hidden="true">
-                        <img src="img/nuru-avatar.svg" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:contain;">
+                        <img src="assets/img/nuru-avatar.svg" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:contain;">
                     </div>
                     <div class="nuru-header-info">
-                        <h5>Nuru-Assistant</h5>
+                        <h5>Nuru Assistant</h5>
                         <div class="nuru-header-status">✦ AI Assistant &bull; Always here to help</div>
                     </div>
                     <button class="nuru-close" id="nuruClose" aria-label="Close chat">&times;</button>
@@ -265,11 +265,11 @@ class NuruAssistant {
 
         toggle.classList.remove('nuru-peek-active');
         toggle.classList.add('nuru-say-hi');
-        if (nameTag) nameTag.textContent = "Hi, I'm Nuru-Assistant!";
+        if (nameTag) nameTag.textContent = "Hi, I'm Nuru Assistant!";
 
         setTimeout(() => {
             toggle.classList.remove('nuru-say-hi');
-            if (nameTag) nameTag.textContent = "Nuru-Assistant";
+            if (nameTag) nameTag.textContent = "Nuru Assistant";
             toggle.classList.add('nuru-peek-active');
 
             setTimeout(() => {
@@ -531,7 +531,7 @@ class NuruAssistant {
         try {
             localStorage.setItem('nuru_history_v2', JSON.stringify(this.chatHistory));
         } catch (e) {
-            console.warn('Nuru-Assistant: Could not save history', e);
+            console.warn('Nuru Assistant: Could not save history', e);
         }
     }
 
@@ -543,7 +543,7 @@ class NuruAssistant {
         const div = document.createElement('div');
         div.id = 'nuruTyping';
         div.className = 'typing-indicator';
-        div.setAttribute('aria-label', 'Nuru-Assistant is typing');
+        div.setAttribute('aria-label', 'Nuru Assistant is typing');
         div.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
         this.messagesContainer.appendChild(div);
         this.scrollToBottom();
