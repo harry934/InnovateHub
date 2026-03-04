@@ -1,4 +1,4 @@
-import { auth, db } from './firebase-config.js';
+import { auth, db } from '../core/firebase-config.js';
 import { 
     collection, 
     query, 
@@ -253,7 +253,7 @@ class AdminDashboard {
         if (!confirm(`Are you sure you want to ${approved ? 'approve' : 'deny'} this rejection request?`)) return;
 
         try {
-            const { updateDoc, doc, db, addDoc, collection, serverTimestamp, getDoc } = await import('./firebase-config.js');
+            const { updateDoc, doc, db, addDoc, collection, serverTimestamp, getDoc } = await import('../core/firebase-config.js');
             
             const reqRef = doc(db, "mentorshipRequests", requestId);
             const reqDoc = await getDoc(reqRef);

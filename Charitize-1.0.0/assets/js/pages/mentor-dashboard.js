@@ -1,86 +1,126 @@
-import { auth, db } from "../core/firebase-config.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { auth, db, storage } from '../core/firebase-config.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
-  doc,
-  getDoc,
-  updateDoc,
-  serverTimestamp,
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc
+    doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import NotificationSystem from "../components/notification-system.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 import StatusBadge from "../components/status-badges.js";
 import EmptyStates from "../components/empty-states.js";
+import NotificationSystem from "../components/notification-system.js";
+
+// ─── Custom SVG icons per card ───────────────────────────────
+const CARD_ICONS = {
+    overview: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="6" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+        <rect x="22" y="6" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+        <rect x="6" y="22" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+        <rect x="22" y="22" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+    </svg>`,
+    requests: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 12c0-2.2 1.8-4 4-4h24c2.2 0 4 1.8 4 4v16c0 2.2-1.8 4-4 4H8c-2.2 0-4-1.8-4-4V12z" stroke="currentColor" stroke-width="2"/>
+        <path d="M4 12l16 10 16-10" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M14 24h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>`,
+    mentees: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 16l16-8 16 8-16 8-16-8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M8 18v8c0 4 6 6 12 6s12-2 12-6v-8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M36 16v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="20" cy="16" r="3" stroke="currentColor" stroke-width="2"/>
+    </svg>`,
+    schedule: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="14" stroke="currentColor" stroke-width="2"/>
+        <path d="M20 10v10l6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 20h2M33 20h2M20 5v2M20 33v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>`,
+    profile: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="4" stroke="currentColor" stroke-width="2"/>
+        <path d="M20 4v4M20 32v4M4 20h4M32 20h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M7.5 7.5l2.8 2.8M29.7 29.7l2.8 2.8M7.5 32.5l2.8-2.8M29.7 10.3l2.8-2.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="20" cy="20" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"/>
+    </svg>`
+};
 
 const dashboardCards = [
-    { 
-        title: 'Overview', 
-        icon: 'fa-chart-line', 
-        id: 'overview', 
-        section: 'overview',
-        types: ['Stats', 'Metrics']
-    },
-    { 
-        title: 'Requests', 
-        icon: 'fa-envelope-open-text', 
-        id: 'requests', 
-        section: 'requests',
-        types: ['New', 'Review']
-    },
-    { 
-        title: 'My Mentees', 
-        icon: 'fa-user-friends', 
-        id: 'mentees', 
-        section: 'mentees',
-        types: ['Manage', 'Active']
-    },
-    { 
-        title: 'Schedule', 
-        icon: 'fa-calendar-alt', 
-        id: 'schedule', 
-        section: 'schedule',
-        types: ['Availability', 'Meetings']
-    },
-    {
-        title: 'Account Settings',
-        icon: 'fa-user-cog',
-        id: 'profile',
-        section: 'mentorProfile',
-        types: ['Profile', 'Settings']
-    }
+    { title: 'Overview',         id: 'overview', section: 'overview',      types: ['Stats', 'Metrics'], progress: 100, action: 'view' },
+    { title: 'Requests',         id: 'requests', section: 'requests',      types: ['New', 'Review'],    progress: 25,  action: 'search' },
+    { title: 'My Mentees',       id: 'mentees',  section: 'mentees',       types: ['Manage', 'Active'], progress: 75,  action: 'chat' },
+    { title: 'Schedule',         id: 'schedule', section: 'schedule',      types: ['Time', 'Meetings'], progress: 50,  action: 'plus' },
+    { title: 'Account Settings', id: 'profile',  section: 'mentorProfile', types: ['Profile', 'Settings'], progress: 90, action: 'edit' }
 ];
+
+// ─── Enhanced background symbol system ───────────────────────
+function initBackgroundSymbols() {
+    const container = document.getElementById('backgroundSymbols');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const symbols = [
+        '+', '−', '×', '÷', '◇', '○', '△', '□', 
+        '⟶', '⇌', '∞', '≈', '{ }', '< />', '[ ]', '#',
+        '⚡', '⚛', '◈', '❖', '★', '⚙', '⌘'
+    ];
+    const count = 100; // Boosted density
+
+    for (let i = 0; i < count; i++) {
+        const el = document.createElement('span');
+        el.className = 'bg-symbol';
+        el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+        const size = 0.8 + Math.random() * 2.2;
+        const opacity = 0.04 + Math.random() * 0.08;
+        const delay = Math.random() * 20;
+        const dur = 15 + Math.random() * 25;
+        const drift = (Math.random() - 0.5) * 150;
+
+        el.style.cssText = `
+            position: absolute;
+            left: ${Math.random() * 100}%;
+            top: ${Math.random() * 140}%;
+            font-size: ${size}rem;
+            --sym-opacity: ${opacity};
+            opacity: ${opacity};
+            color: ${Math.random() > 0.6 ? '#1a5e4f' : '#f3a813'};
+            font-family: 'Courier New', monospace;
+            font-weight: 800;
+            pointer-events: none;
+            user-select: none;
+            animation: floatSymbol ${dur}s ${delay}s ease-in-out infinite alternate;
+            --drift: ${drift}px;
+            filter: blur(${Math.random() * 1}px);
+        `;
+        container.appendChild(el);
+    }
+}
 
 function renderQuickAccessCards() {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
-    
-    container.innerHTML = dashboardCards.map(card => `
-        <article class="article-wrapper" onclick="showDashboardSection('${card.section}')">
-          <div class="rounded-lg container-project d-flex align-items-center justify-content-center" style="height: 100px;">
-            <i class="fa ${card.icon} fa-3x text-primary"></i>
-          </div>
 
-          <div class="project-info">
-            <div class="flex-pr">
-              <div class="project-title text-nowrap">${card.title}</div>
-              <div class="project-hover">
-                <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor">
-                  <line y2="12" x2="19" y1="12" x1="5"></line>
+    container.innerHTML = dashboardCards.map(card => `
+        <article class="theme-card" onclick="window.showDashboardSection('${card.section}')">
+          <div class="tc-icon-wrap">
+            ${CARD_ICONS[card.id] || ''}
+          </div>
+          <div class="tc-content">
+            <div class="tc-header">
+              <h3 class="tc-title">${card.title}</h3>
+              <div class="tc-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
               </div>
             </div>
-
-            <div class="types">
-              ${card.types.map(t => `<span class="project-type">• ${t}</span>`).join('')}
+            <div class="tc-tags">
+              ${card.types.map(t => `<span class="tc-tag">${t}</span>`).join('')}
             </div>
           </div>
         </article>
     `).join('');
+
+    initBackgroundSymbols();
 }
+
 
 class MentorDashboard {
   constructor() {
@@ -88,33 +128,30 @@ class MentorDashboard {
     this.onboardingStep = 1;
     this.totalSteps = 5;
     this.onboardingData = {};
-
-    this.init();
   }
 
-  init() {
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return; // Redirects handled by global scripts
-      
-      try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists() && userDoc.data().role === 'mentor') {
-              this.currentUser = user;
-              await this.checkProfileCompletion();
-              await this.initializeUI(); // Wait for UI init to attach listeners
-              this.loadDashboardData();
-          }
-      } catch (err) {
-          console.error("Error verifying mentor role:", err);
-      }
-    });
-  }
-
-  async checkProfileCompletion() {
+  async init(user, userData) {
+    console.log("Mentor Dashboard: Initializing with provided data...");
+    this.currentUser = user;
+    
     try {
-      const userDoc = await getDoc(doc(db, "users", this.currentUser.uid));
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
+        await this.checkProfileCompletion(userData);
+        await this.initializeUI();
+        this.loadDashboardData();
+    } catch (err) {
+        console.error("Error initializing mentor dashboard:", err);
+    }
+  }
+
+  async checkProfileCompletion(providedData = null) {
+    try {
+      let userData = providedData;
+      if (!userData) {
+          const userDoc = await getDoc(doc(db, "users", this.currentUser.uid));
+          if (userDoc.exists()) userData = userDoc.data();
+      }
+
+      if (userData) {
         if (!userData.profileComplete) {
           this.showOnboardingModal();
         } else {
@@ -123,7 +160,7 @@ class MentorDashboard {
 
         // Update User Identity in Sidebar
         this.updateUserIdentity(
-          userData.fullName || this.currentUser.displayName,
+          userData.fullName || this.currentUser.displayName || this.currentUser.email.split('@')[0],
         );
         
         // Populate Profile Forms with existing data
@@ -421,17 +458,6 @@ class MentorDashboard {
 
     // Render Quick Access Cards
     renderQuickAccessCards();
-
-    // Global Logout - Use existing window.logout if present to avoid duplication
-    if (!window.logout) {
-        window.logout = async () => {
-          const { signOut } =
-            await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-          await signOut(auth);
-          localStorage.removeItem("innovateHubUser");
-          window.location.href = "login.html";
-        };
-    }
     
     // Attach Event Listeners for Forms
     const scheduleForm = document.getElementById('scheduleForm');
@@ -454,6 +480,17 @@ class MentorDashboard {
 
   async loadDashboardData() {
     console.log("Loading dashboard data...");
+    
+    // Initialize notification system
+    try {
+        const notificationSystem = new NotificationSystem(this.currentUser.uid);
+        notificationSystem.init('notificationBell');
+        notificationSystem.bindFullList('notificationsPageList');
+        console.log("Mentor Dashboard: Notification system initialized.");
+    } catch (err) {
+        console.warn("Mentor Dashboard: Notification system init failed:", err);
+    }
+
     await Promise.all([
       this.loadStats(),
       this.loadRequests(),
@@ -988,7 +1025,7 @@ class MentorDashboard {
             const requestId = this.currentRejectionRequestId;
             
             // 1. Update mentorship request status to pending_admin_rejection
-            const { updateDoc, doc, db, serverTimestamp, addDoc, collection } = await import('./firebase-config.js');
+            const { updateDoc, doc, db, serverTimestamp, addDoc, collection } = await import('../core/firebase-config.js');
             
             await updateDoc(doc(db, "mentorshipRequests", requestId), {
                 status: "pending_admin_rejection",
@@ -1026,5 +1063,11 @@ class MentorDashboard {
     }
 }
 
-// Initialize
-window.dashboard = new MentorDashboard();
+// Export init function for dashboard.html
+export async function initDashboard(user, userData) {
+    if (!window.dashboard) window.dashboard = new MentorDashboard();
+    await window.dashboard.init(user, userData);
+}
+
+// Initial instance for window access
+window.dashboard = window.dashboard || new MentorDashboard();

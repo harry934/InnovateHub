@@ -1,116 +1,151 @@
-
 // Auto-extracted from innovator-dashboard.html
 import { auth, db } from '../core/firebase-config.js';
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import NotificationSystem from '../components/notification-system.js';
-        import StructuredProjectCard from '../components/project-card-structured.js';
-        import MentorProfileCard from '../components/mentor-profile-card.js';
-        import EmptyStates from '../components/empty-states.js';
-        import AutoSaveManager from '../utils/auto-save-manager.js';
-        import { ProjectService } from './innovate-hub.js';
+import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import NotificationSystem from '../components/notification-system.js';
+import StructuredProjectCard from '../components/project-card-structured.js';
+import MentorProfileCard from '../components/mentor-profile-card.js';
+import EmptyStates from '../components/empty-states.js';
+import AutoSaveManager from '../utils/auto-save-manager.js';
+// Note: ProjectService is exposed via window.ProjectService by innovate-hub.js
 
-        const dashboardCards = [
-            { 
-                title: 'My Projects', 
-                icon: 'fa-project-diagram', 
-                id: 'projects', 
-                section: 'projects',
-                types: ['Manage', 'Track']
-            },
-            { 
-                title: 'Submit Project', 
-                icon: 'fa-plus-circle', 
-                id: 'submit', 
-                section: 'submit',
-                types: ['Innovate', 'Submit']
-            },
-            { 
-                title: 'Find Mentors', 
-                icon: 'fa-user-md', 
-                id: 'mentors', 
-                section: 'mentors',
-                types: ['Connect', 'Experts']
-            },
-            { 
-                title: 'My Mentors', 
-                icon: 'fa-users', 
-                id: 'myMentors', 
-                section: 'myMentors',
-                types: ['Assigned', 'Requests']
-            },
-            {
-                title: 'Account Settings',
-                icon: 'fa-user-cog',
-                id: 'profile',
-                section: 'profile',
-                types: ['Profile', 'Settings']
-            }
-        ];
+// ─── Custom SVG icons per card ───────────────────────────────
+const CARD_ICONS = {
+    projects: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="10" width="32" height="24" rx="3" stroke="currentColor" stroke-width="2"/>
+        <path d="M4 16h32" stroke="currentColor" stroke-width="2"/>
+        <path d="M4 10l6-6h8l2 6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M13 22h14M13 28h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>`,
+    submit: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 4C13.4 4 8 9.4 8 16c0 4.2 2.1 7.9 5.3 10.1V30h13.4v-3.9C29.9 23.9 32 20.2 32 16c0-6.6-5.4-12-12-12z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M14 34h12M16 37h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M20 10v8M16 14l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`,
+    mentors: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="15" stroke="currentColor" stroke-width="2"/>
+        <circle cx="20" cy="20" r="4" stroke="currentColor" stroke-width="2"/>
+        <path d="M20 5v4M20 31v4M5 20h4M31 20h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M9.4 9.4l2.8 2.8M27.8 27.8l2.8 2.8M9.4 30.6l2.8-2.8M27.8 12.2l2.8-2.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>`,
+    myMentors: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="13" cy="13" r="6" stroke="currentColor" stroke-width="2"/>
+        <path d="M3 34c0-6.6 4.5-11 10-11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="28" cy="13" r="6" stroke="currentColor" stroke-width="2"/>
+        <path d="M37 34c0-6.6-4.5-11-10-11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M20 25c-3 0-7 2-7 6h14c0-4-4-6-7-6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="20" cy="18" r="4" stroke="currentColor" stroke-width="2"/>
+    </svg>`,
+    profile: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="4" stroke="currentColor" stroke-width="2"/>
+        <path d="M20 4v4M20 32v4M4 20h4M32 20h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M7.5 7.5l2.8 2.8M29.7 29.7l2.8 2.8M7.5 32.5l2.8-2.8M29.7 10.3l2.8-2.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="20" cy="20" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"/>
+    </svg>`
+};
 
-        function renderQuickAccessCards() {
-            const container = document.getElementById('dashboardCardsGrid');
-            if (!container) return;
-            
-            container.innerHTML = dashboardCards.map(card => `
-                <article class="article-wrapper" onclick="showDashboardSection('${card.section}')">
-                  <div class="rounded-lg container-project d-flex align-items-center justify-content-center" style="height: 100px;">
-                    <i class="fa ${card.icon} fa-3x text-primary"></i>
-                  </div>
+const dashboardCards = [
+    { title: 'My Projects',      id: 'projects',  section: 'projects',  types: ['Manage', 'Track'], progress: 85, action: 'view' },
+    { title: 'Submit Project',   id: 'submit',    section: 'submit',    types: ['Innovate', 'Launch'], progress: 0, action: 'plus' },
+    { title: 'Find Mentors',     id: 'mentors',   section: 'mentors',   types: ['Connect', 'Experts'], progress: 40, action: 'search' },
+    { title: 'My Mentors',       id: 'myMentors', section: 'myMentors', types: ['Assigned', 'Requests'], progress: 60, action: 'chat' },
+    { title: 'Account Settings', id: 'profile',   section: 'profile',   types: ['Profile', 'Settings'], progress: 95, action: 'edit' }
+];
 
-                  <div class="project-info">
-                    <div class="flex-pr">
-                      <div class="project-title text-nowrap">${card.title}</div>
-                      <div class="project-hover">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor">
-                          <line y2="12" x2="19" y1="12" x1="5"></line>
-                          <polyline points="12 5 19 12 12 19"></polyline>
-                        </svg>
-                      </div>
-                    </div>
+// ─── Enhanced background symbol system ───────────────────────
+// ─── Enhanced background symbol system ───────────────────────
+function initBackgroundSymbols() {
+    const container = document.getElementById('backgroundSymbols');
+    if (!container) return;
+    container.innerHTML = '';
 
-                    <div class="types">
-                      ${card.types.map(t => `<span class="project-type">• ${t}</span>`).join('')}
-                    </div>
-                  </div>
-                </article>
-            `).join('');
-        }
+    const symbols = [
+        '+', '−', '×', '÷', '◇', '○', '△', '□', 
+        '⟶', '⇌', '∞', '≈', '{ }', '< />', '[ ]', '#',
+        '⚡', '⚛', '◈', '❖', '★', '⚙', '⌘'
+    ];
 
-        // Logout - Global
-        window.logout = async function() {
-            try {
-                await auth.signOut();
-                localStorage.removeItem('innovateHubUser');
-                window.location.href = 'login.html';
-            } catch (error) {
-                console.error('Logout error:', error);
-                window.location.href = 'login.html';
-            }
-        };
+    const count = 100; // Boosted density
+    for (let i = 0; i < count; i++) {
+        const el = document.createElement('span');
+        el.className = 'bg-symbol';
+        el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+        const size = 0.8 + Math.random() * 2.2;         // 0.8–3.0rem (Larger)
+        const opacity = 0.04 + Math.random() * 0.08;    // More visible
+        const delay = Math.random() * 20;               
+        const dur = 15 + Math.random() * 25;            
+        const drift = (Math.random() - 0.5) * 150;      
+
+        el.style.cssText = `
+            position: absolute;
+            left: ${Math.random() * 100}%;
+            top: ${Math.random() * 140}%;
+            font-size: ${size}rem;
+            --sym-opacity: ${opacity};
+            opacity: ${opacity};
+            color: ${Math.random() > 0.6 ? '#1a5e4f' : '#f3a813'};
+            font-family: 'Courier New', monospace;
+            font-weight: 800;
+            pointer-events: none;
+            user-select: none;
+            animation: floatSymbol ${dur}s ${delay}s ease-in-out infinite alternate;
+            --drift: ${drift}px;
+            filter: blur(${Math.random() * 1}px);
+        `;
+        container.appendChild(el);
+    }
+}
+
+function renderQuickAccessCards() {
+    const container = document.getElementById('dashboardCardsGrid');
+    if (!container) return;
+
+    container.innerHTML = dashboardCards.map(card => `
+        <article class="theme-card" onclick="window.showDashboardSection('${card.section}')">
+          <div class="tc-icon-wrap">
+            ${CARD_ICONS[card.id] || ''}
+          </div>
+          <div class="tc-content">
+            <div class="tc-header">
+              <h3 class="tc-title">${card.title}</h3>
+              <div class="tc-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="tc-tags">
+              ${card.types.map(t => `<span class="tc-tag">${t}</span>`).join('')}
+            </div>
+          </div>
+        </article>
+    `).join('');
+
+    initBackgroundSymbols();
+}
+
 
         let currentUser = null;
         let autoSave = null;
         
-        // Auth check
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) return; // Login redirect handled globally by shared-ui
-            
+        // Export init function for dashboard.html
+        export async function initDashboard(user, userData) {
+            console.log("Innovator Dashboard: Initializing with provided data...");
             currentUser = user;
+            
+            // Render cards immediately
+            renderQuickAccessCards();
+            
             try {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                const role = userDoc.exists() ? userDoc.data().role : 'innovator';
-                
-                if (role !== 'mentor' && role !== 'admin') {
-                    await initializeDashboard();
-                }
+                await initializeDashboard(userData);
             } catch (err) {
                 console.error("Critical Dashboard Init Error:", err);
                 if(typeof window.showDashboardSection === 'function') window.showDashboardSection('projects');
             }
-        });
+        }
         
-        async function initializeDashboard() {
+        async function initializeDashboard(userData = null) {
             // UI elements
             const userDisplayName = document.getElementById('userDisplayName');
             const profileDisplayNameDisplay = document.getElementById('profileDisplayNameDisplay');
@@ -118,42 +153,45 @@ import { auth, db } from '../core/firebase-config.js';
 
             // Default display name
             const initialName = currentUser.displayName || currentUser.email.split('@')[0];
-            if (userDisplayName) userDisplayName.textContent = initialName;
-            if (profileDisplayNameDisplay) profileDisplayNameDisplay.textContent = initialName;
-
-            // Load additional profile info from Firestore
-            try {
-                const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    
-                    const realName = data.fullName || initialName;
-                    if (userDisplayName) userDisplayName.textContent = realName;
-                    if (profileDisplayNameDisplay) profileDisplayNameDisplay.textContent = realName;
-
-                    if (document.getElementById('profileName')) document.getElementById('profileName').value = data.fullName || '';
-                    if (document.getElementById('profileBio')) document.getElementById('profileBio').value = data.bio || '';
-                    if (document.getElementById('profileInstitution')) document.getElementById('profileInstitution').value = data.institution || '';
-                    if (document.getElementById('profileSkills')) document.getElementById('profileSkills').value = (data.skills || []).join(', ');
-                    if (document.getElementById('profileInterests')) document.getElementById('profileInterests').value = (data.interests || []).join(', ');
-                    
-                    if (data.photoURL && profilePreview) {
-                        profilePreview.src = data.photoURL;
-                    }
-
-                    // Render skills badges
-                    const skillsContainer = document.getElementById('skillsBadgeContainer');
-                    if (skillsContainer && data.skills) {
-                        skillsContainer.innerHTML = data.skills.map(s => `<span class="badge bg-primary-soft text-primary p-2">${s}</span>`).join('');
-                    }
-
-                    // Refresh Profile Circle Initials
-                    if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
-                        window.StaggeredMenu.updateInitials(realName);
-                    }
+            
+            // If userData isn't provided, fetch it (fallback)
+            let data = userData;
+            if (!data) {
+                try {
+                    const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+                    if (userDoc.exists()) data = userDoc.data();
+                } catch (err) {
+                    console.error("Error fetching user doc in fallback:", err);
                 }
-            } catch (err) {
-                console.error("Error loading profile from Firestore:", err);
+            }
+
+            // Sync UI with data
+            const realName = (data && data.fullName) || initialName;
+            if (userDisplayName) userDisplayName.textContent = realName;
+            if (profileDisplayNameDisplay) profileDisplayNameDisplay.textContent = realName;
+
+            // Refresh Profile Circle Initials
+            if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
+                console.log(`Innovator Dashboard: Updating initials with name "${realName}"`);
+                window.StaggeredMenu.updateInitials(realName);
+            }
+
+            if (data) {
+                if (document.getElementById('profileName')) document.getElementById('profileName').value = data.fullName || '';
+                if (document.getElementById('profileBio')) document.getElementById('profileBio').value = data.bio || '';
+                if (document.getElementById('profileInstitution')) document.getElementById('profileInstitution').value = data.institution || '';
+                if (document.getElementById('profileSkills')) document.getElementById('profileSkills').value = (data.skills || []).join(', ');
+                if (document.getElementById('profileInterests')) document.getElementById('profileInterests').value = (data.interests || []).join(', ');
+                
+                if (data.photoURL && profilePreview) {
+                    profilePreview.src = data.photoURL;
+                }
+
+                // Render skills badges
+                const skillsContainer = document.getElementById('skillsBadgeContainer');
+                if (skillsContainer && data.skills) {
+                    skillsContainer.innerHTML = data.skills.map(s => `<span class="badge bg-primary-soft text-primary p-2">${s}</span>`).join('');
+                }
             }
 
             if (document.getElementById('profileEmail')) document.getElementById('profileEmail').value = currentUser.email;
@@ -206,9 +244,7 @@ import { auth, db } from '../core/firebase-config.js';
 
             /* CardNav removed in favor of standard navbar + landing cards */
 
-            // Global section switcher enhancement is already handled in dashboard.html
-            // We just need to make sure renderQuickAccessCards is called
-            renderQuickAccessCards();
+            // renderQuickAccessCards(); // Moved to top of script for immediate rendering
             
             // Initialize auto-save for project form
             try {
@@ -400,7 +436,7 @@ import { auth, db } from '../core/firebase-config.js';
             };
             
             try {
-                await ProjectService.submitProject(projectData, file);
+                await (window.ProjectService || ProjectService).submitProject(projectData, file);
                 alert('Project submitted successfully!');
                 form.reset();
                 if (autoSave) await autoSave.clearDraft();

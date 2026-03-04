@@ -82,8 +82,27 @@
             }
         }
     };
+})();
 
-    // 4. GLOBAL UI ACTIONS
+// 4. GLOBAL UI ACTIONS - Moved outside IIFE for reliability
+window.logout = function() {
+    console.log("Global logout triggered.");
+    
+    // Clear local session immediately for UI updates
+    localStorage.removeItem("innovateHubUser");
+    
+    // If the specialized logout in innovate-hub.js or dashboard scripts is ready, call it
+    if (typeof window.firebaseLogout === 'function') {
+        window.firebaseLogout();
+    } else {
+        // Fallback: direct redirect to login.html if firebase modules aren't loaded
+        window.location.href = 'login.html';
+    }
+};
+
+(function() {
+    "use strict";
+
     window.goToDashboard = function() {
         const user = window.loadFromLocalStorage("innovateHubUser");
         if (!user || !user.role) {
