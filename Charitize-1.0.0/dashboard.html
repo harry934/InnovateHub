@@ -26,10 +26,11 @@
 
     <!-- Libraries Stylesheet -->
     <link href="assets/lib/animate/animate.min.css" rel="stylesheet" />
-    <link href="assets/css/bootstrap.min.css?v=6.0.0" rel="stylesheet" />
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/auth-ui.css" rel="stylesheet" />
     <link href="assets/css/style.css?v=6.0.0" rel="stylesheet" />
     <link href="assets/css/staggered-menu.css?v=6.0.0" rel="stylesheet" />
-    <link href="assets/css/dashboard-rebuild.css?v=6.0.0" rel="stylesheet" />
+    <link href="assets/css/dashboard-rebuild.css?v=7.0.0" rel="stylesheet" />
     <link href="assets/css/innovate-hub.css?v=6.0.0" rel="stylesheet" />
     <link href="assets/css/nuru-assistant.css?v=6.0.0" rel="stylesheet" />
 
@@ -47,13 +48,34 @@
     <div class="background-symbols" id="backgroundSymbols"></div>
     <div class="page-blob"></div>
 
+    <!-- Premium Background Elements -->
+    <div class="premium-bg-orb orb-primary"></div>
+    <div class="premium-bg-orb orb-secondary"></div>
+
     <!-- Dashboard Landing Page -->
-    <div id="dashboardQuickAccess" class="py-5">
+    <div id="dashboardQuickAccess" class="py-5" style="position:relative; z-index:2;">
       <div class="container mb-5">
         <!-- Simplified Hero -->
-        <div class="mb-5">
-          <h1 class="display-5 fw-bold mb-2">Dashboard</h1>
-          <p class="text-muted lead">Manage your innovation ecosystem and mentor connections.</p>
+        <div class="mb-5 d-flex justify-content-between align-items-end flex-wrap gap-4">
+          <div>
+            <span style="color:var(--brand-yellow); font-weight:800; text-transform:uppercase; letter-spacing:2px; font-size:0.75rem;">Platform Overview</span>
+            <h1 class="display-5 fw-bold mb-2" style="font-family:var(--font-head); color:var(--brand-green); font-weight:900;">Dashboard</h1>
+            <p class="text-muted lead mb-0">Manage your innovation ecosystem and mentor connections.</p>
+          </div>
+          
+          <!-- Profile Completeness Tracker (Conditional) -->
+          <div id="mentorCompleteness" style="display:none; width:100%; max-width:400px;">
+            <div class="completeness-card">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span style="font-weight:700; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">Profile Completeness</span>
+                <span id="completenessText" style="font-weight:800; color:var(--brand-yellow);">0%</span>
+              </div>
+              <div class="completeness-bar-bg">
+                <div id="completenessFill" class="completeness-bar-fill"></div>
+              </div>
+              <p style="font-size:0.75rem; opacity:0.8; margin:0;">Complete your profile to be discoverable by innovators.</p>
+            </div>
+          </div>
         </div>
 
         <div class="dashboard-grid-container" id="dashboardCardsGrid">
@@ -67,10 +89,11 @@
       <div class="container py-5">
         <div class="mb-5">
           <button
-            class="btn btn-outline-secondary px-4"
+            class="btn btn-outline-secondary px-4 d-flex align-items-center gap-2"
             onclick="showDashboardSection('home')"
           >
-            <i class="fa fa-arrow-left me-2"></i> Back to Dashboard
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back to Dashboard
           </button>
         </div>
 
@@ -551,6 +574,10 @@
     <script src="assets/js/utils/ui-utils.js?v=3.6.0"></script>
     <script src="assets/js/components/shared-ui.js?v=3.6.0"></script>
     <script src="assets/js/core/api.js?v=3.6.0"></script>
+    <!-- Mock Service & Feature Scripts -->
+    <script src="assets/js/services/mock-service.js?v=1.0.0"></script>
+    <script src="assets/js/pages/mentor-discovery.js?v=1.0.0"></script>
+    <script src="assets/js/components/file-upload.js?v=1.0.0"></script>
     <script
       type="module"
       src="assets/js/pages/innovate-hub.js?v=3.6.0"
@@ -599,7 +626,49 @@
           }
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
+
+        // ── Section-specific render hooks ──────────────────────
+        if (sectionId === "mentors" && window.MentorDiscovery) {
+          MentorDiscovery.init();
+        }
+        if (sectionId === "myMentors" && window.renderMyMentors) {
+          renderMyMentors();
+        }
+        if (sectionId === "requests" && window.renderMentorRequests) {
+          renderMentorRequests();
+        }
       };
+
+      // ── Mentor access control: show blocking screen ──────────
+      function showMentorPendingScreen() {
+        document.body.innerHTML = `
+          <div class="background-pattern"></div>
+          <div class="page-blob"></div>
+          <div class="access-pending-screen">
+            <div class="access-pending-icon">⏳</div>
+            <h1 class="access-screen-title" style="color:#b47b00;">Application Under Review</h1>
+            <p class="access-screen-sub">Your mentor application is currently being reviewed by the Innovate Hub admin team. You will be notified once your application is approved.</p>
+            <p style="font-size:0.85rem;color:#aaa;">This process usually takes 24–48 hours. Thank you for your patience!</p>
+            <button onclick="logout && logout()" style="margin-top:20px;padding:12px 32px;background:#1a5e4f;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;">Sign Out</button>
+          </div>`;
+      }
+
+      function showMentorRejectedScreen(reason) {
+        document.body.innerHTML = `
+          <div class="background-pattern"></div>
+          <div class="page-blob"></div>
+          <div class="access-rejected-screen">
+            <div class="access-rejected-icon">❌</div>
+            <h1 class="access-screen-title" style="color:#dc3545;">Application Not Approved</h1>
+            <p class="access-screen-sub">Unfortunately, your mentor application was not approved at this time. Here is the reason provided by the administrator:</p>
+            <div class="rejection-reason-box">
+              <strong>Admin's Reason</strong>
+              <p>${reason || 'No specific reason was provided. Please contact support.'}</p>
+            </div>
+            <p style="font-size:0.85rem;color:#aaa;max-width:420px;margin:0 auto 20px;">You may update your profile and reapply, or contact <a href="contact.html" style="color:#1a5e4f;">our team</a> for clarification.</p>
+            <button onclick="logout && logout()" style="margin-top:12px;padding:12px 32px;background:#dc3545;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;">Sign Out</button>
+          </div>`;
+      }
 
       // ── Auth listener ──────────────────────────────────────────
       onAuthStateChanged(auth, async (user) => {
@@ -625,6 +694,34 @@
           return;
         }
 
+        // ── Mentor Access Control Guard ──────────────────────────
+        if (role === "mentor") {
+          // Check mock service first (for demo), then fall back to Firestore userData
+          let mentorStatus = userData.mentorStatus || userData.approvalStatus || null;
+
+          // Try mock service to simulate approval state
+          if (window.MockService) {
+            // Find matching user in mock store by email
+            const mockUser = MockService.getAllUsers().find(u =>
+              u.email === user.email && u.role === 'mentor'
+            );
+            if (mockUser) mentorStatus = mockUser.status;
+          }
+
+          if (mentorStatus === 'pending') {
+            showMentorPendingScreen();
+            return;
+          }
+          if (mentorStatus === 'rejected') {
+            const reason = userData.rejectionReason ||
+              (window.MockService && MockService.getAllUsers().find(u => u.email === user.email)?.rejectionReason) ||
+              null;
+            showMentorRejectedScreen(reason);
+            return;
+          }
+          // If status is 'approved' or null (default — don't block existing approved mentors)
+        }
+
         // Init StaggeredMenu
         const siteItems = [
           { label: "Home Page",  link: "index.html" },
@@ -636,7 +733,8 @@
           { label: "Mentee Requests", link: "javascript:window.showDashboardSection('requests')" },
           { label: "Active Mentees",  link: "javascript:window.showDashboardSection('mentees')" }
         ] : [
-          { label: "Find a Mentor", link: "javascript:window.showDashboardSection('mentors')" }
+          { label: "Find a Mentor", link: "javascript:window.showDashboardSection('mentors')" },
+          { label: "My Mentors",    link: "javascript:window.showDashboardSection('myMentors')" },
         ];
         const profileItems = [
           { label: "My Profile", link: "javascript:window.showDashboardSection('profile')" },
@@ -655,6 +753,16 @@
           const name = userData.fullName || user.displayName || user.email.split("@")[0];
           window.StaggeredMenu.updateInitials(name);
         }
+
+        // Store user in localStorage for mock service lookups
+        try {
+          localStorage.setItem('innovateHubUser', JSON.stringify({
+            id: user.uid,
+            email: user.email,
+            fullName: userData.fullName || user.displayName || user.email.split("@")[0],
+            role,
+          }));
+        } catch(e) {}
 
         // Load role-specific module
         const modulePath = role === "mentor"
@@ -679,7 +787,45 @@
         window.dashboardReady = true;
         document.body.classList.add("role-" + role);
         window.showDashboardSection("home");
+
+        // Initialize file upload on submit section
+        if (window.FileUploadComponent) {
+          const dropEl = document.getElementById('projectFileDropZone');
+          if (dropEl) {
+            window._projectFileUpload = new FileUploadComponent('projectFileDropZone', {
+              maxFiles: 3,
+              maxSizeMB: 10,
+              acceptedTypes: ['pdf', 'doc', 'docx', 'ppt', 'pptx'],
+              onFilesChanged: (meta) => {
+                // Store metadata for form submission
+                window._projectFileMeta = meta;
+              }
+            });
+          }
+        }
+
+        // Init mentor discovery and requests for immediate renders when navigating
+        if (role === 'innovator') {
+          // Pre-initialize discovery for faster render on first nav
+          if (window.MentorDiscovery) setTimeout(() => {}, 0);
+        }
+        if (role === 'mentor' && window.renderMentorRequests) {
+          // Render sidebar badge count for pending requests
+          try {
+            const pendingMenteeCount = window.MockService
+              ? MockService.getPendingRequestsForMentor(user.uid).length
+              : 0;
+            if (pendingMenteeCount > 0) {
+              const badge = document.createElement('span');
+              badge.style.cssText = 'background:var(--brand-yellow);color:#000;border-radius:50%;width:18px;height:18px;font-size:0.65rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-left:6px;';
+              badge.textContent = pendingMenteeCount;
+              const reqLink = document.querySelector('[href*="requests"]') || document.querySelector('[href*="Requests"]');
+              if (reqLink) reqLink.appendChild(badge);
+            }
+          } catch(e) {}
+        }
       });
     </script>
   </body>
+
 </html>

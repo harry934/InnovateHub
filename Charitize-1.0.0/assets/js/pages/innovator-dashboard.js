@@ -101,22 +101,22 @@ function renderQuickAccessCards() {
     if (!container) return;
 
     container.innerHTML = dashboardCards.map(card => `
-        <article class="theme-card" onclick="window.showDashboardSection('${card.section}')">
-          <div class="tc-icon-wrap">
+        <article class="premium-card" onclick="window.showDashboardSection('${card.section}')">
+          <div class="premium-card-icon">
             ${CARD_ICONS[card.id] || ''}
           </div>
           <div class="tc-content">
             <div class="tc-header">
-              <h3 class="tc-title">${card.title}</h3>
+              <h3 class="tc-title" style="font-family:var(--font-head); font-weight:800; font-size:1.4rem; color:var(--brand-green);">${card.title}</h3>
               <div class="tc-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
               </div>
             </div>
-            <div class="tc-tags">
-              ${card.types.map(t => `<span class="tc-tag">${t}</span>`).join('')}
+            <div class="tc-tags" style="margin-top:8px; display:flex; gap:8px;">
+              ${card.types.map(t => `<span class="badge" style="background:rgba(26, 94, 79, 0.05); color:var(--brand-green); font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:4px 10px; border-radius:20px;">${t}</span>`).join('')}
             </div>
           </div>
         </article>
@@ -375,6 +375,12 @@ function renderQuickAccessCards() {
                 snapshot.forEach(doc => {
                     const mentor = { id: doc.id, ...doc.data() };
                     
+                    // Business Rule: ONLY show approved and fully completed mentors
+                    const isApproved = mentor.approvalStatus === 'approved' || mentor.status === 'approved';
+                    const isComplete = mentor.profileComplete === true || mentor.isProfileComplete === true;
+                    
+                    if (!isApproved || !isComplete) return;
+
                     const matchesCategory = selectedCategories.length === 0 || 
                         selectedCategories.some(c => (mentor.categories || []).includes(c) || (mentor.expertise || '').toLowerCase().includes(c));
                     

@@ -5,20 +5,19 @@
     <title>Admin Dashboard - Innovate Hub</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link href="assets/img/favicon.ico" rel="icon">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Open+Sans&display=swap" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <!-- Bootstrap & Custom CSS -->
     <link href="assets/css/bootstrap.min.css?v=3.2.0" rel="stylesheet">
-    <link href="assets/css/style.css?v=3.2.0" rel="stylesheet">
     <link href="assets/css/innovate-hub.css?v=3.2.0" rel="stylesheet">
-    <link href="assets/css/responsive-dashboard.css?v=3.2.0" rel="stylesheet">
+    <link href="assets/css/dashboard-rebuild.css?v=7.0.0" rel="stylesheet">
     <link href="assets/css/nuru-assistant.css?v=3.2.0" rel="stylesheet">
     <link href="assets/css/mobile-nav.css?v=3.2.0" rel="stylesheet">
 </head>
@@ -26,85 +25,200 @@
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
-        <div class="dashboard-sidebar">
-            <!-- Mobile Toggle Header -->
-            <div class="d-flex align-items-center justify-content-between px-4 py-3 d-lg-none border-bottom mb-2 mobile-dashboard-header bg-primary nav-bar">
-                <a href="/" class="logo-container text-decoration-none p-0 m-0">
-                    <img src="assets/img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
-                    <span class="logo-text ms-2 text-dark">Innovate Hub</span>
+            <!-- Logo Section -->
+            <div class="px-4 py-4 border-bottom border-white-50 mb-2">
+                <a href="/" class="logo-container text-decoration-none d-flex align-items-center">
+                    <img src="assets/img/logo.svg" alt="Logo" style="width: 28px; height: 28px; filter: brightness(0) invert(1);">
+                    <span class="logo-text ms-2 text-white fw-bold" style="font-size: 1.1rem; letter-spacing: -0.5px;">Innovate Hub</span>
                 </a>
-                <button type="button" class="navbar-toggler p-0 border-0" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-                    <div class="mob-icon">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+            </div>
+
+            <!-- Navigation Section (Scrollable) -->
+            <div class="flex-grow-1 overflow-auto py-2">
+                <div class="px-4 mb-2"><span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:#a0aec0;font-weight:700;">Menu</span></div>
+                <nav class="nav flex-column mb-4">
+                    <a class="nav-link active" href="#" onclick="showSection('adminOverview')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        Overview
+                    </a>
+                    <a class="nav-link" href="#" onclick="showSection('users')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        All Users
+                    </a>
+                    <a class="nav-link d-flex justify-content-between align-items-center" href="#" onclick="showSection('mentorApprovals')">
+                        <span class="d-flex align-items-center gap-2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            Mentor Approvals
+                        </span>
+                        <span id="pendingMentorBadge" class="badge rounded-pill bg-warning text-dark" style="font-size: 0.65rem; display:none;"></span>
+                    </a>
+                    <a class="nav-link" href="#" onclick="showSection('projectApprovals')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        Project Approvals
+                    </a>
+                    <a class="nav-link" href="#" onclick="showSection('mentorshipPairings')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        Mentorship Pairings
+                    </a>
+                </nav>
+
+                <div class="px-4 mb-2 mt-4"><span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:#a0aec0;font-weight:700;">Account</span></div>
+                <nav class="nav flex-column mb-4">
+                    <a class="nav-link" href="#" onclick="showSection('profile')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        Settings
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Profile & Logout Section (Fixed Bottom) -->
+            <div class="mt-auto border-top border-white-10 p-3" style="background: rgba(255,255,255,0.03);">
+                <div class="d-flex align-items-center mb-3 px-2">
+                    <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">AD</div>
+                    <div class="ms-2 overflow-hidden">
+                        <div id="userDisplayName" class="fw-bold text-white text-truncate" style="font-size: 0.85rem;">Admin User</div>
+                        <div class="text-white-50 text-truncate" style="font-size: 0.7rem;">Administrator</div>
                     </div>
+                </div>
+                <button onclick="logout()" class="btn btn-warning btn-sm w-100 d-flex align-items-center justify-content-center gap-2" style="font-weight: 700;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Sign Out
                 </button>
             </div>
 
-            <div class="collapse navbar-collapse" id="navbarCollapse">
-                <a href="/" class="logo-container text-decoration-none px-4 mb-3 mt-3 d-none d-lg-flex">
-                    <img src="assets/img/logo.svg" alt="Logo" style="width: 30px; height: 30px;">
-                    <span class="logo-text text-dark">Innovate Hub</span>
-                </a>
-            
-            <!-- User Identity -->
-            <div class="px-4 mb-4 user-identity">
-                <small class="text-dark d-block" style="font-size: 0.7rem; opacity: 0.8;">Logged in as</small>
-                <div id="userDisplayName" class="fw-bold text-dark" style="font-size: 1rem; letter-spacing: 0.5px;">Admin</div>
-            </div>
-            
-            <h6 class="sidebar-heading px-4 mt-2 mb-2 text-uppercase small" style="color: var(--bs-primary); letter-spacing: 1.5px; font-weight: 700;">Innovation</h6>
-            <nav class="nav flex-column mb-3">
-                <a class="nav-link active" href="#" onclick="showSection('projects')"><i class="fa fa-folder-open me-2"></i>My Projects</a>
-                <a class="nav-link" href="#" onclick="showSection('submit')"><i class="fa fa-plus-circle me-2"></i>Submit Project</a>
-                <a class="nav-link" href="#" onclick="showSection('mentors')"><i class="fa fa-search me-2"></i>Find Mentors</a>
-            </nav>
-            
-            <h6 class="sidebar-heading px-4 mt-2 mb-2 text-uppercase small" style="color: var(--bs-primary); letter-spacing: 1.5px; font-weight: 700;">Support</h6>
-            <nav class="nav flex-column mb-3">
-                <a class="nav-link" href="#" onclick="showSection('myMentors')"><i class="fa fa-user-tie me-2"></i>My Mentors</a>
-                <a class="nav-link" href="event.html"><i class="fa fa-calendar-alt me-2"></i>Events</a>
-                <a class="nav-link" href="#" onclick="showSection('notifications')"><i class="fa fa-bell me-2"></i>Notifications</a>
-            </nav>
-            
-            <h6 class="sidebar-heading px-4 mt-2 mb-2 text-uppercase small" style="color: var(--bs-primary); letter-spacing: 1.5px; font-weight: 700;">Account</h6>
-            <nav class="nav flex-column mb-3">
-                <a class="nav-link" href="#" onclick="showSection('profile')"><i class="fa fa-user-circle me-2"></i>My Profile</a>
-                <a class="nav-link text-danger mt-3" href="javascript:void(0)" onclick="logout()"><i class="fa fa-sign-out-alt me-2"></i>Logout</a>
-            </nav>
-            
                 <div class="px-3 mt-3">
-                    <small class="text-muted" style="font-size: 0.65rem;">Platform v2.0.0</small>
+                    <small class="text-muted" style="font-size:0.6rem;">Platform v7.0.0 &middot; Mock Mode</small>
                 </div>
             </div>
         </div>
-        
+
         <!-- Main Content -->
         <div class="dashboard-main">
-            <!-- My Projects Section -->
-            <div id="projectsSection" class="dashboard-section">
+            <!-- Clean background elements handled by CSS -->
+
+            <!-- ══ ADMIN OVERVIEW SECTION ══ -->
+            <div id="adminOverviewSection" class="dashboard-section">
+                <div class="dashboard-hero mb-4">
+                    <h1 class="h2 fw-bold" style="color:var(--brand-green);">Admin Command Center</h1>
+                    <p class="text-muted">High-level platform metrics and operational controls.</p>
+                </div>
+                <div class="admin-stat-grid" id="adminStatsGrid">
+                    <!-- Stats injected by admin-panel.js -->
+                </div>
+            </div>
+
+            <!-- ══ ALL USERS SECTION ══ -->
+            <div id="usersSection" class="dashboard-section" style="display:none;">
+                <div class="dashboard-header mb-4">
+                    <h2 style="font-family:var(--font-head);font-weight:800;color:var(--brand-green);">Registered Users</h2>
+                    <p class="text-muted">All innovators and mentors on the platform</p>
+                </div>
+                <div class="admin-table-card">
+                    <div class="admin-table-header">
+                        <h3 class="admin-table-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            Members
+                        </h3>
+                        <div class="filter-group d-flex gap-2">
+                            <button class="filter-btn active" onclick="setRoleFilter('all')">All</button>
+                            <button class="filter-btn" onclick="setRoleFilter('innovator')">Innovators</button>
+                            <button class="filter-btn" onclick="setRoleFilter('mentor')">Mentors</button>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="admin-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Role</th>
+                                    <th>Institution</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Injected by admin-panel.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ MENTOR APPROVALS SECTION ══ -->
+            <div id="mentorApprovalsSection" class="dashboard-section" style="display:none;">
+                <div class="dashboard-header mb-4">
+                    <h2 style="font-family:var(--font-head);font-weight:800;color:var(--brand-green);">Mentor Applications</h2>
+                    <p class="text-muted">Review and approve or reject mentor registrations</p>
+                </div>
+                <div id="mentorApprovalList">
+                    <!-- Injected by admin-panel.js -->
+                </div>
+            </div>
+
+            <!-- ══ PROJECT APPROVALS SECTION ══ -->
+            <div id="projectApprovalsSection" class="dashboard-section" style="display:none;">
+                <div class="dashboard-header mb-4">
+                    <h2 style="font-family:var(--font-head);font-weight:800;color:var(--brand-green);">Project Submissions</h2>
+                    <p class="text-muted">Review and approve or reject submitted projects</p>
+                </div>
+                <div id="projectApprovalList">
+                    <!-- Injected by admin-panel.js -->
+                </div>
+            </div>
+
+            <!-- ══ MENTORSHIP PAIRINGS SECTION ══ -->
+            <div id="mentorshipPairingsSection" class="dashboard-section" style="display:none;">
+                <div class="dashboard-header mb-4">
+                    <h2 style="font-family:var(--font-head);font-weight:800;color:var(--brand-green);">Mentorship Pairings</h2>
+                    <p class="text-muted">Manage active mentorship relationships across the platform</p>
+                </div>
+                <div class="admin-table-card">
+                    <div class="admin-table-header">
+                        <h3 class="admin-table-title">Active Pairings</h3>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="admin-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Innovator</th>
+                                    <th>Mentor</th>
+                                    <th>Started</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mentorshipsTableBody">
+                                <!-- Data injected by admin-panel.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Projects Section (kept for legacy compatibility) -->
+            <div id="projectsSection" class="dashboard-section" style="display:none;">
                 <div class="dashboard-header mb-4">
                     <h2>My Projects</h2>
                     <p class="text-muted">Track and manage your innovation projects</p>
                 </div>
                 <div id="projectsContainer"></div>
             </div>
-            
+
             <!-- Submit Project Section -->
             <div id="submitSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
                     <h2>Submit New Project</h2>
                     <p class="text-muted">Share your innovative idea with us</p>
                 </div>
-                
+
                 <div class="dashboard-card">
                     <form id="projectForm">
                         <div class="mb-3">
                             <label class="form-label">Project Title</label>
                             <input type="text" class="form-control" name="title" required>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label d-block">Project Categories (Select any that apply)</label>
                             <div class="d-flex flex-wrap gap-3 p-3 border" style="background: #f8f9fa;">
@@ -138,44 +252,44 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Problem Statement</label>
                             <textarea class="form-control" name="problemStatement" rows="3" required></textarea>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Objectives</label>
                             <textarea class="form-control" name="objectives" rows="3" required></textarea>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Proposed Solution</label>
                             <textarea class="form-control" name="proposedSolution" rows="4" required></textarea>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Expected Impact</label>
                             <textarea class="form-control" name="expectedImpact" rows="3" required></textarea>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Supporting Document (Optional)</label>
                             <input type="file" class="form-control" name="document" accept=".pdf,.doc,.docx">
                         </div>
-                        
+
                         <button type="submit" class="btn btn-custom-signup">Submit Project</button>
                     </form>
                 </div>
             </div>
-            
+
             <!-- Find Mentors Section -->
             <div id="mentorsSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
                     <h2>Find Mentors</h2>
                     <p class="text-muted">Connect with experienced mentors</p>
                 </div>
-                
+
                 <div class="filter-panel mb-4 p-3 bg-white shadow-sm">
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -197,10 +311,10 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div id="mentorsContainer" class="row g-4"></div>
             </div>
-            
+
             <!-- My Mentors Section -->
             <div id="myMentorsSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
@@ -209,14 +323,14 @@
                 </div>
                 <div id="myMentorsContainer"></div>
             </div>
-            
+
             <!-- Profile Section -->
             <div id="profileSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
                     <h2>My Profile</h2>
                     <p class="text-muted">Manage your professional admin profile</p>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-lg-4">
                         <div class="dashboard-card text-center">
@@ -294,7 +408,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -309,7 +423,7 @@
     <script type="module" src="assets/js/pages/components/mentor-profile-card.js"></script>
     <script type="module" src="assets/js/pages/components/project-card-structured.js"></script>
     <script type="module" src="assets/js/pages/utils/auto-save-manager.js"></script>
-    
+
     <script>
         // Section navigation - Global (Non-module for robustness)
         window.showSection = function(sectionName) {
@@ -318,23 +432,23 @@
             document.querySelectorAll('.dashboard-section').forEach(section => {
                 section.style.display = 'none';
             });
-            
+
             // Remove active class from all links
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('active');
             });
-            
+
             // Show target section
             const section = document.getElementById(sectionName + 'Section');
             if (section) {
                 section.style.display = 'block';
-                
+
                 // Find and highlight the correct link
                 let activeLink = document.querySelector(`.nav-link[onclick*="showSection('${sectionName}')"]`);
                 if (!activeLink) {
                     activeLink = document.querySelector(`.nav-link[onclick*="${sectionName}"]`);
                 }
-                
+
                 if (activeLink) {
                     activeLink.classList.add('active');
                 }
@@ -342,7 +456,7 @@
                 console.warn('Section not found:', sectionName + 'Section');
                 if (sectionName !== 'projects') window.showSection('projects');
             }
-            
+
             // Scroll to top of main content
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
@@ -361,14 +475,14 @@
 
         let currentUser = null;
         let autoSave = null;
-        
+
         // Auth check
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
                 return;
             }
-            
+
             currentUser = user;
             try {
                 await initializeDashboard();
@@ -377,7 +491,7 @@
                 window.showSection('projects');
             }
         });
-        
+
         async function initializeDashboard() {
             // UI elements
             const userDisplayName = document.getElementById('userDisplayName');
@@ -394,7 +508,7 @@
                 const userDoc = await getDoc(doc(db, "users", currentUser.uid));
                 if (userDoc.exists()) {
                     const data = userDoc.data();
-                    
+
                     const realName = data.fullName || initialName;
                     if (userDisplayName) userDisplayName.textContent = realName;
                     if (profileDisplayNameDisplay) profileDisplayNameDisplay.textContent = realName;
@@ -404,7 +518,7 @@
                     if (document.getElementById('profileInstitution')) document.getElementById('profileInstitution').value = data.institution || '';
                     if (document.getElementById('profileSkills')) document.getElementById('profileSkills').value = (data.skills || []).join(', ');
                     if (document.getElementById('profileInterests')) document.getElementById('profileInterests').value = (data.interests || []).join(', ');
-                    
+
                     if (data.photoURL && profilePreview) {
                         profilePreview.src = data.photoURL;
                     }
@@ -429,13 +543,13 @@
             } catch (err) {
                 console.warn("Notification system init failed:", err);
             }
-            
+
             // Load projects
             await loadProjects();
-            
+
             // Load mentors
             await loadMentors();
-            
+
             // Initialize auto-save for project form
             try {
                 autoSave = new AutoSaveManager('projectForm', currentUser.uid, 'project');
@@ -443,14 +557,14 @@
             } catch (err) {
                 console.warn("AutoSave init failed:", err);
             }
-            
+
             // Setup form submission
             const projectForm = document.getElementById('projectForm');
             if (projectForm) projectForm.addEventListener('submit', handleProjectSubmit);
-            
+
             const profileForm = document.getElementById('profileForm');
             if (profileForm) profileForm.addEventListener('submit', handleProfileUpdate);
-            
+
             // Filter Pills Handling
             document.querySelectorAll('.category-filter-pill').forEach(pill => {
                 pill.addEventListener('click', () => {
@@ -458,7 +572,7 @@
                     pill.classList.toggle('text-white');
                     pill.classList.toggle('bg-light');
                     pill.classList.toggle('text-dark');
-                    loadMentors(); 
+                    loadMentors();
                 });
             });
 
@@ -474,14 +588,14 @@
                 profilePicInput.addEventListener('change', async (e) => {
                     const file = e.target.files[0];
                     if (!file) return;
-                    
+
                     const reader = new FileReader();
                     reader.onload = (re) => {
                         const preview = document.getElementById('profilePreview');
                         if (preview) preview.src = re.target.result;
                     };
                     reader.readAsDataURL(file);
-                    
+
                     const preview = document.getElementById('profilePreview');
                     if (preview) preview.style.opacity = '0.5';
 
@@ -490,15 +604,15 @@
                         if (response && response.ok) {
                             const baseUrl = window.api ? window.api.API_URL : 'https://innovatehub.up.railway.app/api';
                             const photoURL = `${baseUrl}/projects/file/${response.data.fileId}`;
-                            
+
                             const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
                             await updateProfile(currentUser, { photoURL });
-                            
-                            await updateDoc(doc(db, "users", currentUser.uid), { 
-                                photoURL, 
-                                updatedAt: serverTimestamp() 
+
+                            await updateDoc(doc(db, "users", currentUser.uid), {
+                                photoURL,
+                                updatedAt: serverTimestamp()
                             });
-                            
+
                             alert('Profile picture updated!');
                         } else {
                             throw new Error("Upload failed.");
@@ -512,21 +626,21 @@
                 });
             }
         }
-        
+
         async function loadProjects() {
             const container = document.getElementById('projectsContainer');
             if (!container) return;
             container.innerHTML = EmptyStates.templates.loadingState();
-            
+
             try {
                 const q = query(collection(db, 'projects'), where('adminId', '==', currentUser.uid));
                 const snapshot = await getDocs(q);
-                
+
                 if (snapshot.empty) {
                     container.innerHTML = EmptyStates.templates.noProjects();
                     return;
                 }
-                
+
                 container.innerHTML = '';
                 snapshot.forEach(doc => {
                     const project = { id: doc.id, ...doc.data() };
@@ -540,42 +654,42 @@
                 container.innerHTML = EmptyStates.templates.errorState('Failed to load projects');
             }
         }
-        
+
         async function loadMentors() {
             const container = document.getElementById('mentorsContainer');
             if (!container) return;
             container.innerHTML = EmptyStates.templates.loadingState();
-            
+
             try {
                 const selectedCategories = Array.from(document.querySelectorAll('.category-filter-pill.bg-primary'))
                     .map(pill => pill.dataset.value);
-                
+
                 const searchInput = document.getElementById('mentorSearchInput');
                 const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
 
                 const q = query(collection(db, 'users'), where('role', '==', 'mentor'));
                 const snapshot = await getDocs(q);
-                
+
                 if (snapshot.empty) {
                     container.innerHTML = EmptyStates.templates.noMentors();
                     return;
                 }
-                
+
                 let mentors = [];
                 snapshot.forEach(doc => {
                     const mentor = { id: doc.id, ...doc.data() };
-                    
-                    const matchesCategory = selectedCategories.length === 0 || 
+
+                    const matchesCategory = selectedCategories.length === 0 ||
                         selectedCategories.some(c => (mentor.categories || []).includes(c) || (mentor.expertise || '').toLowerCase().includes(c));
-                    
-                    const matchesSearch = !searchTerm || 
-                        mentor.fullName?.toLowerCase().includes(searchTerm) || 
+
+                    const matchesSearch = !searchTerm ||
+                        mentor.fullName?.toLowerCase().includes(searchTerm) ||
                         mentor.expertise?.toLowerCase().includes(searchTerm) ||
                         mentor.institution?.toLowerCase().includes(searchTerm);
 
                     if (matchesCategory && matchesSearch) mentors.push(mentor);
                 });
-                
+
                 if (mentors.length === 0) {
                     container.innerHTML = EmptyStates.templates.noMentors();
                     return;
@@ -585,7 +699,7 @@
                 mentors.forEach(mentor => {
                     container.innerHTML += MentorProfileCard.render(mentor, {
                         showRequestButton: true,
-                        showAvailability: true, 
+                        showAvailability: true,
                         cardClass: 'col-md-6 col-lg-4'
                     });
                 });
@@ -594,15 +708,15 @@
                 container.innerHTML = EmptyStates.templates.errorState('Failed to load mentors');
             }
         }
-        
+
         async function handleProjectSubmit(e) {
             e.preventDefault();
             const form = e.target;
             const submitBtn = form.querySelector('button[type="submit"]');
-            
+
             const categories = Array.from(form.querySelectorAll('input[name="categories"]:checked'))
                 .map(cb => cb.value);
-            
+
             if (categories.length === 0) {
                 alert('Please select at least one category.');
                 return;
@@ -610,7 +724,7 @@
 
             const fileInput = form.querySelector('input[name="document"]');
             const file = fileInput.files ? fileInput.files[0] : null;
-            
+
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Submitting...';
 
@@ -624,7 +738,7 @@
                 proposedSolution: form.proposedSolution.value,
                 expectedImpact: form.expectedImpact.value
             };
-            
+
             try {
                 await ProjectService.submitProject(projectData, file);
                 alert('Project submitted successfully!');
@@ -645,9 +759,9 @@
             e.preventDefault();
             const form = e.target;
             const submitBtn = form.querySelector('button[type="submit"]');
-            
+
             submitBtn.disabled = true;
-            
+
             const skills = form.skills.value.split(',').map(s => s.trim()).filter(s => s !== '');
             const profileData = {
                 fullName: form.fullName.value,
@@ -677,29 +791,29 @@
                 timeout = setTimeout(() => func.apply(this, args), wait);
             };
         }
-        
+
         window.requestMentorship = async function(mentorId) {
             try {
                 // Fetch projects to select from
                 const q = query(collection(db, 'projects'), where('adminId', '==', currentUser.uid));
                 const snapshot = await getDocs(q);
-                
+
                 if (snapshot.empty) {
                     alert('Please submit a project first before requesting mentorship. Go to "Submit Project" section.');
                     if (typeof showSection === 'function') showSection('submit-project');
                     return;
                 }
-                
+
                 let projectId = snapshot.docs[0].id;
-                
+
                 // If multiple projects, ask which one
                 if (snapshot.size > 1) {
                     const projects = snapshot.docs.map(d => ({id: d.id, title: d.data().title}));
                     const projectList = projects.map((p, i) => `${i+1}. ${p.title}`).join('\n');
                     const choice = prompt(`Which project is this mentorship for?\n\n${projectList}\n\nEnter number (default 1):`, '1');
-                    
+
                     if (choice === null) return; // User cancelled
-                    
+
                     const index = parseInt(choice) - 1;
                     if (projects[index]) {
                         projectId = projects[index].id;
@@ -718,13 +832,43 @@
                         createdAt: serverTimestamp()
                     });
                 }
-                
+
                 alert('Mentorship request sent successfully!');
             } catch (error) {
                 console.error('Error sending request:', error);
                 alert('Failed to send request: ' + error.message);
             }
         };
+    </script>
+    <!-- Mock Service & Admin Panel (must load before Nuru) -->
+    <script src="assets/js/services/mock-service.js?v=1.0.0"></script>
+    <script src="assets/js/pages/admin-panel.js?v=1.0.0"></script>
+    <script>
+        // Override showSection to set correct initial section and update badge
+        const _origShowSection = window.showSection;
+        window.showSection = function(sectionName) {
+            _origShowSection(sectionName);
+            // Update mentor badge count
+            const badge = document.getElementById('pendingMentorBadge');
+            if (badge && window.MockService) {
+                const count = MockService.getPendingMentors().length;
+                badge.textContent = count > 0 ? count : '';
+            }
+            // Reinitialize relevant sections on navigate
+            if (sectionName === 'mentorApprovals' && window.AdminPanel) AdminPanel.init();
+            if (sectionName === 'projectApprovals' && window.AdminPanel) AdminPanel.init();
+            if (sectionName === 'users' && window.AdminPanel) AdminPanel.init();
+            if (sectionName === 'adminOverview' && window.AdminPanel) AdminPanel.init();
+        };
+        // Set default section to adminOverview
+        document.addEventListener('DOMContentLoaded', () => {
+            // Update badge on load
+            const badge = document.getElementById('pendingMentorBadge');
+            if (badge && window.MockService) {
+                const count = MockService.getPendingMentors().length;
+                badge.textContent = count > 0 ? count : '';
+            }
+        });
     </script>
     <!-- Nuru Assistant (context: admin dashboard) -->
     <script src="assets/js/components/nuru-assistant.js"></script>
