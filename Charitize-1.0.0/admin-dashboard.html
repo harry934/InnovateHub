@@ -25,72 +25,72 @@
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
             <!-- Logo Section -->
-            <div class="px-4 py-4 border-bottom border-white-50 mb-2">
-                <a href="/" class="logo-container text-decoration-none d-flex align-items-center">
-                    <img src="assets/img/logo.svg" alt="Logo" style="width: 28px; height: 28px; filter: brightness(0) invert(1);">
-                    <span class="logo-text ms-2 text-white fw-bold" style="font-size: 1.1rem; letter-spacing: -0.5px;">Innovate Hub</span>
+            <div class="px-4 py-4 mb-2">
+                <a href="index.html" class="logo-container text-decoration-none d-flex align-items-center">
+                    <img src="assets/img/logo.svg" alt="Innovate Hub" style="width: 32px; height: 32px; filter: brightness(0) invert(1);">
+                    <span class="logo-text ms-2" style="color:#fff; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.5px;">Innovate Hub</span>
                 </a>
             </div>
 
-            <!-- Navigation Section (Scrollable) -->
-            <div class="flex-grow-1 overflow-auto py-2">
-                <div class="px-4 mb-2"><span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:#a0aec0;font-weight:700;">Menu</span></div>
+            <!-- Navigation Section -->
+            <div class="flex-grow-1 py-2">
+                <div class="px-4 mb-2"><span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);font-weight:700;">ADMINISTRATION</span></div>
                 <nav class="nav flex-column mb-4">
                     <a class="nav-link active" href="#" onclick="showSection('adminOverview')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                         Overview
                     </a>
                     <a class="nav-link" href="#" onclick="showSection('users')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         All Users
                     </a>
                     <a class="nav-link d-flex justify-content-between align-items-center" href="#" onclick="showSection('mentorApprovals')">
                         <span class="d-flex align-items-center gap-2">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                            Mentor Approvals
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            Mentor Reviews
                         </span>
                         <span id="pendingMentorBadge" class="badge rounded-pill bg-warning text-dark" style="font-size: 0.65rem; display:none;"></span>
                     </a>
                     <a class="nav-link" href="#" onclick="showSection('projectApprovals')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                        Project Approvals
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        Project Submissions
                     </a>
                     <a class="nav-link" href="#" onclick="showSection('mentorshipPairings')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        Mentorship Pairings
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        Pairing Requests
+                    </a>
+                    <a class="nav-link" href="#" onclick="showSection('eventsManagement')">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        Events Management
                     </a>
                 </nav>
 
-                <div class="px-4 mb-2 mt-4"><span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:#a0aec0;font-weight:700;">Account</span></div>
+                <div class="px-4 mb-2 mt-4"><span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);font-weight:700;">PREFERENCES</span></div>
                 <nav class="nav flex-column mb-4">
                     <a class="nav-link" href="#" onclick="showSection('profile')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        Settings
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        Admin Settings
                     </a>
                 </nav>
             </div>
 
-            <!-- Profile & Logout Section (Fixed Bottom) -->
-            <div class="mt-auto border-top border-white-10 p-3" style="background: rgba(255,255,255,0.03);">
-                <div class="d-flex align-items-center mb-3 px-2">
-                    <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">AD</div>
-                    <div class="ms-2 overflow-hidden">
-                        <div id="userDisplayName" class="fw-bold text-white text-truncate" style="font-size: 0.85rem;">Admin User</div>
-                        <div class="text-white-50 text-truncate" style="font-size: 0.7rem;">Administrator</div>
+            <!-- Profile & Logout Section -->
+            <div class="nav-logout-section">
+                <div class="d-flex align-items-center mb-4 px-1">
+                    <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 40px; height: 40px; font-size: 0.95rem; border: 2px solid rgba(255,255,255,0.2);">AD</div>
+                    <div class="ms-3 overflow-hidden">
+                        <div id="userDisplayName" class="fw-bold text-white text-truncate" style="font-size: 0.9rem; letter-spacing: 0.2px;">Admin User</div>
+                        <div class="text-white-50 text-truncate" style="font-size: 0.75rem;">Platform Master</div>
                     </div>
                 </div>
-                <button onclick="logout()" class="btn btn-warning btn-sm w-100 d-flex align-items-center justify-content-center gap-2" style="font-weight: 700;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                    Sign Out
+                <button onclick="logout()" class="nav-logout-btn-premium">
+                    <svg class="me-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    End Session
                 </button>
             </div>
-
-                <div class="px-3 mt-3">
-                    <small class="text-muted" style="font-size:0.6rem;">Platform v7.0.0 &middot; Mock Mode</small>
-                </div>
-            </div>
-        </div>
+        </aside>
 
         <!-- Main Content -->
         <div class="dashboard-main">
@@ -113,35 +113,14 @@
                     <h2 style="font-family:var(--font-head);font-weight:800;color:var(--brand-green);">Registered Users</h2>
                     <p class="text-muted">All innovators and mentors on the platform</p>
                 </div>
-                <div class="admin-table-card">
-                    <div class="admin-table-header">
-                        <h3 class="admin-table-title">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            Members
-                        </h3>
-                        <div class="filter-group d-flex gap-2">
-                            <button class="filter-btn active" onclick="setRoleFilter('all')">All</button>
-                            <button class="filter-btn" onclick="setRoleFilter('innovator')">Innovators</button>
-                            <button class="filter-btn" onclick="setRoleFilter('mentor')">Mentors</button>
-                        </div>
-                    </div>
-                    <div style="overflow-x:auto;">
-                        <table class="admin-data-table">
-                            <thead>
-                                <tr>
-                                    <th>Member</th>
-                                    <th>Role</th>
-                                    <th>Institution</th>
-                                    <th>Status</th>
-                                    <th>Joined</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody">
-                                <!-- Injected by admin-panel.js -->
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="filter-group d-flex gap-2 mb-4">
+                    <button class="filter-btn active" onclick="setRoleFilter('all')">All Members</button>
+                    <button class="filter-btn" onclick="setRoleFilter('innovator')">Innovators</button>
+                    <button class="filter-btn" onclick="setRoleFilter('mentor')">Mentors</button>
+                </div>
+                <!-- Card Grid Container -->
+                <div class="row" id="usersCardGrid">
+                    <!-- Injected by admin-panel.js -->
                 </div>
             </div>
 
@@ -192,6 +171,61 @@
                                 <!-- Data injected by admin-panel.js -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ EVENTS MANAGEMENT SECTION ══ -->
+            <div id="eventsManagementSection" class="dashboard-section" style="display:none;">
+                <div class="dashboard-header mb-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 style="font-family:var(--font-head);font-weight:800;color:var(--brand-green);">Events Management</h2>
+                        <p class="text-muted">Create, edit, and delete publicly visible events</p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-4 mb-4">
+                        <div class="dashboard-card">
+                            <h4 class="mb-3">Add New Event</h4>
+                            <form id="adminEventForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Event Title</label>
+                                    <input type="text" class="form-control" name="title" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" name="description" rows="3" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Date</label>
+                                    <input type="text" class="form-control" name="date" placeholder="e.g. 15 Oct, 2026" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Time</label>
+                                    <input type="text" class="form-control" name="time" placeholder="e.g. 10:00 AM - 12:00 PM" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Location</label>
+                                    <input type="text" class="form-control" name="location" placeholder="e.g. Innovation Hub, Nairobi" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Image URL</label>
+                                    <input type="url" class="form-control" name="imageLink" placeholder="https://..." value="assets/img/event-default.jpg" required>
+                                </div>
+                                <input type="hidden" id="adminEventId" name="eventId">
+                                <button type="submit" id="adminEventSubmitBtn" class="btn btn-primary w-100">Create Event</button>
+                                <button type="button" id="adminEventCancelBtn" class="btn btn-secondary w-100 mt-2" style="display:none;" onclick="cancelEventEdit()">Cancel Edit</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="dashboard-card border-0 bg-transparent p-0">
+                            <h4 class="mb-3">Active Events</h4>
+                            <div class="row g-4" id="adminEventsGrid">
+                                <!-- Events injected by JS -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -457,15 +491,18 @@
                 if (sectionName !== 'projects') window.showSection('projects');
             }
 
-            // Scroll to top of main content
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll to top of main content container
+            const mainContent = document.querySelector('.dashboard-main');
+            if (mainContent) {
+                mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         };
     </script>
 
     <script type="module">
         import { auth, db } from './assets/js/core/firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import NotificationSystem from './assets/js/components/notification-system.js';
         import StructuredProjectCard from './assets/js/components/project-card-structured.js';
         import MentorProfileCard from './assets/js/components/mentor-profile-card.js';
@@ -564,6 +601,15 @@
 
             const profileForm = document.getElementById('profileForm');
             if (profileForm) profileForm.addEventListener('submit', handleProfileUpdate);
+            
+            const eventFormEl = document.getElementById('adminEventForm');
+            if (eventFormEl) eventFormEl.addEventListener('submit', handleEventSubmit);
+
+            const manualMentorFormEl = document.getElementById('manualMentorForm');
+            if (manualMentorFormEl) manualMentorFormEl.addEventListener('submit', handleManualMentorRegistration);
+
+            // Load Events
+            await loadAdminEvents();
 
             // Filter Pills Handling
             document.querySelectorAll('.category-filter-pill').forEach(pill => {
@@ -839,36 +885,188 @@
                 alert('Failed to send request: ' + error.message);
             }
         };
+
+        // ── Admin Events Management Logic ───────────────────────
+        async function loadAdminEvents() {
+            const container = document.getElementById('adminEventsGrid');
+            if (!container) return;
+            container.innerHTML = '<div class="col-12 text-center py-5"><span class="spinner-border text-primary"></span></div>';
+
+            try {
+                const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'));
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="col-12 text-muted">No events created yet.</div>';
+                    return;
+                }
+
+                let html = '';
+                snapshot.forEach(docSnap => {
+                    const ev = docSnap.data();
+                    const id = docSnap.id;
+                    html += `
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm h-100 border-0">
+                                <img src="${ev.imageLink || 'assets/img/event-default.jpg'}" class="card-img-top" alt="Event Image" style="height:140px; object-fit:cover;">
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold">${ev.title}</h5>
+                                    <p class="card-text small text-muted mb-2"><i class="fa fa-calendar-alt me-1 text-primary"></i>${ev.date} | <i class="fa fa-clock me-1 text-primary"></i>${ev.time}</p>
+                                    <p class="card-text small mb-2"><i class="fa fa-map-marker-alt me-1 text-primary"></i>${ev.location}</p>
+                                    <p class="card-text small mb-3 line-clamp-2">${ev.description}</p>
+                                    <div class="d-flex gap-2 mt-auto">
+                                        <button class="btn btn-sm btn-outline-primary flex-fill" onclick="window.editAdminEvent('${id}')">
+                                            <i class="fa fa-edit me-1"></i> Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger flex-fill" onclick="window.deleteAdminEvent('${id}')">
+                                            <i class="fa fa-trash me-1"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading events:', error);
+                container.innerHTML = '<div class="col-12 text-danger">Failed to load events.</div>';
+            }
+        }
+
+        async function handleEventSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = document.getElementById('adminEventSubmitBtn');
+            const eventId = document.getElementById('adminEventId').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa fa-spinner fa-spin me-2"></i>${eventId ? 'Updating...' : 'Creating...'}`;
+
+            const eventData = {
+                title: form.title.value,
+                description: form.description.value,
+                date: form.date.value,
+                time: form.time.value,
+                location: form.location.value,
+                imageLink: form.imageLink.value || 'assets/img/event-default.jpg',
+                updatedAt: serverTimestamp()
+            };
+
+            try {
+                if (eventId) {
+                    await updateDoc(doc(db, 'events', eventId), eventData);
+                    alert('Event updated successfully!');
+                } else {
+                    eventData.createdAt = serverTimestamp();
+                    eventData.createdBy = currentUser.uid;
+                    await addDoc(collection(db, 'events'), eventData);
+                    alert('Event created successfully!');
+                }
+                cancelEventEdit();
+                await loadAdminEvents();
+            } catch (error) {
+                console.error('Error saving event:', error);
+                alert('Failed to save event: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = eventId ? 'Update Event' : 'Create Event';
+            }
+        }
+
+        window.editAdminEvent = async function(eventId) {
+            try {
+                const docSnap = await getDoc(doc(db, 'events', eventId));
+                if (docSnap.exists()) {
+                    const ev = docSnap.data();
+                    const form = document.getElementById('adminEventForm');
+                    form.title.value = ev.title || '';
+                    form.description.value = ev.description || '';
+                    form.date.value = ev.date || '';
+                    form.time.value = ev.time || '';
+                    form.location.value = ev.location || '';
+                    form.imageLink.value = ev.imageLink || 'assets/img/event-default.jpg';
+                    document.getElementById('adminEventId').value = eventId;
+                    
+                    document.getElementById('adminEventSubmitBtn').innerHTML = 'Update Event';
+                    document.getElementById('adminEventCancelBtn').style.display = 'block';
+                    form.scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                console.error('Error fetching event details:', error);
+                alert('Failed to load event details.');
+            }
+        };
+
+        window.cancelEventEdit = function() {
+            const form = document.getElementById('adminEventForm');
+            form.reset();
+            document.getElementById('adminEventId').value = '';
+            document.getElementById('adminEventSubmitBtn').innerHTML = 'Create Event';
+            document.getElementById('adminEventCancelBtn').style.display = 'none';
+        };
+
+        window.deleteAdminEvent = async function(eventId) {
+            if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) return;
+            try {
+                await deleteDoc(doc(db, 'events', eventId));
+                alert('Event deleted.');
+                await loadAdminEvents();
+            } catch (error) {
+                console.error('Error deleting event:', error);
+                alert('Failed to delete event.');
+            }
+        };
+
+        async function handleManualMentorRegistration(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                fullName: form.fullName.value,
+                email: form.email.value.toLowerCase(),
+                expertise: form.expertise.value,
+                institution: form.institution.value,
+                role: 'mentor',
+                status: 'approved',
+                isApproved: true,
+                joinDate: serverTimestamp(),
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                // Check if user exists
+                const q = query(collection(db, 'users'), where('email', '==', data.email));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    alert('User with this email already exists.');
+                    return;
+                }
+
+                // In a real app, we'd use Firebase Auth Admin SDK to create the user,
+                // but here we'll just create the Firestore document.
+                // The mentor will need to "Reset Password" to gain access if they haven't signed up yet.
+                await addDoc(collection(db, 'users'), data);
+                alert('Mentor registered and approved successfully!');
+                form.reset();
+            } catch (err) {
+                console.error("Error registering mentor:", err);
+                alert("Failed: " + err.message);
+            }
+        }
     </script>
-    <!-- Mock Service & Admin Panel (must load before Nuru) -->
-    <script src="assets/js/services/mock-service.js?v=1.0.0"></script>
-    <script src="assets/js/pages/admin-panel.js?v=1.0.0"></script>
+    <!-- Admin Panel (Firebase Data Integration) -->
+    <script type="module" src="assets/js/pages/admin-panel.js?v=2.0.0"></script>
     <script>
-        // Override showSection to set correct initial section and update badge
+        // Override showSection to set correct initial section and reinitialize dynamic views
         const _origShowSection = window.showSection;
         window.showSection = function(sectionName) {
             _origShowSection(sectionName);
-            // Update mentor badge count
-            const badge = document.getElementById('pendingMentorBadge');
-            if (badge && window.MockService) {
-                const count = MockService.getPendingMentors().length;
-                badge.textContent = count > 0 ? count : '';
-            }
             // Reinitialize relevant sections on navigate
-            if (sectionName === 'mentorApprovals' && window.AdminPanel) AdminPanel.init();
-            if (sectionName === 'projectApprovals' && window.AdminPanel) AdminPanel.init();
-            if (sectionName === 'users' && window.AdminPanel) AdminPanel.init();
-            if (sectionName === 'adminOverview' && window.AdminPanel) AdminPanel.init();
+            if (sectionName === 'mentorApprovals' && window.AdminPanel) window.AdminPanel.init();
+            if (sectionName === 'projectApprovals' && window.AdminPanel) window.AdminPanel.init();
+            if (sectionName === 'users' && window.AdminPanel) window.AdminPanel.init();
+            if (sectionName === 'adminOverview' && window.AdminPanel) window.AdminPanel.init();
         };
-        // Set default section to adminOverview
-        document.addEventListener('DOMContentLoaded', () => {
-            // Update badge on load
-            const badge = document.getElementById('pendingMentorBadge');
-            if (badge && window.MockService) {
-                const count = MockService.getPendingMentors().length;
-                badge.textContent = count > 0 ? count : '';
-            }
-        });
     </script>
     <!-- Nuru Assistant (context: admin dashboard) -->
     <script src="assets/js/components/nuru-assistant.js"></script>

@@ -115,13 +115,25 @@ export const ProjectService = {
                         fileUrl: `${baseUrl}/projects/file/${response.data.fileId}`
                     });
                 } else {
+                    // ATOMIC ROLLBACK: Delete the Firestore project if file upload fails
+                    const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+                    await deleteDoc(doc(db, "projects", projectRef.id));
+                    
                     const errorMsg = response && response.data ? response.data.msg : "Failed to upload project document to MongoDB.";
                     console.error("MongoDB Upload Failed:", errorMsg);
                     throw new Error(errorMsg);
                 }
             } catch (err) {
+                // Also attempt rollback on unexpected errors
+                try {
+                    const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+                    await deleteDoc(doc(db, "projects", projectRef.id));
+                } catch (rollbackErr) {
+                    console.error("Rollback failed:", rollbackErr);
+                }
+                
                 console.error("Project File Upload Error:", err);
-                throw new Error("Failed to upload project document.");
+                throw new Error("Failed to upload project document. Project submission rolled back.");
             }
         }
         return projectRef;

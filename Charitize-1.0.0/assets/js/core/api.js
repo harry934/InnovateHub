@@ -160,6 +160,15 @@ const api = {
         });
         return { ok: response.ok, data: await response.json() };
     },
+
+    deleteProject: async (projectId) => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/projects/${projectId}`, {
+            method: 'DELETE',
+            headers: { 'x-auth-token': token }
+        });
+        return { ok: response.ok, data: await response.json() };
+    },
     API_URL: API_URL // Expose the URL for other scripts
 };
 
