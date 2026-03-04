@@ -1,4 +1,4 @@
-import { auth, db, storage } from './firebase-config.js';
+import { auth, db, storage } from '../core/firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
     doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc 
@@ -63,19 +63,24 @@ export function requireAuth() {
 }
 
 // Global Exports for Module services
-window.logout = async function() {
+window.firebaseLogout = async function() {
+    console.log("Firebase logout triggered from innovate-hub.js");
     try {
         await signOut(auth);
         localStorage.removeItem("innovateHubUser");
         if (typeof window.updateNavbarUI === 'function') window.updateNavbarUI(null);
-        window.location.href = "login.html";
+        
+        // Use window.location.replace to prevent back-button navigation to a session
+        window.location.replace("login.html");
     } catch (error) {
         console.error("Logout error:", error);
         localStorage.removeItem("innovateHubUser");
-        if (typeof window.updateNavbarUI === 'function') window.updateNavbarUI(null);
-        window.location.href = "login.html";
+        window.location.replace("login.html");
     }
 };
+
+// Re-sync global logout with firebase-aware logout
+window.logout = window.firebaseLogout;
 
 // ========================================
 // 14. SERVICES

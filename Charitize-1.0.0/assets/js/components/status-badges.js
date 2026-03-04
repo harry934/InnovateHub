@@ -25,15 +25,12 @@ export const StatusBadge = {
      */
     render(status, customText = null) {
         const normalizedStatus = status.toLowerCase();
-        const colors = this.colors[normalizedStatus] || { bg: '#6c757d', text: '#fff' };
         const displayText = customText || this.formatStatus(status);
+        const icon = this.getIcon(status);
 
         return `
-            <span class="badge-status badge-${normalizedStatus}" 
-                  style="background-color: ${colors.bg}; color: ${colors.text}; 
-                         padding: 0.35rem 0.75rem; border-radius: 15px; 
-                         font-size: 0.875rem; font-weight: 600; 
-                         text-transform: capitalize; display: inline-block;">
+            <span class="badge-premium badge-premium-${normalizedStatus}">
+                <i class="fa ${icon} fs-8"></i>
                 ${displayText}
             </span>
         `;
@@ -55,44 +52,25 @@ export const StatusBadge = {
     /**
      * Get status icon
      * @param {string} status - Status type
-     * @returns {string} Font Awesome icon class
      */
     getIcon(status) {
         const icons = {
-            pending: 'fa-clock',
-            accepted: 'fa-check-circle',
+            pending: 'fa-history',
+            accepted: 'fa-check-double',
             rejected: 'fa-times-circle',
-            draft: 'fa-file-alt',
-            expired: 'fa-hourglass-end',
-            approved: 'fa-check-circle',
-            active: 'fa-play-circle'
+            draft: 'fa-edit',
+            expired: 'fa-exclamation-circle',
+            approved: 'fa-verified',
+            active: 'fa-bolt'
         };
         return icons[status.toLowerCase()] || 'fa-circle';
     },
 
     /**
-     * Render badge with icon
-     * @param {string} status - Status type
-     * @param {string} customText - Optional custom text
-     * @returns {string} HTML string for badge with icon
+     * Render badge with icon (Same as render now since we want icons everywhere)
      */
     renderWithIcon(status, customText = null) {
-        const normalizedStatus = status.toLowerCase();
-        const colors = this.colors[normalizedStatus] || { bg: '#6c757d', text: '#fff' };
-        const displayText = customText || this.formatStatus(status);
-        const icon = this.getIcon(status);
-
-        return `
-            <span class="badge-status badge-${normalizedStatus}" 
-                  style="background-color: ${colors.bg}; color: ${colors.text}; 
-                         padding: 0.35rem 0.75rem; border-radius: 15px; 
-                         font-size: 0.875rem; font-weight: 600; 
-                         text-transform: capitalize; display: inline-flex; 
-                         align-items: center; gap: 0.4rem;">
-                <i class="fa ${icon}"></i>
-                ${displayText}
-            </span>
-        `;
+        return this.render(status, customText);
     }
 };
 

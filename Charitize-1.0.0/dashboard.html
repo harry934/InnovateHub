@@ -26,12 +26,12 @@
 
     <!-- Libraries Stylesheet -->
     <link href="assets/lib/animate/animate.min.css" rel="stylesheet" />
-    <link href="assets/css/bootstrap.min.css?v=2.6.0" rel="stylesheet" />
-    <link href="assets/css/style.css?v=2.6.0" rel="stylesheet" />
-    <link href="assets/css/staggered-menu.css?v=2.6.0" rel="stylesheet" />
-    <link href="assets/css/dashboard-rebuild.css?v=2.6.0" rel="stylesheet" />
-    <link href="assets/css/innovate-hub.css?v=2.6.0" rel="stylesheet" />
-    <link href="assets/css/nuru-assistant.css?v=2.6.0" rel="stylesheet" />
+    <link href="assets/css/bootstrap.min.css?v=6.0.0" rel="stylesheet" />
+    <link href="assets/css/style.css?v=6.0.0" rel="stylesheet" />
+    <link href="assets/css/staggered-menu.css?v=6.0.0" rel="stylesheet" />
+    <link href="assets/css/dashboard-rebuild.css?v=6.0.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=6.0.0" rel="stylesheet" />
+    <link href="assets/css/nuru-assistant.css?v=6.0.0" rel="stylesheet" />
 
     <!-- GSAP for animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -43,17 +43,19 @@
     <div style="height: 100px"></div>
 
     <!-- Animated background elements -->
+    <div class="background-pattern"></div>
+    <div class="background-symbols" id="backgroundSymbols"></div>
     <div class="page-blob"></div>
 
     <!-- Dashboard Landing Page -->
     <div id="dashboardQuickAccess" class="py-5">
-      <div class="container text-center mb-5 mt-4">
-        <h1 class="display-4 fw-bold mb-2">Dashboard</h1>
-        <p class="text-muted lead">
-          Quick access to your innovation tools and mentorship.
-        </p>
-      </div>
-      <div class="container">
+      <div class="container mb-5">
+        <!-- Simplified Hero -->
+        <div class="mb-5">
+          <h1 class="display-5 fw-bold mb-2">Dashboard</h1>
+          <p class="text-muted lead">Manage your innovation ecosystem and mentor connections.</p>
+        </div>
+
         <div class="dashboard-grid-container" id="dashboardCardsGrid">
           <!-- Role-based cards injected by JS -->
         </div>
@@ -91,18 +93,14 @@
         <!-- Innovator: Submit Project (Focus Panel) -->
         <div id="submitSection" class="dashboard-section" style="display: none">
           <div class="section-header mb-4">
-            <h2 class="display-6 fw-bold">Submit New Project</h2>
+            <h2 class="display-6 fw-bold" style="color: #1a5e4f;">Submit New Project</h2>
             <p class="text-muted">Share your vision with the community</p>
             <hr class="brand-divider" />
           </div>
-          <div class="submit-card-wrapper">
-            <div
-              class="card border-0 shadow-lg p-5"
-              style="border-radius: 20px"
-            >
+          <div class="submit-card-wrapper theme-section-card">
               <form id="projectForm">
                 <div class="mb-4">
-                  <label class="form-label fw-bold">Project Title</label>
+                  <label class="form-label fw-bold" style="color: #1a5e4f;">Project Title</label>
                   <input
                     type="text"
                     class="form-control"
@@ -112,12 +110,10 @@
                 </div>
 
                 <div class="mb-5">
-                  <label class="form-label d-block fw-bold mb-3"
+                  <label class="form-label d-block fw-bold mb-3" style="color: #1a5e4f;"
                     >Project Categories</label
                   >
-                  <div
-                    class="d-flex flex-wrap gap-3 p-4 bg-light rounded shadow-sm border"
-                  >
+                  <div class="d-flex flex-wrap gap-3">
                     <div class="form-check me-3">
                       <input
                         class="form-check-input"
@@ -177,7 +173,7 @@
                 </div>
 
                 <div class="mb-4">
-                  <label class="form-label fw-bold">Problem Statement</label>
+                  <label class="form-label fw-bold" style="color: #1a5e4f;">Problem Statement</label>
                   <textarea
                     class="form-control"
                     name="problemStatement"
@@ -187,7 +183,7 @@
                 </div>
 
                 <div class="mb-4">
-                  <label class="form-label fw-bold">Objectives</label>
+                  <label class="form-label fw-bold" style="color: #1a5e4f;">Objectives</label>
                   <textarea
                     class="form-control"
                     name="objectives"
@@ -197,7 +193,7 @@
                 </div>
 
                 <div class="mb-4">
-                  <label class="form-label fw-bold">Proposed Solution</label>
+                  <label class="form-label fw-bold" style="color: #1a5e4f;">Proposed Solution</label>
                   <textarea
                     class="form-control"
                     name="proposedSolution"
@@ -206,8 +202,8 @@
                   ></textarea>
                 </div>
 
-                <div class="mb-4">
-                  <label class="form-label fw-bold">Expected Impact</label>
+                <div class="mb-5">
+                  <label class="form-label fw-bold" style="color: #1a5e4f;">Expected Impact</label>
                   <textarea
                     class="form-control"
                     name="expectedImpact"
@@ -216,36 +212,32 @@
                   ></textarea>
                 </div>
 
+                <!-- Custom Elegant File Upload Styling -->
                 <div class="mb-5">
-                  <label class="form-label fw-bold"
-                    >Supporting Document (Optional)</label
-                  >
+                  <label class="form-label fw-bold" style="color: #1a5e4f;">Attach Case Study / Document</label>
                   <input
+                    class="form-control w-100"
                     type="file"
-                    class="form-control"
                     name="document"
                     accept=".pdf,.doc,.docx"
+                    required
                   />
+                  <div class="form-text mt-2 text-muted">
+                    Accepted formats: PDF, DOC, DOCX
+                  </div>
                 </div>
 
-                <button
-                  type="submit"
-                  class="btn btn-primary w-100 py-3 fw-bold shadow-lg"
-                  style="
-                    border-radius: 15px;
-                    font-size: 1.1rem;
-                    background: #1a5e4f;
-                    border: none;
-                  "
-                >
-                  Launch Project Entry
-                </button>
+                <div class="text-end mt-4">
+                  <button
+                    type="submit"
+                    class="btn btn-primary px-5 py-3 rounded-pill fw-bold text-uppercase"
+                  >
+                    Submit Project <i class="fa fa-paper-plane ms-2"></i>
+                  </button>
+                </div>
               </form>
-            </div>
           </div>
-        </div>
-
-        <!-- Innovator: Find Mentors (Focus Panel) -->
+        </div><!-- Innovator: Find Mentors (Focus Panel) -->
         <div
           id="mentorsSection"
           class="dashboard-section"
@@ -555,116 +547,137 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="assets/js/pages/main.js?v=2.6.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=2.6.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=2.6.0"></script>
-    <script src="assets/js/core/api.js?v=2.6.0"></script>
+    <script src="assets/js/pages/main.js?v=3.6.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=3.6.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=3.6.0"></script>
+    <script src="assets/js/core/api.js?v=3.6.0"></script>
     <script
       type="module"
-      src="assets/js/pages/innovate-hub.js?v=2.6.0"
+      src="assets/js/pages/innovate-hub.js?v=3.6.0"
     ></script>
-    <script src="assets/js/components/staggered-menu.js?v=2.6.0"></script>
-    <script
-      type="module"
-      src="assets/js/pages/innovator-dashboard.js?v=2.6.0"
-    ></script>
-    <script
-      type="module"
-      src="assets/js/pages/mentor-dashboard.js?v=2.6.0"
-    ></script>
-    <script src="assets/js/components/nuru-assistant.js?v=2.6.0"></script>
+    <script src="assets/js/components/staggered-menu.js?v=3.6.0"></script>
+    <script src="assets/js/components/nuru-assistant.js?v=3.6.0"></script>
+    <script type="module">
+      import { auth, db } from "./assets/js/core/firebase-config.js";
+      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+      import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const user = JSON.parse(localStorage.getItem("innovateHubUser"));
-        const role = user ? user.role : "innovator";
+      window.dashboardReady = false;
 
-        const siteItems = [
-          { label: "Home Page", link: "index.html" },
-          { label: "About Us", link: "about.html" },
-          { label: "Contact Us", link: "contact.html" },
-        ];
+      // ── Helper: show/hide sections ───────────────────────────
+      window.showDashboardSection = function (sectionId) {
+        const quickAccess = document.getElementById("dashboardQuickAccess");
+        const container   = document.getElementById("activeSectionContainer");
+        const sections    = document.querySelectorAll(".dashboard-section");
 
-        const roleItems =
-          role === "mentor"
-            ? [
-                {
-                  label: "My Overview",
-                  link: "javascript:showDashboardSection('home')",
-                },
-                {
-                  label: "Mentee Requests",
-                  link: "javascript:showDashboardSection('requests')",
-                },
-                {
-                  label: "Active Mentees",
-                  link: "javascript:showDashboardSection('mentees')",
-                },
-              ]
-            : [
-                {
-                  label: "Find a Mentor",
-                  link: "javascript:showDashboardSection('mentors')",
-                },
-              ];
-
-        const profileItems = [
-          {
-            label: "My Profile",
-            link: "javascript:showDashboardSection('profile')",
-          },
-          { label: "Sign Out", link: "javascript:logout()" },
-        ];
-
-        StaggeredMenu.init({
-          items: [...siteItems, ...roleItems, ...profileItems],
-          colors: ["#1a5e4f", "#f3a813", "#1a5e4f"],
-          accentColor: "#1a5e4f",
-          logoUrl: "assets/img/logo.svg",
-          menuButtonColor: "#ffffff",
-          openMenuButtonColor: "#ffffff",
-        });
-
-        window.showDashboardSection = function (sectionId) {
-          const quickAccess = document.getElementById("dashboardQuickAccess");
-          const container = document.getElementById("activeSectionContainer");
-          const sections = document.querySelectorAll(".dashboard-section");
-
-          if (sectionId === "home" || !sectionId) {
-            quickAccess.style.display = "block";
-            container.style.display = "none";
-            window.scrollTo({ top: 0, behavior: "smooth" });
-
-            // GSAP Card Entry
+        if (!sectionId || sectionId === "home") {
+          if (quickAccess) quickAccess.style.display = "block";
+          if (container)   container.style.display   = "none";
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          if (window.gsap) {
             gsap.from(".article-wrapper", {
-              duration: 0.8,
-              y: 50,
-              opacity: 0,
-              stagger: 0.1,
-              ease: "power2.out",
+              duration: 0.6, y: 30, opacity: 0,
+              stagger: 0.08, ease: "power2.out", overwrite: "auto",
+              clearProps: "all"
             });
-          } else {
-            quickAccess.style.display = "none";
-            container.style.display = "block";
-            sections.forEach((s) => (s.style.display = "none"));
-            const target =
-              document.getElementById(sectionId + "Section") ||
-              document.getElementById(sectionId);
-            if (target) {
-              target.style.display = "block";
-              // GSAP Section Entry
+          }
+        } else {
+          if (quickAccess) quickAccess.style.display = "none";
+          if (container)   container.style.display   = "block";
+          sections.forEach(s => s.style.display = "none");
+          const target =
+            document.getElementById(sectionId + "Section") ||
+            document.getElementById(sectionId);
+          if (target) {
+            target.style.display = "block";
+            if (window.gsap) {
               gsap.from(target, {
-                duration: 0.6,
-                y: 30,
-                opacity: 0,
-                ease: "power2.out",
+                duration: 0.6, y: 30, opacity: 0,
+                ease: "power2.out", overwrite: "auto"
               });
             }
-            window.scrollTo({ top: 0, behavior: "smooth" });
           }
-        };
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      };
 
-        if (user && user.role) document.body.classList.add(`role-${user.role}`);
+      // ── Auth listener ──────────────────────────────────────────
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.replace("login.html");
+          return;
+        }
+
+        let userData = {};
+        let role = "innovator";
+        try {
+          const snap = await getDoc(doc(db, "users", user.uid));
+          if (snap.exists()) {
+            userData = snap.data();
+            role = userData.role || "innovator";
+          }
+        } catch (e) {
+          console.warn("Dashboard: Firestore fetch failed, defaulting to innovator.", e);
+        }
+
+        if (role === "admin") {
+          window.location.href = "admin-dashboard.html";
+          return;
+        }
+
+        // Init StaggeredMenu
+        const siteItems = [
+          { label: "Home Page",  link: "index.html" },
+          { label: "About Us",   link: "about.html" },
+          { label: "Contact Us", link: "contact.html" }
+        ];
+        const roleItems = role === "mentor" ? [
+          { label: "My Overview",     link: "javascript:window.showDashboardSection('home')" },
+          { label: "Mentee Requests", link: "javascript:window.showDashboardSection('requests')" },
+          { label: "Active Mentees",  link: "javascript:window.showDashboardSection('mentees')" }
+        ] : [
+          { label: "Find a Mentor", link: "javascript:window.showDashboardSection('mentors')" }
+        ];
+        const profileItems = [
+          { label: "My Profile", link: "javascript:window.showDashboardSection('profile')" },
+          { label: "Sign Out",   link: "javascript:logout()" }
+        ];
+
+        if (window.StaggeredMenu) {
+          window.StaggeredMenu.init({
+            items: [...siteItems, ...roleItems, ...profileItems],
+            colors: ["#1a5e4f", "#f3a813", "#1a5e4f"],
+            accentColor: "#1a5e4f",
+            logoUrl: "assets/img/logo.svg",
+            menuButtonColor: "#ffffff",
+            openMenuButtonColor: "#ffffff"
+          });
+          const name = userData.fullName || user.displayName || user.email.split("@")[0];
+          window.StaggeredMenu.updateInitials(name);
+        }
+
+        // Load role-specific module
+        const modulePath = role === "mentor"
+          ? "./assets/js/pages/mentor-dashboard.js?v=3.6.0"
+          : "./assets/js/pages/innovator-dashboard.js?v=3.6.0";
+
+        try {
+          const mod = await import(modulePath);
+          if (mod && typeof mod.initDashboard === "function") {
+            await mod.initDashboard(user, userData);
+          }
+        } catch (err) {
+          console.error("Dashboard: Module load error:", err);
+          try {
+            const fallback = await import("./assets/js/pages/innovator-dashboard.js?v=3.6.0");
+            if (fallback && fallback.initDashboard) await fallback.initDashboard(user, userData);
+          } catch (e2) {
+            console.error("Dashboard: Fallback also failed:", e2);
+          }
+        }
+
+        window.dashboardReady = true;
+        document.body.classList.add("role-" + role);
         window.showDashboardSection("home");
       });
     </script>

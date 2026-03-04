@@ -3,7 +3,7 @@
  * Global notification bell with dropdown panel and real-time updates
  */
 
-import { db } from '../firebase-config.js';
+import { db } from '../core/firebase-config.js';
 import { collection, query, where, onSnapshot, orderBy, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 export class NotificationSystem {
@@ -37,23 +37,28 @@ export class NotificationSystem {
         }
 
         container.innerHTML = `
-            <div class="notification-bell-wrapper" style="position: relative; cursor: pointer;">
-                <i class="fa fa-bell" style="font-size: 1.5rem; color: rgba(255,255,255,0.9);"></i>
+            <div class="notification-bell-wrapper" style="position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px; color: rgba(255,255,255,0.95);">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <span class="notification-badge" style="
                     position: absolute;
-                    top: -8px;
-                    right: -8px;
-                    background: #dc3545;
-                    color: white;
+                    top: 2px;
+                    right: 2px;
+                    background: #f3a813;
+                    color: #1a5e4f;
                     border-radius: 50%;
-                    width: 20px;
-                    height: 20px;
+                    min-width: 18px;
+                    height: 18px;
+                    padding: 0 4px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 0.7rem;
-                    font-weight: 700;
+                    font-size: 0.65rem;
+                    font-weight: 800;
+                    border: 1.5px solid #1a5e4f;
                     display: none;
+                    z-index: 2;
                 ">0</span>
             </div>
         `;
@@ -256,13 +261,20 @@ export class NotificationSystem {
      */
     updateBadge() {
         const badge = this.bellElement?.querySelector('.notification-badge');
-        if (badge) {
-            if (this.unreadCount > 0) {
-                badge.textContent = this.unreadCount > 99 ? '99+' : this.unreadCount;
+        const toggleBadge = document.querySelector('.sm-toggle-badge');
+        
+        if (this.unreadCount > 0) {
+            const displayCount = this.unreadCount > 99 ? '99+' : this.unreadCount;
+            if (badge) {
+                badge.textContent = displayCount;
                 badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
             }
+            if (toggleBadge) {
+                toggleBadge.classList.remove('d-none');
+            }
+        } else {
+            if (badge) badge.style.display = 'none';
+            if (toggleBadge) toggleBadge.classList.add('d-none');
         }
     }
 

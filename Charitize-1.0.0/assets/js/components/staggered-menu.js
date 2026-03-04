@@ -57,7 +57,9 @@ const StaggeredMenu = (function() {
                         ${window.location.pathname.includes('dashboard') ? `
                         <div class="sm-header-actions">
                             <button id="notificationBell" class="nav-notif-btn" title="Notifications" aria-label="Notifications">
-                                <i class="fa fa-bell"></i>
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
                                 <span class="notif-dot d-none"></span>
                             </button>
                             
@@ -67,7 +69,7 @@ const StaggeredMenu = (function() {
                             
                             <button class="nav-logout-btn d-none d-md-flex" onclick="logout()" aria-label="Logout">
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M17 16L21 12M21 12L17 8M21 12H9M13 16V17C13 18.6569 11.6569 20 10 20H6C4.34315 20 3 18.6569 3 17V7C3 5.34315 4.34315 4 6 4H10C11.6569 4 13 5.34315 13 7V8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                                 <span>Logout</span>
                             </button>
@@ -82,8 +84,11 @@ const StaggeredMenu = (function() {
                                 </span>
                             </span>
                             <span class="sm-icon" aria-hidden="true">
-                                <span class="sm-icon-line"></span>
-                                <span class="sm-icon-line sm-icon-line-v"></span>
+                                <svg class="sm-toggle-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path class="sm-line-1" d="M4 8h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path class="sm-line-2" d="M4 16h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                <span class="sm-toggle-badge d-none"></span>
                             </span>
                         </button>
                     </div>
@@ -156,6 +161,18 @@ const StaggeredMenu = (function() {
 
     function bindEvents() {
         elements.toggle.addEventListener('click', toggleMenu);
+
+        // Scroll listener for collapse effect
+        window.addEventListener('scroll', () => {
+            const header = elements.wrapper.querySelector('.staggered-menu-header');
+            if (header) {
+                if (window.scrollY > 80) {
+                    header.classList.add('collapsed');
+                } else {
+                    header.classList.remove('collapsed');
+                }
+            }
+        }, { passive: true });
 
         if (state.config.closeOnClickAway) {
             document.addEventListener('mousedown', (e) => {
@@ -249,12 +266,16 @@ const StaggeredMenu = (function() {
     }
 
     function animateIcon(opening) {
-        gsap.to(elements.icon, {
-            rotate: opening ? 225 : 0,
-            duration: opening ? 0.8 : 0.4,
-            ease: opening ? 'power4.out' : 'power3.inOut',
-            overwrite: 'auto'
-        });
+        const line1 = elements.wrapper.querySelector('.sm-line-1');
+        const line2 = elements.wrapper.querySelector('.sm-line-2');
+        
+        if (opening) {
+            gsap.to(line1, { attr: { d: "M6 18L18 6" }, duration: 0.4, ease: 'back.out(1.7)' });
+            gsap.to(line2, { attr: { d: "M6 6l12 12" }, duration: 0.4, ease: 'back.out(1.7)' });
+        } else {
+            gsap.to(line1, { attr: { d: "M4 8h16" }, duration: 0.3, ease: 'power2.inOut' });
+            gsap.to(line2, { attr: { d: "M4 16h16" }, duration: 0.3, ease: 'power2.inOut' });
+        }
     }
 
     function animateColor(opening) {
