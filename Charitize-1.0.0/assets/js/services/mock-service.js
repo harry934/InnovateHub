@@ -115,6 +115,26 @@ const MOCK_STORE = {
         },
     ],
 
+    mentorshipRequests: [
+        {
+            id: 'mr1', innovatorId: 'u2', mentorId: 'u4',
+            projectId: 'p1', message: 'I would love your guidance on the AI components of my IoT project.',
+            status: 'accepted', requestedAt: '2025-02-22', respondedAt: '2025-02-24',
+            scheduledMeeting: { date: '2025-03-10', time: '14:00 EAT', zoomLink: 'https://zoom.us/j/fatima123' }
+        },
+        {
+            id: 'mr2', innovatorId: 'u3', mentorId: 'u4',
+            projectId: 'p2', message: 'Seeking advice on the machine learning model selection for our attendance system.',
+            status: 'pending', requestedAt: '2025-03-02', respondedAt: null, scheduledMeeting: null
+        },
+        {
+            id: 'mr3', innovatorId: 'u8', mentorId: 'u5',
+            projectId: 'p3', message: 'Looking for mentorship on the social impact and go-to-market strategy.',
+            status: 'rejected', rejectionReason: 'Your project aligns more with urban tech mentors. I recommend reaching out to Dr. Fatima.',
+            requestedAt: '2025-03-04', respondedAt: '2025-03-04', scheduledMeeting: null
+        },
+    ],
+
     notifications: {
         u2: [
             { id: 'n1', text: 'Dr. Fatima Al-Rashid accepted your mentorship request!', time: '2h ago', read: false, icon: 'fa-check-circle', color: 'success' },
@@ -129,6 +149,21 @@ const MOCK_STORE = {
     }
 };
 
+// Add Profile completeness to existing mentors
+MOCK_STORE.users.filter(u => u.role === 'mentor').forEach(m => {
+    m.isProfileComplete = (m.status === 'approved'); // Existing approved mentors are complete
+    m.isAccessRestricted = false;
+});
+
+// Add newly registered mentor (requested by user)
+MOCK_STORE.users.push({
+    id: 'u9', fullName: 'Dr. Marcus Holloway', email: 'marcus.h@example.com',
+    role: 'mentor', status: 'pending', joinDate: '2025-03-04',
+    institution: 'USIU Global Research', expertise: 'FinTech, Blockchain, Cybersecurity',
+    bio: '', categories: ['technology', 'business'], zoomLink: '', availability: '',
+    isProfileComplete: false, isAccessRestricted: false
+});
+
 // ============================================================
 //  HELPER / QUERY FUNCTIONS
 // ============================================================
@@ -139,13 +174,22 @@ const MockService = {
     getUserById: (id) => MOCK_STORE.users.find(u => u.id === id) || null,
     getUsersByRole: (role) => MOCK_STORE.users.filter(u => u.role === role),
     getPendingMentors: () => MOCK_STORE.users.filter(u => u.role === 'mentor' && u.status === 'pending'),
-    getApprovedMentors: () => MOCK_STORE.users.filter(u => u.role === 'mentor' && u.status === 'approved'),
-    getMentorsByCategory: (category) => MOCK_STORE.users.filter(u =>
-        u.role === 'mentor' && u.status === 'approved' && u.categories && u.categories.includes(category)
+    
+    // Updated: Only return approved AND complete profiles for discovery
+    getApprovedMentors: () => MOCK_STORE.users.filter(u => 
+        u.role === 'mentor' && 
+        u.status === 'approved' && 
+        u.isProfileComplete &&
+        !u.isAccessRestricted
     ),
+
+    getMentorsByCategory: (category) => MockService.getApprovedMentors().filter(u =>
+        u.categories && u.categories.includes(category)
+    ),
+
     searchMentors: (query, categories = []) => {
         const q = query.toLowerCase();
-        let results = MOCK_STORE.users.filter(u => u.role === 'mentor' && u.status === 'approved');
+        let results = MockService.getApprovedMentors();
         if (q) {
             results = results.filter(u =>
                 u.fullName.toLowerCase().includes(q) ||
@@ -161,12 +205,37 @@ const MockService = {
         return results;
     },
 
-    // ── User Status Actions ──────────────────────────────────
+    // ── User Status & Admin Actions ──────────────────────────────────
     updateUserStatus: (userId, status, reason = '') => {
         const u = MOCK_STORE.users.find(u => u.id === userId);
         if (!u) return false;
         u.status = status;
         if (status === 'rejected' && reason) u.rejectionReason = reason;
+        return true;
+    },
+
+    toggleUserAccess: (userId) => {
+        const u = MOCK_STORE.users.find(u => u.id === userId);
+        if (!u) return false;
+        u.isAccessRestricted = !u.isAccessRestricted;
+        return { success: true, restricted: u.isAccessRestricted };
+    },
+
+    deleteUser: (userId) => {
+        const index = MOCK_STORE.users.findIndex(u => u.id === userId);
+        if (index === -1) return false;
+        MOCK_STORE.users.splice(index, 1);
+        return true;
+    },
+
+    updateMentorProfile: (userId, data) => {
+        const u = MOCK_STORE.users.find(u => u.id === userId && u.role === 'mentor');
+        if (!u) return false;
+        Object.assign(u, data);
+        // Check if now complete
+        if (u.bio && u.expertise && u.availability && u.zoomLink) {
+            u.isProfileComplete = true;
+        }
         return true;
     },
 
@@ -182,17 +251,26 @@ const MockService = {
         return true;
     },
 
-    // ── Mentorship Requests ──────────────────────────────────
+    // ── Mentorship Requests & Relationships ──────────────────
     getAllRequests: () => [...MOCK_STORE.mentorshipRequests],
     getRequestsByMentor: (mentorId) => MOCK_STORE.mentorshipRequests.filter(r => r.mentorId === mentorId),
     getRequestsByInnovator: (innovatorId) => MOCK_STORE.mentorshipRequests.filter(r => r.innovatorId === innovatorId),
     getPendingRequestsForMentor: (mentorId) => MOCK_STORE.mentorshipRequests.filter(r => r.mentorId === mentorId && r.status === 'pending'),
 
+    revokeMentorship: (requestId, reason = '') => {
+        const r = MOCK_STORE.mentorshipRequests.find(r => r.id === requestId);
+        if (!r) return false;
+        r.status = 'revoked';
+        r.revocationReason = reason;
+        r.revokedAt = new Date().toISOString();
+        return true;
+    },
+
     sendMentorshipRequest: (innovatorId, mentorId, projectId, message) => {
         const existing = MOCK_STORE.mentorshipRequests.find(r =>
-            r.innovatorId === innovatorId && r.mentorId === mentorId && r.status === 'pending'
+            r.innovatorId === innovatorId && r.mentorId === mentorId && (r.status === 'pending' || r.status === 'accepted')
         );
-        if (existing) return { success: false, message: 'You already have a pending request with this mentor.' };
+        if (existing) return { success: false, message: 'Relationship already exists or is pending.' };
         const newReq = {
             id: 'mr' + Date.now(), innovatorId, mentorId, projectId, message,
             status: 'pending', requestedAt: new Date().toISOString(), respondedAt: null, scheduledMeeting: null
@@ -219,8 +297,9 @@ const MockService = {
 
     // ── Nuru Mentor Suggestions ──────────────────────────────
     suggestMentorsForCategories: (categories = []) => {
-        if (!categories || categories.length === 0) return MockService.getApprovedMentors().slice(0, 3);
-        const scored = MockService.getApprovedMentors().map(m => {
+        const candidates = MockService.getApprovedMentors();
+        if (!categories || categories.length === 0) return candidates.slice(0, 3);
+        const scored = candidates.map(m => {
             const overlap = (m.categories || []).filter(c => categories.includes(c)).length;
             return { mentor: m, score: overlap };
         });
@@ -244,7 +323,7 @@ const MockService = {
         activeMentorships: MOCK_STORE.mentorshipRequests.filter(r => r.status === 'accepted').length,
     }),
 
-    // ── Simulate current logged-in user from localStorage ───
+    // ── Simulate current logged-in user ───
     getCurrentUser: () => {
         try {
             const stored = JSON.parse(localStorage.getItem('innovateHubUser'));

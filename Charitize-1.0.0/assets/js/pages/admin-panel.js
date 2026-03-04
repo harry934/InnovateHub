@@ -42,19 +42,23 @@ function renderAdminStats() {
     const stats = MockService.getAdminStats();
     
     const statConfig = [
-        { label: 'Total Members', value: stats.totalUsers, color: 'green', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
-        { label: 'Innovators', value: stats.totalInnovators, color: 'blue', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>' },
-        { label: 'Mentors', value: stats.totalMentors, color: 'green', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16,11 18,13 22,9"/></svg>' },
-        { label: 'Pending Mentors', value: stats.pendingMentors, color: 'yellow', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>' },
-        { label: 'Pending Projects', value: stats.pendingProjects, color: 'yellow', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>' },
-        { label: 'Active Mentorships', value: stats.activeMentorships, color: 'green', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M7 22l5-3 5 3V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2z"/></svg>' }
+        { label: 'Total Members', value: stats.totalUsers, color: 'blue', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+        { label: 'Innovators', value: stats.totalInnovators, color: 'green', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
+        { label: 'Active Mentors', value: stats.totalMentors, color: 'yellow', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16,11 18,13 22,9"/></svg>' },
+        { label: 'Pending Apps', value: stats.pendingMentors, color: 'blue', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+        { label: 'Review Queue', value: stats.pendingProjects, color: 'green', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>' },
+        { label: 'Active Pairs', value: stats.activeMentorships, color: 'yellow', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' }
     ];
 
     container.innerHTML = statConfig.map(s => `
-        <div class="admin-stat-card">
-            <div class="admin-stat-icon ${s.color}">${s.icon}</div>
-            <div class="admin-stat-value">${s.value}</div>
-            <div class="admin-stat-label">${s.label}</div>
+        <div class="premium-card">
+            <div class="premium-card-icon" style="background:rgba(26, 94, 79, 0.05); color:var(--brand-green);">
+                ${s.icon}
+            </div>
+            <div class="ms-1">
+                <div class="h3 fw-bold mb-0" style="color:var(--brand-green); line-height: 1.1;">${s.value}</div>
+                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.65rem; letter-spacing: 0.8px; margin-top: 4px;">${s.label}</div>
+            </div>
         </div>
     `).join('');
 }
@@ -62,18 +66,33 @@ function renderAdminStats() {
 // ============================================================
 //  ALL USERS TABLE
 // ============================================================
+let currentRoleFilter = 'all';
+
+function setRoleFilter(role) {
+    currentRoleFilter = role;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    renderUsersTable();
+}
+
 function renderUsersTable() {
     const tbody = document.getElementById('usersTableBody');
     if (!tbody || !window.MockService) return;
-    const users = MockService.getAllUsers().filter(u => u.role !== 'admin');
+    
+    let users = MockService.getAllUsers().filter(u => u.role !== 'admin');
+    
+    if (currentRoleFilter !== 'all') {
+        users = users.filter(u => u.role === currentRoleFilter);
+    }
+
     tbody.innerHTML = users.map(u => `
         <tr>
             <td>
-                <div style="display:flex;align-items:center;">
-                    <span class="user-avatar-mini">${getInitials(u.fullName)}</span>
-                    <div>
-                        <div style="font-weight:700;font-size:0.9rem;">${u.fullName}</div>
-                        <div style="font-size:0.76rem;color:#aaa;">${u.email}</div>
+                <div class="d-flex align-items-center">
+                    <span class="user-avatar-mini" style="background:${u.isAccessRestricted ? '#fee2e2' : '#fef3c7'}; color:${u.isAccessRestricted ? '#991b1b' : '#92400e'}">${getInitials(u.fullName)}</span>
+                    <div class="ms-2">
+                        <div class="fw-bold" style="font-size:0.875rem; color: ${u.isAccessRestricted ? '#dc3545' : 'var(--brand-green)'}">${u.fullName}</div>
+                        <div class="text-muted" style="font-size:0.75rem;">${u.email}</div>
                     </div>
                 </div>
             </td>
@@ -82,13 +101,58 @@ function renderUsersTable() {
             <td>${statusBadge(u.status)}</td>
             <td>${u.joinDate || '—'}</td>
             <td>
-                ${u.role === 'mentor' && u.status === 'approved' ? `<button class="btn-reject-soft" onclick="AdminPanel.revokeAccess('${u.id}')">Revoke</button>` : ''}
-                ${u.role === 'mentor' && u.status === 'pending' ? `<button class="btn-approve" onclick="AdminPanel.approveMentor('${u.id}')">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="20 6 9 17 4 12"/></svg>Approve
-                </button>` : ''}
+                <div class="d-flex gap-2">
+                    <button class="btn-action-icon" title="${u.isAccessRestricted ? 'Grant Access' : 'Restrict Access'}" onclick="AdminPanel.toggleAccess('${u.id}')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${u.isAccessRestricted ? '#1a5e4f' : '#f3a813'}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </button>
+                    <button class="btn-action-icon" title="Delete User" onclick="AdminPanel.deleteUser('${u.id}')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    </button>
+                    ${u.role === 'mentor' && u.status === 'pending' ? `
+                    <button class="btn-action-icon text-success" title="Approve" onclick="AdminPanel.approveMentor('${u.id}')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </button>` : ''}
+                </div>
             </td>
         </tr>
     `).join('');
+}
+
+// ============================================================
+//  MENTORSHIP RELATIONSHIPS
+// ============================================================
+function renderMentorshipsTable() {
+    const tbody = document.getElementById('mentorshipsTableBody');
+    if (!tbody || !window.MockService) return;
+    
+    const requests = MockService.getAllRequests().filter(r => r.status === 'accepted');
+
+    if (requests.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No active mentorship relationships found.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = requests.map(r => {
+        const innovator = MockService.getUserById(r.innovatorId);
+        const mentor = MockService.getUserById(r.mentorId);
+        return `
+        <tr>
+            <td>
+                <div style="font-weight:700;">${innovator ? innovator.fullName : 'Unknown'}</div>
+                <div style="font-size:0.75rem;color:#8a9aaa;">Innovator</div>
+            </td>
+            <td>
+                <div style="font-weight:700;">${mentor ? mentor.fullName : 'Unknown'}</div>
+                <div style="font-size:0.75rem;color:#8a9aaa;">Mentor</div>
+            </td>
+            <td>${timeAgo(r.requestedAt)}</td>
+            <td><span class="badge-premium badge-premium-approved">✓ Active</span></td>
+            <td>
+                <button class="btn-reject-soft" style="padding:4px 10px; font-size:0.75rem;" onclick="AdminPanel.removeMentorshipRelationship('${r.id}')">Remove Pair</button>
+            </td>
+        </tr>
+        `;
+    }).join('');
 }
 
 // ============================================================
@@ -156,9 +220,9 @@ function renderProjectApprovals() {
         const innovator = MockService.getUserById(p.innovatorId);
         return `
         <div class="request-card" id="pcard-${p.id}">
-            <div class="request-card-header">
+            <div class="request-card-header" style="flex-wrap: wrap; gap: 4px;">
                 <div class="user-avatar-mini" style="border-radius:12px;width:48px;height:48px;font-size:1rem;flex-shrink:0;">${innovator ? getInitials(innovator.fullName) : '??'}</div>
-                <div style="flex:1;">
+                <div style="flex:1; min-width: 200px;">
                     <div class="request-card-title">${p.title}</div>
                     <div class="request-card-meta">
                         by ${innovator ? innovator.fullName : 'Unknown'} &nbsp;·&nbsp; Submitted ${timeAgo(p.submittedAt)}
@@ -174,7 +238,7 @@ function renderProjectApprovals() {
                 <div class="file-preview-list" style="margin-top:8px;">
                     ${p.files.map(f => `
                         <div class="file-preview-item">
-                            <div class="file-preview-icon"><i class="fa fa-file-alt"></i></div>
+                            <div class="file-preview-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>
                             <div class="file-preview-info">
                                 <div class="file-preview-name">${f.name}</div>
                                 <div class="file-preview-size">${f.size}</div>
@@ -209,11 +273,11 @@ function showRejectionModal(title, subtitle, onConfirm) {
         <div class="rejection-modal-box">
             <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>${title}</h4>
             <p>${subtitle}</p>
-            <textarea id="rejectionReasonInput" rows="4" placeholder="Provide a clear reason for rejection..."></textarea>
+            <textarea id="rejectionReasonInput" rows="4" placeholder="Provide a clear reason..."></textarea>
             <div class="rejection-modal-actions">
                 <button class="btn-approve" style="background:#6c757d;" onclick="document.getElementById('adminRejectionModal').remove()">Cancel</button>
                 <button class="btn-reject-soft" id="confirmRejectBtn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Confirm Rejection
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Confirm Action
                 </button>
             </div>
         </div>`;
@@ -259,10 +323,24 @@ const AdminPanel = {
         adminToast('✓ Mentor approved successfully!');
     },
 
+    toggleAccess(userId) {
+        const res = MockService.toggleUserAccess(userId);
+        renderUsersTable();
+        adminToast(res.restricted ? 'User access restricted.' : 'User access granted.', res.restricted ? 'warning' : 'success');
+    },
+
+    deleteUser(userId) {
+        if (!confirm('Are you certain you want to permanently delete this user? This action cannot be undone.')) return;
+        MockService.deleteUser(userId);
+        renderUsersTable();
+        renderAdminStats();
+        adminToast('User deleted permanently.', 'error');
+    },
+
     promptRejectMentor(userId, name) {
         showRejectionModal(
             'Reject Mentor Application',
-            `You are about to reject <strong>${name}</strong>'s application. Please provide a reason that will be shown to them.`,
+            `You are about to reject <strong>${name}</strong>'s application. Please provide a reason.`,
             (reason) => {
                 MockService.updateUserStatus(userId, 'rejected', reason);
                 const card = document.getElementById('mac-' + userId);
@@ -276,14 +354,6 @@ const AdminPanel = {
                 adminToast('✕ Mentor application rejected.', 'error');
             }
         );
-    },
-
-    revokeAccess(userId) {
-        if (!confirm('Are you sure you want to revoke this mentor\'s access?')) return;
-        MockService.updateUserStatus(userId, 'rejected', 'Access revoked by administrator.');
-        renderUsersTable();
-        renderAdminStats();
-        adminToast('Access revoked.', 'warning');
     },
 
     approveProject(projectId) {
@@ -312,11 +382,13 @@ const AdminPanel = {
 
     removeMentorshipRelationship(requestId) {
         showRejectionModal(
-            'Remove Mentorship',
-            'Please provide the reason for removing this mentorship relationship.',
+            'Terminate Relationship',
+            'Please provide the reason for removing this mentorship pairing.',
             (reason) => {
-                MockService.respondToRequest(requestId, 'rejected', reason);
-                adminToast('Mentorship relationship removed.', 'warning');
+                MockService.revokeMentorship(requestId, reason);
+                renderMentorshipsTable();
+                renderAdminStats();
+                adminToast('Relationship terminated.', 'error');
             }
         );
     },
@@ -326,8 +398,19 @@ const AdminPanel = {
         renderUsersTable();
         renderMentorApprovals();
         renderProjectApprovals();
+        renderMentorshipsTable();
     }
 };
+
+window.AdminPanel = AdminPanel;
+window.setRoleFilter = setRoleFilter;
+
+// Auto-init on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => AdminPanel.init());
+} else {
+    AdminPanel.init();
+}
 
 window.AdminPanel = AdminPanel;
 
