@@ -141,4 +141,36 @@ router.put('/:id', auth, async (req, res) => {
     }
 });
 
+// @route   DELETE api/projects/:id
+// @desc    Delete project and its files
+// @access  Private
+router.delete('/:id', auth, async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+
+        if (!project) {
+            return res.status(404).json({ msg: 'Project not found' });
+        }
+
+        // Check user (Firebase UID from auth middleware)
+        if (project.innovatorId.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+
+        // Delete associated files from MongoDB
+        await File.deleteMany({ projectId: req.params.id });
+
+        // Delete project
+        await Project.findByIdAndDelete(req.params.id);
+
+        res.json({ msg: 'Project and associated files removed' });
+    } catch (err) {
+        console.error(err.message);
+        if (err.kind === 'ObjectId') {
+            return res.status(404).json({ msg: 'Project not found' });
+        }
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;

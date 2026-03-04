@@ -53,27 +53,72 @@
     <div class="premium-bg-orb orb-secondary"></div>
 
     <!-- Dashboard Landing Page -->
-    <div id="dashboardQuickAccess" class="py-5" style="position:relative; z-index:2;">
+    <div
+      id="dashboardQuickAccess"
+      class="py-5"
+      style="position: relative; z-index: 2"
+    >
       <div class="container mb-5">
         <!-- Simplified Hero -->
-        <div class="mb-5 d-flex justify-content-between align-items-end flex-wrap gap-4">
+        <div
+          class="mb-5 d-flex justify-content-between align-items-end flex-wrap gap-4"
+        >
           <div>
-            <span style="color:var(--brand-yellow); font-weight:800; text-transform:uppercase; letter-spacing:2px; font-size:0.75rem;">Platform Overview</span>
-            <h1 class="display-5 fw-bold mb-2" style="font-family:var(--font-head); color:var(--brand-green); font-weight:900;">Dashboard</h1>
-            <p class="text-muted lead mb-0">Manage your innovation ecosystem and mentor connections.</p>
+            <span
+              style="
+                color: var(--brand-yellow);
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                font-size: 0.75rem;
+              "
+              >Platform Overview</span
+            >
+            <h1
+              class="display-5 fw-bold mb-2"
+              style="
+                font-family: var(--font-head);
+                color: var(--brand-green);
+                font-weight: 900;
+              "
+            >
+              Dashboard
+            </h1>
+            <p class="text-muted lead mb-0">
+              Manage your innovation ecosystem and mentor connections.
+            </p>
           </div>
-          
+
           <!-- Profile Completeness Tracker (Conditional) -->
-          <div id="mentorCompleteness" style="display:none; width:100%; max-width:400px;">
+          <div
+            id="mentorCompleteness"
+            style="display: none; width: 100%; max-width: 400px"
+          >
             <div class="completeness-card">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span style="font-weight:700; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">Profile Completeness</span>
-                <span id="completenessText" style="font-weight:800; color:var(--brand-yellow);">0%</span>
+              <div
+                class="d-flex justify-content-between align-items-center mb-1"
+              >
+                <span
+                  style="
+                    font-weight: 700;
+                    font-size: 0.85rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                  "
+                  >Profile Completeness</span
+                >
+                <span
+                  id="completenessText"
+                  style="font-weight: 800; color: var(--brand-yellow)"
+                  >0%</span
+                >
               </div>
               <div class="completeness-bar-bg">
                 <div id="completenessFill" class="completeness-bar-fill"></div>
               </div>
-              <p style="font-size:0.75rem; opacity:0.8; margin:0;">Complete your profile to be discoverable by innovators.</p>
+              <p style="font-size: 0.75rem; opacity: 0.8; margin: 0">
+                Complete your profile to be discoverable by innovators.
+              </p>
             </div>
           </div>
         </div>
@@ -92,7 +137,19 @@
             class="btn btn-outline-secondary px-4 d-flex align-items-center gap-2"
             onclick="showDashboardSection('home')"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
             Back to Dashboard
           </button>
         </div>
@@ -116,151 +173,163 @@
         <!-- Innovator: Submit Project (Focus Panel) -->
         <div id="submitSection" class="dashboard-section" style="display: none">
           <div class="section-header mb-4">
-            <h2 class="display-6 fw-bold" style="color: #1a5e4f;">Submit New Project</h2>
+            <h2 class="display-6 fw-bold" style="color: #1a5e4f">
+              Submit New Project
+            </h2>
             <p class="text-muted">Share your vision with the community</p>
             <hr class="brand-divider" />
           </div>
           <div class="submit-card-wrapper theme-section-card">
-              <form id="projectForm">
-                <div class="mb-4">
-                  <label class="form-label fw-bold" style="color: #1a5e4f;">Project Title</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="title"
-                    required
-                  />
-                </div>
+            <form id="projectForm">
+              <div class="mb-4">
+                <label class="form-label fw-bold" style="color: #1a5e4f"
+                  >Project Title</label
+                >
+                <input type="text" class="form-control" name="title" required />
+              </div>
 
-                <div class="mb-5">
-                  <label class="form-label d-block fw-bold mb-3" style="color: #1a5e4f;"
-                    >Project Categories</label
-                  >
-                  <div class="d-flex flex-wrap gap-3">
-                    <div class="form-check me-3">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        name="categories"
-                        value="technology"
-                        id="catTech"
-                      /><label class="form-check-label" for="catTech"
-                        >Technology</label
-                      >
-                    </div>
-                    <div class="form-check me-3">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        name="categories"
-                        value="healthcare"
-                        id="catHealth"
-                      /><label class="form-check-label" for="catHealth"
-                        >Healthcare</label
-                      >
-                    </div>
-                    <div class="form-check me-3">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        name="categories"
-                        value="education"
-                        id="catEdu"
-                      /><label class="form-check-label" for="catEdu"
-                        >Education</label
-                      >
-                    </div>
-                    <div class="form-check me-3">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        name="categories"
-                        value="environment"
-                        id="catEnv"
-                      /><label class="form-check-label" for="catEnv"
-                        >Environment</label
-                      >
-                    </div>
-                    <div class="form-check me-3">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        name="categories"
-                        value="social"
-                        id="catSocial"
-                      /><label class="form-check-label" for="catSocial"
-                        >Social Impact</label
-                      >
-                    </div>
+              <div class="mb-5">
+                <label
+                  class="form-label d-block fw-bold mb-3"
+                  style="color: #1a5e4f"
+                  >Project Categories</label
+                >
+                <div class="d-flex flex-wrap gap-3">
+                  <div class="form-check me-3">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      name="categories"
+                      value="technology"
+                      id="catTech"
+                    /><label class="form-check-label" for="catTech"
+                      >Technology</label
+                    >
+                  </div>
+                  <div class="form-check me-3">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      name="categories"
+                      value="healthcare"
+                      id="catHealth"
+                    /><label class="form-check-label" for="catHealth"
+                      >Healthcare</label
+                    >
+                  </div>
+                  <div class="form-check me-3">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      name="categories"
+                      value="education"
+                      id="catEdu"
+                    /><label class="form-check-label" for="catEdu"
+                      >Education</label
+                    >
+                  </div>
+                  <div class="form-check me-3">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      name="categories"
+                      value="environment"
+                      id="catEnv"
+                    /><label class="form-check-label" for="catEnv"
+                      >Environment</label
+                    >
+                  </div>
+                  <div class="form-check me-3">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      name="categories"
+                      value="social"
+                      id="catSocial"
+                    /><label class="form-check-label" for="catSocial"
+                      >Social Impact</label
+                    >
                   </div>
                 </div>
+              </div>
 
-                <div class="mb-4">
-                  <label class="form-label fw-bold" style="color: #1a5e4f;">Problem Statement</label>
-                  <textarea
-                    class="form-control"
-                    name="problemStatement"
-                    rows="2"
-                    required
-                  ></textarea>
-                </div>
+              <div class="mb-4">
+                <label class="form-label fw-bold" style="color: #1a5e4f"
+                  >Problem Statement</label
+                >
+                <textarea
+                  class="form-control"
+                  name="problemStatement"
+                  rows="2"
+                  required
+                ></textarea>
+              </div>
 
-                <div class="mb-4">
-                  <label class="form-label fw-bold" style="color: #1a5e4f;">Objectives</label>
-                  <textarea
-                    class="form-control"
-                    name="objectives"
-                    rows="2"
-                    required
-                  ></textarea>
-                </div>
+              <div class="mb-4">
+                <label class="form-label fw-bold" style="color: #1a5e4f"
+                  >Objectives</label
+                >
+                <textarea
+                  class="form-control"
+                  name="objectives"
+                  rows="2"
+                  required
+                ></textarea>
+              </div>
 
-                <div class="mb-4">
-                  <label class="form-label fw-bold" style="color: #1a5e4f;">Proposed Solution</label>
-                  <textarea
-                    class="form-control"
-                    name="proposedSolution"
-                    rows="3"
-                    required
-                  ></textarea>
-                </div>
+              <div class="mb-4">
+                <label class="form-label fw-bold" style="color: #1a5e4f"
+                  >Proposed Solution</label
+                >
+                <textarea
+                  class="form-control"
+                  name="proposedSolution"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
 
-                <div class="mb-5">
-                  <label class="form-label fw-bold" style="color: #1a5e4f;">Expected Impact</label>
-                  <textarea
-                    class="form-control"
-                    name="expectedImpact"
-                    rows="2"
-                    required
-                  ></textarea>
-                </div>
+              <div class="mb-5">
+                <label class="form-label fw-bold" style="color: #1a5e4f"
+                  >Expected Impact</label
+                >
+                <textarea
+                  class="form-control"
+                  name="expectedImpact"
+                  rows="2"
+                  required
+                ></textarea>
+              </div>
 
-                <!-- Custom Elegant File Upload Styling -->
-                <div class="mb-5">
-                  <label class="form-label fw-bold" style="color: #1a5e4f;">Attach Case Study / Document</label>
-                  <input
-                    class="form-control w-100"
-                    type="file"
-                    name="document"
-                    accept=".pdf,.doc,.docx"
-                    required
-                  />
-                  <div class="form-text mt-2 text-muted">
-                    Accepted formats: PDF, DOC, DOCX
-                  </div>
+              <!-- Custom Elegant File Upload Styling -->
+              <div class="mb-5">
+                <label class="form-label fw-bold" style="color: #1a5e4f"
+                  >Attach Case Study / Document</label
+                >
+                <input
+                  class="form-control w-100"
+                  type="file"
+                  name="document"
+                  accept=".pdf,.doc,.docx"
+                  required
+                />
+                <div class="form-text mt-2 text-muted">
+                  Accepted formats: PDF, DOC, DOCX
                 </div>
+              </div>
 
-                <div class="text-end mt-4">
-                  <button
-                    type="submit"
-                    class="btn btn-primary px-5 py-3 rounded-pill fw-bold text-uppercase"
-                  >
-                    Submit Project <i class="fa fa-paper-plane ms-2"></i>
-                  </button>
-                </div>
-              </form>
+              <div class="text-end mt-4">
+                <button
+                  type="submit"
+                  class="btn btn-primary px-5 py-3 rounded-pill fw-bold text-uppercase"
+                >
+                  Submit Project <i class="fa fa-paper-plane ms-2"></i>
+                </button>
+              </div>
+            </form>
           </div>
-        </div><!-- Innovator: Find Mentors (Focus Panel) -->
+        </div>
+        <!-- Innovator: Find Mentors (Focus Panel) -->
         <div
           id="mentorsSection"
           class="dashboard-section"
@@ -359,6 +428,17 @@
               </div>
             </div>
             <div class="col-lg-8">
+              <!-- Profile Completeness (Mentor) -->
+              <div id="mentorCompleteness" class="mb-4" style="display:none; cursor:pointer;" onclick="window.showDashboardSection('profile')">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="fw-bold text-dark small">Profile Completeness (Click to complete)</span>
+                      <span id="completenessText" class="fw-bold text-primary small">0%</span>
+                  </div>
+                  <div class="progress" style="height: 8px;">
+                      <div id="completenessFill" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                  </div>
+              </div>
+
               <div class="p-5 bg-white rounded shadow-sm border">
                 <form id="profileForm">
                   <div class="row g-4">
@@ -402,7 +482,7 @@
                         name="institution"
                       />
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6" id="mentorProfessionGroup">
                       <label class="form-label">Profession / Role</label>
                       <input
                         type="text"
@@ -411,7 +491,7 @@
                         name="profession"
                       />
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6" id="innovatorSkillsGroup">
                       <label class="form-label">Skills (Innovator)</label>
                       <input
                         type="text"
@@ -420,7 +500,7 @@
                         name="skills"
                       />
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6" id="mentorExpertiseGroup">
                       <label class="form-label">Expertise (Mentor)</label>
                       <input
                         type="text"
@@ -429,7 +509,28 @@
                         name="expertise"
                       />
                     </div>
-                    <div class="col-12">
+                    <div class="col-md-6" id="mentorExperienceGroup">
+                      <label class="form-label">Years of Experience (Mentor)</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="profileExperience"
+                        name="experience"
+                        min="0"
+                        placeholder="e.g. 5"
+                      />
+                    </div>
+                    <div class="col-md-6" id="communicationGroup">
+                      <label class="form-label">Preferred Communication Method</label>
+                      <select class="form-select" id="profileCommunication" name="communicationPreference">
+                        <option value="Zoom">Zoom</option>
+                        <option value="Google Meet">Google Meet</option>
+                        <option value="WhatsApp">WhatsApp</option>
+                        <option value="Email">Email</option>
+                        <option value="Slack">Slack</option>
+                      </select>
+                    </div>
+                    <div class="col-12" id="innovatorInterestsGroup">
                       <label class="form-label">Innovation Interests</label>
                       <input
                         type="text"
@@ -528,6 +629,60 @@
           <div id="menteesContainer"></div>
         </div>
 
+        <!-- Mentor: Schedule (Focus Panel) -->
+        <div id="scheduleSection" class="dashboard-section" style="display: none">
+            <div class="mb-4">
+                <h2 class="display-6 fw-bold">My Schedule & Availability</h2>
+                <p class="text-muted">Manage your time slots and meeting integration</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="dashboard-card h-100">
+                        <h4 class="mb-3">Meeting Integration</h4>
+                        <form id="scheduleForm">
+                            <div class="mb-3">
+                                <label class="form-label">Default Meeting Link (Zoom, Google Meet, etc.)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa fa-video"></i></span>
+                                    <input type="url" id="meetingLink" class="form-control" name="meetingLink" placeholder="https://zoom.us/j/..." required>
+                                </div>
+                                <div class="form-text">This link will be shared with mentees for your sessions.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label text-dark fw-bold">Standard Availability</label>
+                                <textarea id="weeklyAvailability" class="form-control" name="weeklyAvailability" rows="3" placeholder="e.g. Mon, Wed: 4 PM - 6 PM (EAT)"></textarea>
+                                <div class="form-text">Describe your general weekly availability for new requests.</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-3 shadow-sm">
+                                <i class="fa fa-save me-2"></i> Update Schedule
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="dashboard-card h-100 bg-light-soft border-0 shadow-none" style="background: rgba(26, 94, 79, 0.03);">
+                        <h5 class="fw-bold text-dark mb-3">Availability Status</h5>
+                        <div class="form-check form-switch custom-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="availabilityToggle" checked>
+                            <label class="form-check-label fw-bold ml-2" for="availabilityToggle" id="availabilityText">Available for new mentees</label>
+                        </div>
+                        <p class="small text-muted mb-0">Toggling this off will hide your profile from the mentor discovery list, but existing mentees can still contact you.</p>
+                        
+                        <hr class="my-4">
+                        
+                        <h6 class="fw-bold mb-3">Upcoming Meetings</h6>
+                        <div id="upcomingMeetingsList">
+                            <p class="text-muted small">No meetings scheduled for today.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Shared: Notifications (Focus Panel) -->
         <div
           id="notificationsSection"
@@ -569,14 +724,36 @@
       </div>
     </div>
 
+    <!-- Rejection Modal -->
+    <div class="modal fade" id="rejectionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fa fa-times-circle me-2"></i>Reject Mentorship Request</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted mb-3">Please provide a brief reason for rejecting this request. This helps the innovator improve their proposal.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Reason for Rejection</label>
+                        <textarea id="rejectionReason" class="form-control" rows="4" placeholder="e.g. Profile needs more detail or currently overbooked in this category."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmRejectionBtn" class="btn btn-danger px-4 shadow-sm">Confirm Rejection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JS Libraries -->
     <script src="assets/js/pages/main.js?v=3.6.0"></script>
     <script src="assets/js/utils/ui-utils.js?v=3.6.0"></script>
     <script src="assets/js/components/shared-ui.js?v=3.6.0"></script>
     <script src="assets/js/core/api.js?v=3.6.0"></script>
-    <!-- Mock Service & Feature Scripts -->
-    <script src="assets/js/services/mock-service.js?v=1.0.0"></script>
-    <script src="assets/js/pages/mentor-discovery.js?v=1.0.0"></script>
+    <!-- Feature Scripts -->
+    <script type="module" src="assets/js/pages/mentor-discovery.js?v=1.0.0"></script>
     <script src="assets/js/components/file-upload.js?v=1.0.0"></script>
     <script
       type="module"
@@ -587,31 +764,38 @@
     <script type="module">
       import { auth, db } from "./assets/js/core/firebase-config.js";
       import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-      import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import {
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
       window.dashboardReady = false;
 
       // ── Helper: show/hide sections ───────────────────────────
       window.showDashboardSection = function (sectionId) {
         const quickAccess = document.getElementById("dashboardQuickAccess");
-        const container   = document.getElementById("activeSectionContainer");
-        const sections    = document.querySelectorAll(".dashboard-section");
+        const container = document.getElementById("activeSectionContainer");
+        const sections = document.querySelectorAll(".dashboard-section");
 
         if (!sectionId || sectionId === "home") {
           if (quickAccess) quickAccess.style.display = "block";
-          if (container)   container.style.display   = "none";
+          if (container) container.style.display = "none";
           window.scrollTo({ top: 0, behavior: "smooth" });
           if (window.gsap) {
             gsap.from(".article-wrapper", {
-              duration: 0.6, y: 30, opacity: 0,
-              stagger: 0.08, ease: "power2.out", overwrite: "auto",
-              clearProps: "all"
+              duration: 0.6,
+              y: 30,
+              opacity: 0,
+              stagger: 0.08,
+              ease: "power2.out",
+              overwrite: "auto",
+              clearProps: "all",
             });
           }
         } else {
           if (quickAccess) quickAccess.style.display = "none";
-          if (container)   container.style.display   = "block";
-          sections.forEach(s => s.style.display = "none");
+          if (container) container.style.display = "block";
+          sections.forEach((s) => (s.style.display = "none"));
           const target =
             document.getElementById(sectionId + "Section") ||
             document.getElementById(sectionId);
@@ -619,8 +803,11 @@
             target.style.display = "block";
             if (window.gsap) {
               gsap.from(target, {
-                duration: 0.6, y: 30, opacity: 0,
-                ease: "power2.out", overwrite: "auto"
+                duration: 0.6,
+                y: 30,
+                opacity: 0,
+                ease: "power2.out",
+                overwrite: "auto",
               });
             }
           }
@@ -663,7 +850,7 @@
             <p class="access-screen-sub">Unfortunately, your mentor application was not approved at this time. Here is the reason provided by the administrator:</p>
             <div class="rejection-reason-box">
               <strong>Admin's Reason</strong>
-              <p>${reason || 'No specific reason was provided. Please contact support.'}</p>
+              <p>${reason || "No specific reason was provided. Please contact support."}</p>
             </div>
             <p style="font-size:0.85rem;color:#aaa;max-width:420px;margin:0 auto 20px;">You may update your profile and reapply, or contact <a href="contact.html" style="color:#1a5e4f;">our team</a> for clarification.</p>
             <button onclick="logout && logout()" style="margin-top:12px;padding:12px 32px;background:#dc3545;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;">Sign Out</button>
@@ -686,7 +873,10 @@
             role = userData.role || "innovator";
           }
         } catch (e) {
-          console.warn("Dashboard: Firestore fetch failed, defaulting to innovator.", e);
+          console.warn(
+            "Dashboard: Firestore fetch failed, defaulting to innovator.",
+            e,
+          );
         }
 
         if (role === "admin") {
@@ -696,26 +886,15 @@
 
         // ── Mentor Access Control Guard ──────────────────────────
         if (role === "mentor") {
-          // Check mock service first (for demo), then fall back to Firestore userData
-          let mentorStatus = userData.mentorStatus || userData.approvalStatus || null;
+          let mentorStatus =
+            userData.mentorStatus || userData.approvalStatus || null;
 
-          // Try mock service to simulate approval state
-          if (window.MockService) {
-            // Find matching user in mock store by email
-            const mockUser = MockService.getAllUsers().find(u =>
-              u.email === user.email && u.role === 'mentor'
-            );
-            if (mockUser) mentorStatus = mockUser.status;
-          }
-
-          if (mentorStatus === 'pending') {
+          if (mentorStatus === "pending") {
             showMentorPendingScreen();
             return;
           }
-          if (mentorStatus === 'rejected') {
-            const reason = userData.rejectionReason ||
-              (window.MockService && MockService.getAllUsers().find(u => u.email === user.email)?.rejectionReason) ||
-              null;
+          if (mentorStatus === "rejected") {
+            const reason = userData.rejectionReason || null;
             showMentorRejectedScreen(reason);
             return;
           }
@@ -724,21 +903,42 @@
 
         // Init StaggeredMenu
         const siteItems = [
-          { label: "Home Page",  link: "index.html" },
-          { label: "About Us",   link: "about.html" },
-          { label: "Contact Us", link: "contact.html" }
+          { label: "Home Page", link: "index.html" },
+          { label: "About Us", link: "about.html" },
+          { label: "Contact Us", link: "contact.html" },
         ];
-        const roleItems = role === "mentor" ? [
-          { label: "My Overview",     link: "javascript:window.showDashboardSection('home')" },
-          { label: "Mentee Requests", link: "javascript:window.showDashboardSection('requests')" },
-          { label: "Active Mentees",  link: "javascript:window.showDashboardSection('mentees')" }
-        ] : [
-          { label: "Find a Mentor", link: "javascript:window.showDashboardSection('mentors')" },
-          { label: "My Mentors",    link: "javascript:window.showDashboardSection('myMentors')" },
-        ];
+        const roleItems =
+          role === "mentor"
+            ? [
+                {
+                  label: "My Overview",
+                  link: "javascript:window.showDashboardSection('home')",
+                },
+                {
+                  label: "Mentee Requests",
+                  link: "javascript:window.showDashboardSection('requests')",
+                },
+                {
+                  label: "Active Mentees",
+                  link: "javascript:window.showDashboardSection('mentees')",
+                },
+              ]
+            : [
+                {
+                  label: "Find a Mentor",
+                  link: "javascript:window.showDashboardSection('mentors')",
+                },
+                {
+                  label: "My Mentors",
+                  link: "javascript:window.showDashboardSection('myMentors')",
+                },
+              ];
         const profileItems = [
-          { label: "My Profile", link: "javascript:window.showDashboardSection('profile')" },
-          { label: "Sign Out",   link: "javascript:logout()" }
+          {
+            label: "My Profile",
+            link: "javascript:window.showDashboardSection('profile')",
+          },
+          { label: "Sign Out", link: "javascript:logout()" },
         ];
 
         if (window.StaggeredMenu) {
@@ -748,26 +948,49 @@
             accentColor: "#1a5e4f",
             logoUrl: "assets/img/logo.svg",
             menuButtonColor: "#ffffff",
-            openMenuButtonColor: "#ffffff"
+            openMenuButtonColor: "#ffffff",
           });
-          const name = userData.fullName || user.displayName || user.email.split("@")[0];
+          const name =
+            userData.fullName || user.displayName || user.email.split("@")[0];
           window.StaggeredMenu.updateInitials(name);
         }
 
         // Store user in localStorage for mock service lookups
         try {
-          localStorage.setItem('innovateHubUser', JSON.stringify({
-            id: user.uid,
-            email: user.email,
-            fullName: userData.fullName || user.displayName || user.email.split("@")[0],
-            role,
-          }));
-        } catch(e) {}
+          localStorage.setItem(
+            "innovateHubUser",
+            JSON.stringify({
+              id: user.uid,
+              email: user.email,
+              fullName:
+                userData.fullName ||
+                user.displayName ||
+                user.email.split("@")[0],
+              role,
+            }),
+          );
+        } catch (e) {}
+
+        // ── Role-Specific Profile Settings Logic ─────────────────
+        if (role === "mentor") {
+            const groupToHide = ['innovatorSkillsGroup', 'innovatorInterestsGroup'];
+            groupToHide.forEach(id => {
+               const el = document.getElementById(id);
+               if (el) el.style.display = 'none';
+            });
+        } else {
+            const groupToHide = ['mentorExpertiseGroup', 'mentorProfessionGroup', 'mentorExperienceGroup', 'communicationGroup', 'mentorCompleteness', 'scheduleSection'];
+            groupToHide.forEach(id => {
+               const el = document.getElementById(id);
+               if (el) el.style.display = 'none';
+            });
+        }
 
         // Load role-specific module
-        const modulePath = role === "mentor"
-          ? "./assets/js/pages/mentor-dashboard.js?v=3.6.0"
-          : "./assets/js/pages/innovator-dashboard.js?v=3.6.0";
+        const modulePath =
+          role === "mentor"
+            ? "./assets/js/pages/mentor-dashboard.js?v=3.6.0"
+            : "./assets/js/pages/innovator-dashboard.js?v=3.6.0";
 
         try {
           const mod = await import(modulePath);
@@ -777,8 +1000,10 @@
         } catch (err) {
           console.error("Dashboard: Module load error:", err);
           try {
-            const fallback = await import("./assets/js/pages/innovator-dashboard.js?v=3.6.0");
-            if (fallback && fallback.initDashboard) await fallback.initDashboard(user, userData);
+            const fallback =
+              await import("./assets/js/pages/innovator-dashboard.js?v=3.6.0");
+            if (fallback && fallback.initDashboard)
+              await fallback.initDashboard(user, userData);
           } catch (e2) {
             console.error("Dashboard: Fallback also failed:", e2);
           }
@@ -790,42 +1015,46 @@
 
         // Initialize file upload on submit section
         if (window.FileUploadComponent) {
-          const dropEl = document.getElementById('projectFileDropZone');
+          const dropEl = document.getElementById("projectFileDropZone");
           if (dropEl) {
-            window._projectFileUpload = new FileUploadComponent('projectFileDropZone', {
-              maxFiles: 3,
-              maxSizeMB: 10,
-              acceptedTypes: ['pdf', 'doc', 'docx', 'ppt', 'pptx'],
-              onFilesChanged: (meta) => {
-                // Store metadata for form submission
-                window._projectFileMeta = meta;
-              }
-            });
+            window._projectFileUpload = new FileUploadComponent(
+              "projectFileDropZone",
+              {
+                maxFiles: 3,
+                maxSizeMB: 10,
+                acceptedTypes: ["pdf", "doc", "docx", "ppt", "pptx"],
+                onFilesChanged: (meta) => {
+                  // Store metadata for form submission
+                  window._projectFileMeta = meta;
+                },
+              },
+            );
           }
         }
 
         // Init mentor discovery and requests for immediate renders when navigating
-        if (role === 'innovator') {
+        if (role === "innovator") {
           // Pre-initialize discovery for faster render on first nav
           if (window.MentorDiscovery) setTimeout(() => {}, 0);
         }
-        if (role === 'mentor' && window.renderMentorRequests) {
+        if (role === "mentor" && window.renderMentorRequests) {
           // Render sidebar badge count for pending requests
           try {
-            const pendingMenteeCount = window.MockService
-              ? MockService.getPendingRequestsForMentor(user.uid).length
-              : 0;
+            // We'll rely on mentor-dashboard.js or a real listener to update badge counts instead
+            const pendingMenteeCount = 0;
             if (pendingMenteeCount > 0) {
-              const badge = document.createElement('span');
-              badge.style.cssText = 'background:var(--brand-yellow);color:#000;border-radius:50%;width:18px;height:18px;font-size:0.65rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-left:6px;';
+              const badge = document.createElement("span");
+              badge.style.cssText =
+                "background:var(--brand-yellow);color:#000;border-radius:50%;width:18px;height:18px;font-size:0.65rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-left:6px;";
               badge.textContent = pendingMenteeCount;
-              const reqLink = document.querySelector('[href*="requests"]') || document.querySelector('[href*="Requests"]');
+              const reqLink =
+                document.querySelector('[href*="requests"]') ||
+                document.querySelector('[href*="Requests"]');
               if (reqLink) reqLink.appendChild(badge);
             }
-          } catch(e) {}
+          } catch (e) {}
         }
       });
     </script>
   </body>
-
 </html>

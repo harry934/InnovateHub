@@ -208,8 +208,8 @@ function renderQuickAccessCards() {
             // Load projects
             await loadProjects();
             
-            // Load mentors
-            await loadMentors();
+            // Mentors are loaded automatically by dashboard.html's showDashboardSection("mentors")
+            // which calls MentorDiscovery.init() instead.
 
             // Initialize CardNav
             const navItems = [
@@ -261,22 +261,7 @@ function renderQuickAccessCards() {
             const profileForm = document.getElementById('profileForm');
             if (profileForm) profileForm.addEventListener('submit', handleProfileUpdate);
             
-            // Filter Pills Handling
-            document.querySelectorAll('.category-filter-pill').forEach(pill => {
-                pill.addEventListener('click', () => {
-                    pill.classList.toggle('bg-primary');
-                    pill.classList.toggle('text-white');
-                    pill.classList.toggle('bg-light');
-                    pill.classList.toggle('text-dark');
-                    loadMentors(); 
-                });
-            });
-
-            // Search input handling
-            const mentorSearchInput = document.getElementById('mentorSearchInput');
-            if (mentorSearchInput) {
-                mentorSearchInput.addEventListener('input', debounce(() => loadMentors(), 500));
-            }
+            // Filter Pills Handling & Search Input is handled exclusively by mentor-discovery.js
 
             // Profile Picture Upload Handling
             const profilePicInput = document.getElementById('profilePicInput');
@@ -351,65 +336,7 @@ function renderQuickAccessCards() {
             }
         }
         
-        async function loadMentors() {
-            const container = document.getElementById('mentorsContainer');
-            if (!container) return;
-            container.innerHTML = EmptyStates.templates.loadingState();
-            
-            try {
-                const selectedCategories = Array.from(document.querySelectorAll('.category-filter-pill.bg-primary'))
-                    .map(pill => pill.dataset.value);
-                
-                const searchInput = document.getElementById('mentorSearchInput');
-                const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-
-                const q = query(collection(db, 'users'), where('role', '==', 'mentor'));
-                const snapshot = await getDocs(q);
-                
-                if (snapshot.empty) {
-                    container.innerHTML = EmptyStates.templates.noMentors();
-                    return;
-                }
-                
-                let mentors = [];
-                snapshot.forEach(doc => {
-                    const mentor = { id: doc.id, ...doc.data() };
-                    
-                    // Business Rule: ONLY show approved and fully completed mentors
-                    const isApproved = mentor.approvalStatus === 'approved' || mentor.status === 'approved';
-                    const isComplete = mentor.profileComplete === true || mentor.isProfileComplete === true;
-                    
-                    if (!isApproved || !isComplete) return;
-
-                    const matchesCategory = selectedCategories.length === 0 || 
-                        selectedCategories.some(c => (mentor.categories || []).includes(c) || (mentor.expertise || '').toLowerCase().includes(c));
-                    
-                    const matchesSearch = !searchTerm || 
-                        mentor.fullName?.toLowerCase().includes(searchTerm) || 
-                        mentor.expertise?.toLowerCase().includes(searchTerm) ||
-                        mentor.institution?.toLowerCase().includes(searchTerm);
-
-                    if (matchesCategory && matchesSearch) mentors.push(mentor);
-                });
-                
-                if (mentors.length === 0) {
-                    container.innerHTML = EmptyStates.templates.noMentors();
-                    return;
-                }
-
-                container.innerHTML = '';
-                mentors.forEach(mentor => {
-                    container.innerHTML += MentorProfileCard.render(mentor, {
-                        showRequestButton: true,
-                        showAvailability: true, 
-                        cardClass: 'col-md-6 col-lg-4'
-                    });
-                });
-            } catch (error) {
-                console.error('Error loading mentors:', error);
-                container.innerHTML = EmptyStates.templates.errorState('Failed to load mentors');
-            }
-        }
+        // loadMentors() removed: handled by mentor-discovery.js
         
         async function handleProjectSubmit(e) {
             e.preventDefault();
@@ -491,6 +418,29 @@ function renderQuickAccessCards() {
                 submitBtn.disabled = false;
             }
         }
+
+        window.confirmDeleteProject = async function(projectId) {
+            if (!confirm('Are you sure you want to delete this project? This will also remove any uploaded documents from MongoDB and cannot be undone.')) {
+                return;
+            }
+
+            try {
+                // 1. Delete from Firebase Firestore
+                const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+                await deleteDoc(doc(db, "projects", projectId));
+
+                // 2. Delete from MongoDB via API
+                if (window.api && window.api.deleteProject) {
+                    await window.api.deleteProject(projectId);
+                }
+
+                alert('Project deleted successfully.');
+                await loadProjects(); // Refresh the list
+            } catch (error) {
+                console.error('Error deleting project:', error);
+                alert('Failed to delete project: ' + error.message);
+            }
+        };
 
         function debounce(func, wait) {
             let timeout;

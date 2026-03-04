@@ -1,10 +1,5 @@
-/**
- * Admin Panel Controller
- * Version: 1.0.0
- * Depends on: mock-service.js
- * Purpose: Frontend-only admin dashboard logic using mock data.
- *           Replace MockService calls with real API calls during backend integration.
- */
+import { db } from "../core/firebase-config.js";
+import { collection, getDocs, query, where, doc, updateDoc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ============================================================
 //  HELPERS
@@ -16,17 +11,22 @@ function getInitials(name = '') {
         : name.substring(0, 2).toUpperCase();
 }
 
-function timeAgo(dateStr) {
-    if (!dateStr) return 'Unknown';
-    const diff = (Date.now() - new Date(dateStr)) / 1000;
+function timeAgo(date) {
+    if (!date) return 'Unknown';
+    // Handle Firestore Timestamp
+    const dateObj = date.toDate ? date.toDate() : new Date(date);
+    const diff = (Date.now() - dateObj.getTime()) / 1000;
+    if (diff < 60) return 'Just now';
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return `${Math.floor(diff / 86400)}d ago`;
 }
 
 function statusBadge(status) {
+    status = status || 'active';
     const map = {
         approved: '<span class="badge-premium badge-premium-approved">✓ Approved</span>',
+        active: '<span class="badge-premium badge-premium-approved">✓ Active</span>',
         pending:  '<span class="badge-premium badge-premium-pending">⏳ Pending</span>',
         rejected: '<span class="badge-premium badge-premium-rejected">✕ Rejected</span>',
     };
@@ -34,389 +34,566 @@ function statusBadge(status) {
 }
 
 // ============================================================
-//  ADMIN STATS
-// ============================================================
-function renderAdminStats() {
-    const container = document.getElementById('adminStatsGrid');
-    if (!container || !window.MockService) return;
-    const stats = MockService.getAdminStats();
-    
-    const statConfig = [
-        { label: 'Total Members', value: stats.totalUsers, color: 'blue', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
-        { label: 'Innovators', value: stats.totalInnovators, color: 'green', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
-        { label: 'Active Mentors', value: stats.totalMentors, color: 'yellow', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16,11 18,13 22,9"/></svg>' },
-        { label: 'Pending Apps', value: stats.pendingMentors, color: 'blue', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
-        { label: 'Review Queue', value: stats.pendingProjects, color: 'green', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>' },
-        { label: 'Active Pairs', value: stats.activeMentorships, color: 'yellow', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' }
-    ];
-
-    container.innerHTML = statConfig.map(s => `
-        <div class="premium-card">
-            <div class="premium-card-icon" style="background:rgba(26, 94, 79, 0.05); color:var(--brand-green);">
-                ${s.icon}
-            </div>
-            <div class="ms-1">
-                <div class="h3 fw-bold mb-0" style="color:var(--brand-green); line-height: 1.1;">${s.value}</div>
-                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.65rem; letter-spacing: 0.8px; margin-top: 4px;">${s.label}</div>
-            </div>
-        </div>
-    `).join('');
-}
-
-// ============================================================
-//  ALL USERS TABLE
-// ============================================================
-let currentRoleFilter = 'all';
-
-function setRoleFilter(role) {
-    currentRoleFilter = role;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-    renderUsersTable();
-}
-
-function renderUsersTable() {
-    const tbody = document.getElementById('usersTableBody');
-    if (!tbody || !window.MockService) return;
-    
-    let users = MockService.getAllUsers().filter(u => u.role !== 'admin');
-    
-    if (currentRoleFilter !== 'all') {
-        users = users.filter(u => u.role === currentRoleFilter);
-    }
-
-    tbody.innerHTML = users.map(u => `
-        <tr>
-            <td>
-                <div class="d-flex align-items-center">
-                    <span class="user-avatar-mini" style="background:${u.isAccessRestricted ? '#fee2e2' : '#fef3c7'}; color:${u.isAccessRestricted ? '#991b1b' : '#92400e'}">${getInitials(u.fullName)}</span>
-                    <div class="ms-2">
-                        <div class="fw-bold" style="font-size:0.875rem; color: ${u.isAccessRestricted ? '#dc3545' : 'var(--brand-green)'}">${u.fullName}</div>
-                        <div class="text-muted" style="font-size:0.75rem;">${u.email}</div>
-                    </div>
-                </div>
-            </td>
-            <td><span class="badge-premium ${u.role === 'mentor' ? 'badge-premium-active' : 'badge-premium-approved'}">${u.role === 'mentor' ? '🎓 Mentor' : '💡 Innovator'}</span></td>
-            <td>${u.institution || '—'}</td>
-            <td>${statusBadge(u.status)}</td>
-            <td>${u.joinDate || '—'}</td>
-            <td>
-                <div class="d-flex gap-2">
-                    <button class="btn-action-icon" title="${u.isAccessRestricted ? 'Grant Access' : 'Restrict Access'}" onclick="AdminPanel.toggleAccess('${u.id}')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${u.isAccessRestricted ? '#1a5e4f' : '#f3a813'}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    </button>
-                    <button class="btn-action-icon" title="Delete User" onclick="AdminPanel.deleteUser('${u.id}')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                    </button>
-                    ${u.role === 'mentor' && u.status === 'pending' ? `
-                    <button class="btn-action-icon text-success" title="Approve" onclick="AdminPanel.approveMentor('${u.id}')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    </button>` : ''}
-                </div>
-            </td>
-        </tr>
-    `).join('');
-}
-
-// ============================================================
-//  MENTORSHIP RELATIONSHIPS
-// ============================================================
-function renderMentorshipsTable() {
-    const tbody = document.getElementById('mentorshipsTableBody');
-    if (!tbody || !window.MockService) return;
-    
-    const requests = MockService.getAllRequests().filter(r => r.status === 'accepted');
-
-    if (requests.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No active mentorship relationships found.</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = requests.map(r => {
-        const innovator = MockService.getUserById(r.innovatorId);
-        const mentor = MockService.getUserById(r.mentorId);
-        return `
-        <tr>
-            <td>
-                <div style="font-weight:700;">${innovator ? innovator.fullName : 'Unknown'}</div>
-                <div style="font-size:0.75rem;color:#8a9aaa;">Innovator</div>
-            </td>
-            <td>
-                <div style="font-weight:700;">${mentor ? mentor.fullName : 'Unknown'}</div>
-                <div style="font-size:0.75rem;color:#8a9aaa;">Mentor</div>
-            </td>
-            <td>${timeAgo(r.requestedAt)}</td>
-            <td><span class="badge-premium badge-premium-approved">✓ Active</span></td>
-            <td>
-                <button class="btn-reject-soft" style="padding:4px 10px; font-size:0.75rem;" onclick="AdminPanel.removeMentorshipRelationship('${r.id}')">Remove Pair</button>
-            </td>
-        </tr>
-        `;
-    }).join('');
-}
-
-// ============================================================
-//  PENDING MENTOR APPROVALS
-// ============================================================
-function renderMentorApprovals() {
-    const container = document.getElementById('mentorApprovalList');
-    if (!container || !window.MockService) return;
-    const pending = MockService.getPendingMentors();
-
-    if (pending.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-5">
-                <div style="font-size:3rem;margin-bottom:16px;">🎉</div>
-                <h5 style="font-family:var(--font-head);color:var(--brand-green);">All caught up!</h5>
-                <p style="color:#aaa;">No pending mentor applications right now.</p>
-            </div>`;
-        return;
-    }
-
-    container.innerHTML = pending.map(m => `
-        <div class="mentor-approval-card" id="mac-${m.id}">
-            <div class="mac-avatar">${getInitials(m.fullName)}</div>
-            <div class="mac-body">
-                <div class="mac-name">${m.fullName}</div>
-                <div class="mac-meta">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>${m.institution || 'N/A'} &nbsp;·&nbsp;
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>Applied ${timeAgo(m.joinDate)}
-                </div>
-                <div class="mac-bio">${m.bio || 'No bio provided.'}</div>
-                <div class="mac-categories">
-                    ${(m.categories || []).map(c => `<span class="category-chip">${c}</span>`).join('')}
-                </div>
-                <div style="font-size:0.82rem;color:#777;margin-bottom:14px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg><strong>Expertise:</strong> ${m.expertise || 'Not listed'}
-                </div>
-                ${m.availability ? `<div style="font-size:0.82rem;color:#777;margin-bottom:14px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><strong>Availability:</strong> ${m.availability}</div>` : ''}
-                <div class="mac-actions">
-                    <button class="btn-approve" onclick="AdminPanel.approveMentor('${m.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="20 6 9 17 4 12"/></svg>Approve
-                    </button>
-                    <button class="btn-reject-soft" onclick="AdminPanel.promptRejectMentor('${m.id}', '${m.fullName}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject
-                    </button>
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
-
-// ============================================================
-//  PROJECT APPROVALS
-// ============================================================
-function renderProjectApprovals() {
-    const container = document.getElementById('projectApprovalList');
-    if (!container || !window.MockService) return;
-    const pending = MockService.getPendingProjects();
-
-    if (pending.length === 0) {
-        container.innerHTML = `<div class="text-center py-5"><div style="font-size:3rem;margin-bottom:16px;">✅</div><h5 style="font-family:var(--font-head);color:var(--brand-green);">No pending projects!</h5><p style="color:#aaa;">All project submissions have been reviewed.</p></div>`;
-        return;
-    }
-
-    container.innerHTML = pending.map(p => {
-        const innovator = MockService.getUserById(p.innovatorId);
-        return `
-        <div class="request-card" id="pcard-${p.id}">
-            <div class="request-card-header" style="flex-wrap: wrap; gap: 4px;">
-                <div class="user-avatar-mini" style="border-radius:12px;width:48px;height:48px;font-size:1rem;flex-shrink:0;">${innovator ? getInitials(innovator.fullName) : '??'}</div>
-                <div style="flex:1; min-width: 200px;">
-                    <div class="request-card-title">${p.title}</div>
-                    <div class="request-card-meta">
-                        by ${innovator ? innovator.fullName : 'Unknown'} &nbsp;·&nbsp; Submitted ${timeAgo(p.submittedAt)}
-                        &nbsp;·&nbsp; ${(p.categories || []).map(c => `<span class="category-chip">${c}</span>`).join(' ')}
-                    </div>
-                </div>
-                ${statusBadge(p.status)}
-            </div>
-            <div class="request-card-message">${p.problemStatement}</div>
-            ${p.files && p.files.length > 0 ? `
-            <div style="margin-bottom:14px;">
-                <small style="font-weight:700;color:#8a9aaa;text-transform:uppercase;letter-spacing:.6px;">Attached Files</small>
-                <div class="file-preview-list" style="margin-top:8px;">
-                    ${p.files.map(f => `
-                        <div class="file-preview-item">
-                            <div class="file-preview-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>
-                            <div class="file-preview-info">
-                                <div class="file-preview-name">${f.name}</div>
-                                <div class="file-preview-size">${f.size}</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>` : ''}
-            <div class="request-card-actions">
-                <button class="btn-approve" onclick="AdminPanel.approveProject('${p.id}')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="20 6 9 17 4 12"/></svg>Approve Project
-                </button>
-                <button class="btn-reject-soft" onclick="AdminPanel.rejectProject('${p.id}')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject
-                </button>
-            </div>
-        </div>`;
-    }).join('');
-}
-
-// ============================================================
-//  REJECTION MODAL
-// ============================================================
-function showRejectionModal(title, subtitle, onConfirm) {
-    const existing = document.getElementById('adminRejectionModal');
-    if (existing) existing.remove();
-
-    const modal = document.createElement('div');
-    modal.className = 'rejection-modal-overlay';
-    modal.id = 'adminRejectionModal';
-    modal.innerHTML = `
-        <div class="rejection-modal-box">
-            <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>${title}</h4>
-            <p>${subtitle}</p>
-            <textarea id="rejectionReasonInput" rows="4" placeholder="Provide a clear reason..."></textarea>
-            <div class="rejection-modal-actions">
-                <button class="btn-approve" style="background:#6c757d;" onclick="document.getElementById('adminRejectionModal').remove()">Cancel</button>
-                <button class="btn-reject-soft" id="confirmRejectBtn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Confirm Action
-                </button>
-            </div>
-        </div>`;
-    document.body.appendChild(modal);
-
-    document.getElementById('confirmRejectBtn').onclick = () => {
-        const reason = document.getElementById('rejectionReasonInput').value.trim();
-        if (!reason) {
-            document.getElementById('rejectionReasonInput').style.borderColor = '#dc3545';
-            return;
-        }
-        modal.remove();
-        onConfirm(reason);
-    };
-}
-
-// ============================================================
 //  TOAST NOTIFICATION
 // ============================================================
 function adminToast(message, type = 'success') {
     const t = document.createElement('div');
-    t.style.cssText = `position:fixed;bottom:30px;right:30px;z-index:99999;padding:14px 24px;border-radius:14px;font-weight:700;font-size:0.9rem;box-shadow:0 8px 24px rgba(0,0,0,0.15);animation:slideup 0.3s ease;color:#fff;background:${type==='success'?'#1a5e4f':type==='error'?'#dc3545':'#b47b00'};`;
+    t.style.cssText = `position:fixed;bottom:30px;right:30px;z-index:99999;padding:14px 24px;border-radius:14px;font-weight:700;font-size:0.9rem;box-shadow:0 8px 24px rgba(0,0,0,0.15);animation:slideup 0.3s ease;color:#fff;background:${type==='success'?'#1a5e4f':type==='error'?'#dc3545':'#f3a813'};`;
     t.textContent = message;
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 3500);
 }
 
 // ============================================================
+//  ADMIN STATS
+// ============================================================
+async function renderAdminStats() {
+    const container = document.getElementById('adminStatsGrid');
+    if (!container) return;
+    
+    try {
+        const usersSnap = await getDocs(collection(db, 'users'));
+        const projectsSnap = await getDocs(collection(db, 'projects'));
+        const pairsSnap = await getDocs(collection(db, 'mentorshipRequests'));
+        
+        const users = usersSnap.docs.map(d => d.data());
+        const activePairs = pairsSnap.docs.filter(d => d.data().status === 'accepted').length;
+        const pendingMentors = users.filter(u => u.role === 'mentor' && u.status === 'pending').length;
+        const pendingProjects = projectsSnap.docs.filter(d => d.data().status === 'pending').length;
+
+        const statConfig = [
+            { label: 'Total Members', value: users.length, color: 'blue', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+            { label: 'Innovators', value: users.filter(u => u.role === 'innovator').length, color: 'green', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
+            { label: 'Active Mentors', value: users.filter(u => u.role === 'mentor' && u.status !== 'pending').length, color: 'yellow', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16,11 18,13 22,9"/></svg>' },
+            { label: 'Pending Mentors', value: pendingMentors, color: 'blue', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+            { label: 'Review Queue', value: pendingProjects, color: 'green', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>' },
+            { label: 'Active Pairs', value: activePairs, color: 'yellow', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' }
+        ];
+
+        container.innerHTML = statConfig.map(s => `
+            <div class="premium-card">
+                <div class="premium-card-icon" style="background:rgba(26, 94, 79, 0.05); color:var(--brand-green);">
+                    ${s.icon}
+                </div>
+                <div class="ms-1">
+                    <div class="h3 fw-bold mb-0" style="color:var(--brand-green); line-height: 1.1;">${s.value}</div>
+                    <div class="text-uppercase fw-bold text-muted" style="font-size: 0.65rem; letter-spacing: 0.8px; margin-top: 4px;">${s.label}</div>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {}
+}
+
+// ============================================================
+//  USERS & MENTORS CARDS (Redesigned from logic)
+// ============================================================
+window.currentRoleFilter = 'all';
+
+window.setRoleFilter = function(role) {
+    window.currentRoleFilter = role;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    renderUsersCards();
+};
+
+async function renderUsersCards() {
+    const container = document.getElementById('usersCardGrid');
+    if (!container) return;
+    
+    container.innerHTML = '<div class="text-center py-5 w-100"><i class="fa fa-spinner fa-spin text-primary fa-2x"></i></div>';
+    
+    try {
+        const usersSnap = await getDocs(collection(db, 'users'));
+        let users = [];
+        usersSnap.forEach(d => {
+            if (d.data().role !== 'admin') {
+                users.push({ id: d.id, ...d.data() });
+            }
+        });
+        
+        if (window.currentRoleFilter !== 'all') {
+            users = users.filter(u => u.role === window.currentRoleFilter);
+        }
+
+        if (users.length === 0) {
+            container.innerHTML = '<div class="w-100 text-center text-muted py-5">No users found.</div>';
+            return;
+        }
+
+        container.innerHTML = users.map(u => {
+            const isMentor = u.role === 'mentor';
+            const roleColor = isMentor ? 'var(--brand-yellow)' : 'var(--brand-green)';
+            const roleBadge = isMentor ? '🎓 Mentor' : '💡 Innovator';
+            
+            return `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="premium-user-card" style="background:#fff; border-radius:16px; box-shadow:0 8px 30px rgba(0,0,0,0.06); overflow:hidden; border:1px solid rgba(0,0,0,0.04); height:100%; display:flex; flex-direction:column; position:relative;">
+                    <div style="height:60px; background:${isMentor ? 'rgba(243, 168, 19, 0.1)' : 'rgba(26, 94, 79, 0.05)'};"></div>
+                    <div style="padding: 0 24px 24px 24px; position:relative; flex:1; display:flex; flex-direction:column;">
+                        <div class="d-flex justify-content-between align-items-end" style="margin-top:-30px; margin-bottom:12px;">
+                            <div class="user-avatar-lg d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width:70px; height:70px; border-radius:50%; background:#fff; border:3px solid #fff; color:${roleColor}; font-size:1.4rem; box-shadow:0 4px 10px rgba(0,0,0,0.1) !important;">
+                                ${getInitials(u.fullName || u.email)}
+                            </div>
+                            <div>${statusBadge(u.status)}</div>
+                        </div>
+                        
+                        <h4 style="font-family:var(--font-head); font-weight:800; margin-bottom:4px; font-size:1.2rem;">${u.fullName || 'Unnamed'}</h4>
+                        <div style="color:#777; font-size:0.85rem; margin-bottom:12px; display:flex; align-items:center;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            ${u.email}
+                        </div>
+                        
+                        <div style="background:#f8fafb; padding:12px; border-radius:8px; margin-bottom:16px; font-size:0.85rem;">
+                            <div style="margin-bottom:6px;"><strong>Role:</strong> <span style="color:${roleColor}; font-weight:700;">${roleBadge}</span></div>
+                            <div style="margin-bottom:6px;"><strong>Institution:</strong> ${u.institution || 'Not provided'}</div>
+                            ${u.expertise ? `<div style="margin-bottom:6px;"><strong>Expertise:</strong> ${u.expertise}</div>` : ''}
+                            ${u.categories ? `<div class="d-flex flex-wrap gap-1 mt-2">${u.categories.map(c => `<span class="badge bg-light text-dark border">${c}</span>`).join('')}</div>` : ''}
+                        </div>
+                        
+                        <div class="mt-auto pt-3 border-top d-flex gap-2 justify-content-end">
+                            <button class="btn btn-sm text-danger border border-danger" onclick="AdminPanel.deleteUser('${u.id}')" style="border-radius:8px;">Block Account</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch (error) {
+        console.error("Error loading users:", error);
+        container.innerHTML = '<div class="w-100 text-center text-danger py-5">Failed to fetch data from Firebase.</div>';
+    }
+}
+
+// ============================================================
+//  PENDING MENTOR APPROVALS
+// ============================================================
+async function renderMentorApprovals() {
+    const container = document.getElementById('mentorApprovalList');
+    if (!container) return;
+    container.innerHTML = '<div class="text-center py-5"><i class="fa fa-spinner fa-spin text-primary fa-2x"></i></div>';
+    
+    try {
+        const qSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'mentor'), where('status', '==', 'pending')));
+        
+        if (qSnap.empty) {
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <div style="font-size:3rem;margin-bottom:16px;">🎉</div>
+                    <h5 style="font-family:var(--font-head);color:var(--brand-green);">All caught up!</h5>
+                    <p style="color:#aaa;">No pending mentor applications right now.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = qSnap.docs.map(doc => {
+            const m = { id: doc.id, ...doc.data() };
+            return `
+            <div class="mentor-approval-card" id="mac-${m.id}" style="padding:24px; border-radius:16px; background:#fff; box-shadow:0 8px 30px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); margin-bottom:20px; display:flex; gap:20px;">
+                <div class="mac-avatar d-flex align-items-center justify-content-center text-white fw-bold" style="width:80px; height:80px; border-radius:50%; background:var(--brand-yellow); font-size:1.6rem; flex-shrink:0;">
+                    ${getInitials(m.fullName)}
+                </div>
+                <div class="mac-body flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="mac-name" style="font-family:var(--font-head); font-weight:800; font-size:1.3rem;">${m.fullName}</div>
+                        <span class="badge bg-warning text-dark">Review Required</span>
+                    </div>
+                    
+                    <div class="mac-meta d-flex gap-3 text-muted mb-3" style="font-size:0.85rem;">
+                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>${m.institution || 'N/A'}</span>
+                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>Applied: ${timeAgo(m.createdAt || m.joinDate)}</span>
+                    </div>
+                    
+                    <div style="background:#f8fafb; padding:16px; border-radius:12px; margin-bottom:16px; font-size:0.9rem; border-left:4px solid var(--brand-green);">
+                        <div style="margin-bottom:8px;"><strong>Bio:</strong> ${m.bio || 'No bio provided.'}</div>
+                        <div style="margin-bottom:8px;"><strong>Expertise:</strong> ${m.expertise || 'Not listed'}</div>
+                        ${m.availability ? `<div><strong>Availability:</strong> ${m.availability}</div>` : ''}
+                    </div>
+                    
+                    <div class="mac-categories mb-4">
+                        ${(m.categories || []).map(c => `<span class="badge bg-light text-dark border me-1">${c}</span>`).join('')}
+                    </div>
+                    
+                    <div class="mac-actions d-flex gap-3">
+                        <button class="btn btn-success" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.approveMentor('${m.id}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><polyline points="20 6 9 17 4 12"/></svg>Approve Mentor
+                        </button>
+                        <button class="btn btn-outline-danger" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.rejectMentor('${m.id}', '${m.fullName}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch (e) {
+        console.error("Error loading pending mentors:", e);
+    }
+}
+
+// ============================================================
+//  PROJECT APPROVALS
+// ============================================================
+async function renderProjectApprovals() {
+    const container = document.getElementById('projectApprovalList');
+    if (!container) return;
+    
+    try {
+        const qSnap = await getDocs(query(collection(db, 'projects'), where('status', '==', 'pending')));
+        
+        if (qSnap.empty) {
+            container.innerHTML = `<div class="text-center py-5"><div style="font-size:3rem;margin-bottom:16px;">✅</div><h5 style="font-family:var(--font-head);color:var(--brand-green);">No pending projects!</h5><p style="color:#aaa;">All project submissions have been reviewed.</p></div>`;
+            return;
+        }
+        
+        container.innerHTML = qSnap.docs.map(doc => {
+            const p = { id: doc.id, ...doc.data() };
+            return `
+            <div class="request-card" id="pcard-${p.id}" style="padding:24px; border-radius:16px; background:#fff; box-shadow:0 8px 30px rgba(0,0,0,0.06); margin-bottom:20px;">
+                <h4 style="font-family:var(--font-head); font-weight:800; color:var(--brand-green);">${p.title}</h4>
+                <div class="text-muted mb-3" style="font-size:0.85rem;">Submitted ${timeAgo(p.createdAt)}</div>
+                <div class="mb-3">
+                    <strong>Problem Statement:</strong>
+                    <p class="text-muted">${p.problemStatement || 'N/A'}</p>
+                </div>
+                <div class="mb-4">
+                    <strong>Categories:</strong>
+                    ${(p.categories || []).map(c => `<span class="badge bg-light text-dark border ms-1">${c}</span>`).join('')}
+                </div>
+                <div class="d-flex gap-3">
+                    <button class="btn btn-success" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.approveProject('${p.id}')">Approve Project</button>
+                    <button class="btn btn-outline-danger" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.rejectProject('${p.id}')">Reject</button>
+                </div>
+            </div>`;
+        }).join('');
+    } catch(e) { console.error("Error loading projects", e); }
+}
+
+async function renderMentorshipsTable() {
+    const container = document.getElementById('mentorshipsTableBody');
+    if (!container) return;
+
+    container.innerHTML = '<tr><td colspan="5" class="text-center py-4"><i class="fa fa-spinner fa-spin text-primary"></i> Loading pairings...</td></tr>';
+
+    try {
+        const q = query(collection(db, 'mentorshipRequests'), where('status', 'in', ['accepted', 'pending', 'rejected']));
+        const snap = await getDocs(q);
+        
+        // Also fetch termination requests
+        const termSnap = await getDocs(collection(db, 'mentorshipTerminations'));
+        const terminations = {};
+        termSnap.forEach(d => {
+            const data = d.data();
+            terminations[data.requestId] = { id: d.id, ...data };
+        });
+
+        if (snap.empty) {
+            container.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No mentorship requests found.</td></tr>';
+            return;
+        }
+
+        let html = '';
+        for (let docSnap of snap.docs) {
+            const req = { id: docSnap.id, ...docSnap.data() };
+            
+            // Fetch names (could optimize with local cache or batch fetch)
+            const iSnap = await getDocs(query(collection(db, 'users'), where('__name__', '==', req.innovatorId)));
+            const mSnap = await getDocs(query(collection(db, 'users'), where('__name__', '==', req.mentorId)));
+            
+            const innovator = iSnap.docs[0]?.data()?.fullName || 'Unknown';
+            const mentor = mSnap.docs[0]?.data()?.fullName || 'Unknown';
+            
+            const hasTermReq = terminations[req.id];
+            const statusStyle = req.status === 'accepted' ? 'color:#1a5e4f;font-weight:700;' : '';
+            
+            html += `
+            <tr>
+                <td>
+                    <div class="fw-bold" style="color:var(--brand-green);">${innovator}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">Innovator</div>
+                </td>
+                <td>
+                    <div class="fw-bold" style="color:var(--brand-yellow);">${mentor}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">Mentor</div>
+                </td>
+                <td>${timeAgo(req.requestedAt)}</td>
+                <td>
+                    ${statusBadge(req.status)}
+                    ${hasTermReq ? '<div class="text-danger fw-bold mt-1" style="font-size:0.7rem;"><i class="fa fa-exclamation-triangle"></i> Termination Requested</div>' : ''}
+                </td>
+                <td>
+                    <div class="d-flex gap-2">
+                        ${hasTermReq ? `
+                            <button class="btn btn-sm btn-danger" onclick="AdminPanel.handleTermination('${req.id}', '${hasTermReq.id}', true)">
+                                Approve Stop
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-outline-danger" onclick="AdminPanel.terminateMentorship('${req.id}')">
+                            ${req.status === 'accepted' ? 'Terminate' : 'Delete'}
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+            
+            if (hasTermReq) {
+                html += `
+                <tr style="background:rgba(220, 53, 69, 0.03);">
+                    <td colspan="5" style="padding:10px 24px;">
+                        <div class="p-3 border-start border-danger border-4 rounded bg-white shadow-sm">
+                            <strong class="text-danger">Termination Reason:</strong> "${hasTermReq.reason}"
+                            <div class="mt-2 text-muted" style="font-size:0.8rem;">Submitted ${timeAgo(hasTermReq.requestedAt)}</div>
+                        </div>
+                    </td>
+                </tr>`;
+            }
+        }
+        
+        container.innerHTML = html;
+        
+    } catch (e) {
+        console.error("Error loading mentorships", e);
+        container.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Failed to load data.</td></tr>';
+    }
+}
+
+// ============================================================
 //  ADMIN PANEL API (exposed globally)
 // ============================================================
-const AdminPanel = {
-    approveMentor(userId) {
-        MockService.updateUserStatus(userId, 'approved');
-        const card = document.getElementById('mac-' + userId);
-        if (card) {
-            card.style.transition = 'all 0.4s ease';
-            card.style.opacity = '0';
-            card.style.transform = 'translateX(20px)';
-            setTimeout(() => { card.remove(); renderMentorApprovals(); }, 400);
+window.AdminPanel = {
+    async approveMentor(userId) {
+        try {
+            await updateDoc(doc(db, 'users', userId), { status: 'approved' });
+            adminToast('✓ Mentor approved successfully!');
+            renderMentorApprovals();
+            renderUsersCards();
+            renderAdminStats();
+        } catch (e) {
+            adminToast('Error approving mentor', 'error');
         }
-        renderUsersTable();
-        renderAdminStats();
-        adminToast('✓ Mentor approved successfully!');
     },
-
-    toggleAccess(userId) {
-        const res = MockService.toggleUserAccess(userId);
-        renderUsersTable();
-        adminToast(res.restricted ? 'User access restricted.' : 'User access granted.', res.restricted ? 'warning' : 'success');
-    },
-
-    deleteUser(userId) {
-        if (!confirm('Are you certain you want to permanently delete this user? This action cannot be undone.')) return;
-        MockService.deleteUser(userId);
-        renderUsersTable();
-        renderAdminStats();
-        adminToast('User deleted permanently.', 'error');
-    },
-
-    promptRejectMentor(userId, name) {
-        showRejectionModal(
-            'Reject Mentor Application',
-            `You are about to reject <strong>${name}</strong>'s application. Please provide a reason.`,
-            (reason) => {
-                MockService.updateUserStatus(userId, 'rejected', reason);
-                const card = document.getElementById('mac-' + userId);
-                if (card) {
-                    card.style.transition = 'all 0.4s ease';
-                    card.style.opacity = '0';
-                    setTimeout(() => { card.remove(); renderMentorApprovals(); }, 400);
-                }
-                renderUsersTable();
-                renderAdminStats();
+    async rejectMentor(userId, name) {
+        if(confirm(`Reject application for ${name}?`)) {
+            try {
+                await updateDoc(doc(db, 'users', userId), { status: 'rejected' });
                 adminToast('✕ Mentor application rejected.', 'error');
-            }
-        );
-    },
-
-    approveProject(projectId) {
-        MockService.updateProjectStatus(projectId, 'approved');
-        const card = document.getElementById('pcard-' + projectId);
-        if (card) {
-            card.style.transition = 'all 0.4s ease';
-            card.style.opacity = '0';
-            setTimeout(() => { card.remove(); renderProjectApprovals(); }, 400);
+                renderMentorApprovals();
+            } catch (e) {}
         }
-        renderAdminStats();
-        adminToast('✓ Project approved!');
     },
-
-    rejectProject(projectId) {
-        MockService.updateProjectStatus(projectId, 'rejected');
-        const card = document.getElementById('pcard-' + projectId);
-        if (card) {
-            card.style.transition = 'all 0.4s ease';
-            card.style.opacity = '0';
-            setTimeout(() => { card.remove(); renderProjectApprovals(); }, 400);
+    async deleteUser(userId) {
+        if (!confirm('Are you certain you want to permanently delete this user? Action cannot be undone.')) return;
+        try {
+            await deleteDoc(doc(db, 'users', userId));
+            adminToast('User deleted permanently.', 'error');
+            renderUsersCards();
+            renderAdminStats();
+        } catch (e) {}
+    },
+    async approveProject(projectId) {
+        try {
+            await updateDoc(doc(db, 'projects', projectId), { status: 'approved' });
+            adminToast('✓ Project approved!');
+            renderProjectApprovals();
+            renderAdminStats();
+        } catch (e) {}
+    },
+    async rejectProject(projectId) {
+        try {
+            await updateDoc(doc(db, 'projects', projectId), { status: 'rejected' });
+            adminToast('Project rejected.', 'error');
+            renderProjectApprovals();
+        } catch (e) {}
+    },
+    async terminateMentorship(requestId) {
+        if (!confirm('Are you sure you want to permanently dissolve this mentorship link?')) return;
+        try {
+            await deleteDoc(doc(db, 'mentorshipRequests', requestId));
+            adminToast('Mentorship link removed.', 'error');
+            renderMentorshipsTable();
+            renderAdminStats();
+        } catch (e) {
+            adminToast('Failed to terminate.', 'error');
         }
-        renderAdminStats();
-        adminToast('Project rejected.', 'error');
+    },
+    async handleTermination(requestId, termReqId, approve) {
+        if (!confirm(approve ? 'Approve this termination request and dissolve the link?' : 'Reject this termination request?')) return;
+        try {
+            if (approve) {
+                await deleteDoc(doc(db, 'mentorshipRequests', requestId));
+                await updateDoc(doc(db, 'mentorshipTerminations', termReqId), { status: 'approved', processedAt: serverTimestamp() });
+                adminToast('✓ Mentorship terminated as requested.');
+            } else {
+                await updateDoc(doc(db, 'mentorshipTerminations', termReqId), { status: 'rejected', processedAt: serverTimestamp() });
+                await updateDoc(doc(db, 'mentorshipRequests', requestId), { terminationRequested: false });
+                adminToast('Termination request rejected.', 'warning');
+            }
+            renderMentorshipsTable();
+            renderAdminStats();
+        } catch (e) {
+            adminToast('Action failed.', 'error');
+        }
     },
 
-    removeMentorshipRelationship(requestId) {
-        showRejectionModal(
-            'Terminate Relationship',
-            'Please provide the reason for removing this mentorship pairing.',
-            (reason) => {
-                MockService.revokeMentorship(requestId, reason);
-                renderMentorshipsTable();
-                renderAdminStats();
-                adminToast('Relationship terminated.', 'error');
+    // ══ EVENT MANAGEMENT ══
+    async handleEventSubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        const btn = document.getElementById('adminEventSubmitBtn');
+        const eventId = document.getElementById('adminEventId').value;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+
+        const eventData = {
+            title: form.title.value,
+            description: form.description.value,
+            date: form.date.value,
+            time: form.time.value,
+            location: form.location.value,
+            imageLink: form.imageLink.value,
+            updatedAt: serverTimestamp()
+        };
+
+        try {
+            if (eventId) {
+                await updateDoc(doc(db, 'events', eventId), eventData);
+                adminToast('✓ Event updated successfully!');
+            } else {
+                eventData.createdAt = serverTimestamp();
+                await addDoc(collection(db, 'events'), eventData);
+                adminToast('✓ Event created successfully!');
             }
-        );
+            form.reset();
+            document.getElementById('adminEventId').value = '';
+            document.getElementById('adminEventSubmitBtn').textContent = 'Create Event';
+            document.getElementById('adminEventCancelBtn').style.display = 'none';
+            await this.loadAdminEvents();
+        } catch (error) {
+            console.error(error);
+            adminToast('Failed to save event.', 'error');
+        } finally {
+            btn.disabled = false;
+        }
+    },
+
+    async loadAdminEvents() {
+        const container = document.getElementById('adminEventsGrid');
+        if (!container) return;
+        
+        container.innerHTML = '<div class="col-12 text-center py-4"><i class="fa fa-spinner fa-spin"></i> Loading...</div>';
+
+        try {
+            const snap = await getDocs(collection(db, 'events'));
+            if (snap.empty) {
+                container.innerHTML = '<div class="col-12 text-center py-4 text-muted">No events found.</div>';
+                return;
+            }
+
+            container.innerHTML = snap.docs.map(docSnap => {
+                const ev = { id: docSnap.id, ...docSnap.data() };
+                return `
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 shadow-sm border-0">
+                        <img src="${ev.imageLink}" class="card-img-top" style="height:120px; object-fit:cover;">
+                        <div class="card-body p-3">
+                            <h6 class="fw-bold mb-1">${ev.title}</h6>
+                            <p class="small text-muted mb-2">${ev.date} | ${ev.time}</p>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="AdminPanel.editEvent('${ev.id}')">Edit</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="AdminPanel.deleteEvent('${ev.id}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch (e) {
+            console.error(e);
+        }
+    },
+
+    async editEvent(id) {
+        try {
+            const snap = await getDocs(query(collection(db, 'events'), where('__name__', '==', id)));
+            if (snap.empty) return;
+            const ev = snap.docs[0].data();
+            
+            const form = document.getElementById('adminEventForm');
+            form.title.value = ev.title;
+            form.description.value = ev.description;
+            form.date.value = ev.date;
+            form.time.value = ev.time;
+            form.location.value = ev.location;
+            form.imageLink.value = ev.imageLink;
+            document.getElementById('adminEventId').value = id;
+            
+            document.getElementById('adminEventSubmitBtn').textContent = 'Update Event';
+            document.getElementById('adminEventCancelBtn').style.display = 'block';
+            form.scrollIntoView({ behavior: 'smooth' });
+        } catch(e) {}
+    },
+
+    async deleteEvent(id) {
+        if (!confirm('Delete this event?')) return;
+        try {
+            await deleteDoc(doc(db, 'events', id));
+            adminToast('Event deleted.');
+            await this.loadAdminEvents();
+        } catch (e) {}
+    },
+
+    // ══ MANUAL MENTOR REGISTRATION ══
+    async handleManualMentorRegistration(e) {
+        e.preventDefault();
+        const form = e.target;
+        const btn = form.querySelector('button[type="submit"]');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> registering...';
+
+        const mentorData = {
+            fullName: form.fullName.value,
+            email: form.email.value.toLowerCase(),
+            role: 'mentor',
+            status: 'approved',
+            institution: form.institution.value,
+            expertise: form.expertise.value,
+            createdAt: serverTimestamp(),
+            manualEntry: true
+        };
+
+        try {
+            // Note: This only creates the Firestore record. 
+            // The mentor will still need to 'signup' or 'invite' them.
+            // For now, we just create the record so they are visible.
+            await addDoc(collection(db, 'users'), mentorData);
+            adminToast('✓ Mentor registered manually and approved.');
+            form.reset();
+            renderUsersCards();
+            renderAdminStats();
+        } catch (error) {
+            adminToast('Failed to register mentor.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Register Mentor';
+        }
     },
 
     init() {
         renderAdminStats();
-        renderUsersTable();
+        renderUsersCards();
         renderMentorApprovals();
         renderProjectApprovals();
         renderMentorshipsTable();
+        this.loadAdminEvents();
+        
+        // Bind forms
+        const eventForm = document.getElementById('adminEventForm');
+        if (eventForm) eventForm.addEventListener('submit', (e) => this.handleEventSubmit(e));
+        
+        const manualMentorForm = document.getElementById('manualMentorForm');
+        if (manualMentorForm) manualMentorForm.addEventListener('submit', (e) => this.handleManualMentorRegistration(e));
     }
 };
 
-window.AdminPanel = AdminPanel;
-window.setRoleFilter = setRoleFilter;
-
-// Auto-init on DOM ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => AdminPanel.init());
+    document.addEventListener('DOMContentLoaded', () => window.AdminPanel.init());
 } else {
-    AdminPanel.init();
-}
-
-window.AdminPanel = AdminPanel;
-
-// Auto-init on DOM ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => AdminPanel.init());
-} else {
-    AdminPanel.init();
+    window.AdminPanel.init();
 }

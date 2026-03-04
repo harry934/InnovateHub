@@ -189,6 +189,11 @@ class AdminDashboard {
         // Trigger specific loads
         if (sectionName === 'rejectionRequests') this.loadRejectionRequests();
         if (sectionName === 'users') this.loadUsers();
+        if (sectionName === 'eventsManagement') {
+            if (typeof window.loadAdminEvents === 'function') {
+                window.loadAdminEvents();
+            }
+        }
         if (sectionName === 'mentorshipPairings') {
             if (window.AdminPanel && window.AdminPanel.renderMentorshipsTable) {
                 window.AdminPanel.renderMentorshipsTable();

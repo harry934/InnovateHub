@@ -45,7 +45,7 @@ const dashboardCards = [
     { title: 'Requests',         id: 'requests', section: 'requests',      types: ['New', 'Review'],    progress: 25,  action: 'search' },
     { title: 'My Mentees',       id: 'mentees',  section: 'mentees',       types: ['Manage', 'Active'], progress: 75,  action: 'chat' },
     { title: 'Schedule',         id: 'schedule', section: 'schedule',      types: ['Time', 'Meetings'], progress: 50,  action: 'plus' },
-    { title: 'Account Settings', id: 'profile',  section: 'mentorProfile', types: ['Profile', 'Settings'], progress: 90, action: 'edit' }
+    { title: 'Account Settings', id: 'profile',  section: 'profile', types: ['Profile', 'Settings'], progress: 90, action: 'edit' }
 ];
 
 // ─── Enhanced background symbol system ───────────────────────
@@ -185,8 +185,11 @@ class MentorDashboard {
     if (userData.profession) filledFields++;
     if (userData.expertise && userData.expertise.length > 0) filledFields++;
     if (userData.availability || userData.meetingLink) filledFields++;
+    if (userData.experience) filledFields++; // Added experience
+    if (userData.communicationPreference) filledFields++; // Added communication preference
     
-    const percentage = Math.round((filledFields / totalFields) * 100);
+    const totalFieldsCount = 7;
+    const percentage = Math.round((filledFields / totalFieldsCount) * 100);
     
     const fill = document.getElementById("completenessFill");
     const text = document.getElementById("completenessText");
@@ -216,6 +219,8 @@ class MentorDashboard {
       if(document.getElementById('profileProfession')) document.getElementById('profileProfession').value = data.profession || '';
       if(document.getElementById('profileExpertise')) document.getElementById('profileExpertise').value = (data.expertise || []).join(', ');
       if(document.getElementById('profileBio')) document.getElementById('profileBio').value = data.bio || '';
+      if(document.getElementById('profileExperience')) document.getElementById('profileExperience').value = data.experience || '';
+      if(document.getElementById('profileCommunication')) document.getElementById('profileCommunication').value = data.communicationPreference || '';
       if(document.getElementById('availabilityToggle')) document.getElementById('availabilityToggle').checked = data.isAvailable !== false;
       
       // Schedule Form
@@ -468,7 +473,7 @@ class MentorDashboard {
             bgColor: '#121331', 
             textColor: '#fff', 
             links: [
-                { label: 'Profile', href: 'javascript:showDashboardSection("mentorProfile")' }, 
+                { label: 'Profile', href: 'javascript:showDashboardSection("profile")' }, 
                 { label: 'Notifications', href: 'javascript:showDashboardSection("notifications")' }
             ] 
         }
@@ -658,9 +663,14 @@ class MentorDashboard {
 
   async handleRequest(requestId, status) {
     try {
+      if (status === "rejected") {
+          this.openRejectionModal(requestId);
+          return;
+      }
+
       if (
         !confirm(
-          `Are you sure you want to ${status === "accepted" ? "accept" : "reject"} this request?`,
+          `Are you sure you want to accept this request?`,
         )
       )
         return;
@@ -758,14 +768,30 @@ class MentorDashboard {
                                     <small class="text-muted">Innovator</small>
                                 </div>
                             </div>
-                            <hr>
+                            <hr class="my-2">
                             <h6 class="text-primary mb-2">${project.title}</h6>
-                            <p class="text-muted small mb-3 line-clamp-2">${project.problemStatement || "No description"}</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="badge bg-light text-dark border">${project.categories?.[0] || "General"}</span>
-                                ${StatusBadge.render(project.status || 'active')}
+                            <p class="text-muted small mb-2 line-clamp-2">${project.problemStatement || "No description"}</p>
+                            
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <div class="small fw-bold text-dark">Category</div>
+                                    <span class="badge bg-light text-dark border">${project.categories?.[0] || "General"}</span>
+                                </div>
+                                <div class="col-6">
+                                    <div class="small fw-bold text-dark">Comm. Method</div>
+                                    <div class="small text-muted">${innovator.communicationPreference || 'Any'}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="small fw-bold text-dark">Status</div>
+                                    ${StatusBadge.render(project.status || 'active')}
+                                </div>
+                                <div class="col-6">
+                                    <div class="small fw-bold text-dark">Next Meeting</div>
+                                    <div class="small text-muted">${request.nextMeetingDate || 'Not scheduled'}</div>
+                                </div>
                             </div>
-                            <button class="btn btn-sm btn-outline-danger w-100" onclick="event.stopPropagation(); window.dashboard.openRejectionModal('${requestId}')">
+
+                            <button class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="event.stopPropagation(); window.dashboard.openRejectionModal('${requestId}')">
                                 <i class="fa fa-times-circle me-1"></i>Request to Stop Mentorship
                             </button>
                         </div>
