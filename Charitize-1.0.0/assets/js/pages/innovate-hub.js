@@ -99,41 +99,44 @@ export const ProjectService = {
             updatedAt: serverTimestamp()
         });
 
-        // 2. Upload File to MongoDB (Replacement for Firebase Storage)
+        // 2. Upload File to Supabase Storage
         if (file) {
             try {
-                // Use the API helper to upload to MongoDB
-                const response = await window.api.uploadProjectFile(file, projectRef.id, auth.currentUser.uid);
-                
-                if (response && response.ok) {
-                    const baseUrl = window.api ? window.api.API_URL : 'https://innovatehub.up.railway.app/api';
-                    // Update Firestore with the MongoDB file reference
-                    await updateDoc(doc(db, "projects", projectRef.id), {
-                        mongodbFileId: response.data.fileId,
-                        fileName: file.name,
-                        fileStorageType: 'mongodb',
-                        fileUrl: `${baseUrl}/projects/file/${response.data.fileId}`
-                    });
-                } else {
-                    // ATOMIC ROLLBACK: Delete the Firestore project if file upload fails
-                    const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-                    await deleteDoc(doc(db, "projects", projectRef.id));
-                    
-                    const errorMsg = response && response.data ? response.data.msg : "Failed to upload project document to MongoDB.";
-                    console.error("MongoDB Upload Failed:", errorMsg);
-                    throw new Error(errorMsg);
-                }
+                // Generate a unique filename to avoid collisions
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${projectRef.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+                const filePath = `${auth.currentUser.uid}/${fileName}`;
+
+                // Use the global supabase client initialized in supabase-config.js
+                const { data, error } = await window.supabase.storage
+                    .from('project-documents')
+                    .upload(filePath, file);
+
+                if (error) throw error;
+
+                // 3. Get Public URL
+                const { data: { publicUrl } } = window.supabase.storage
+                    .from('project-documents')
+                    .getPublicUrl(filePath);
+
+                // 4. Update Firestore with the Supabase file reference
+                await updateDoc(doc(db, "projects", projectRef.id), {
+                    fileName: file.name,
+                    fileUrl: publicUrl,
+                    fileStoragePath: filePath,
+                    fileStorageType: 'supabase'
+                });
+
             } catch (err) {
-                // Also attempt rollback on unexpected errors
+                // ATOMIC ROLLBACK: Delete the Firestore project if file upload fails
+                console.error("Supabase Upload Failed:", err.message);
                 try {
                     const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
                     await deleteDoc(doc(db, "projects", projectRef.id));
                 } catch (rollbackErr) {
                     console.error("Rollback failed:", rollbackErr);
                 }
-                
-                console.error("Project File Upload Error:", err);
-                throw new Error("Failed to upload project document. Project submission rolled back.");
+                throw new Error("Failed to upload project document to Supabase. " + err.message);
             }
         }
         return projectRef;

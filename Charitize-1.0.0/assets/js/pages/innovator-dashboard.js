@@ -2,7 +2,7 @@
 import { auth, db } from '../core/firebase-config.js';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import NotificationSystem from '../components/notification-system.js';
-import StructuredProjectCard from '../components/project-card-structured.js';
+import StructuredProjectCard from '../components/project-card-structured.js?v=8.0.0';
 import MentorProfileCard from '../components/mentor-profile-card.js';
 import EmptyStates from '../components/empty-states.js';
 import AutoSaveManager from '../utils/auto-save-manager.js';
@@ -281,26 +281,34 @@ function renderQuickAccessCards() {
                     if (preview) preview.style.opacity = '0.5';
 
                     try {
-                        const response = await window.api.uploadProjectFile(file, 'profile', currentUser.uid);
-                        if (response && response.ok) {
-                            const baseUrl = window.api ? window.api.API_URL : 'https://innovatehub.up.railway.app/api';
-                            const photoURL = `${baseUrl}/projects/file/${response.data.fileId}`;
-                            
-                            const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-                            await updateProfile(currentUser, { photoURL });
-                            
-                            await updateDoc(doc(db, "users", currentUser.uid), { 
-                                photoURL, 
-                                updatedAt: serverTimestamp() 
-                            });
-                            
-                            alert('Profile picture updated!');
-                        } else {
-                            throw new Error("Upload failed.");
-                        }
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `${currentUser.uid}-${Date.now()}.${fileExt}`;
+                        const filePath = `avatars/${fileName}`;
+
+                        const { data, error } = await window.supabase.storage
+                            .from('project-documents')
+                            .upload(filePath, file);
+
+                        if (error) throw error;
+
+                        const { data: { publicUrl } } = window.supabase.storage
+                            .from('project-documents')
+                            .getPublicUrl(filePath);
+
+                        const photoURL = publicUrl;
+                        
+                        const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+                        await updateProfile(currentUser, { photoURL });
+                        
+                        await updateDoc(doc(db, "users", currentUser.uid), { 
+                            photoURL, 
+                            updatedAt: serverTimestamp() 
+                        });
+                        
+                        alert('Profile picture updated!');
                     } catch (err) {
                         console.error("Profile pic upload failed:", err);
-                        alert('Failed to update profile picture.');
+                        alert('Failed to update profile picture: ' + err.message);
                     } finally {
                         if (preview) preview.style.opacity = '1';
                     }
@@ -420,25 +428,215 @@ function renderQuickAccessCards() {
         }
 
         window.confirmDeleteProject = async function(projectId) {
-            if (!confirm('Are you sure you want to delete this project? This will also remove any uploaded documents from MongoDB and cannot be undone.')) {
-                return;
-            }
+            if (!confirm('Are you sure you want to delete this project? This cannot be undone.')) return;
 
             try {
-                // 1. Delete from Firebase Firestore
-                const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-                await deleteDoc(doc(db, "projects", projectId));
+                // Fetch the project first to get the Supabase file path (if any)
+                const { deleteDoc, doc: fsDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+                const snap = await getDoc(fsDoc(db, "projects", projectId));
+                const projectData = snap.exists() ? snap.data() : {};
 
-                // 2. Delete from MongoDB via API
-                if (window.api && window.api.deleteProject) {
-                    await window.api.deleteProject(projectId);
+                // 1. Delete file from Supabase Storage if applicable
+                if (projectData.fileStoragePath && projectData.fileStorageType === 'supabase' && window.supabase) {
+                    const { error } = await window.supabase.storage
+                        .from('project-documents')
+                        .remove([projectData.fileStoragePath]);
+                    if (error) console.warn('Could not remove Supabase file:', error.message);
                 }
 
+                // 2. Delete Firestore document
+                await deleteDoc(fsDoc(db, "projects", projectId));
+
                 alert('Project deleted successfully.');
-                await loadProjects(); // Refresh the list
+                await loadProjects();
             } catch (error) {
                 console.error('Error deleting project:', error);
                 alert('Failed to delete project: ' + error.message);
+            }
+        };
+
+        // ── EDIT PROJECT ─────────────────────────────────────────────
+        window.editProject = async function(projectId) {
+            const { doc: fsDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+            const snap = await getDoc(fsDoc(db, "projects", projectId));
+            if (!snap.exists()) return alert('Project not found.');
+            const p = snap.data();
+
+            const overlay = document.createElement('div');
+            overlay.className = 'ihub-modal-overlay';
+            overlay.id = 'editProjectModal';
+            overlay.innerHTML = `
+                <div class="ihub-modal">
+                    <div class="ihub-modal__header">
+                        <h3 class="ihub-modal__title">✏️ Edit Project</h3>
+                        <button class="ihub-modal__close" onclick="document.getElementById('editProjectModal').remove()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <div class="ihub-form-group"><label>Project Title</label><input id="epTitle" value="${p.title || ''}"></div>
+                    <div class="ihub-form-group"><label>Problem Statement</label><textarea id="epProblem" rows="3">${p.problemStatement || ''}</textarea></div>
+                    <div class="ihub-form-group"><label>Objectives</label><textarea id="epObjectives" rows="3">${p.objectives || ''}</textarea></div>
+                    <div class="ihub-form-group"><label>Proposed Solution</label><textarea id="epSolution" rows="3">${p.proposedSolution || ''}</textarea></div>
+                    <div class="ihub-form-group"><label>Expected Impact</label><textarea id="epImpact" rows="3">${p.expectedImpact || ''}</textarea></div>
+                    <button class="ihub-btn-primary" onclick="window._saveProjectEdit('${projectId}')">Save Changes</button>
+                </div>`;
+            document.body.appendChild(overlay);
+        };
+
+        window._saveProjectEdit = async function(projectId) {
+            const btn = document.querySelector('#editProjectModal .ihub-btn-primary');
+            btn.disabled = true; btn.textContent = 'Saving...';
+            try {
+                await updateDoc(doc(db, 'projects', projectId), {
+                    title: document.getElementById('epTitle').value,
+                    problemStatement: document.getElementById('epProblem').value,
+                    objectives: document.getElementById('epObjectives').value,
+                    proposedSolution: document.getElementById('epSolution').value,
+                    expectedImpact: document.getElementById('epImpact').value,
+                    updatedAt: serverTimestamp()
+                });
+                document.getElementById('editProjectModal').remove();
+                alert('Project updated!');
+                await loadProjects();
+            } catch (e) {
+                alert('Failed to update: ' + e.message);
+                btn.disabled = false; btn.textContent = 'Save Changes';
+            }
+        };
+
+        // ── ADD MILESTONE ────────────────────────────────────────────
+        window.showAddMilestone = function(projectId) {
+            const overlay = document.createElement('div');
+            overlay.className = 'ihub-modal-overlay';
+            overlay.id = 'addMilestoneModal';
+            overlay.innerHTML = `
+                <div class="ihub-modal">
+                    <div class="ihub-modal__header">
+                        <h3 class="ihub-modal__title">🏁 Add Milestone</h3>
+                        <button class="ihub-modal__close" onclick="document.getElementById('addMilestoneModal').remove()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <div class="ihub-form-group"><label>Milestone Title</label><input id="msTitle" placeholder="e.g. Prototype Completed"></div>
+                    <div class="ihub-form-group"><label>Description</label><textarea id="msDesc" rows="3" placeholder="What was achieved?"></textarea></div>
+                    <div class="ihub-form-group"><label>Status</label>
+                        <select id="msStatus">
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="ihub-form-group"><label>Target Date (optional)</label><input id="msDate" type="date"></div>
+                    <button class="ihub-btn-primary" onclick="window._saveMilestone('${projectId}')">Add Milestone</button>
+                </div>`;
+            document.body.appendChild(overlay);
+        };
+
+        window._saveMilestone = async function(projectId) {
+            const title = document.getElementById('msTitle').value.trim();
+            if (!title) return alert('Please enter a milestone title.');
+            const btn = document.querySelector('#addMilestoneModal .ihub-btn-primary');
+            btn.disabled = true; btn.textContent = 'Saving...';
+            try {
+                await addDoc(collection(db, 'milestones'), {
+                    projectId, title,
+                    description: document.getElementById('msDesc').value,
+                    status: document.getElementById('msStatus').value,
+                    targetDate: document.getElementById('msDate').value || null,
+                    innovatorId: currentUser.uid,
+                    createdAt: serverTimestamp()
+                });
+                document.getElementById('addMilestoneModal').remove();
+                alert('Milestone added!');
+            } catch (e) {
+                alert('Failed to save milestone: ' + e.message);
+                btn.disabled = false; btn.textContent = 'Add Milestone';
+            }
+        };
+
+        // ── VIEW MILESTONES ──────────────────────────────────────────
+        window.viewMilestones = async function(projectId) {
+            const overlay = document.createElement('div');
+            overlay.className = 'ihub-modal-overlay';
+            overlay.id = 'viewMilestonesModal';
+            overlay.innerHTML = `
+                <div class="ihub-modal">
+                    <div class="ihub-modal__header">
+                        <h3 class="ihub-modal__title">📋 Milestones</h3>
+                        <button class="ihub-modal__close" onclick="document.getElementById('viewMilestonesModal').remove()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <div id="milestonesListContainer"><div class="text-center py-3"><i class="fa fa-spinner fa-spin"></i> Loading...</div></div>
+                    <button class="ihub-btn-primary mt-3" onclick="document.getElementById('viewMilestonesModal').remove(); showAddMilestone('${projectId}')">+ Add New Milestone</button>
+                </div>`;
+            document.body.appendChild(overlay);
+
+            try {
+                const { getDocs: gd, collection: col, query: q, where: wh } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+                const snap = await gd(q(col(db, 'milestones'), wh('projectId', '==', projectId)));
+                const container = document.getElementById('milestonesListContainer');
+                if (snap.empty) {
+                    container.innerHTML = '<p class="text-muted text-center">No milestones yet. Add your first one!</p>';
+                    return;
+                }
+                const statusClass = { completed: 'status-completed', 'in-progress': 'status-in-progress', pending: 'status-pending' };
+                container.innerHTML = snap.docs.map(d => {
+                    const m = d.data();
+                    return `<div class="ihub-milestone-item">
+                        <div>
+                            <div class="ihub-milestone-item__title">${m.title}</div>
+                            <div class="ihub-milestone-item__desc">${m.description || ''}</div>
+                        </div>
+                        <span class="ihub-milestone-item__status ${statusClass[m.status] || 'status-pending'}">${m.status}</span>
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                document.getElementById('milestonesListContainer').innerHTML = '<p class="text-danger">Failed to load milestones.</p>';
+            }
+        };
+
+        // ── ADD REPORT ───────────────────────────────────────────────
+        window.showAddReport = function(projectId) {
+            const overlay = document.createElement('div');
+            overlay.className = 'ihub-modal-overlay';
+            overlay.id = 'addReportModal';
+            overlay.innerHTML = `
+                <div class="ihub-modal">
+                    <div class="ihub-modal__header">
+                        <h3 class="ihub-modal__title">📝 Add Progress Report</h3>
+                        <button class="ihub-modal__close" onclick="document.getElementById('addReportModal').remove()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <div class="ihub-form-group"><label>Report Title</label><input id="rpTitle" placeholder="e.g. Week 3 Progress Update"></div>
+                    <div class="ihub-form-group"><label>Summary</label><textarea id="rpSummary" rows="4" placeholder="What progress have you made?"></textarea></div>
+                    <div class="ihub-form-group"><label>Challenges Faced</label><textarea id="rpChallenges" rows="3" placeholder="Any blockers or issues?"></textarea></div>
+                    <div class="ihub-form-group"><label>Next Steps</label><textarea id="rpNext" rows="3" placeholder="What's planned next?"></textarea></div>
+                    <button class="ihub-btn-primary" onclick="window._saveReport('${projectId}')">Submit Report</button>
+                </div>`;
+            document.body.appendChild(overlay);
+        };
+
+        window._saveReport = async function(projectId) {
+            const title = document.getElementById('rpTitle').value.trim();
+            if (!title) return alert('Please enter a report title.');
+            const btn = document.querySelector('#addReportModal .ihub-btn-primary');
+            btn.disabled = true; btn.textContent = 'Submitting...';
+            try {
+                await addDoc(collection(db, 'reports'), {
+                    projectId, title,
+                    summary: document.getElementById('rpSummary').value,
+                    challenges: document.getElementById('rpChallenges').value,
+                    nextSteps: document.getElementById('rpNext').value,
+                    innovatorId: currentUser.uid,
+                    createdAt: serverTimestamp()
+                });
+                document.getElementById('addReportModal').remove();
+                alert('Report submitted!');
+            } catch (e) {
+                alert('Failed to submit report: ' + e.message);
+                btn.disabled = false; btn.textContent = 'Submit Report';
             }
         };
 

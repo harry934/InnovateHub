@@ -22,7 +22,8 @@
 }
 
 /* NUCLEAR OVERFLOW FIX & BASE LAYOUT */
-html, body {
+html,
+body {
   overflow-x: hidden !important;
   width: 100% !important;
   height: 100%;
@@ -46,7 +47,11 @@ html, body {
 }
 
 /* Kill legacy artifacts */
-.premium-bg-orb, .page-blob, .background-pattern, .background-symbols, .float-blob {
+.premium-bg-orb,
+.page-blob,
+.background-pattern,
+.background-symbols,
+.float-blob {
   display: none !important;
 }
 
@@ -68,7 +73,7 @@ html, body {
   border-radius: 12px !important;
   padding: 24px !important;
   border: 1px solid #eef2f6 !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
   transition: all 0.2s ease-in-out !important;
   position: relative !important;
   display: flex !important;
@@ -79,7 +84,7 @@ html, body {
 
 .premium-card:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
   border-color: rgba(26, 94, 79, 0.1) !important;
 }
 
@@ -310,7 +315,11 @@ section,
   right: -20px;
   width: 100px;
   height: 100px;
-  background: radial-gradient(circle, rgba(243, 168, 19, 0.08) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(243, 168, 19, 0.08) 0%,
+    transparent 70%
+  );
   border-radius: 50%;
   pointer-events: none;
   transition: all 0.5s ease;
@@ -319,13 +328,19 @@ section,
 
 .premium-card:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 50px rgba(26, 94, 79, 0.15), var(--shadow-glow);
+  box-shadow:
+    0 20px 50px rgba(26, 94, 79, 0.15),
+    var(--shadow-glow);
   border-color: rgba(243, 168, 19, 0.2);
 }
 
 .premium-card:hover::after {
   transform: translate(-10px, 10px) scale(1.5);
-  background: radial-gradient(circle, rgba(243, 168, 19, 0.15) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(243, 168, 19, 0.15) 0%,
+    transparent 70%
+  );
 }
 
 .premium-card-icon {
@@ -2428,7 +2443,12 @@ section,
   right: 0;
   width: 2px;
   height: 100%;
-  background: linear-gradient(to bottom, transparent, var(--brand-yellow), transparent);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--brand-yellow),
+    transparent
+  );
   opacity: 0.3;
 }
 
@@ -2539,13 +2559,461 @@ section,
 }
 
 @media (max-width: 991px) {
-  .dashboard-container { flex-direction: column !important; }
-  .dashboard-sidebar { 
-    width: 100% !important; 
-    max-width: 100% !important; 
-    height: auto !important; 
-    position: relative !important; 
+  .dashboard-container {
+    flex-direction: column !important;
+  }
+  .dashboard-sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    position: relative !important;
     padding-bottom: 20px;
   }
-  .dashboard-main { padding: 30px 20px !important; }
+  .dashboard-main {
+    padding: 30px 20px !important;
+  }
+}
+
+/* ================================================================
+   IHUB PROJECT CARD v2.0 — Premium Card Design
+   ================================================================ */
+
+.ihub-project-card {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+  margin-bottom: 20px;
+}
+
+.ihub-project-card:hover {
+  box-shadow: 0 12px 36px rgba(26, 94, 79, 0.1);
+  transform: translateY(-2px);
+}
+
+.ihub-project-card__strip {
+  height: 5px;
+  width: 100%;
+}
+
+.ihub-project-card__body {
+  padding: 24px 28px;
+}
+
+.ihub-project-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.ihub-cat-pill {
+  background: rgba(26, 94, 79, 0.07);
+  color: #1a5e4f;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.ihub-project-card__title {
+  font-family: var(--font-head, "Josefin Sans", sans-serif);
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: #1a5e4f;
+  margin: 0 0 8px 0;
+}
+
+.ihub-project-card__summary {
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  margin: 0 0 12px 0;
+}
+
+.ihub-project-card__date {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+/* Expandable details */
+.ihub-project-card__details {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+  animation: fadeInDown 0.2s ease;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ihub-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.ihub-detail-block {
+  background: #f8fafc;
+  border-radius: 12px;
+  border-left: 4px solid #1a5e4f;
+  padding: 14px 16px;
+}
+
+.ihub-detail-block__title {
+  font-weight: 700;
+  font-size: 0.77rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.ihub-detail-block__content {
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.ihub-file-attachment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(26, 94, 79, 0.05);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  font-size: 0.87rem;
+  color: #1a5e4f;
+  font-weight: 600;
+}
+
+.ihub-file-attachment span {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ihub-file-download-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #1a5e4f;
+  color: #fff !important;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none !important;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.ihub-file-download-btn:hover {
+  background: #114136;
+}
+
+.ihub-admin-feedback {
+  background: rgba(243, 168, 19, 0.08);
+  border-left: 4px solid #f3a813;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 4px;
+}
+
+.ihub-admin-feedback__label {
+  font-weight: 700;
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+  color: #92400e;
+}
+
+.ihub-admin-feedback p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+/* Action bar */
+.ihub-project-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.ihub-project-card__action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Base action button */
+.ihub-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.ihub-action-btn--ghost {
+  background: transparent;
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+.ihub-action-btn--ghost:hover {
+  border-color: #1a5e4f;
+  color: #1a5e4f;
+  background: rgba(26, 94, 79, 0.04);
+}
+
+.ihub-action-btn--milestone {
+  background: rgba(13, 110, 253, 0.07);
+  border-color: rgba(13, 110, 253, 0.25);
+  color: #0d6efd;
+}
+.ihub-action-btn--milestone:hover {
+  background: #0d6efd;
+  color: #fff;
+}
+
+.ihub-action-btn--view {
+  background: rgba(26, 94, 79, 0.07);
+  border-color: rgba(26, 94, 79, 0.25);
+  color: #1a5e4f;
+}
+.ihub-action-btn--view:hover {
+  background: #1a5e4f;
+  color: #fff;
+}
+
+.ihub-action-btn--report {
+  background: rgba(100, 116, 139, 0.07);
+  border-color: rgba(100, 116, 139, 0.25);
+  color: #475569;
+}
+.ihub-action-btn--report:hover {
+  background: #475569;
+  color: #fff;
+}
+
+.ihub-action-btn--edit {
+  background: rgba(243, 168, 19, 0.08);
+  border-color: rgba(243, 168, 19, 0.4);
+  color: #92400e;
+}
+.ihub-action-btn--edit:hover {
+  background: #f3a813;
+  color: #fff;
+}
+
+.ihub-action-btn--delete {
+  background: rgba(220, 53, 69, 0.06);
+  border-color: rgba(220, 53, 69, 0.25);
+  color: #dc3545;
+}
+.ihub-action-btn--delete:hover {
+  background: #dc3545;
+  color: #fff;
+}
+
+/* Modal overlay for edit/milestones/report */
+.ihub-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.15s ease;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ihub-modal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px;
+  width: 90%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
+  animation: scaleIn 0.2s ease;
+}
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.ihub-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.ihub-modal__title {
+  font-family: var(--font-head, "Josefin Sans", sans-serif);
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #1a5e4f;
+  margin: 0;
+}
+
+.ihub-modal__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.ihub-modal__close:hover {
+  color: #dc3545;
+}
+
+.ihub-form-group {
+  margin-bottom: 18px;
+}
+.ihub-form-group label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #475569;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.ihub-form-group input,
+.ihub-form-group textarea,
+.ihub-form-group select {
+  width: 100%;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.ihub-form-group input:focus,
+.ihub-form-group textarea:focus {
+  border-color: #1a5e4f;
+}
+
+.ihub-btn-primary {
+  background: #1a5e4f;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 11px 28px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s;
+}
+.ihub-btn-primary:hover {
+  background: #114136;
+}
+
+/* Milestone list inside modal */
+.ihub-milestone-item {
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border-left: 4px solid #1a5e4f;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.ihub-milestone-item__title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+.ihub-milestone-item__desc {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+.ihub-milestone-item__status {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+.status-completed {
+  background: rgba(26, 94, 79, 0.1);
+  color: #1a5e4f;
+}
+.status-in-progress {
+  background: rgba(243, 168, 19, 0.1);
+  color: #92400e;
+}
+.status-pending {
+  background: rgba(100, 116, 139, 0.1);
+  color: #475569;
+}
+
+@media (max-width: 640px) {
+  .ihub-project-card__action-group {
+    gap: 6px;
+  }
+  .ihub-action-btn {
+    font-size: 0.72rem;
+    padding: 6px 10px;
+  }
+  .ihub-details-grid {
+    grid-template-columns: 1fr;
+  }
 }

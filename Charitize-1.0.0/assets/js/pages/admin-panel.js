@@ -245,21 +245,75 @@ async function renderProjectApprovals() {
         
         container.innerHTML = qSnap.docs.map(doc => {
             const p = { id: doc.id, ...doc.data() };
+
+            // Build file download button if a Supabase URL exists
+            const fileSection = p.fileUrl
+                ? `<div class="mb-4 p-3" style="background:rgba(26,94,79,0.05); border-radius:12px; border-left:4px solid var(--brand-green);">
+                        <div class="fw-bold mb-2" style="color:var(--brand-green); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.5px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            Attached Document: ${p.fileName || 'View File'}
+                        </div>
+                        <a href="${p.fileUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="border-radius:8px; font-weight:700;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Download / View Document
+                        </a>
+                   </div>`
+                : `<div class="mb-4 p-3 text-muted" style="background:#f8fafb; border-radius:12px; font-size:0.85rem;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        No document uploaded for this project.
+                   </div>`;
+
             return `
-            <div class="request-card" id="pcard-${p.id}" style="padding:24px; border-radius:16px; background:#fff; box-shadow:0 8px 30px rgba(0,0,0,0.06); margin-bottom:20px;">
-                <h4 style="font-family:var(--font-head); font-weight:800; color:var(--brand-green);">${p.title}</h4>
-                <div class="text-muted mb-3" style="font-size:0.85rem;">Submitted ${timeAgo(p.createdAt)}</div>
+            <div class="request-card" id="pcard-${p.id}" style="padding:28px; border-radius:16px; background:#fff; box-shadow:0 8px 30px rgba(0,0,0,0.06); margin-bottom:20px;">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h4 style="font-family:var(--font-head); font-weight:800; color:var(--brand-green); margin:0">${p.title}</h4>
+                    <span class="badge bg-warning text-dark">Pending Review</span>
+                </div>
+                <div class="text-muted mb-4" style="font-size:0.85rem;">Submitted ${timeAgo(p.createdAt)}</div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div style="background:#f8fafb; padding:16px; border-radius:12px; height:100%;">
+                            <div class="fw-bold mb-1" style="font-size:0.8rem; text-transform:uppercase; color:#888; letter-spacing:0.5px;">Problem Statement</div>
+                            <p class="mb-0" style="font-size:0.9rem;">${p.problemStatement || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="background:#f8fafb; padding:16px; border-radius:12px; height:100%;">
+                            <div class="fw-bold mb-1" style="font-size:0.8rem; text-transform:uppercase; color:#888; letter-spacing:0.5px;">Objectives</div>
+                            <p class="mb-0" style="font-size:0.9rem;">${p.objectives || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="background:#f8fafb; padding:16px; border-radius:12px; height:100%;">
+                            <div class="fw-bold mb-1" style="font-size:0.8rem; text-transform:uppercase; color:#888; letter-spacing:0.5px;">Proposed Solution</div>
+                            <p class="mb-0" style="font-size:0.9rem;">${p.proposedSolution || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="background:#f8fafb; padding:16px; border-radius:12px; height:100%;">
+                            <div class="fw-bold mb-1" style="font-size:0.8rem; text-transform:uppercase; color:#888; letter-spacing:0.5px;">Expected Impact</div>
+                            <p class="mb-0" style="font-size:0.9rem;">${p.expectedImpact || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mb-3">
-                    <strong>Problem Statement:</strong>
-                    <p class="text-muted">${p.problemStatement || 'N/A'}</p>
+                    <strong style="font-size:0.85rem;">Categories:</strong>
+                    <span class="ms-2">${(p.categories || []).map(c => `<span class="badge bg-light text-dark border ms-1">${c}</span>`).join('')}</span>
                 </div>
-                <div class="mb-4">
-                    <strong>Categories:</strong>
-                    ${(p.categories || []).map(c => `<span class="badge bg-light text-dark border ms-1">${c}</span>`).join('')}
-                </div>
+
+                ${fileSection}
+
                 <div class="d-flex gap-3">
-                    <button class="btn btn-success" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.approveProject('${p.id}')">Approve Project</button>
-                    <button class="btn btn-outline-danger" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.rejectProject('${p.id}')">Reject</button>
+                    <button class="btn btn-success" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.approveProject('${p.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="20 6 9 17 4 12"/></svg>
+                        Approve Project
+                    </button>
+                    <button class="btn btn-outline-danger" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.rejectProject('${p.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        Reject
+                    </button>
                 </div>
             </div>`;
         }).join('');
