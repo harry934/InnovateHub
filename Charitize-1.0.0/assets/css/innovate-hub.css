@@ -1135,6 +1135,12 @@ body.user-logged-in .logged-in-only {
   .nav-bar.navbar-scrolled .navbar-collapse .ms-auto {
     margin-left: auto !important;
   }
+
+  /* ── SCROLL HIDE BEHAVIOR (DESKTOP) ── */
+  .nav-bar.navbar-scrolled.navbar-hidden {
+    transform: translateY(-100%);
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  }
 }
 
 /* Mobile Header Refinement: Ensure logo and toggler are always visible */

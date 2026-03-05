@@ -603,15 +603,72 @@ class NuruAssistant {
 
     this.showTyping();
 
-    // Simulate intelligent processing delay (feels more natural)
+    // Simulate intelligent processing delay
     const delay = 800 + Math.random() * 700;
-    setTimeout(() => {
+    setTimeout(async () => {
       this.removeTyping();
-      const result = this.getResponse(text);
+      
+      let result;
+      // Dynamic logic for mentor discovery
+      if (this.context === 'innovator' && (text.includes('mentor') || text.includes('who can help') || text.includes('find someone'))) {
+          result = await this.getMentorDiscoveryResponse(text);
+      } else {
+          result = this.getResponse(text);
+      }
+
       this.addMessage(result.response, "bot", result.links || []);
       this.conversationHistory.push({ role: "bot", text: result.response });
       this.playAnimation("wave");
     }, delay);
+  }
+
+  async getMentorDiscoveryResponse(text) {
+    try {
+        // Import Firestore utils if not globally available, but here we assume it's a module or has access
+        // Since this is a component, we might need to import db from a core config or use a global
+        // However, this script is currently structured as a non-module in dashboard.html or similar?
+        // Let's check imports in nuru-assistant.js (none found).
+        // It relies on being loaded in a page where Firebase is initialized.
+        
+        const { db } = await import('../core/firebase-config.js');
+        const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+
+        const q = query(collection(db, 'users'), where('role', '==', 'mentor'));
+        const snap = await getDocs(q);
+        
+        let mentors = [];
+        snap.forEach(d => {
+            const data = d.data();
+            if (data.isApproved || data.status === 'approved') mentors.push({ id: d.id, ...data });
+        });
+
+        if (mentors.length === 0) return this.getResponse(text);
+
+        // Simple scoring based on categories
+        const scored = mentors.map(m => {
+            let score = 0;
+            const mCats = (m.categories || []).map(c => c.toLowerCase());
+            const mExp = (m.expertise || "").toLowerCase();
+            
+            const words = text.split(' ');
+            words.forEach(w => {
+                if (w.length < 3) return;
+                if (mCats.includes(w) || mExp.includes(w)) score += 5;
+            });
+            return { ...m, score };
+        }).sort((a, b) => b.score - a.score);
+
+        const top = scored.slice(0, 2);
+        if (top[0].score > 0) {
+            const names = top.map(m => m.fullName).join(' and ');
+            return {
+                response: `Based on your request, I found some mentors who might be a great fit: **${names}**. They specialize in areas related to your query!`,
+                links: top.map(m => ({ label: `View ${m.fullName.split(' ')[0]}`, url: '#', action: `view mentor ${m.id}` }))
+            };
+        }
+    } catch (e) { console.error("Nuru mentor discovery error:", e); }
+    
+    return this.getResponse(text);
   }
 
   // ── Response Engine ───────────────────────────────────
@@ -711,8 +768,18 @@ class NuruAssistant {
         if (link.url === "#" || link.action) {
           btn.addEventListener("click", (e) => {
             e.preventDefault();
-            const query = link.action || link.label;
-            this.inputField.value = query;
+            const queryText = link.action || link.label;
+            
+            // Handle specific AI actions
+            if (queryText.startsWith('view mentor ')) {
+                const mentorId = queryText.replace('view mentor ', '');
+                if (window.MentorDiscovery) {
+                    window.MentorDiscovery.openProfile(mentorId);
+                }
+                return;
+            }
+
+            this.inputField.value = queryText;
             this.handleSendMessage();
           });
         }

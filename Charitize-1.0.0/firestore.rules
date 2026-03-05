@@ -87,5 +87,11 @@ service cloud.firestore {
          request.auth.uid == resource.data.innovatorId || 
          hasRole('admin'));
     }
+
+    // Mentorship Terminations
+    match /mentorshipTerminations/{termId} {
+      allow read, write: if hasRole('admin');
+      allow create: if request.auth != null;
+    }
   }
 }

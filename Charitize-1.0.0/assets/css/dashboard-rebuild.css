@@ -34,82 +34,71 @@ body {
 }
 
 .dashboard-container {
-  display: flex !important;
-  flex-direction: row !important;
-  width: 100% !important;
-  min-height: 100vh !important;
-  position: relative !important;
-  top: 0 !important;
-  left: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow-x: hidden !important;
+  display: flex;
+  min-height: 100vh;
+  background: var(--brand-light);
+  overflow-x: hidden;
+  width: 100vw;
+  position: relative;
 }
 
-/* Kill legacy artifacts */
-.premium-bg-orb,
-.page-blob,
-.background-pattern,
-.background-symbols,
-.float-blob {
-  display: none !important;
-}
-
-/* ── CLEAN BACKGROUND AESTHETIC ──────────────────────────── */
+/* Clean professional background */
 .dashboard-main-content {
-  background: #f8fafb;
+  background: var(--brand-light);
   position: relative;
   z-index: 1;
 }
 
-/* Removed floating orbs for professional look */
-.premium-bg-orb {
-  display: none !important;
-}
-
 /* ── ADMINISTRATION CARDS (CLEAN) ────────────────────────── */
+/* Standard Dashboard/Premium Card */
+.dashboard-card,
 .premium-card {
-  background: white !important;
-  border-radius: 12px !important;
-  padding: 24px !important;
-  border: 1px solid #eef2f6 !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
-  transition: all 0.2s ease-in-out !important;
-  position: relative !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 16px !important;
-  cursor: pointer !important;
+  background: white;
+  border-radius: var(--radius-card, 20px);
+  padding: 32px;
+  border: 1px solid rgba(26, 94, 79, 0.06);
+  box-shadow: var(--shadow-premium, 0 10px 40px rgba(0, 0, 0, 0.08));
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  display: flex;
+  flex-direction: column;
 }
 
+.dashboard-card:hover,
 .premium-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
-  border-color: rgba(26, 94, 79, 0.1) !important;
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 50px rgba(26, 94, 79, 0.15);
+  border-color: rgba(243, 168, 19, 0.2);
 }
 
-.premium-card::after {
-  display: none !important;
-}
-
+.dashboard-card-icon,
 .premium-card-icon {
-  width: 64px !important;
-  height: 64px !important;
-  border-radius: 18px !important;
-  background: rgba(26, 94, 79, 0.05) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  color: var(--brand-green) !important;
-  transition: all 0.4s ease !important;
-  flex-shrink: 0 !important;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: rgba(26, 94, 79, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  transition: all 0.4s ease;
+  position: relative;
+  z-index: 2;
+  color: var(--brand-green);
 }
 
+.dashboard-card:hover .dashboard-card-icon,
 .premium-card:hover .premium-card-icon {
-  background: var(--brand-green) !important;
-  color: white !important;
-  transform: rotate(-8deg) scale(1.1) !important;
-  box-shadow: 0 8px 20px rgba(26, 94, 79, 0.2) !important;
+  background: var(--brand-green);
+  color: white;
+  transform: rotate(-5deg);
+}
+
+.dashboard-card-icon svg,
+.premium-card-icon svg {
+  width: 28px;
+  height: 28px;
 }
 
 /* ── RESET / BASE ───────────────────────────────────────────── */
@@ -140,31 +129,13 @@ h6,
   font-family: var(--font-head);
 }
 
-/* Clean background base */
-.background-pattern {
-  display: none;
-}
-
+/* Global Hidden Elements (Legacy Killswitch) */
+.premium-bg-orb,
+.page-blob,
+.background-pattern,
+.background-symbols,
+.float-blob,
 #backgroundSymbols {
-  display: none;
-}
-
-/* Neutral subtle texture */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-color: #f8fafb;
-  z-index: -2;
-}
-
-/* No floating ornaments in professional mode */
-body::after {
-  display: none !important;
-}
-
-/* Clean background base */
-.page-blob {
   display: none !important;
 }
 
@@ -291,23 +262,8 @@ section,
 
 /* ── PREMIUM DASHBOARD CARDS (v7.0.0) ───────────────────────── */
 /* Refined "Startup-Grade" Aesthetics with Scale, Glow & Elevation */
-.premium-card {
-  background: white;
-  border-radius: var(--radius-premium);
-  padding: 32px;
-  border: 1px solid rgba(26, 94, 79, 0.06);
-  box-shadow: var(--shadow-premium);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 200px;
-}
-
-/* Interior animated floating shape (subtle) */
+/* Card Decoration Shape */
+.dashboard-card::after,
 .premium-card::after {
   content: "";
   position: absolute;
@@ -326,14 +282,7 @@ section,
   z-index: 1;
 }
 
-.premium-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow:
-    0 20px 50px rgba(26, 94, 79, 0.15),
-    var(--shadow-glow);
-  border-color: rgba(243, 168, 19, 0.2);
-}
-
+.dashboard-card:hover::after,
 .premium-card:hover::after {
   transform: translate(-10px, 10px) scale(1.5);
   background: radial-gradient(
@@ -343,44 +292,7 @@ section,
   );
 }
 
-.premium-card-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 18px;
-  background: rgba(26, 94, 79, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  transition: all 0.4s ease;
-  position: relative;
-  z-index: 2;
-}
-
-.premium-card-icon svg {
-  width: 28px;
-  height: 28px;
-  color: var(--brand-green);
-}
-
-.premium-card:hover .premium-card-icon {
-  background: var(--brand-green);
-  transform: rotate(-5deg);
-}
-
-.premium-card:hover .premium-card-icon svg {
-  color: white;
-}
-
 /* ── LAYOUT: ADMIN SIDEBAR & CONTAINER ─────────────────────── */
-.dashboard-container {
-  display: flex;
-  min-height: 100vh;
-  background: #f8fafb;
-  overflow-x: hidden;
-  width: 100vw;
-}
-
 /* High-Contrast Professional Sidebar */
 .dashboard-sidebar {
   width: 260px;
@@ -2575,29 +2487,105 @@ section,
 }
 
 /* ================================================================
+   STRICT PROFESSIONAL DASHBOARD GRID CARDS
+   ================================================================ */
+
+.dashboard-grid-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px; /* Strict corners, no massive rounding */
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.dashboard-grid-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e1;
+}
+
+.card-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a5e4f; /* Primary brand color */
+}
+
+.card-icon-wrapper svg {
+  width: 24px;
+  height: 24px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  font-family: var(--font-head);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.card-action-icon {
+  color: #94a3b8;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.dashboard-grid-card:hover .card-action-icon {
+  color: #1a5e4f;
+  transform: translateX(4px);
+}
+
+.card-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.badge-subtle {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ================================================================
    IHUB PROJECT CARD v2.0 — Premium Card Design
    ================================================================ */
 
 .ihub-project-card {
-  background: #fff;
-  border-radius: 18px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  background: #ffffff;
+  border-radius: 8px; /* Strict corners */
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Very subtle shadow */
   overflow: hidden;
-  transition:
-    box-shadow 0.25s ease,
-    transform 0.25s ease;
-  margin-bottom: 20px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  margin-bottom: 24px;
 }
 
 .ihub-project-card:hover {
-  box-shadow: 0 12px 36px rgba(26, 94, 79, 0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e1;
 }
 
+/* Remove the vibe-coded colored strip */
 .ihub-project-card__strip {
-  height: 5px;
-  width: 100%;
+  display: none !important;
 }
 
 .ihub-project-card__body {
@@ -2613,21 +2601,21 @@ section,
 }
 
 .ihub-cat-pill {
-  background: rgba(26, 94, 79, 0.07);
-  color: #1a5e4f;
-  font-size: 0.7rem;
-  font-weight: 700;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
-  padding: 3px 10px;
-  border-radius: 20px;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 4px; /* Flatter pills */
 }
 
 .ihub-project-card__title {
-  font-family: var(--font-head, "Josefin Sans", sans-serif);
-  font-weight: 800;
-  font-size: 1.25rem;
-  color: #1a5e4f;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #0f172a;
   margin: 0 0 8px 0;
 }
 
@@ -2674,8 +2662,9 @@ section,
 
 .ihub-detail-block {
   background: #f8fafc;
-  border-radius: 12px;
-  border-left: 4px solid #1a5e4f;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #1a5e4f; /* Keep the left border for readability */
   padding: 14px 16px;
 }
 
@@ -2778,25 +2767,24 @@ section,
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
-  border-radius: 10px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  border: 1.5px solid transparent;
+  padding: 8px 16px;
+  border-radius: 6px; /* Flatter buttons */
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
 }
 
 .ihub-action-btn--ghost {
-  background: transparent;
-  border-color: #e2e8f0;
-  color: #64748b;
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #475569;
 }
 .ihub-action-btn--ghost:hover {
-  border-color: #1a5e4f;
-  color: #1a5e4f;
-  background: rgba(26, 94, 79, 0.04);
+  background: #f8fafc;
+  color: #0f172a;
 }
 
 .ihub-action-btn--milestone {

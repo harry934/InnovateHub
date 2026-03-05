@@ -273,4 +273,26 @@
     font-weight: 700 !important;
     letter-spacing: -0.3px !important;
   }
+
+  /* ── SCROLL-DOWN HIDE BEHAVIOR ── */
+  .nav-bar.navbar-scrolled.navbar-hidden {
+    transform: translateY(-100%) !important;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
+  }
+  
+  /* But bring the toggler down and fix it to the top right */
+  .nav-bar.navbar-scrolled.navbar-hidden .navbar-toggler {
+    position: fixed !important;
+    top: 15px !important;
+    right: 20px !important;
+    background: #1a5e4f !important;
+    border-radius: 12px !important;
+    transform: translateY(100%) !important; /* Counter the navbar transform */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+    width: 44px;
+    height: 44px;
+    z-index: 9999 !important;
+    display: flex !important;
+  }
 }
+

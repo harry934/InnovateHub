@@ -24,7 +24,7 @@ function formatDate(dateObj) {
     return d.toLocaleDateString('en-KE', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-const ALL_CATEGORIES = ['ai', 'technology', 'agriculture', 'healthcare', 'education', 'environment', 'business', 'social', 'robotics', 'engineering'];
+const ALL_CATEGORIES = ['AI', 'Software', 'Agriculture', 'Healthcare', 'Business', 'Education', 'Finance', 'Marketing', 'Strategy', 'Legal', 'Operations', 'Social', 'Sustainability'];
 
 let selectedCategories = [];
 let currentMentorForRequest = null;
@@ -43,40 +43,46 @@ async function renderMentorDiscovery() {
         const searchInput = document.getElementById('mentorSearchInput');
         const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
 
-        // Query mentors directly from Firebase (users collection with role 'mentor')
-        const q = query(
-            collection(db, 'users'), 
-            where('role', '==', 'mentor'),
-            where('status', '==', 'approved') // Assuming mentors have a status
-        );
-        const snapshot = await getDocs(q);
+        // Robust Fetching Strategy: Fetch all users and filter locally
+        // This avoids "The query requires an index" errors which often break discovery
+        let allUsersSnapshot;
+        try {
+            allUsersSnapshot = await getDocs(collection(db, 'users'));
+        } catch (fetchErr) {
+            console.error("Firestore Fetch Error in discovery:", fetchErr);
+            container.innerHTML = `<div class="col-12 text-center py-5">
+                <div style="font-size:3rem;margin-bottom:16px;">🌐</div>
+                <h5 style="color:#dc3545;">Connection Error</h5>
+                <p style="color:#aaa;">We couldn't reach the mentor database. Please check your internet connection.</p></div>`;
+            return;
+        }
         
         let allMentors = [];
-        snapshot.forEach(docSnap => {
-            allMentors.push({ id: docSnap.id, ...docSnap.data() });
+        allUsersSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const isMentor = data.role === 'mentor';
+            const isApproved = data.isApproved === true || (data.status || '').toLowerCase() === 'approved';
+            const isProfileComplete = data.profileComplete === true; // Only show mentors who finished onboarding
+            
+            if (isMentor && isApproved) {
+                allMentors.push({ id: docSnap.id, ...data });
+            }
         });
-
-        // Add secondary fallback if 'status' doesn't exist but approvalStatus does
-        if (allMentors.length === 0) {
-            const q2 = query(collection(db, 'users'), where('role', '==', 'mentor'));
-            const snap2 = await getDocs(q2);
-            snap2.forEach(docSnap => {
-                const data = docSnap.data();
-                if (data.approvalStatus === 'approved' || data.mentorStatus === 'approved' || data.status === undefined) {
-                    allMentors.push({ id: docSnap.id, ...data });
-                }
-            });
-        }
 
         // Apply local search/category filters
         let filteredMentors = allMentors.filter(m => {
             const matchesCategory = selectedCategories.length === 0 || 
-                selectedCategories.some(c => (m.categories || []).includes(c) || (m.expertise || '').toLowerCase().includes(c));
+                selectedCategories.some(c => {
+                    const mentorCats = (m.categories || []).map(cat => cat.toLowerCase());
+                    const mentorExp = (m.expertise || '').toLowerCase();
+                    return mentorCats.includes(c.toLowerCase()) || mentorExp.includes(c.toLowerCase());
+                });
             
             const matchesSearch = !searchVal || 
                 (m.fullName || '').toLowerCase().includes(searchVal) || 
                 (m.expertise || '').toLowerCase().includes(searchVal) ||
-                (m.institution || '').toLowerCase().includes(searchVal);
+                (m.institution || '').toLowerCase().includes(searchVal) ||
+                (m.categories || []).some(cat => cat.toLowerCase().includes(searchVal));
                 
             return matchesCategory && matchesSearch;
         });

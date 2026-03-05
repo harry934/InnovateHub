@@ -152,50 +152,107 @@ class MentorDashboard {
           if (userDoc.exists()) userData = userDoc.data();
       }
 
-      if (userData) {
-        if (!userData.profileComplete) {
-          this.showOnboardingModal();
-        } else {
-          document.getElementById("dashboard-content").style.display = "block";
+      let mStatus = userData.status || userData.mentorStatus || userData.approvalStatus || null;
+      let isApproved = userData.isApproved === true || mStatus === 'approved';
+
+      if (!isApproved) {
+        // Inject global "Kill Switch" CSS to ensure NO leakage even if other scripts run
+        if (!document.getElementById("mentorApprovalKillSwitch")) {
+            const killStyle = document.createElement('style');
+            killStyle.id = "mentorApprovalKillSwitch";
+            killStyle.innerHTML = `
+                #dashboardQuickAccess, #activeSectionContainer, #dashboard-content, #mentorCompleteness, .dashboard-grid-container {
+                    display: none !important;
+                }
+                body::after {
+                    content: '';
+                    position: fixed;
+                    top: 0; left: 0; width: 100%; height: 100%;
+                    background: white;
+                    z-index: 1; /* Below the gate but above content */
+                }
+            `;
+            document.head.appendChild(killStyle);
         }
 
-        // Update User Identity in Sidebar
-        this.updateUserIdentity(
-          userData.fullName || this.currentUser.displayName || this.currentUser.email.split('@')[0],
-        );
-        
-        // Populate Profile Forms with existing data
-        this.populateProfileForms(userData);
+        // Show Admin Approval Gate
+        if (document.getElementById("adminApprovalGate")) {
+            document.getElementById("adminApprovalGate").style.setProperty("display", "block", "important");
+            document.getElementById("adminApprovalGate").style.zIndex = "10";
+        }
+
+        console.warn("Mentor Dashboard: Access blocked - Account pending approval.");
+        return; 
       }
-    } catch (error) {
-      console.error("Error checking profile:", error);
+      
+      // If we reach here, user IS approved - remove kill switch if it exists
+      document.getElementById("mentorApprovalKillSwitch")?.remove();
+
+      if (!userData.profileComplete) {
+        this.showOnboardingModal();
+      } else {
+        // Show dashboard
+        if (document.getElementById("dashboardQuickAccess")) document.getElementById("dashboardQuickAccess").style.display = "block";
+        if (document.getElementById("dashboard-content")) document.getElementById("dashboard-content").style.display = "block";
+      }
+
+      // Update User Identity in Sidebar
+      this.updateUserIdentity(
+        userData.fullName || this.currentUser.displayName || this.currentUser.email.split('@')[0],
+      );
+      
+      // Populate Profile Forms with existing data
+      this.populateProfileForms(userData);
+
+    } catch (err) {
+      console.error("Error checking profile completion:", err);
     }
   }
 
   updateProfileCompleteness(userData) {
     if (!userData) return;
     
-    document.getElementById("mentorCompleteness").style.display = "block";
+    // Show both trackers if they exist
+    const heroTracker = document.getElementById("mentorCompleteness");
+    const profileTracker = document.getElementById("mentorCompletenessProfile");
+    if (heroTracker) heroTracker.style.display = "block";
+    if (profileTracker) profileTracker.style.display = "block";
     
     let filledFields = 0;
-    const totalFields = 5;
+    const fields = [
+        userData.fullName,
+        userData.bio,
+        userData.institution,
+        (userData.categories && userData.categories.length > 0),
+        userData.experience,
+        userData.style,
+        userData.availability,
+        userData.meetingLink
+    ];
     
-    if (userData.fullName) filledFields++;
-    if (userData.bio) filledFields++;
-    if (userData.profession) filledFields++;
-    if (userData.expertise && userData.expertise.length > 0) filledFields++;
-    if (userData.availability || userData.meetingLink) filledFields++;
-    if (userData.experience) filledFields++; // Added experience
-    if (userData.communicationPreference) filledFields++; // Added communication preference
-    
-    const totalFieldsCount = 7;
+    filledFields = fields.filter(f => !!f).length;
+    const totalFieldsCount = fields.length;
     const percentage = Math.round((filledFields / totalFieldsCount) * 100);
     
-    const fill = document.getElementById("completenessFill");
-    const text = document.getElementById("completenessText");
+    // Update Hero Tracker
+    const fillHero = document.getElementById("completenessFillHero");
+    const textHero = document.getElementById("completenessTextHero");
+    const statusText = document.getElementById("completenessStatusText");
     
-    if (fill) fill.style.width = percentage + "%";
-    if (text) text.textContent = percentage + "%";
+    if (fillHero) fillHero.style.width = percentage + "%";
+    if (textHero) textHero.textContent = percentage + "%";
+    if (statusText) {
+        statusText.textContent = percentage === 100 
+            ? "Your profile is 100% complete and discoverable." 
+            : "Complete your profile to unlock all features.";
+    }
+
+    // Update Profile Section Tracker
+    const fillProfile = document.getElementById("completenessFillProfile");
+    const textProfile = document.getElementById("completenessTextProfile");
+    
+    if (fillProfile) fillProfile.style.width = percentage + "%";
+    if (textProfile) textProfile.textContent = percentage + "%";
     
     // Update profileComplete status in DB if reached 100%
     if (percentage === 100 && !userData.profileComplete) {
@@ -214,6 +271,11 @@ class MentorDashboard {
   }
   
   populateProfileForms(data) {
+      if (data.photoURL) {
+          const preview = document.getElementById('profilePreview');
+          if (preview) preview.src = data.photoURL;
+      }
+      
       // Profile Form
       if(document.getElementById('profileName')) document.getElementById('profileName').value = data.fullName || '';
       if(document.getElementById('profileProfession')) document.getElementById('profileProfession').value = data.profession || '';
@@ -260,97 +322,116 @@ class MentorDashboard {
   renderOnboardingStep() {
     const container = document.getElementById("onboardingStepContainer");
     const progressBar = document.getElementById("onboardingProgress");
+    const stepNum = document.getElementById("currentStepNum");
     const title = document.getElementById("onboardingTitle");
 
-    // Update Progress
-    const percent = ((this.onboardingStep - 1) / this.totalSteps) * 100;
-    progressBar.style.width = `${percent}%`;
+    // Update Progress UI
+    const percent = (this.onboardingStep / this.totalSteps) * 100;
+    if (progressBar) progressBar.style.width = `${percent}%`;
+    if (stepNum) stepNum.textContent = this.onboardingStep;
 
     let html = "";
 
     switch (this.onboardingStep) {
       case 1:
-        title.textContent = "Step 1: Areas of Expertise";
+        title.textContent = "Tell us about yourself";
         html = `
-                    <div class="mb-3">
-                        <label class="form-label">Select your areas of expertise (Multi-select)</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            ${this.renderCheckbox("expertise", "Technology")}
-                            ${this.renderCheckbox("expertise", "Healthcare")}
-                            ${this.renderCheckbox("expertise", "Education")}
-                            ${this.renderCheckbox("expertise", "Environment")}
-                            ${this.renderCheckbox("expertise", "Business")}
-                            ${this.renderCheckbox("expertise", "Marketing")}
-                        </div>
-                    </div>
-                `;
+            <div class="mb-4">
+                <label class="form-label fw-bold">Full Name</label>
+                <input type="text" class="form-control form-control-lg" id="ob-fullName" value="${this.onboardingData.fullName || this.currentUser.displayName || ''}" placeholder="Enter your full name">
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold">Professional Bio</label>
+                <textarea class="form-control" id="ob-bio" rows="3" placeholder="A brief summary of your background and what you offer to mentees...">${this.onboardingData.bio || ''}</textarea>
+            </div>
+            <div class="mb-0">
+                <label class="form-label fw-bold">Institution / Workplace</label>
+                <input type="text" class="form-control" id="ob-institution" value="${this.onboardingData.institution || ''}" placeholder="Where do you currently work or study?">
+            </div>
+        `;
         break;
       case 2:
-        title.textContent = "Step 2: Experience Level";
+        title.textContent = "Select your specialization";
+        const cats = ['AI', 'Software', 'Agriculture', 'Healthcare', 'Business', 'Education', 'Finance', 'Marketing', 'Strategy', 'Legal', 'Operations', 'Social', 'Sustainability'];
         html = `
-                    <div class="mb-3">
-                        <label class="form-label">Years of Experience</label>
-                        <select class="form-select" id="experienceSelect">
-                            <option value="1-3">1-3 Years</option>
-                            <option value="4-7">4-7 Years</option>
-                            <option value="8-10">8-10 Years</option>
-                            <option value="10+">10+ Years</option>
-                        </select>
-                    </div>
-                `;
+            <p class="text-muted small mb-4">Choose the primary categories you can mentor in. This helps innovators find you.</p>
+            <div class="d-flex flex-wrap gap-2">
+                ${cats.map(c => `
+                    <input type="checkbox" class="btn-check" name="ob-categories" id="ob-cat-${c}" value="${c}" ${ (this.onboardingData.categories || []).includes(c) ? 'checked' : '' }>
+                    <label class="btn btn-outline-primary rounded-pill px-3" for="ob-cat-${c}">${c}</label>
+                `).join('')}
+            </div>
+        `;
         break;
       case 3:
-        title.textContent = "Step 3: Mentoring Style";
+        title.textContent = "Expertise & Style";
         html = `
-                    <div class="mb-3">
-                        <label class="form-label">How do you prefer to mentor?</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="style" value="Hands-on" id="style1">
-                            <label class="form-check-label" for="style1">Hands-on (Code reviews, direct guidance)</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="style" value="Strategic" id="style2">
-                            <label class="form-check-label" for="style2">Strategic (High-level advice, career growth)</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="style" value="Hybrid" id="style3" checked>
-                            <label class="form-check-label" for="style3">Hybrid</label>
-                        </div>
-                    </div>
-                `;
+            <div class="mb-4">
+                <label class="form-label fw-bold">Years of Experience</label>
+                <select class="form-select form-select-lg" id="ob-experience">
+                    <option value="1-3" ${this.onboardingData.experience === '1-3' ? 'selected' : ''}>1-3 Years</option>
+                    <option value="4-7" ${this.onboardingData.experience === '4-7' ? 'selected' : ''}>4-7 Years</option>
+                    <option value="8-10" ${this.onboardingData.experience === '8-10' ? 'selected' : ''}>8-10 Years</option>
+                    <option value="10+" ${this.onboardingData.experience === '10+' ? 'selected' : ''}>10+ Years</option>
+                </select>
+            </div>
+            <div class="mb-0">
+                <label class="form-label fw-bold">Preferred Mentoring Style</label>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="ob-style" value="Hands-on" id="style1" ${this.onboardingData.style === 'Hands-on' ? 'checked' : ''}>
+                    <label class="form-check-label" for="style1"><strong>Hands-on</strong>: Code reviews, technical debugging, direct guidance</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="ob-style" value="Strategic" id="style2" ${this.onboardingData.style === 'Strategic' ? 'checked' : ''}>
+                    <label class="form-check-label" for="style2"><strong>Strategic</strong>: High-level advice, business strategy, career growth</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="ob-style" value="Hybrid" id="style3" ${(!this.onboardingData.style || this.onboardingData.style === 'Hybrid') ? 'checked' : ''}>
+                    <label class="form-check-label" for="style3"><strong>Hybrid</strong>: A mix of both technical and strategic support</label>
+                </div>
+            </div>
+        `;
         break;
       case 4:
-        title.textContent = "Step 4: Availability";
+        title.textContent = "Scheduling & Availability";
         html = `
-                    <div class="mb-3">
-                        <label class="form-label">Weekly Availability</label>
-                        <select class="form-select" id="availabilitySelect">
-                            <option value="1-2 hours">1-2 hours/week</option>
-                            <option value="3-5 hours">3-5 hours/week</option>
-                            <option value="5+ hours">5+ hours/week</option>
-                        </select>
-                    </div>
-                `;
+            <div class="mb-4">
+                <label class="form-label fw-bold">Weekly Slots</label>
+                <textarea class="form-control" id="ob-availability" rows="2" placeholder="e.g. Mon, Wed: 4 PM - 6 PM (EAT)">${this.onboardingData.availability || ''}</textarea>
+            </div>
+            <div class="mb-0">
+                <label class="form-label fw-bold">Default Meeting Link (Zoom/Meet)</label>
+                <input type="url" class="form-control" id="ob-meetingLink" value="${this.onboardingData.meetingLink || ''}" placeholder="https://zoom.us/j/...">
+                <p class="text-muted small mt-2">This link will be automatically shared with innovators who request your mentorship.</p>
+            </div>
+        `;
         break;
       case 5:
-        title.textContent = "Step 5: Industries of Interest";
+        title.textContent = "Review your profile";
         html = `
-                    <div class="mb-3">
-                        <label class="form-label">Industries you are interested in mentoring</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            ${this.renderCheckbox("industries", "FinTech")}
-                            ${this.renderCheckbox("industries", "HealthTech")}
-                            ${this.renderCheckbox("industries", "EdTech")}
-                            ${this.renderCheckbox("industries", "Clean Energy")}
-                            ${this.renderCheckbox("industries", "Social Enterprise")}
-                        </div>
+            <div class="review-box p-4 bg-light rounded-4 border">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:50px; height:50px; font-size:1.2rem;">
+                        ${this.onboardingData.fullName?.[0] || 'M'}
                     </div>
-                `;
+                    <div>
+                        <h6 class="mb-0 fw-bold">${this.onboardingData.fullName}</h6>
+                        <p class="text-muted small mb-0">${this.onboardingData.institution}</p>
+                    </div>
+                </div>
+                <div class="row g-3 small">
+                    <div class="col-6"><strong>Categories:</strong><br>${(this.onboardingData.categories || []).join(', ')}</div>
+                    <div class="col-6"><strong>Experience:</strong><br>${this.onboardingData.experience} Years</div>
+                    <div class="col-12 border-top pt-2"><strong>Mentoring Style:</strong><br>${this.onboardingData.style}</div>
+                    <div class="col-12 border-top pt-2"><strong>Availability:</strong><br>${this.onboardingData.availability}</div>
+                </div>
+            </div>
+            <p class="text-center mt-4 small text-muted">By clicking Finish, your profile will become discoverable by the InnovateHub community.</p>
+        `;
         break;
     }
 
     container.innerHTML = html;
-    this.restoreStepData();
   }
 
   renderCheckbox(name, value) {
@@ -361,35 +442,45 @@ class MentorDashboard {
   }
 
   saveStepData() {
-    // Capture data from current step
     if (this.onboardingStep === 1) {
-      this.onboardingData.expertise = this.getMultiSelectValues("expertise");
+      this.onboardingData.fullName = document.getElementById("ob-fullName").value;
+      this.onboardingData.bio = document.getElementById("ob-bio").value;
+      this.onboardingData.institution = document.getElementById("ob-institution").value;
     } else if (this.onboardingStep === 2) {
-      this.onboardingData.experience =
-        document.getElementById("experienceSelect").value;
+      this.onboardingData.categories = Array.from(document.querySelectorAll('input[name="ob-categories"]:checked')).map(cb => cb.value);
     } else if (this.onboardingStep === 3) {
-      const el = document.querySelector('input[name="style"]:checked');
-      if (el) this.onboardingData.style = el.value;
+      this.onboardingData.experience = document.getElementById("ob-experience").value;
+      const styleEl = document.querySelector('input[name="ob-style"]:checked');
+      if (styleEl) this.onboardingData.style = styleEl.value;
     } else if (this.onboardingStep === 4) {
-      this.onboardingData.availability =
-        document.getElementById("availabilitySelect").value;
-    } else if (this.onboardingStep === 5) {
-      this.onboardingData.industries = this.getMultiSelectValues("industries");
+      this.onboardingData.availability = document.getElementById("ob-availability").value;
+      this.onboardingData.meetingLink = document.getElementById("ob-meetingLink").value;
     }
   }
 
-  restoreStepData() {
-    // Restore previous selections if backing up
-    // (Simplified for this version - complex restoration can be added)
+  validateCurrentStep() {
+    if (this.onboardingStep === 1) {
+        if (!document.getElementById("ob-fullName").value.trim()) return "Please enter your full name.";
+        if (document.getElementById("ob-bio").value.trim().length < 20) return "Please provide a bio of at least 20 characters.";
+        if (!document.getElementById("ob-institution").value.trim()) return "Please enter your institution.";
+    } else if (this.onboardingStep === 2) {
+        const checked = document.querySelectorAll('input[name="ob-categories"]:checked');
+        if (checked.length === 0) return "Please select at least one category.";
+    } else if (this.onboardingStep === 4) {
+        if (!document.getElementById("ob-availability").value.trim()) return "Please specify your availability.";
+        const link = document.getElementById("ob-meetingLink").value.trim();
+        if (link && !link.startsWith('http')) return "Please enter a valid URL for your meeting link.";
+    }
+    return null;
   }
 
-  getMultiSelectValues(name) {
-    return Array.from(
-      document.querySelectorAll(`input[name="${name}"]:checked`),
-    ).map((cb) => cb.value);
-  }
+  async nextStep() {
+    const error = this.validateCurrentStep();
+    if (error) {
+        alert(error);
+        return;
+    }
 
-  nextStep() {
     this.saveStepData();
 
     if (this.onboardingStep < this.totalSteps) {
@@ -400,9 +491,15 @@ class MentorDashboard {
     }
 
     // Update buttons
-    document.getElementById("prevStepBtn").disabled = this.onboardingStep === 1;
-    document.getElementById("nextStepBtn").textContent =
-      this.onboardingStep === this.totalSteps ? "Finish" : "Next";
+    const prevBtn = document.getElementById("prevStepBtn");
+    if (prevBtn) prevBtn.style.display = this.onboardingStep === 1 ? 'none' : 'block';
+    
+    const nextBtn = document.getElementById("nextStepBtn");
+    if (nextBtn) {
+        nextBtn.innerHTML = this.onboardingStep === this.totalSteps 
+            ? 'Finish <svg class="ms-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>'
+            : 'Next Step <svg class="ms-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+    }
   }
 
   prevStep() {
@@ -410,8 +507,13 @@ class MentorDashboard {
       this.onboardingStep--;
       this.renderOnboardingStep();
     }
-    document.getElementById("prevStepBtn").disabled = this.onboardingStep === 1;
-    document.getElementById("nextStepBtn").textContent = "Next";
+    const prevBtn = document.getElementById("prevStepBtn");
+    if (prevBtn) prevBtn.style.display = this.onboardingStep === 1 ? 'none' : 'block';
+    
+    const nextBtn = document.getElementById("nextStepBtn");
+    if (nextBtn) {
+        nextBtn.innerHTML = 'Next Step <svg class="ms-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+    }
   }
 
   async completeOnboarding() {
@@ -499,6 +601,58 @@ class MentorDashboard {
     
     const profileForm = document.getElementById('profileForm');
     if(profileForm) profileForm.addEventListener('submit', (e) => this.handleProfileUpdate(e));
+    
+    // Profile Picture Upload Handling
+    const profilePicInput = document.getElementById('profilePicInput');
+    if (profilePicInput) {
+        profilePicInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (re) => {
+                const preview = document.getElementById('profilePreview');
+                if (preview) preview.src = re.target.result;
+            };
+            reader.readAsDataURL(file);
+            
+            const preview = document.getElementById('profilePreview');
+            if (preview) preview.style.opacity = '0.5';
+
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${this.currentUser.uid}-${Date.now()}.${fileExt}`;
+                const filePath = `avatars/${fileName}`;
+
+                const { data, error } = await window.supabase.storage
+                    .from('project-documents')
+                    .upload(filePath, file);
+
+                if (error) throw error;
+
+                const { data: { publicUrl } } = window.supabase.storage
+                    .from('project-documents')
+                    .getPublicUrl(filePath);
+
+                const photoURL = publicUrl;
+                
+                const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+                await updateProfile(this.currentUser, { photoURL });
+                
+                await updateDoc(doc(db, "users", this.currentUser.uid), { 
+                    photoURL, 
+                    updatedAt: serverTimestamp() 
+                });
+                
+                alert('Profile picture updated!');
+            } catch (err) {
+                console.error("Profile pic upload failed:", err);
+                alert('Failed to update profile picture: ' + err.message);
+            } finally {
+                if (preview) preview.style.opacity = '1';
+            }
+        });
+    }
     
     // Toggle handling
     const toggle = document.getElementById('availabilityToggle');
@@ -633,18 +787,18 @@ class MentorDashboard {
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
                             <div>
                                 <div class="d-flex align-items-center gap-2 mb-2">
-                                    <h5 class="mb-0">${innovatorName}</h5>
+                                    <h5 class="mb-0 text-primary fw-bold">${innovatorName}</h5>
                                     <span class="badge bg-light text-dark border">${category}</span>
                                 </div>
                                 <p class="mb-1"><strong>Project:</strong> ${projectTitle}</p>
                                 <p class="text-muted small mb-0">Requested: ${dateStr}</p>
                             </div>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-success btn-sm" onclick="window.dashboard.handleRequest('${requestId}', 'accepted')">
-                                    <i class="fa fa-check me-1"></i> Accept
+                                <button class="btn btn-outline-success btn-sm rounded-pill px-3" onclick="window.dashboard.handleRequest('${requestId}', 'accepted')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polyline points="20 6 9 17 4 12"/></svg> Accept
                                 </button>
-                                <button class="btn btn-danger btn-sm" onclick="window.dashboard.handleRequest('${requestId}', 'rejected')">
-                                    <i class="fa fa-times me-1"></i> Reject
+                                <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="window.dashboard.handleRequest('${requestId}', 'rejected')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reject
                                 </button>
                             </div>
                         </div>
@@ -754,46 +908,34 @@ class MentorDashboard {
                 hasProject = true;
             }
 
-            const onclickAttr = hasProject ? `window.dashboard.viewMenteeProject('${project.id}')` : `alert('This mentee joined via direct request without a specific project.')`;
+            const onclickAttr = `window.CollaborationHub.init('${requestId}')`;
 
             row.innerHTML += `
                     <div class="col-md-6 col-lg-4">
-                        <div class="dashboard-card h-100 cursor-pointer hover-card" onclick="${onclickAttr}">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
-                                    ${(innovator.fullName || "U").charAt(0)}
+                        <div class="dashboard-card hover-lift h-100 p-4 d-flex flex-column" onclick="${onclickAttr}" style="cursor: pointer;">
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <div class="bg-primary-soft text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-weight: 800;">
+                                    ${(innovator.fullName || "U").split(' ').map(n=>n[0]).join('').substring(0,2)}
                                 </div>
                                 <div>
-                                    <h5 class="mb-0">${innovator.fullName || "Innovator"}</h5>
-                                    <small class="text-muted">Innovator</small>
+                                    <h6 class="fw-bold mb-0">${innovator.fullName || "Innovator"}</h6>
+                                    <p class="text-muted smaller mb-0">${project.categories?.[0] || 'Innovation'}</p>
                                 </div>
                             </div>
-                            <hr class="my-2">
-                            <h6 class="text-primary mb-2">${project.title}</h6>
-                            <p class="text-muted small mb-2 line-clamp-2">${project.problemStatement || "No description"}</p>
+                            <h6 class="fw-bold mb-2">${project.title}</h6>
+                            <p class="text-muted small flex-grow-1 mb-4" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                ${project.problemStatement || "No description provided."}
+                            </p>
                             
-                            <div class="row g-2 mb-3">
-                                <div class="col-6">
-                                    <div class="small fw-bold text-dark">Category</div>
-                                    <span class="badge bg-light text-dark border">${project.categories?.[0] || "General"}</span>
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                <div class="small text-muted">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="me-1" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    ${request.nextMeetingDate || 'No meeting'}
                                 </div>
-                                <div class="col-6">
-                                    <div class="small fw-bold text-dark">Comm. Method</div>
-                                    <div class="small text-muted">${innovator.communicationPreference || 'Any'}</div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="small fw-bold text-dark">Status</div>
-                                    ${StatusBadge.render(project.status || 'active')}
-                                </div>
-                                <div class="col-6">
-                                    <div class="small fw-bold text-dark">Next Meeting</div>
-                                    <div class="small text-muted">${request.nextMeetingDate || 'Not scheduled'}</div>
-                                </div>
+                                <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" onclick="event.stopPropagation(); ${onclickAttr}">
+                                    Open Hub
+                                </button>
                             </div>
-
-                            <button class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="event.stopPropagation(); window.dashboard.openRejectionModal('${requestId}')">
-                                <i class="fa fa-times-circle me-1"></i>Request to Stop Mentorship
-                            </button>
                         </div>
                     </div>
                 `;

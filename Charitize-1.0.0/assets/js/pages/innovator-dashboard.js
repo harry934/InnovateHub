@@ -51,78 +51,31 @@ const dashboardCards = [
     { title: 'Account Settings', id: 'profile',   section: 'profile',   types: ['Profile', 'Settings'], progress: 95, action: 'edit' }
 ];
 
-// ─── Enhanced background symbol system ───────────────────────
-// ─── Enhanced background symbol system ───────────────────────
-function initBackgroundSymbols() {
-    const container = document.getElementById('backgroundSymbols');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const symbols = [
-        '+', '−', '×', '÷', '◇', '○', '△', '□', 
-        '⟶', '⇌', '∞', '≈', '{ }', '< />', '[ ]', '#',
-        '⚡', '⚛', '◈', '❖', '★', '⚙', '⌘'
-    ];
-
-    const count = 100; // Boosted density
-    for (let i = 0; i < count; i++) {
-        const el = document.createElement('span');
-        el.className = 'bg-symbol';
-        el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-
-        const size = 0.8 + Math.random() * 2.2;         // 0.8–3.0rem (Larger)
-        const opacity = 0.04 + Math.random() * 0.08;    // More visible
-        const delay = Math.random() * 20;               
-        const dur = 15 + Math.random() * 25;            
-        const drift = (Math.random() - 0.5) * 150;      
-
-        el.style.cssText = `
-            position: absolute;
-            left: ${Math.random() * 100}%;
-            top: ${Math.random() * 140}%;
-            font-size: ${size}rem;
-            --sym-opacity: ${opacity};
-            opacity: ${opacity};
-            color: ${Math.random() > 0.6 ? '#1a5e4f' : '#f3a813'};
-            font-family: 'Courier New', monospace;
-            font-weight: 800;
-            pointer-events: none;
-            user-select: none;
-            animation: floatSymbol ${dur}s ${delay}s ease-in-out infinite alternate;
-            --drift: ${drift}px;
-            filter: blur(${Math.random() * 1}px);
-        `;
-        container.appendChild(el);
-    }
-}
-
 function renderQuickAccessCards() {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
 
     container.innerHTML = dashboardCards.map(card => `
-        <article class="premium-card" onclick="window.showDashboardSection('${card.section}')">
-          <div class="premium-card-icon">
+        <article class="dashboard-grid-card" onclick="window.showDashboardSection('${card.section}')" style="cursor: pointer;">
+          <div class="card-icon-wrapper">
             ${CARD_ICONS[card.id] || ''}
           </div>
-          <div class="tc-content">
-            <div class="tc-header">
-              <h3 class="tc-title" style="font-family:var(--font-head); font-weight:800; font-size:1.4rem; color:var(--brand-green);">${card.title}</h3>
-              <div class="tc-arrow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <div class="card-content">
+            <div class="card-header">
+              <h3 class="card-title">${card.title}</h3>
+              <div class="card-action-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
               </div>
             </div>
-            <div class="tc-tags" style="margin-top:8px; display:flex; gap:8px;">
-              ${card.types.map(t => `<span class="badge" style="background:rgba(26, 94, 79, 0.05); color:var(--brand-green); font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:4px 10px; border-radius:20px;">${t}</span>`).join('')}
+            <div class="card-tags">
+              ${card.types.map(t => `<span class="badge-subtle">${t}</span>`).join('')}
             </div>
           </div>
         </article>
     `).join('');
-
-    initBackgroundSymbols();
 }
 
 
@@ -344,7 +297,64 @@ function renderQuickAccessCards() {
             }
         }
         
-        // loadMentors() removed: handled by mentor-discovery.js
+        window.renderMyMentors = async function() {
+            const container = document.getElementById('myMentorsContainer');
+            if (!container) return;
+            container.innerHTML = EmptyStates.templates.loadingState();
+            
+            try {
+                const q = query(collection(db, 'mentorshipRequests'), where('innovatorId', '==', currentUser.uid), where('status', '==', 'accepted'));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <div class="mb-3 opacity-25">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <h5>No active mentors yet</h5>
+                            <p class="text-muted">Once your mentorship requests are accepted, they'll appear here.</p>
+                            <button class="btn btn-primary rounded-pill px-4 mt-2" onclick="window.showDashboardSection('mentors')">Find a Mentor</button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = '<div class="row g-4"></div>';
+                const row = container.querySelector('.row');
+                
+                for (const docSnap of snapshot.docs) {
+                    const req = { id: docSnap.id, ...docSnap.data() };
+                    const mentorDoc = await getDoc(doc(db, "users", req.mentorId));
+                    const mentor = mentorDoc.exists() ? mentorDoc.data() : { fullName: 'Unknown Mentor' };
+                    
+                    row.innerHTML += `
+                        <div class="col-md-6 col-lg-4">
+                            <div class="dashboard-card hover-lift h-100 p-4 d-flex flex-column">
+                                <div class="d-flex align-items-center gap-3 mb-4">
+                                    <img src="${mentor.photoURL || 'assets/img/default-avatar.png'}" class="rounded-circle shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                    <div>
+                                        <h6 class="fw-bold mb-0">${mentor.fullName}</h6>
+                                        <p class="text-muted smaller mb-0">${mentor.profession || 'Expert'}</p>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1 text-uppercase fw-bold opacity-75">Project</div>
+                                    <h6 class="fw-bold text-primary mb-3">${(await getDoc(doc(db, "projects", req.projectId))).data()?.title || 'Unknown Project'}</h6>
+                                </div>
+                                <button class="btn btn-primary w-100 rounded-pill py-2 fw-bold d-flex align-items-center justify-content-center gap-2" onclick="window.CollaborationHub.init('${req.id}')">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    Collaboration Hub
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading my mentors:', error);
+                container.innerHTML = EmptyStates.templates.errorState('Failed to load mentors');
+            }
+        };
         
         async function handleProjectSubmit(e) {
             e.preventDefault();
