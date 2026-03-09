@@ -55,23 +55,33 @@ function renderQuickAccessCards() {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
 
+    // Vibrant color accents for cards
+    const cardColors = {
+        projects: '#1a5e4f',
+        submit: '#f3a813',
+        mentors: '#4A90E2',
+        myMentors: '#9B51E0',
+        profile: '#121331'
+    };
+
     container.innerHTML = dashboardCards.map(card => `
-        <article class="dashboard-grid-card" onclick="window.showDashboardSection('${card.section}')" style="cursor: pointer;">
-          <div class="card-icon-wrapper">
+        <article class="dashboard-grid-card premium-card premium-card-large" onclick="window.showDashboardSection('${card.section}')" style="cursor: pointer;">
+          <div class="card-glow" style="background: ${cardColors[card.id] || 'var(--brand-green)'};"></div>
+          <div class="card-icon-wrapper" style="background: ${cardColors[card.id]}15; color: ${cardColors[card.id]};">
             ${CARD_ICONS[card.id] || ''}
           </div>
           <div class="card-content">
             <div class="card-header">
-              <h3 class="card-title">${card.title}</h3>
-              <div class="card-action-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <h3 class="card-title fw-bold" style="color: ${cardColors[card.id]};">${card.title}</h3>
+              <div class="card-action-icon" style="background: ${cardColors[card.id]}20;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${cardColors[card.id]}" stroke-width="2.5">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
               </div>
             </div>
-            <div class="card-tags">
-              ${card.types.map(t => `<span class="badge-subtle">${t}</span>`).join('')}
+            <div class="card-tags mt-2">
+              ${card.types.map(t => `<span class="badge rounded-pill px-3 py-2" style="background: ${cardColors[card.id]}10; color: ${cardColors[card.id]}; font-weight: 700; font-size: 0.75rem;">${t}</span>`).join('')}
             </div>
           </div>
         </article>
@@ -120,6 +130,12 @@ function renderQuickAccessCards() {
 
             // Sync UI with data
             const realName = (data && data.fullName) || initialName;
+            const firstName = realName.split(' ')[0];
+            
+            if (document.getElementById('dashboardGreeting')) {
+                document.getElementById('dashboardGreeting').textContent = `Welcome, ${firstName}!`;
+            }
+
             if (userDisplayName) userDisplayName.textContent = realName;
             if (profileDisplayNameDisplay) profileDisplayNameDisplay.textContent = realName;
 
@@ -138,6 +154,9 @@ function renderQuickAccessCards() {
                 
                 if (data.photoURL && profilePreview) {
                     profilePreview.src = data.photoURL;
+                    if (window.StaggeredMenu && window.StaggeredMenu.updatePhoto) {
+                        window.StaggeredMenu.updatePhoto(data.photoURL);
+                    }
                 }
 
                 // Render skills badges
@@ -325,30 +344,59 @@ function renderQuickAccessCards() {
                 
                 for (const docSnap of snapshot.docs) {
                     const req = { id: docSnap.id, ...docSnap.data() };
-                    const mentorDoc = await getDoc(doc(db, "users", req.mentorId));
-                    const mentor = mentorDoc.exists() ? mentorDoc.data() : { fullName: 'Unknown Mentor' };
                     
-                    row.innerHTML += `
-                        <div class="col-md-6 col-lg-4">
-                            <div class="dashboard-card hover-lift h-100 p-4 d-flex flex-column">
-                                <div class="d-flex align-items-center gap-3 mb-4">
-                                    <img src="${mentor.photoURL || 'assets/img/default-avatar.png'}" class="rounded-circle shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
-                                    <div>
-                                        <h6 class="fw-bold mb-0">${mentor.fullName}</h6>
-                                        <p class="text-muted smaller mb-0">${mentor.profession || 'Expert'}</p>
+                    // Safety check for mentorId
+                    if (!req.mentorId) {
+                        console.warn(`Mentorship request ${req.id} is missing mentorId.`, req);
+                        continue;
+                    }
+
+                    try {
+                        const mentorDoc = await getDoc(doc(db, "users", req.mentorId));
+                        const mentor = mentorDoc.exists() ? mentorDoc.data() : { fullName: 'Unknown Mentor' };
+                        
+                        let projectTitle = 'General Mentorship';
+                        if (req.projectId) {
+                            const projectDoc = await getDoc(doc(db, "projects", req.projectId));
+                            projectTitle = projectDoc.exists() ? projectDoc.data().title : 'Unknown Project';
+                        }
+                        
+                        const firstName = mentor.fullName ? mentor.fullName.split(' ')[0] : 'Mentor';
+                        const mentorPhoto = mentor.photoURL || 'assets/img/default-avatar.png';
+                        
+                        row.innerHTML += `
+                            <div class="col-md-6 col-lg-4">
+                                <article class="dashboard-card premium-card hover-lift h-100 p-4 d-flex flex-column" onclick="window.CollaborationHub.init('${req.id}')" style="cursor: pointer;">
+                                    <div class="card-glow" style="background: var(--brand-yellow);"></div>
+                                    <div class="d-flex align-items-center gap-3 mb-4 position-relative z-1">
+                                        <div class="position-relative">
+                                            <img src="${mentorPhoto}" class="rounded-circle shadow-sm border border-2 border-white" style="width: 56px; height: 56px; object-fit: cover;">
+                                            <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white" style="width: 14px; height: 14px;"></div>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">${firstName}</h6>
+                                            <p class="text-muted smaller mb-0 fw-bold text-uppercase opacity-75" style="letter-spacing: 0.5px;">${mentor.profession || 'Expert'}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="small text-muted mb-1 text-uppercase fw-bold opacity-75">Project</div>
-                                    <h6 class="fw-bold text-primary mb-3">${(await getDoc(doc(db, "projects", req.projectId))).data()?.title || 'Unknown Project'}</h6>
-                                </div>
-                                <button class="btn btn-primary w-100 rounded-pill py-2 fw-bold d-flex align-items-center justify-content-center gap-2" onclick="window.CollaborationHub.init('${req.id}')">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                    Collaboration Hub
-                                </button>
+                                    <div class="position-relative z-1 flex-grow-1">
+                                        <div class="small text-muted mb-1 text-uppercase fw-bold opacity-75" style="font-size: 0.65rem;">Mentorship Focus</div>
+                                        <h5 class="fw-bold text-primary mb-3" style="font-family: var(--font-head);">${projectTitle}</h5>
+                                    </div>
+                                    <div class="mt-auto pt-3 border-top position-relative z-1 d-flex justify-content-between align-items-center">
+                                         <div class="small fw-bold text-muted d-flex align-items-center gap-2">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                            Active Hub
+                                        </div>
+                                        <button class="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                                            Open Hub
+                                        </button>
+                                    </div>
+                                </article>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    } catch (innerError) {
+                        console.error(`Error rendering individual mentor card (${req.id}):`, innerError);
+                    }
                 }
             } catch (error) {
                 console.error('Error loading my mentors:', error);

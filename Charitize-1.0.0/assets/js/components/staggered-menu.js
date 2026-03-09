@@ -162,17 +162,57 @@ const StaggeredMenu = (function() {
     function bindEvents() {
         elements.toggle.addEventListener('click', toggleMenu);
 
-        // Scroll listener for collapse effect
-        window.addEventListener('scroll', () => {
-            const header = elements.wrapper.querySelector('.staggered-menu-header');
-            if (header) {
-                if (window.scrollY > 80) {
-                    header.classList.add('collapsed');
-                } else {
-                    header.classList.remove('collapsed');
-                }
+        // Aggressive Scroll listener for collapse effect tailored to dashboard layout
+        let lastKnownScrollPosition = 0;
+        let lastScrollTop = 0;
+        let ticking = false;
+
+        // The dashboard sometimes traps scroll in the body or document element 
+        // depending on how overflow-x: hidden is rendered, so we listen on window but 
+        // also check multiple scroll sources.
+        
+        const handleScroll = () => {
+             // Try to get scroll from window, body, or documentElement
+             lastKnownScrollPosition = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop;
+             
+             // If we're inside a specific scrollable container, check that too
+             const dashboardMain = document.querySelector('.dashboard-container');
+             if (dashboardMain && dashboardMain.scrollTop > lastKnownScrollPosition) {
+                 lastKnownScrollPosition = dashboardMain.scrollTop;
+             }
+
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const header = elements.wrapper.querySelector('.staggered-menu-header');
+                    if (header) {
+                        if (lastKnownScrollPosition > 50) {
+                            if (lastKnownScrollPosition > lastScrollTop) {
+                                // Scrolling down
+                                header.classList.add('nav-hidden');
+                            } else {
+                                // Scrolling up
+                                header.classList.remove('nav-hidden');
+                                header.classList.add('collapsed');
+                            }
+                        } else {
+                            header.classList.remove('collapsed');
+                            header.classList.remove('nav-hidden');
+                        }
+                    }
+                    lastScrollTop = lastKnownScrollPosition <= 0 ? 0 : lastKnownScrollPosition;
+                    ticking = false;
+                });
+                ticking = true;
             }
-        }, { passive: true });
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        
+        // Also attach to the container in case it's the element actually scrolling
+        const container = document.querySelector('.dashboard-container');
+        if (container) {
+            container.addEventListener('scroll', handleScroll, { passive: true });
+        }
 
         if (state.config.closeOnClickAway) {
             document.addEventListener('mousedown', (e) => {
@@ -324,8 +364,30 @@ const StaggeredMenu = (function() {
     function updateInitials(name) {
         const circle = document.getElementById('userInitialCircle');
         if (circle && window.getInitials) {
-            circle.textContent = window.getInitials(name);
+            // If there's an image inside, keeps it unless we explicitly want initials
+            if (!circle.querySelector('img')) {
+                circle.textContent = window.getInitials(name);
+            }
         }
+    }
+
+    function updatePhoto(url) {
+        const circle = document.getElementById('userInitialCircle');
+        if (circle && url) {
+            circle.innerHTML = `<img src="${url}" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">`;
+            circle.style.padding = '0';
+            circle.style.background = 'white';
+        }
+    }
+
+    function hide() {
+        const header = elements.wrapper.querySelector('.staggered-menu-header');
+        if (header) header.classList.add('hidden');
+    }
+
+    function show() {
+        const header = elements.wrapper.querySelector('.staggered-menu-header');
+        if (header) header.classList.remove('hidden');
     }
 
     return {
@@ -333,7 +395,10 @@ const StaggeredMenu = (function() {
         open: openMenu,
         close: closeMenu,
         toggle: toggleMenu,
-        updateInitials: updateInitials
+        hide: hide,
+        show: show,
+        updateInitials: updateInitials,
+        updatePhoto: updatePhoto
     };
 })();
 

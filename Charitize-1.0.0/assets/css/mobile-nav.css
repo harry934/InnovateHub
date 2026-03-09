@@ -145,7 +145,7 @@
     bottom: 0;
     width: min(85vw, 320px);
     height: 100vh !important;
-    background: linear-gradient(160deg, #1a5e4f 0%, #14493e 100%) !important;
+    background: #1a5e4f !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     justify-content: flex-start !important;

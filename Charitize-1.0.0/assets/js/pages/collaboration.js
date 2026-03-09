@@ -13,6 +13,7 @@ class CollaborationHub {
         this.mentorshipData = null;
         this.projectData = null;
         this.unsubscribeChat = null;
+        this.milestones = [];
     }
 
     async init(mentorshipId) {
@@ -25,10 +26,25 @@ class CollaborationHub {
             if (!mDoc.exists()) throw new Error("Mentorship session not found");
             this.mentorshipData = { id: mDoc.id, ...mDoc.data() };
 
-            // 2. Fetch project data
-            const pDoc = await getDoc(doc(db, "projects", this.mentorshipData.projectId));
-            if (!pDoc.exists()) throw new Error("Project not found");
-            this.projectData = { id: pDoc.id, ...pDoc.data() };
+            // 2. Fetch project data (conditional)
+            if (this.mentorshipData.projectId) {
+                const pDoc = await getDoc(doc(db, "projects", this.mentorshipData.projectId));
+                if (pDoc.exists()) {
+                    this.projectData = { id: pDoc.id, ...pDoc.data() };
+                } else {
+                    console.warn("CollaborationHub: Project ID exists but doc not found.");
+                    this.projectData = { title: "Deleted Project", id: "deleted" };
+                }
+            } else {
+                this.projectData = { 
+                    title: "General Mentorship", 
+                    id: "general",
+                    problemStatement: "Direct mentorship session.",
+                    objectives: "Guidance and strategic advice.",
+                    proposedSolution: "N/A",
+                    expectedImpact: "Skill development and growth."
+                };
+            }
 
             // 3. Update UI Header
             this.updateHeader();
@@ -45,6 +61,10 @@ class CollaborationHub {
             // 7. Load Resources
             this.loadResources();
 
+            // Ensure active tab is Overview on init
+            const overviewTab = document.getElementById('v-pills-overview-tab');
+            if (overviewTab) bootstrap.Tab.getOrCreateInstance(overviewTab).show();
+
             // Switch to the section
             window.showDashboardSection('collaboration');
         } catch (error) {
@@ -53,16 +73,37 @@ class CollaborationHub {
         }
     }
 
-    updateHeader() {
+    async updateHeader() {
         document.getElementById('collabProjectTitle').textContent = this.projectData.title;
-        
-        // Fetch names if not present (simplified for now, ideally fetch from users collection)
-        document.getElementById('collabInnovatorName').textContent = "Innovator";
-        document.getElementById('collabMentorName').textContent = "Mentor";
-        
-        // Try to find names in mentorship data if cached there
-        if (this.mentorshipData.innovatorName) document.getElementById('collabInnovatorName').textContent = this.mentorshipData.innovatorName;
-        if (this.mentorshipData.mentorName) document.getElementById('collabMentorName').textContent = this.mentorshipData.mentorName;
+        document.getElementById('collabSessionId').textContent = `#${this.activeMentorshipId.substring(0, 8).toUpperCase()}`;
+
+        // Fetch real names and photos
+        try {
+            const [innovatorSnap, mentorSnap] = await Promise.all([
+                getDoc(doc(db, 'users', this.mentorshipData.innovatorId)),
+                getDoc(doc(db, 'users', this.mentorshipData.mentorId))
+            ]);
+            
+            if (innovatorSnap.exists()) {
+                const data = innovatorSnap.data();
+                document.getElementById('collabInnovatorName').textContent = data.fullName || 'Innovator';
+                document.getElementById('collabInnovatorPhoto').src = data.photoURL || 'assets/img/default-avatar.png';
+            }
+            
+            if (mentorSnap.exists()) {
+                const data = mentorSnap.data();
+                document.getElementById('collabMentorName').textContent = data.fullName || 'Mentor';
+                document.getElementById('collabMentorPhoto').src = data.photoURL || 'assets/img/default-avatar.png';
+                this._mentorData = data;
+                
+                // Update meeting details if exists
+                const nextMeeting = this.mentorshipData.scheduledMeeting?.date || 'TBD';
+                document.getElementById('collabNextMeeting').textContent = nextMeeting;
+            }
+
+        } catch (err) {
+            console.warn('CollaborationHub: Could not fetch participant details', err);
+        }
     }
 
     startChatListener() {
@@ -84,6 +125,20 @@ class CollaborationHub {
                     text: text,
                     createdAt: serverTimestamp()
                 });
+
+                // Notify counter-party
+                const targetId = auth.currentUser.uid === this.mentorshipData.mentorId ? this.mentorshipData.innovatorId : this.mentorshipData.mentorId;
+                const myRole = auth.currentUser.uid === this.mentorshipData.mentorId ? 'Mentor' : 'Innovator';
+                
+                if (window.NotificationSystem) {
+                    await window.NotificationSystem.send(
+                        targetId,
+                        `New message from ${myRole} in ${this.mentorshipData.projectTitle || 'Project Hub'}`,
+                        'info',
+                        '#collaboration'
+                    );
+                }
+
                 input.value = '';
             } catch (err) {
                 console.error("Failed to send message:", err);
@@ -186,24 +241,78 @@ class CollaborationHub {
         });
     }
 
-    async openCommentModal(sectionId) {
-        const text = prompt("Enter your feedback for this section:");
-        if (!text) return;
+    openCommentModal(sectionId) {
+        // Remove any existing inline feedback panels
+        document.querySelectorAll('.collab-inline-feedback').forEach(el => el.remove());
 
-        const user = JSON.parse(localStorage.getItem('innovateHubUser') || '{}');
-        
-        try {
-            await addDoc(collection(db, `mentorshipRequests/${this.activeMentorshipId}/comments`), {
-                sectionId: sectionId,
-                text: text,
-                senderId: auth.currentUser.uid,
-                role: user.role || 'innovator',
-                createdAt: serverTimestamp()
-            });
-        } catch (err) {
-            console.error("Failed to add comment:", err);
-            alert("Error adding feedback.");
-        }
+        const sectionEl = document.getElementById(`comments-${sectionId}`);
+        if (!sectionEl) return;
+
+        const panel = document.createElement('div');
+        panel.className = 'collab-inline-feedback';
+        panel.style.cssText = `
+            margin-top: 14px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 14px;
+            border: 1.5px solid rgba(26,94,79,0.15);
+            animation: fadeInUp 0.2s ease;
+        `;
+        panel.innerHTML = `
+            <div style="font-family:var(--font-head,sans-serif);font-weight:800;font-size:0.82rem;color:var(--brand-green,#1a5e4f);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+                <span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Add Feedback
+                </span>
+                <button onclick="this.closest('.collab-inline-feedback').remove()" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:1rem;line-height:1;">✕</button>
+            </div>
+            <textarea id="inline-feedback-text-${sectionId}" rows="3" placeholder="Write your feedback for this section..." style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:0.9rem;outline:none;resize:vertical;font-family:var(--font-main,sans-serif);"></textarea>
+            <button id="inline-feedback-submit-${sectionId}" style="margin-top:10px;background:var(--brand-green,#1a5e4f);color:white;border:none;border-radius:10px;padding:10px 20px;font-weight:700;font-size:0.85rem;cursor:pointer;width:100%;transition:background 0.2s;" 
+                onmouseover="this.style.background='#14493e'" onmouseout="this.style.background='var(--brand-green,#1a5e4f)'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px;"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Submit Feedback
+            </button>
+        `;
+        sectionEl.parentNode.insertBefore(panel, sectionEl);
+
+        // Bind submit
+        document.getElementById(`inline-feedback-submit-${sectionId}`).addEventListener('click', async () => {
+            const text = document.getElementById(`inline-feedback-text-${sectionId}`).value.trim();
+            if (!text) return;
+            const btn = document.getElementById(`inline-feedback-submit-${sectionId}`);
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            const user = JSON.parse(localStorage.getItem('innovateHubUser') || '{}');
+            try {
+                await addDoc(collection(db, `mentorshipRequests/${this.activeMentorshipId}/comments`), {
+                    sectionId: sectionId,
+                    text: text,
+                    senderId: auth.currentUser.uid,
+                    role: user.role || 'innovator',
+                    createdAt: serverTimestamp()
+                });
+
+                // Notify counter-party
+                const targetId = auth.currentUser.uid === this.mentorshipData.mentorId ? this.mentorshipData.innovatorId : this.mentorshipData.mentorId;
+                const myRoleLabel = auth.currentUser.uid === this.mentorshipData.mentorId ? 'Mentor' : 'Innovator';
+
+                if (window.NotificationSystem) {
+                    await window.NotificationSystem.send(
+                        targetId,
+                        `${myRoleLabel} added feedback to your project section: ${sectionId}`,
+                        'success',
+                        '#collaboration'
+                    );
+                }
+
+                panel.remove();
+            } catch (err) {
+                console.error('Failed to add comment:', err);
+                btn.disabled = false;
+                btn.textContent = 'Retry';
+            }
+        });
     }
 
     async loadMilestones() {
@@ -216,6 +325,9 @@ class CollaborationHub {
                 container.innerHTML = '<div class="text-center py-5 text-muted">No milestones defined. Use "Manage Project" to add one.</div>';
                 return;
             }
+
+            this.milestones = snapshot.docs.map(d => d.data());
+            this.updateProgress();
 
             container.innerHTML = snapshot.docs.map(docSnap => {
                 const m = docSnap.data();
@@ -241,20 +353,59 @@ class CollaborationHub {
         });
     }
 
+    updateProgress() {
+        if (!this.milestones.length) return;
+        const completed = this.milestones.filter(m => m.status === 'completed').length;
+        const percent = Math.round((completed / this.milestones.length) * 100);
+        
+        const header = document.querySelector('.collaboration-header-card');
+        if (header) {
+            let progressWrap = document.getElementById('collabProgressWrap');
+            if (!progressWrap) {
+                progressWrap = document.createElement('div');
+                progressWrap.id = 'collabProgressWrap';
+                progressWrap.className = 'mt-4 pt-3 border-top border-white border-opacity-10';
+                progressWrap.style.maxWidth = '400px';
+                header.querySelector('.z-1').parentNode.appendChild(progressWrap);
+            }
+            
+            progressWrap.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2 small fw-bold">
+                    <span>PROJECT READINESS</span>
+                    <span>${percent}%</span>
+                </div>
+                <div class="progress rounded-pill bg-white bg-opacity-10" style="height: 6px;">
+                    <div class="progress-bar bg-white rounded-pill shadow-sm" style="width: ${percent}%; transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
+                </div>
+            `;
+        }
+    }
+
     loadResources() {
         const linkBox = document.getElementById('collabMeetingLink');
         const docBox = document.getElementById('collabProjectDocs');
 
-        // Meeting Link
-        if (this.mentorshipData.meetingLink) {
+        // Meeting Link — prefer mentorship-level link, fallback to mentor profile link
+        const meetingLink = this.mentorshipData.meetingLink || this._mentorData?.meetingLink;
+        if (meetingLink) {
             linkBox.innerHTML = `
-                <a href="${this.mentorshipData.meetingLink}" target="_blank" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2 rounded-pill py-2">
+                <a href="${meetingLink}" target="_blank" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2 rounded-pill py-2">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>
                     Join Video Call
                 </a>
             `;
         } else {
-            linkBox.innerHTML = '<p class="text-muted small text-center italic">Mentor hasn\'t provided a persistent link yet.</p>';
+            linkBox.innerHTML = '<p class="text-muted small text-center">Mentor hasn\'t provided a meeting link yet.</p>';
+        }
+
+        // Communication preference
+        if (this._mentorData?.communicationPreference) {
+            linkBox.innerHTML += `
+                <div style="margin-top:10px;padding:10px 14px;background:#f8fafc;border-radius:10px;font-size:0.82rem;">
+                    <span style="font-weight:700;color:#1a5e4f;">Preferred Channel:</span>
+                    ${this._mentorData.communicationPreference}
+                </div>
+            `;
         }
 
         // Project Document
@@ -265,6 +416,8 @@ class CollaborationHub {
                     <div class="text-primary smaller">Download Original <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
                 </a>
             `;
+        } else {
+            docBox.innerHTML = '<p class="text-muted small">No documents attached to this project.</p>';
         }
     }
 }

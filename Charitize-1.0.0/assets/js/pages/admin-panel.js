@@ -709,25 +709,47 @@ window.AdminPanel = {
                 const ev = { id: docSnap.id, ...docSnap.data() };
                 return `
                 <div class="col-md-6 mb-4">
-                    <div class="premium-card h-100 p-0 overflow-hidden border-0 shadow-sm" style="transition: transform 0.3s ease;">
-                        <img src="${ev.imageLink}" class="card-img-top" style="height:160px; object-fit:cover; border-bottom: 3px solid var(--brand-yellow);">
+                    <div class="premium-card h-100 p-0 overflow-hidden border-0 shadow-lg" style="transition: all 0.3s ease; background: #fff; border-radius: 20px;">
+                        <div style="position: relative; height: 180px; overflow: hidden;">
+                            <img src="${ev.imageLink}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.5s ease;">
+                            <div style="position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.9); padding: 5px 12px; border-radius: 10px; font-weight: 800; font-size: 0.7rem; color: var(--brand-green); box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-transform: uppercase; letter-spacing: 0.5px;">
+                                ${ev.date.split(',')[1] || 'Upcoming'}
+                            </div>
+                        </div>
                         <div class="p-4">
-                            <h5 class="fw-bold mb-2" style="color:var(--brand-green);">${ev.title}</h5>
-                            <div class="d-flex align-items-center mb-2 text-muted small">
-                                <i class="fa fa-calendar-alt me-2 text-primary"></i>${ev.date}
-                                <span class="mx-2">|</span>
-                                <i class="fa fa-clock me-2 text-primary"></i>${ev.time}
+                            <h5 class="fw-bold mb-3" style="color:var(--brand-green); font-family: var(--font-head); font-size: 1.25rem;">${ev.title}</h5>
+                            
+                            <div class="d-grid gap-2 mb-4" style="grid-template-columns: 1fr 1fr;">
+                                <div class="d-flex align-items-center text-muted small">
+                                    <div style="width: 32px; height: 32px; background: rgba(26, 94, 79, 0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px; color: var(--brand-green);">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                    </div>
+                                    <span class="text-truncate">${ev.date}</span>
+                                </div>
+                                <div class="d-flex align-items-center text-muted small">
+                                    <div style="width: 32px; height: 32px; background: rgba(243, 168, 19, 0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px; color: var(--brand-yellow);">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    </div>
+                                    <span class="text-truncate">${ev.time}</span>
+                                </div>
+                                <div class="d-flex align-items-center text-muted small" style="grid-column: span 2;">
+                                    <div style="width: 32px; height: 32px; background: rgba(26, 94, 79, 0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px; color: var(--brand-green);">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                    </div>
+                                    <span class="text-truncate">${ev.location}</span>
+                                </div>
                             </div>
-                            <div class="d-flex align-items-center mb-3 text-muted small">
-                                <i class="fa fa-map-marker-alt me-2 text-primary"></i>${ev.location}
-                            </div>
-                            <p class="small text-muted mb-4 line-clamp-2">${ev.description}</p>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-outline-primary flex-fill fw-bold" onclick="AdminPanel.editEvent('${ev.id}')">
-                                    <i class="fa fa-edit me-1"></i> Edit
+                            
+                            <p class="small text-muted mb-4 line-clamp-2" style="height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${ev.description}</p>
+                            
+                            <div class="d-flex gap-2 pt-3 border-top">
+                                <button class="btn btn-sm btn-outline-primary flex-fill fw-bold d-flex align-items-center justify-content-center gap-2" style="border-radius: 12px; padding: 8px;" onclick="AdminPanel.editEvent('${ev.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    Edit
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger flex-fill fw-bold" onclick="AdminPanel.deleteEvent('${ev.id}')">
-                                    <i class="fa fa-trash me-1"></i> Delete
+                                <button class="btn btn-sm btn-outline-danger flex-fill fw-bold d-flex align-items-center justify-content-center gap-2" style="border-radius: 12px; padding: 8px;" onclick="AdminPanel.deleteEvent('${ev.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    Delete
                                 </button>
                             </div>
                         </div>

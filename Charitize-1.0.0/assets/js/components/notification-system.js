@@ -394,6 +394,33 @@ export class NotificationSystem {
     }
 
     /**
+     * Send a notification to a specific user
+     * @param {string} userId - Target user ID
+     * @param {string} message - Notification message
+     * @param {string} type - success, info, warning, error
+     * @param {string} actionUrl - Optional URL to redirect to when clicked
+     */
+    static async send(userId, message, type = 'info', actionUrl = '') {
+        if (!userId || !message) return;
+        
+        try {
+            const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+            const { db } = await import('../core/firebase-config.js');
+            
+            await addDoc(collection(db, 'notifications'), {
+                userId,
+                message,
+                type,
+                actionUrl,
+                read: false,
+                createdAt: serverTimestamp()
+            });
+        } catch (error) {
+            console.error('Error sending notification:', error);
+        }
+    }
+
+    /**
      * Clean up listeners
      */
     destroy() {

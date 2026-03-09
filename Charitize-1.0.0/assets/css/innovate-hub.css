@@ -3,15 +3,25 @@
    ======================================== */
 /* YOU CAN ADJUST THE HEIGHT AND WIDTH OF THE NAVBAR HERE */
 :root {
-  --nav-height: 70px; /* Main navbar height (Initial Yellow State) */
-  --nav-scrolled-height: 65px; /* Height of the navbar when scrolled down (Green State) */
-  --nav-max-width: 1200px; /* Standard container width */
-  --nav-horizontal-padding: 15px; /* Padding from edges */
-  --nav-menu-offset: -140px; /* Space between the Logo and the HOME link */
-  --nav-item-gap: 20px; /* Gap between nav items */
-  --nav-active-highlight: rgba(26, 94, 79, 0.1); /* Green hover effect */
-  --nav-glass-bg: rgba(243, 168, 19, 0.95); /* Original yellow */
-  --nav-glass-blur: 15px; /* Blur intensity */
+  /* Brand Identity Colors */
+  --brand-green: #1a5e4f;
+  --brand-green-2: #14493e;
+  --brand-green-dark: #0a2d26;
+  --brand-yellow: #f3a813;
+  --brand-yellow-glow: rgba(243, 168, 19, 0.3);
+  --brand-dark: #121331;
+  --brand-light: #eff3f2;
+  
+  /* Layout Variables */
+  --nav-height: 70px;
+  --nav-scrolled-height: 65px;
+  --nav-max-width: 1200px;
+  --nav-horizontal-padding: 15px;
+  --nav-menu-offset: -140px;
+  --nav-item-gap: 20px;
+  --nav-active-highlight: rgba(26, 94, 79, 0.1);
+  --nav-glass-bg: rgba(243, 168, 19, 0.95);
+  --nav-glass-blur: 15px;
 }
 
 /* ========================================
@@ -90,40 +100,28 @@
   color: white;
 }
 
-/* Artificial Intelligence - Yellow to green */
-.category-ai {
-  background-color: #ffd700;
-  color: #2d5016; /* Dark green text for contrast */
-}
-
-/* Engineering - Professional green */
-.category-engineering {
-  background-color: #558b2f;
-  color: white;
-}
-
 /* Business Innovation - Gold/Yellow */
 .category-business {
   background-color: #f9a825;
-  color: #2d5016; /* Dark green text */
+  color: #000000; /* Black text */
 }
 
 /* Technology (General) - Balanced green-yellow */
 .category-technology {
   background-color: #6b9b37;
-  color: #2d5016;
+  color: white;
 }
 
 /* Healthcare - Lighter green */
 .category-healthcare {
   background-color: #7cb342;
-  color: #2d5016;
+  color: white;
 }
 
 /* Education - Warm yellow-green */
 .category-education {
   background-color: #9ccc65;
-  color: #2d5016;
+  color: #000000;
 }
 
 /* Environment - Deep green */
@@ -529,11 +527,7 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    #6b9b37 0%,
-    #8bc34a 100%
-  ); /* Green gradient */
+  background: var(--brand-green);
   color: white;
   border: none;
   font-size: 1.5rem;
@@ -549,11 +543,7 @@
 .ai-assistant-button:hover {
   transform: scale(1.1);
   box-shadow: 0 6px 16px rgba(107, 155, 55, 0.6);
-  background: linear-gradient(
-    135deg,
-    #558b2f 0%,
-    #7cb342 100%
-  ); /* Darker green on hover */
+  background: #14493e;
 }
 
 /* AI Chat Container */
@@ -579,11 +569,7 @@
 
 /* Chat Header */
 .ai-chat-header {
-  background: linear-gradient(
-    135deg,
-    #6b9b37 0%,
-    #8bc34a 100%
-  ); /* Green gradient */
+  background: var(--brand-green);
   color: white;
   padding: 1rem;
   display: flex;
@@ -696,7 +682,7 @@
 
 /* Gradient Text */
 .gradient-text {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: var(--brand-green);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1164,11 +1150,8 @@ body.user-logged-in .logged-in-only {
   left: 0;
   width: 100%;
   height: 100vh;
-  background: radial-gradient(
-    circle at center,
-    #1e6b5a 0%,
-    #1a5e4f 100%
-  ); /* Radial depth */
+  background-color: #1a5e4f; /* Direct fallback for brand-green */
+  background: var(--brand-green);
   display: none; /* fail-safe: hidden by default */
   flex-direction: column;
   align-items: center;
@@ -1270,3 +1253,4 @@ body.user-logged-in .logged-in-only {
 /* ========================================
    15. OTHER STYLES
    ======================================== */
+

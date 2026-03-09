@@ -41,11 +41,10 @@ const CARD_ICONS = {
 };
 
 const dashboardCards = [
-    { title: 'Overview',         id: 'overview', section: 'overview',      types: ['Stats', 'Metrics'], progress: 100, action: 'view' },
-    { title: 'Requests',         id: 'requests', section: 'requests',      types: ['New', 'Review'],    progress: 25,  action: 'search' },
-    { title: 'My Mentees',       id: 'mentees',  section: 'mentees',       types: ['Manage', 'Active'], progress: 75,  action: 'chat' },
-    { title: 'Schedule',         id: 'schedule', section: 'schedule',      types: ['Time', 'Meetings'], progress: 50,  action: 'plus' },
-    { title: 'Account Settings', id: 'profile',  section: 'profile', types: ['Profile', 'Settings'], progress: 90, action: 'edit' }
+    { title: 'Requests',         id: 'requests', section: 'requests',      types: ['New', 'Review'],    icon: 'requests' },
+    { title: 'My Mentees',       id: 'mentees',  section: 'mentees',       types: ['Manage', 'Active'], icon: 'mentees'  },
+    { title: 'Schedule',         id: 'schedule', section: 'schedule',      types: ['Time', 'Meetings'], icon: 'schedule' },
+    { title: 'Account Settings', id: 'profile',  section: 'profile',       types: ['Profile', 'Settings'], icon: 'profile'  }
 ];
 
 // ─── Enhanced background symbol system ───────────────────────
@@ -92,31 +91,95 @@ function initBackgroundSymbols() {
     }
 }
 
-function renderQuickAccessCards() {
+function renderQuickAccessCards(profileComplete = false) {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
 
-    container.innerHTML = dashboardCards.map(card => `
-        <article class="premium-card" onclick="window.showDashboardSection('${card.section}')">
-          <div class="premium-card-icon">
-            ${CARD_ICONS[card.id] || ''}
-          </div>
-          <div class="tc-content">
-            <div class="tc-header">
-              <h3 class="tc-title" style="font-family:var(--font-head); font-weight:800; font-size:1.4rem; color:var(--brand-green);">${card.title}</h3>
-              <div class="tc-arrow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
+    // ── Inline Stats Row (replaces hidden overviewSection) ────────
+    const statsHtml = `
+        <div class="mentor-inline-stats" id="mentorInlineStats" style="
+            background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-2, #14493e) 100%);
+            border-radius: 20px;
+            padding: 28px 32px;
+            color: white;
+            display: flex;
+            gap: 0;
+            align-items: center;
+            margin-bottom: 0;
+            box-shadow: 0 10px 40px rgba(26,94,79,0.2);
+            position: relative;
+            overflow: hidden;
+        ">
+            <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:rgba(255,255,255,0.04);border-radius:50%;pointer-events:none;"></div>
+            <div style="flex:1;text-align:center;padding:0 20px;border-right:1px solid rgba(255,255,255,0.15);">
+                <div id="totalMentees" style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--brand-yellow,#f3a813);line-height:1;">—</div>
+                <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.8;margin-top:6px;">Active Mentees</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:0 20px;border-right:1px solid rgba(255,255,255,0.15);">
+                <div id="pendingRequests" style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--brand-yellow,#f3a813);line-height:1;">—</div>
+                <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.8;margin-top:6px;">Pending Requests</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:0 20px;">
+                <div id="completedProjects" style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--brand-yellow,#f3a813);line-height:1;">0</div>
+                <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.8;margin-top:6px;">Impact Created</div>
+            </div>
+        </div>
+    `;
+
+    // ── Lock gate ────────────────────────────────────────────────
+    const locked = !profileComplete;
+
+    const cardsHtml = dashboardCards.map(card => {
+        const lockOverlay = locked ? `
+            <div style="
+                position:absolute;inset:0;border-radius:20px;
+                background:rgba(255,255,255,0.85);
+                backdrop-filter:blur(4px);
+                display:flex;flex-direction:column;
+                align-items:center;justify-content:center;
+                z-index:10;gap:8px;
+            ">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1a5e4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
-              </div>
-            </div>
-            <div class="tc-tags" style="margin-top:8px; display:flex; gap:8px;">
-              ${card.types.map(t => `<span class="badge" style="background:rgba(26, 94, 79, 0.05); color:var(--brand-green); font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:4px 10px; border-radius:20px;">${t}</span>`).join('')}
-            </div>
-          </div>
-        </article>
-    `).join('');
+                <span style="font-family:var(--font-head);font-weight:800;font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:#1a5e4f;text-align:center;padding:0 16px;">Complete your profile to unlock</span>
+            </div>` : '';
+
+        const clickAction = locked
+            ? `window.dashboard && window.dashboard.showOnboardingModal()`
+            : `window.showDashboardSection('${card.section}')`;
+
+        return `
+            <article class="premium-card" style="cursor:pointer;" onclick="${clickAction}">
+                ${lockOverlay}
+                <div class="premium-card-icon">
+                    ${CARD_ICONS[card.id] || CARD_ICONS['profile']}
+                </div>
+                <div class="tc-content">
+                    <div class="tc-header">
+                        <h3 class="tc-title" style="font-family:var(--font-head);font-weight:800;font-size:1.4rem;color:var(--brand-green);">${card.title}</h3>
+                        <div class="tc-arrow">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                                <polyline points="12 5 19 12 12 19"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="tc-tags" style="margin-top:8px;display:flex;gap:8px;">
+                        ${card.types.map(t => `<span class="badge" style="background:rgba(26,94,79,0.05);color:var(--brand-green);font-size:0.7rem;font-weight:700;text-transform:uppercase;padding:4px 10px;border-radius:20px;">${t}</span>`).join('')}
+                    </div>
+                    ${locked ? '<div style="margin-top:12px;font-size:0.78rem;color:#aaa;display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Locked</div>' : ''}
+                </div>
+            </article>
+        `;
+    }).join('');
+
+    // Put stats in first grid column spanning all cols, then cards
+    container.innerHTML = `
+        <div style="grid-column:1/-1;">${statsHtml}</div>
+        ${cardsHtml}
+    `;
 
     initBackgroundSymbols();
 }
@@ -188,11 +251,17 @@ class MentorDashboard {
       // If we reach here, user IS approved - remove kill switch if it exists
       document.getElementById("mentorApprovalKillSwitch")?.remove();
 
+      this.profileComplete = userData.profileComplete === true;
+
+      // Always show dashboard quick access for approved mentors so they see locked cards
+      if (document.getElementById("dashboardQuickAccess")) {
+          document.getElementById("dashboardQuickAccess").style.display = "block";
+      }
+
       if (!userData.profileComplete) {
         this.showOnboardingModal();
       } else {
-        // Show dashboard
-        if (document.getElementById("dashboardQuickAccess")) document.getElementById("dashboardQuickAccess").style.display = "block";
+        // Only show main content (sections) if profile complete
         if (document.getElementById("dashboard-content")) document.getElementById("dashboard-content").style.display = "block";
       }
 
@@ -242,9 +311,36 @@ class MentorDashboard {
     if (fillHero) fillHero.style.width = percentage + "%";
     if (textHero) textHero.textContent = percentage + "%";
     if (statusText) {
-        statusText.textContent = percentage === 100 
-            ? "Your profile is 100% complete and discoverable." 
-            : "Complete your profile to unlock all features.";
+        if (percentage < 100) {
+            statusText.innerHTML = `
+                <div class="d-flex align-items-center justify-content-between mt-2">
+                    <span class="text-white-50">Profile incomplete</span>
+                    <button class="btn btn-sm btn-warning fw-bold px-3 py-1 rounded-pill pulsate-button" 
+                            style="font-size: 0.7rem;" 
+                            onclick="window.dashboard.showOnboardingModal()">
+                        CLICK TO COMPLETE
+                    </button>
+                </div>
+            `;
+            // Add pulsate animation if not exists
+            if (!document.getElementById('pulsateStyle')) {
+                const s = document.createElement('style');
+                s.id = 'pulsateStyle';
+                s.innerHTML = `
+                    @keyframes pulsate-b {
+                        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(243, 168, 19, 0.4); }
+                        50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(243, 168, 19, 0); }
+                        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(243, 168, 19, 0); }
+                    }
+                    .pulsate-button { animation: pulsate-b 2s infinite ease-in-out; }
+                    .completeness-card { transition: all 0.3s ease; }
+                    .completeness-card:hover { transform: translateY(-3px); border: 1px solid var(--brand-yellow); }
+                `;
+                document.head.appendChild(s);
+            }
+        } else {
+            statusText.textContent = "Your profile is 100% complete and discoverable.";
+        }
     }
 
     // Update Profile Section Tracker
@@ -295,15 +391,28 @@ class MentorDashboard {
   // ==========================================
 
   showOnboardingModal() {
-    const modal = new bootstrap.Modal(
-      document.getElementById("onboardingModal"),
-      {
-        backdrop: "static",
-        keyboard: false,
-      },
-    );
-    modal.show();
-    this.renderOnboardingStep();
+    const bootstrapRef = window.bootstrap || (typeof bootstrap !== 'undefined' ? bootstrap : null);
+    if (!bootstrapRef) {
+        console.error("Mentor Dashboard: Bootstrap library not found! Ensure bootstrap.bundle.min.js is loaded in dashboard.html head.");
+        alert("System Error: Required libraries not loaded. Please refresh the page.");
+        return;
+    }
+    
+    setTimeout(() => {
+        const modal = new bootstrapRef.Modal(
+          document.getElementById("onboardingModal"),
+          {
+            backdrop: "static",
+            keyboard: false,
+          },
+        );
+        
+        // Hide navbar to reduce distraction during onboarding
+        if (window.StaggeredMenu) window.StaggeredMenu.hide();
+        
+        modal.show();
+        this.renderOnboardingStep();
+    }, 0);
 
     // Bind Next/Back buttons - Check if listeners already added
     const nextBtn = document.getElementById("nextStepBtn");
@@ -407,26 +516,46 @@ class MentorDashboard {
         `;
         break;
       case 5:
-        title.textContent = "Review your profile";
+        title.textContent = "Profile Photo & Review";
         html = `
+            <!-- Photo Upload -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">Profile Photo <span class="text-muted fw-normal">(optional but recommended)</span></label>
+                <div class="d-flex align-items-center gap-4">
+                    <div id="ob-photoPreviewWrap" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--brand-green,#1a5e4f),#f3a813);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                        ${this.onboardingData.photoURL
+                            ? `<img src="${this.onboardingData.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
+                            : `<span style="font-family:var(--font-head,sans-serif);font-weight:800;font-size:1.5rem;color:white;">${(this.onboardingData.fullName||'M')[0]}</span>`
+                        }
+                    </div>
+                    <div style="flex:1;">
+                        <input type="file" id="ob-photoInput" accept="image/*" class="form-control mb-2" />
+                        <p class="text-muted small mb-0">Stored securely in Supabase. Visible to innovators on your mentor profile.</p>
+                        <div id="ob-photo-status" class="small mt-1" style="color:var(--brand-green);"></div>
+                    </div>
+                </div>
+            </div>
+            <hr/>
+            <!-- Review Summary -->
             <div class="review-box p-4 bg-light rounded-4 border">
                 <div class="d-flex align-items-center gap-3 mb-4">
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:50px; height:50px; font-size:1.2rem;">
-                        ${this.onboardingData.fullName?.[0] || 'M'}
+                    <div style="width:50px;height:50px;border-radius:50%;background:var(--brand-green,#1a5e4f);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0;">
+                        ${(this.onboardingData.fullName||'M')[0]}
                     </div>
                     <div>
-                        <h6 class="mb-0 fw-bold">${this.onboardingData.fullName}</h6>
-                        <p class="text-muted small mb-0">${this.onboardingData.institution}</p>
+                        <h6 class="mb-0 fw-bold">${this.onboardingData.fullName || '—'}</h6>
+                        <p class="text-muted small mb-0">${this.onboardingData.institution || '—'}</p>
                     </div>
                 </div>
                 <div class="row g-3 small">
-                    <div class="col-6"><strong>Categories:</strong><br>${(this.onboardingData.categories || []).join(', ')}</div>
-                    <div class="col-6"><strong>Experience:</strong><br>${this.onboardingData.experience} Years</div>
-                    <div class="col-12 border-top pt-2"><strong>Mentoring Style:</strong><br>${this.onboardingData.style}</div>
-                    <div class="col-12 border-top pt-2"><strong>Availability:</strong><br>${this.onboardingData.availability}</div>
+                    <div class="col-6"><strong>Categories:</strong><br>${(this.onboardingData.categories || []).join(', ') || '—'}</div>
+                    <div class="col-6"><strong>Experience:</strong><br>${this.onboardingData.experience || '—'} Years</div>
+                    <div class="col-12 border-top pt-2"><strong>Mentoring Style:</strong><br>${this.onboardingData.style || '—'}</div>
+                    <div class="col-12 border-top pt-2"><strong>Availability:</strong><br>${this.onboardingData.availability || '—'}</div>
+                    <div class="col-12 border-top pt-2"><strong>Meeting Link:</strong><br>${this.onboardingData.meetingLink || 'Not set'}</div>
                 </div>
             </div>
-            <p class="text-center mt-4 small text-muted">By clicking Finish, your profile will become discoverable by the InnovateHub community.</p>
+            <p class="text-center mt-4 small text-muted">By clicking <strong>Finish</strong>, your profile becomes discoverable by the InnovateHub community.</p>
         `;
         break;
     }
@@ -455,6 +584,44 @@ class MentorDashboard {
     } else if (this.onboardingStep === 4) {
       this.onboardingData.availability = document.getElementById("ob-availability").value;
       this.onboardingData.meetingLink = document.getElementById("ob-meetingLink").value;
+    } else if (this.onboardingStep === 5) {
+      // Photo upload is handled async inline — photoURL stored in this.onboardingData.photoURL
+      // Nothing to read synchronously here
+    }
+  }
+
+  // Called from step 5 photo input change
+  async handleWizardPhotoUpload(file) {
+    if (!file) return;
+    const statusEl = document.getElementById('ob-photo-status');
+    const previewWrap = document.getElementById('ob-photoPreviewWrap');
+    if (statusEl) statusEl.textContent = 'Uploading...';
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${this.currentUser.uid}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { data, error } = await window.supabase.storage
+          .from('project-documents')
+          .upload(filePath, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = window.supabase.storage
+          .from('project-documents')
+          .getPublicUrl(filePath);
+
+      this.onboardingData.photoURL = publicUrl;
+
+      if (previewWrap) {
+          previewWrap.innerHTML = `<img src="${publicUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      }
+      if (statusEl) statusEl.textContent = '✓ Photo uploaded successfully!';
+    } catch (err) {
+      console.error('Wizard photo upload failed:', err);
+      if (statusEl) statusEl.style.color = '#dc3545';
+      if (statusEl) statusEl.textContent = '⚠ Upload failed: ' + err.message;
     }
   }
 
@@ -486,6 +653,19 @@ class MentorDashboard {
     if (this.onboardingStep < this.totalSteps) {
       this.onboardingStep++;
       this.renderOnboardingStep();
+
+      // Bind photo input on step 5 after render
+      if (this.onboardingStep === 5) {
+          setTimeout(() => {
+              const photoInput = document.getElementById('ob-photoInput');
+              if (photoInput) {
+                  photoInput.addEventListener('change', (e) => {
+                      const file = e.target.files[0];
+                      if (file) this.handleWizardPhotoUpload(file);
+                  });
+              }
+          }, 100);
+      }
     } else {
       this.completeOnboarding();
     }
@@ -519,17 +699,28 @@ class MentorDashboard {
   async completeOnboarding() {
     try {
       const btn = document.getElementById("nextStepBtn");
-      btn.innerHTML =
-        '<span class="spinner-border spinner-border-sm"></span> Saving...';
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
       btn.disabled = true;
 
-      await updateDoc(doc(db, "users", this.currentUser.uid), {
-        ...this.onboardingData,
-        profileComplete: true,
-        updatedAt: serverTimestamp(),
-      });
+      const saveData = {
+          ...this.onboardingData,
+          profileComplete: true,
+          updatedAt: serverTimestamp(),
+      };
 
-      location.reload(); // Reload to clear modal and show dashboard
+      // If photo was uploaded in step 5, also update Firebase Auth profile
+      if (this.onboardingData.photoURL) {
+          try {
+              const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+              await updateProfile(this.currentUser, { photoURL: this.onboardingData.photoURL });
+          } catch (photoErr) {
+              console.warn('Could not update auth profile photo:', photoErr);
+          }
+      }
+
+      await updateDoc(doc(db, "users", this.currentUser.uid), saveData);
+
+      location.reload(); // Reload to clear modal and show unlocked dashboard
     } catch (error) {
       console.error("Onboarding failed:", error);
       alert("Failed to save profile. Please try again.");
@@ -546,54 +737,8 @@ class MentorDashboard {
     if (this.uiInitialized) return;
     this.uiInitialized = true;
 
-    // Navigation Logic handled in dashboard.html
-    // We just need to make sure renderQuickAccessCards is called
-    renderQuickAccessCards();
-
-    // Initialize CardNav for Mentor
-    const navItems = [
-        { 
-            label: 'Mentorship', 
-            bgColor: '#1a5e4f', 
-            textColor: '#fff', 
-            links: [
-                { label: 'Overview', href: 'javascript:showDashboardSection("overview")' }, 
-                { label: 'Requests', href: 'javascript:showDashboardSection("requests")' }
-            ] 
-        },
-        { 
-            label: 'Management', 
-            bgColor: '#f3a813', 
-            textColor: '#000', 
-            links: [
-                { label: 'My Mentees', href: 'javascript:showDashboardSection("mentees")' }, 
-                { label: 'Schedule', href: 'javascript:showDashboardSection("schedule")' }
-            ] 
-        },
-        { 
-            label: 'Account', 
-            bgColor: '#121331', 
-            textColor: '#fff', 
-            links: [
-                { label: 'Profile', href: 'javascript:showDashboardSection("profile")' }, 
-                { label: 'Notifications', href: 'javascript:showDashboardSection("notifications")' }
-            ] 
-        }
-    ];
-
-    /* CardNav removed in favor of standard navbar + landing cards */
-    /*
-    new CardNav({
-        user: { name: this.currentUser.displayName || this.currentUser.email.split('@')[0] },
-        items: navItems,
-        baseColor: '#1a5e4f',
-        buttonBgColor: '#f3a813',
-        buttonTextColor: '#000'
-    });
-    */
-
-    // Render Quick Access Cards
-    renderQuickAccessCards();
+    // Render Quick Access Cards with profile lock state
+    renderQuickAccessCards(this.profileComplete);
     
     // Attach Event Listeners for Forms
     const scheduleForm = document.getElementById('scheduleForm');
@@ -602,53 +747,28 @@ class MentorDashboard {
     const profileForm = document.getElementById('profileForm');
     if(profileForm) profileForm.addEventListener('submit', (e) => this.handleProfileUpdate(e));
     
-    // Profile Picture Upload Handling
+    // Profile Picture Upload in Account Settings (post-onboarding update)
     const profilePicInput = document.getElementById('profilePicInput');
     if (profilePicInput) {
         profilePicInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = (re) => {
-                const preview = document.getElementById('profilePreview');
-                if (preview) preview.src = re.target.result;
-            };
-            reader.readAsDataURL(file);
-            
             const preview = document.getElementById('profilePreview');
             if (preview) preview.style.opacity = '0.5';
-
             try {
                 const fileExt = file.name.split('.').pop();
-                const fileName = `${this.currentUser.uid}-${Date.now()}.${fileExt}`;
-                const filePath = `avatars/${fileName}`;
-
-                const { data, error } = await window.supabase.storage
-                    .from('project-documents')
-                    .upload(filePath, file);
-
+                const filePath = `avatars/${this.currentUser.uid}-${Date.now()}.${fileExt}`;
+                const { data, error } = await window.supabase.storage.from('project-documents').upload(filePath, file);
                 if (error) throw error;
-
-                const { data: { publicUrl } } = window.supabase.storage
-                    .from('project-documents')
-                    .getPublicUrl(filePath);
-
-                const photoURL = publicUrl;
-                
+                const { data: { publicUrl } } = window.supabase.storage.from('project-documents').getPublicUrl(filePath);
                 const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-                await updateProfile(this.currentUser, { photoURL });
-                
-                await updateDoc(doc(db, "users", this.currentUser.uid), { 
-                    photoURL, 
-                    updatedAt: serverTimestamp() 
-                });
-                
+                await updateProfile(this.currentUser, { photoURL: publicUrl });
+                await updateDoc(doc(db, "users", this.currentUser.uid), { photoURL: publicUrl, updatedAt: serverTimestamp() });
+                if (preview) { preview.src = publicUrl; preview.style.opacity = '1'; }
                 alert('Profile picture updated!');
             } catch (err) {
                 console.error("Profile pic upload failed:", err);
                 alert('Failed to update profile picture: ' + err.message);
-            } finally {
                 if (preview) preview.style.opacity = '1';
             }
         });
@@ -909,30 +1029,36 @@ class MentorDashboard {
             }
 
             const onclickAttr = `window.CollaborationHub.init('${requestId}')`;
+            const firstName = (innovator.fullName || "Innovator").split(' ')[0];
+            const innovatorPhoto = innovator.photoURL || 'assets/img/default-avatar.png';
 
             row.innerHTML += `
                     <div class="col-md-6 col-lg-4">
-                        <div class="dashboard-card hover-lift h-100 p-4 d-flex flex-column" onclick="${onclickAttr}" style="cursor: pointer;">
-                            <div class="d-flex align-items-center gap-3 mb-4">
-                                <div class="bg-primary-soft text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-weight: 800;">
-                                    ${(innovator.fullName || "U").split(' ').map(n=>n[0]).join('').substring(0,2)}
+                        <div class="dashboard-card premium-card hover-lift h-100 p-4 d-flex flex-column" onclick="${onclickAttr}" style="cursor: pointer;">
+                            <div class="card-glow" style="background: var(--brand-green);"></div>
+                            <div class="d-flex align-items-center gap-3 mb-4 position-relative z-1">
+                                <div class="position-relative">
+                                    <img src="${innovatorPhoto}" class="rounded-circle shadow-sm border border-2 border-white" style="width: 56px; height: 56px; object-fit: cover;">
+                                    <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white" style="width: 14px; height: 14px;"></div>
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold mb-0">${innovator.fullName || "Innovator"}</h6>
-                                    <p class="text-muted smaller mb-0">${project.categories?.[0] || 'Innovation'}</p>
+                                    <h6 class="fw-bold mb-0 text-dark">${firstName}</h6>
+                                    <p class="text-muted smaller mb-0 fw-bold text-uppercase opacity-75" style="letter-spacing: 0.5px;">${project.categories?.[0] || 'Innovation'}</p>
                                 </div>
                             </div>
-                            <h6 class="fw-bold mb-2">${project.title}</h6>
-                            <p class="text-muted small flex-grow-1 mb-4" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                                ${project.problemStatement || "No description provided."}
-                            </p>
+                            <div class="position-relative z-1 flex-grow-1">
+                                <h5 class="fw-bold mb-2 text-primary" style="font-family: var(--font-head);">${project.title}</h5>
+                                <p class="text-muted small mb-4" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6;">
+                                    ${project.problemStatement || "No description provided."}
+                                </p>
+                            </div>
                             
-                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
-                                <div class="small text-muted">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="me-1" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                    ${request.nextMeetingDate || 'No meeting'}
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top position-relative z-1">
+                                <div class="d-flex align-items-center gap-2 small text-muted fw-bold">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    ${request.nextMeetingDate || 'Schedule Meeting'}
                                 </div>
-                                <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" onclick="event.stopPropagation(); ${onclickAttr}">
+                                <button class="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm">
                                     Open Hub
                                 </button>
                             </div>
