@@ -43,30 +43,26 @@ async function renderMentorDiscovery() {
         const searchInput = document.getElementById('mentorSearchInput');
         const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
 
-        // Query mentors directly from Firebase (users collection with role 'mentor')
+        // NOTE: Single-field query only to avoid needing a Firestore composite index.
+        // Filtering by approval status is done in JS after fetching all mentors by role.
         const q = query(
-            collection(db, 'users'), 
-            where('role', '==', 'mentor'),
-            where('status', '==', 'approved') // Assuming mentors have a status
+            collection(db, 'users'),
+            where('role', '==', 'mentor')
         );
         const snapshot = await getDocs(q);
-        
+
         let allMentors = [];
         snapshot.forEach(docSnap => {
-            allMentors.push({ id: docSnap.id, ...docSnap.data() });
+            const data = docSnap.data();
+            // Accept mentor if explicitly approved, OR if no status field exists (legacy accounts)
+            const isApproved = data.status === 'approved'
+                || data.approvalStatus === 'approved'
+                || data.mentorStatus === 'approved'
+                || (!data.status && !data.approvalStatus && !data.mentorStatus);
+            if (isApproved) {
+                allMentors.push({ id: docSnap.id, ...data });
+            }
         });
-
-        // Add secondary fallback if 'status' doesn't exist but approvalStatus does
-        if (allMentors.length === 0) {
-            const q2 = query(collection(db, 'users'), where('role', '==', 'mentor'));
-            const snap2 = await getDocs(q2);
-            snap2.forEach(docSnap => {
-                const data = docSnap.data();
-                if (data.approvalStatus === 'approved' || data.mentorStatus === 'approved' || data.status === undefined) {
-                    allMentors.push({ id: docSnap.id, ...data });
-                }
-            });
-        }
 
         // Apply local search/category filters
         let filteredMentors = allMentors.filter(m => {

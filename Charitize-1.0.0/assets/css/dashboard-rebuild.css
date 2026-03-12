@@ -84,30 +84,36 @@ html, body {
 
 .dashboard-card:hover,
 .premium-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08), 
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 
               0 0 20px rgba(26, 94, 79, 0.05);
   border-color: rgba(26, 94, 79, 0.2);
   background: white;
+}
+
 /* Removed floating orbs for professional look */
 .premium-bg-orb {
   display: none !important;
 }
 
-/* ── ADMINISTRATION CARDS (CLEAN) ────────────────────────── */
+/* ── PREMIUM DASHBOARD CARDS (v8.0.0) ────────────────────────── */
 .premium-card {
   background: white;
   border: 1.5px solid rgba(26, 94, 79, 0.1);
-  border-radius: 28px;
-  padding: 32px;
+  border-radius: 20px;
+  padding: 22px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  min-height: 160px;
   transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  position: relative;
 }
 
 .premium-card-large {
-  min-height: 320px;
+  min-height: 260px;
   justify-content: space-between;
 }
 
@@ -115,8 +121,8 @@ html, body {
   position: absolute;
   top: -50px;
   right: -50px;
-  width: 200px;
-  height: 200px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
   filter: blur(80px);
   opacity: 0.1;
@@ -125,35 +131,36 @@ html, body {
   transition: all 0.6s ease;
 }
 
-.premium-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
-  border-color: rgba(26, 94, 79, 0.1) !important;
-}
-
 .premium-card::after {
   display: none !important;
 }
 
 .premium-card-icon {
-  width: 64px !important;
-  height: 64px !important;
-  border-radius: 18px !important;
-  background: rgba(26, 94, 79, 0.05) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  color: var(--brand-green) !important;
-  transition: all 0.4s ease !important;
-  flex-shrink: 0 !important;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(26, 94, 79, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand-green);
+  transition: all 0.4s ease;
+  flex-shrink: 0;
+  margin-bottom: 14px;
+}
+
+.premium-card-icon svg {
+  width: 22px;
+  height: 22px;
 }
 
 .premium-card:hover .premium-card-icon {
-  background: var(--brand-green) !important;
-  color: white !important;
-  transform: rotate(-8deg) scale(1.1) !important;
-  box-shadow: 0 8px 20px rgba(26, 94, 79, 0.2) !important;
+  background: var(--brand-green);
+  color: white;
+  transform: rotate(-8deg) scale(1.1);
+  box-shadow: 0 8px 20px rgba(26, 94, 79, 0.2);
 }
+
 
 /* ── RESET / BASE ───────────────────────────────────────────── */
 *,
