@@ -41,11 +41,61 @@ const CARD_ICONS = {
 };
 
 const dashboardCards = [
-    { title: 'Overview',         id: 'overview', section: 'overview',      types: ['Stats', 'Metrics'], progress: 100, action: 'view' },
-    { title: 'Requests',         id: 'requests', section: 'requests',      types: ['New', 'Review'],    progress: 25,  action: 'search' },
-    { title: 'My Mentees',       id: 'mentees',  section: 'mentees',       types: ['Manage', 'Active'], progress: 75,  action: 'chat' },
-    { title: 'Schedule',         id: 'schedule', section: 'schedule',      types: ['Time', 'Meetings'], progress: 50,  action: 'plus' },
-    { title: 'Account Settings', id: 'profile',  section: 'profile', types: ['Profile', 'Settings'], progress: 90, action: 'edit' }
+    {
+        title: 'Overview',
+        section: 'overview',
+        subtitle: 'Stats & Metrics',
+        gradient: 'linear-gradient(135deg, #1a5e4f 0%, #2d8c72 100%)',
+        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="9" height="9" rx="2" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
+          <rect x="17" y="6" width="9" height="9" rx="2" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
+          <rect x="6" y="17" width="9" height="9" rx="2" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
+          <rect x="17" y="17" width="9" height="9" rx="2" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
+        </svg>`
+    },
+    {
+        title: 'Requests',
+        section: 'requests',
+        subtitle: 'New Review',
+        gradient: 'linear-gradient(135deg, #f3a813 0%, #e07b00 100%)',
+        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="8" width="24" height="18" rx="3" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
+          <path d="M4 13h24" stroke="white" stroke-width="1.8"/>
+          <path d="M12 20h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>`
+    },
+    {
+        title: 'My Mentees',
+        section: 'mentees',
+        subtitle: 'Manage Active',
+        gradient: 'linear-gradient(135deg, #0d7a9e 0%, #0a5a76 100%)',
+        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="5" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
+          <circle cx="21" cy="11" r="5" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
+          <path d="M3 28c0-4.4 3.6-8 8-8" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M29 28c0-4.4-3.6-8-8-8" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>`
+    },
+    {
+        title: 'Schedule',
+        section: 'schedule',
+        subtitle: 'Time Meetings',
+        gradient: 'linear-gradient(135deg, #5c3d8f 0%, #8b5cf6 100%)',
+        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="11" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
+          <path d="M16 8v8l6 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`
+    },
+    {
+        title: 'Account',
+        section: 'profile',
+        subtitle: 'Profile Settings',
+        gradient: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="11" r="6" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
+          <path d="M4 28c0-6 5.4-10 12-10s12 4 12 10" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>`
+    }
 ];
 
 // ─── Enhanced background symbol system ───────────────────────
@@ -96,29 +146,34 @@ function renderQuickAccessCards() {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
 
-    container.innerHTML = dashboardCards.map(card => `
-        <article class="premium-card" onclick="window.showDashboardSection('${card.section}')">
-          <div class="premium-card-icon">
-            ${CARD_ICONS[card.id] || ''}
-          </div>
-          <div class="tc-content">
-            <div class="tc-header">
-              <h3 class="tc-title" style="font-family:var(--font-head); font-weight:800; font-size:1.4rem; color:var(--brand-green);">${card.title}</h3>
-              <div class="tc-arrow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
+    container.innerHTML = dashboardCards.map((card, i) => `
+        <article
+            class="dash-nav-card"
+            style="background:${card.gradient}; animation-delay:${i * 0.08}s"
+            onclick="window.showDashboardSection('${card.section}')"
+            tabindex="0"
+            role="button"
+        >
+            <div class="dnc-shine"></div>
+            <div class="dnc-icon" style="border-color:rgba(255,255,255,0.25)">
+                ${card.icon}
+            </div>
+            <div class="dnc-body">
+                <h3 class="dnc-title">${card.title}</h3>
+                <p class="dnc-sub">${card.subtitle}</p>
+            </div>
+            <div class="dnc-arrow">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
                 </svg>
-              </div>
             </div>
-            <div class="tc-tags" style="margin-top:8px; display:flex; gap:8px;">
-              ${card.types.map(t => `<span class="badge" style="background:rgba(26, 94, 79, 0.05); color:var(--brand-green); font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:4px 10px; border-radius:20px;">${t}</span>`).join('')}
-            </div>
-          </div>
         </article>
     `).join('');
 
-    initBackgroundSymbols();
+    // Subtle animated particles still enabled via CSS
+    const symbolContainer = document.getElementById('backgroundSymbols');
+    if (symbolContainer) symbolContainer.innerHTML = '';
 }
 
 
@@ -699,14 +754,17 @@ class MentorDashboard {
     container.innerHTML = EmptyStates.templates.loadingState();
 
     try {
+      // Use single-field query to avoid index issues
       const q = query(
         collection(db, "mentorshipRequests"),
-        where("mentorId", "==", this.currentUser.uid),
-        where("status", "==", "accepted"),
+        where("mentorId", "==", this.currentUser.uid)
       );
       const snapshot = await getDocs(q);
+      
+      // Filter by status in JS
+      const acceptedRequests = snapshot.docs.filter(d => d.data().status === 'accepted');
 
-      if (snapshot.empty) {
+      if (acceptedRequests.length === 0) {
         container.innerHTML = `<div class="text-center py-5"><p class="text-muted">No mentees yet.</p></div>`;
         return;
       }
@@ -714,7 +772,7 @@ class MentorDashboard {
       container.innerHTML = '<div class="row g-4"></div>';
       const row = container.querySelector(".row");
 
-      for (const docSnap of snapshot.docs) {
+      for (const docSnap of acceptedRequests) {
         const requestId = docSnap.id;
         const requestData = docSnap.data();
         const request = { id: requestId, ...requestData };
@@ -1122,6 +1180,11 @@ class MentorDashboard {
 export async function initDashboard(user, userData) {
     if (!window.dashboard) window.dashboard = new MentorDashboard();
     await window.dashboard.init(user, userData);
+    
+    // Initialize Dashboard Charts
+    if (window.DashboardCharts) {
+        window.DashboardCharts.init('mentor', user.uid);
+    }
 }
 
 // Initial instance for window access

@@ -28,37 +28,42 @@
     <link href="assets/lib/animate/animate.min.css" rel="stylesheet" />
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="assets/css/auth-ui.css" rel="stylesheet" />
-    <link href="assets/css/style.css?v=6.0.0" rel="stylesheet" />
-    <link href="assets/css/staggered-menu.css?v=6.0.0" rel="stylesheet" />
-    <link href="assets/css/dashboard-rebuild.css?v=7.0.0" rel="stylesheet" />
-    <link href="assets/css/innovate-hub.css?v=6.0.0" rel="stylesheet" />
-    <link href="assets/css/nuru-assistant.css?v=6.0.0" rel="stylesheet" />
+    <link href="assets/css/style.css?v=12.0.0" rel="stylesheet" />
+    <link href="assets/css/staggered-menu.css?v=12.0.0" rel="stylesheet" />
+    <link href="assets/css/dashboard-rebuild.css?v=12.0.0" rel="stylesheet" />
+    <link href="assets/css/collab-screen.css?v=12.0.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=12.0.0" rel="stylesheet" />
+    <link href="assets/css/nuru-assistant.css?v=12.0.0" rel="stylesheet" />
 
-    <!-- GSAP for animations -->
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/core/supabase-config.js"></script>
 
     <!-- Project Modules -->
-    <script src="assets/js/pages/mentor-discovery.js" type="module"></script>
+    <script src="assets/js/components/live-wallpaper.js?v=12.0.0" type="module"></script>
+    <script src="assets/js/components/activity-heatmap.js?v=12.0.0" type="module"></script>
+    <script src="assets/js/pages/mentor-discovery.js?v=12.0.0" type="module"></script>
+    <script src="assets/js/pages/dashboard-charts.js?v=12.0.0" type="module"></script>
   </head>
 
   <body>
     <!-- Minimalist Header Bridge (Staggered Menu will inject the actual header) -->
     <div style="height: 100px"></div>
 
-    <!-- Animated background elements -->
-    <div class="background-pattern"></div>
-    <div class="background-symbols" id="backgroundSymbols"></div>
-    <div class="page-blob"></div>
+    <!-- Dynamic Live Wallpaper -->
+    <div id="liveWallpaperBg" style="position: fixed; inset: 0; z-index: -1; pointer-events: none;"></div>
 
-    <!-- Premium Background Elements -->
-    <div class="premium-bg-orb orb-primary"></div>
-    <div class="premium-bg-orb orb-secondary"></div>
-
-    <!-- Dashboard Landing Page -->
-    <div
-      id="dashboardQuickAccess"
-      class="py-5"
+    <!-- Dashboard Content Wrapper (Hidden until onboarding check) -->
+    <div id="dashboard-content" style="display: none; position: relative; z-index: 1;">
+        <!-- Dashboard Landing Page -->
+        <div
+          id="dashboardQuickAccess"
+          class="py-5"
       style="position: relative; z-index: 2"
     >
       <div class="container mb-5">
@@ -78,6 +83,7 @@
               >Platform Overview</span
             >
             <h1
+              id="dashboardGreeting"
               class="display-5 fw-bold mb-2"
               style="
                 font-family: var(--font-head);
@@ -90,38 +96,61 @@
             <p class="text-muted lead mb-0">
               Manage your innovation ecosystem and mentor connections.
             </p>
+        </div>
+      </div>
+
+         
+        <!-- Platform Analytics -->
+        <div id="analyticsSection" class="row g-4 mb-5" style="display: none">
+          <!-- At a Glance Stats -->
+          <div class="col-lg-4">
+            <div class="dash-nav-card minimalist-stat-card">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="minimalist-title">At a Glance</h3>
+                <i class="fa fa-chart-line text-muted"></i>
+              </div>
+              <div class="stat-items">
+                <div class="stat-item mb-3 p-3 rounded-3 bg-light border-start border-4 border-success">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <span class="text-muted small d-block">Active Projects</span>
+                      <h4 class="mb-0 fw-bold" id="atGlanceProjects">0</h4>
+                    </div>
+                    <div class="stat-icon-sm bg-white rounded-circle shadow-sm p-2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="stat-item p-3 rounded-3 bg-light border-start border-4 border-warning">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <span class="text-muted small d-block" id="atGlanceConnectionLabel">Mentor Connections</span>
+                      <h4 class="mb-0 fw-bold" id="atGlanceConnections">0</h4>
+                    </div>
+                    <div class="stat-icon-sm bg-white rounded-circle shadow-sm p-2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Profile Completeness Tracker (Conditional) -->
-          <div
-            id="mentorCompleteness"
-            style="display: none; width: 100%; max-width: 400px"
-          >
-            <div class="completeness-card">
-              <div
-                class="d-flex justify-content-between align-items-center mb-1"
-              >
-                <span
-                  style="
-                    font-weight: 700;
-                    font-size: 0.85rem;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                  "
-                  >Profile Completeness</span
-                >
-                <span
-                  id="completenessText"
-                  style="font-weight: 800; color: var(--brand-yellow)"
-                  >0%</span
-                >
+          <!-- Activity Timeline -->
+          <div class="col-lg-8">
+            <div class="dash-nav-card minimalist-stat-card">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h3 class="minimalist-title">Innovation Pulse</h3>
+                    <p class="text-muted small mb-0">Daily activity across the last 365 days</p>
+                </div>
+                <div class="stat-icon-sm bg-light rounded-circle p-2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
               </div>
-              <div class="completeness-bar-bg">
-                <div id="completenessFill" class="completeness-bar-fill"></div>
+              <div style="flex: 1; position: relative" id="heatmapContainer">
+                <!-- ActivityHeatmap component mounts here -->
               </div>
-              <p style="font-size: 0.75rem; opacity: 0.8; margin: 0">
-                Complete your profile to be discoverable by innovators.
-              </p>
             </div>
           </div>
         </div>
@@ -171,6 +200,18 @@
             <hr class="brand-divider" />
           </div>
           <div id="projectsContainer"></div>
+        </div>
+
+        <!-- Mentorship: Collaboration Screen (Focus Panel) -->
+        <div id="collabSection" class="dashboard-section" style="display: none">
+          <div class="section-header mb-4">
+            <h2 class="display-6 fw-bold">Collaboration Hub</h2>
+            <p class="text-muted">
+              Chat, review documents, and schedule meetings with your mentor/mentee
+            </p>
+            <hr class="brand-divider" />
+          </div>
+          <div id="collabScreenContainer"></div>
         </div>
 
         <!-- Innovator: Submit Project (Focus Panel) -->
@@ -590,19 +631,7 @@
                 </h2>
               </div>
             </div>
-            <div class="col-md-4">
-              <div
-                class="card border-0 shadow-sm p-4 text-center rounded border-start border-5 border-success"
-              >
-                <h5>Impact Created</h5>
-                <h2
-                  class="display-4 fw-bold mb-0 text-success"
-                  id="completedProjects"
-                >
-                  0
-                </h2>
-              </div>
-            </div>
+            <!-- Impact Created Box removed as requested -->
           </div>
         </div>
 
@@ -711,17 +740,28 @@
       tabindex="-1"
       aria-hidden="true"
       data-bs-backdrop="static"
+      data-bs-keyboard="false"
     >
       <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-primary text-white">
-            <h5>Mentor Onboarding</h5>
+        <div class="modal-content border-0 shadow-lg" style="border-radius:24px; overflow:hidden;">
+          <div class="modal-header border-0 text-white" style="background: linear-gradient(135deg, #1a5e4f 0%, #2d8c72 100%); padding: 1.5rem 2rem;">
+            <div class="w-100">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0 fw-bold" id="onboardingTitle">Complete Your Mentor Profile</h5>
+                <small class="opacity-75" id="onboardingStepCount">Step 1 of 6</small>
+              </div>
+              <div class="progress" style="height: 6px; background: rgba(255,255,255,0.2); border-radius:3px;">
+                <div class="progress-bar bg-warning" id="onboardingProgress" role="progressbar" style="width:0%; border-radius:3px; transition: width 0.4s ease;"></div>
+              </div>
+              <small class="opacity-75 mt-1 d-block">Complete all steps before accessing your mentor dashboard.</small>
+            </div>
           </div>
-          <div class="modal-body p-4">
+          <div class="modal-body p-4" style="min-height: 200px;">
             <div id="onboardingStepContainer"></div>
           </div>
-          <div class="modal-footer">
-            <button class="btn btn-primary" id="nextStepBtn">Next</button>
+          <div class="modal-footer border-0 bg-light" style="padding: 1rem 2rem;">
+            <button class="btn btn-outline-secondary px-4" id="prevStepBtn" disabled>← Back</button>
+            <button class="btn btn-primary px-4 ms-auto" id="nextStepBtn" style="background:#1a5e4f; border-color:#1a5e4f;">Next →</button>
           </div>
         </div>
       </div>
@@ -751,19 +791,20 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="assets/js/pages/main.js?v=3.6.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=3.6.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=3.6.0"></script>
-    <script src="assets/js/core/api.js?v=3.6.0"></script>
+    <script src="assets/js/pages/main.js?v=10.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=10.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=10.0.0"></script>
+    <script src="assets/js/core/api.js?v=10.0.0"></script>
     <!-- Feature Scripts -->
-    <script type="module" src="assets/js/pages/mentor-discovery.js?v=1.0.0"></script>
-    <script src="assets/js/components/file-upload.js?v=1.0.0"></script>
+    <script type="module" src="assets/js/pages/mentor-discovery.js?v=10.0.0"></script>
+    <script src="assets/js/components/file-upload.js?v=10.0.0"></script>
     <script
       type="module"
-      src="assets/js/pages/innovate-hub.js?v=3.6.0"
+      src="assets/js/pages/innovate-hub.js?v=10.0.0"
     ></script>
-    <script src="assets/js/components/staggered-menu.js?v=3.6.0"></script>
-    <script src="assets/js/components/nuru-assistant.js?v=3.6.0"></script>
+    <script src="assets/js/components/staggered-menu.js?v=10.0.0"></script>
+    <script src="assets/js/components/nuru-assistant.js?v=10.0.0"></script>
+    <script type="module" src="assets/js/components/collab-screen.js?v=10.0.0"></script>
     <script type="module">
       import { auth, db } from "./assets/js/core/firebase-config.js";
       import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -827,36 +868,46 @@
         if (sectionId === "requests" && window.renderMentorRequests) {
           renderMentorRequests();
         }
+        if (sectionId === "collab" && window.CollaborationScreen) {
+          // Note: CollaborationScreen.init() requires a project ID, 
+          // usually passed from the project card click.
+        }
       };
 
       // ── Mentor access control: show blocking screen ──────────
       function showMentorPendingScreen() {
         document.body.innerHTML = `
-          <div class="background-pattern"></div>
-          <div class="page-blob"></div>
-          <div class="access-pending-screen">
-            <div class="access-pending-icon">⏳</div>
-            <h1 class="access-screen-title" style="color:#b47b00;">Application Under Review</h1>
-            <p class="access-screen-sub">Your mentor application is currently being reviewed by the Innovate Hub admin team. You will be notified once your application is approved.</p>
-            <p style="font-size:0.85rem;color:#aaa;">This process usually takes 24–48 hours. Thank you for your patience!</p>
-            <button onclick="logout && logout()" style="margin-top:20px;padding:12px 32px;background:#1a5e4f;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;">Sign Out</button>
+          <div class="background-pattern" style="display:block !important; background: linear-gradient(135deg, #edf7f4 0%, #fdf6e9 100%);"></div>
+          <div class="access-pending-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 20px; position: relative; z-index: 10;">
+            <div class="access-pending-icon" style="font-size: 5rem; margin-bottom: 2rem;">⏳</div>
+            <h1 class="access-screen-title" style="color:var(--brand-green); font-family: var(--font-head); font-weight: 800; margin-bottom: 1rem;">Application Under Review</h1>
+            <p class="access-screen-sub" style="max-width: 500px; color: #475569; font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem;">
+                Welcome to Innovate Hub! Our admin team is currently reviewing your mentor application to ensure the highest quality of mentorship for our innovators.
+            </p>
+            <div style="background: white; padding: 20px 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(26,94,79,0.1);">
+                <p style="font-size:0.9rem; color:var(--brand-green); font-weight: 600; margin-bottom: 5px;">Estimated Review Time</p>
+                <p style="font-size:1.2rem; color:var(--brand-yellow); font-weight: 800; margin-bottom: 0;">24 – 48 Hours</p>
+            </div>
+            <button onclick="logout && logout()" style="margin-top:3rem; padding:12px 40px; background:var(--brand-green); color:#fff; border:none; border-radius:50px; font-weight:700; cursor:pointer; transition: all 0.3s ease; box-shadow: 0 10px 20px rgba(26,94,79,0.2);">Sign Out</button>
           </div>`;
       }
 
       function showMentorRejectedScreen(reason) {
         document.body.innerHTML = `
-          <div class="background-pattern"></div>
-          <div class="page-blob"></div>
-          <div class="access-rejected-screen">
-            <div class="access-rejected-icon">❌</div>
-            <h1 class="access-screen-title" style="color:#dc3545;">Application Not Approved</h1>
-            <p class="access-screen-sub">Unfortunately, your mentor application was not approved at this time. Here is the reason provided by the administrator:</p>
-            <div class="rejection-reason-box">
-              <strong>Admin's Reason</strong>
-              <p>${reason || "No specific reason was provided. Please contact support."}</p>
+          <div class="background-pattern" style="display:block !important; background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);"></div>
+          <div class="access-rejected-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 20px; position: relative; z-index: 10;">
+            <div class="access-rejected-icon" style="font-size: 5rem; margin-bottom: 2rem;">❌</div>
+            <h1 class="access-screen-title" style="color:#dc3545; font-family: var(--font-head); font-weight: 800; margin-bottom: 1rem;">Application Not Approved</h1>
+            <p class="access-screen-sub" style="max-width: 500px; color: #475569; font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem;">
+                Unfortunately, your application to become a mentor has not been approved at this time.
+            </p>
+            <div class="rejection-reason-box" style="background: #fffafa; padding: 25px; border-radius: 20px; border: 2px dashed #fecaca; max-width: 500px; width: 100%;">
+              <strong style="color:#dc3545; display:block; margin-bottom: 10px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Admin Feedback</strong>
+              <p style="color: #1f2937; line-height: 1.6; margin-bottom: 0;">${reason || "No specific reason was provided. You can try updating your profile and reapplying."}</p>
             </div>
-            <p style="font-size:0.85rem;color:#aaa;max-width:420px;margin:0 auto 20px;">You may update your profile and reapply, or contact <a href="contact.html" style="color:#1a5e4f;">our team</a> for clarification.</p>
-            <button onclick="logout && logout()" style="margin-top:12px;padding:12px 32px;background:#dc3545;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;">Sign Out</button>
+            <div style="margin-top: 2rem;">
+                <button onclick="logout && logout()" style="padding:12px 40px; background:#dc3545; color:#fff; border:none; border-radius:50px; font-weight:700; cursor:pointer; transition: all 0.3s ease; box-shadow: 0 10px 20px rgba(220,53,69,0.2);">Sign Out and Reapply</button>
+            </div>
           </div>`;
       }
 
@@ -953,9 +1004,28 @@
             menuButtonColor: "#ffffff",
             openMenuButtonColor: "#ffffff",
           });
-          const name =
-            userData.fullName || user.displayName || user.email.split("@")[0];
-          window.StaggeredMenu.updateInitials(name);
+          // Update Menu Initials or Profile Photo
+          const name = userData.fullName || user.displayName || user.email.split("@")[0];
+          
+          if (user.photoURL) {
+              window.StaggeredMenu.updatePhoto(user.photoURL);
+          } else if (userData.photoURL) {
+              window.StaggeredMenu.updatePhoto(userData.photoURL);
+          } else {
+              window.StaggeredMenu.updateInitials(name);
+          }
+
+          // Dynamic Greeting
+          const greetingEl = document.getElementById("dashboardGreeting");
+          if (greetingEl) {
+              const hour = new Date().getHours();
+              let timeGreeting = "Good evening";
+              if (hour < 12) timeGreeting = "Good morning";
+              else if (hour < 17) timeGreeting = "Good afternoon";
+              
+              const firstName = name.split(' ')[0];
+              greetingEl.textContent = `${timeGreeting}, ${firstName}`;
+          }
         }
 
         // Store user in localStorage for mock service lookups
@@ -992,8 +1062,8 @@
         // Load role-specific module
         const modulePath =
           role === "mentor"
-            ? "./assets/js/pages/mentor-dashboard.js?v=3.6.0"
-            : "./assets/js/pages/innovator-dashboard.js?v=3.6.0";
+            ? "./assets/js/pages/mentor-dashboard.js?v=10.0.0"
+            : "./assets/js/pages/innovator-dashboard.js?v=10.0.0";
 
         try {
           const mod = await import(modulePath);
@@ -1004,7 +1074,7 @@
           console.error("Dashboard: Module load error:", err);
           try {
             const fallback =
-              await import("./assets/js/pages/innovator-dashboard.js?v=3.6.0");
+              await import("./assets/js/pages/innovator-dashboard.js?v=10.0.0");
             if (fallback && fallback.initDashboard)
               await fallback.initDashboard(user, userData);
           } catch (e2) {
@@ -1037,8 +1107,10 @@
 
         // Init mentor discovery and requests for immediate renders when navigating
         if (role === "innovator") {
-          // Pre-initialize discovery for faster render on first nav
-          if (window.MentorDiscovery) setTimeout(() => {}, 0);
+          // Initialize discovery
+          if (window.MentorDiscovery && window.MentorDiscovery.init) {
+            window.MentorDiscovery.init();
+          }
         }
         if (role === "mentor" && window.renderMentorRequests) {
           // Render sidebar badge count for pending requests
@@ -1059,5 +1131,6 @@
         }
       });
     </script>
+    </div>
   </body>
 </html>
