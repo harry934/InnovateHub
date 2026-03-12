@@ -10,12 +10,15 @@ import {
     serverTimestamp,
     addDoc,
     getDoc,
-    orderBy
+    orderBy,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 class AdminDashboard {
     constructor() {
         this.currentUser = null;
+        this.eventsLoaded = false;
+        this.heatmapData = {};
         this.init();
     }
 
@@ -34,358 +37,553 @@ class AdminDashboard {
             // Initial Data Load
             await this.loadStats();
             await this.loadProjectReviews();
+            await this.renderActivityHeatmap();
             
             // Make instance globally available for onclick handlers
             window.adminDashboard = this;
+            window.AdminPanel = this; // Backward compatibility for legacy handlers
+            
+            this.setupEventListeners();
         });
     }
 
+    setupEventListeners() {
+        // Fix: Use one-time binding
+        if (this.listenersAttached) return;
+
+        const eventForm = document.getElementById('adminEventForm');
+        if (eventForm) {
+            eventForm.addEventListener('submit', (e) => this.handleEventSubmit(e));
+        }
+
+        const projectForm = document.getElementById('adminProjectForm');
+        if (projectForm) {
+            projectForm.addEventListener('submit', (e) => this.handleProjectSubmit(e));
+        }
+
+        const manualMentorForm = document.getElementById('manualMentorForm');
+        if (manualMentorForm) {
+            manualMentorForm.addEventListener('submit', (e) => this.handleManualMentorRegistration(e));
+        }
+
+        this.listenersAttached = true;
+    }
+
+    // ============================================================
+    //  ACTIVITY HEATMAP (GitHub Style)
+    // ============================================================
+    async renderActivityHeatmap() {
+        const container = document.getElementById('activityHeatmapContainer');
+        if (!container) return;
+
+        try {
+            // Fetch multiple collections to consolidate activity
+            const [projects, reports, comments, pairings] = await Promise.all([
+                getDocs(collection(db, 'projects')),
+                getDocs(collection(db, 'milestoneReports')),
+                getDocs(collection(db, 'collaborationComments')),
+                getDocs(collection(db, 'mentorshipRequests'))
+            ]);
+
+            const activityMap = {};
+            const process = (snap) => {
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.createdAt?.toDate ? data.createdAt.toDate() : (data.createdAt ? new Date(data.createdAt) : null);
+                    if (date) {
+                        const dateString = date.toISOString().split('T')[0];
+                        activityMap[dateString] = (activityMap[dateString] || 0) + 1;
+                    }
+                });
+            };
+
+            process(projects);
+            process(reports);
+            process(comments);
+            process(pairings);
+
+            this.heatmapData = activityMap;
+
+            // Generate the Grid
+            const today = new Date();
+            const yearAgo = new Date();
+            yearAgo.setFullYear(today.getFullYear() - 1);
+            
+            // Start from the beginning of the week yearAgo
+            const startDay = new Date(yearAgo);
+            startDay.setDate(startDay.getDate() - startDay.getDay());
+
+            let html = '<div class="heatmap-grid" style="display:grid; grid-template-columns: repeat(53, 1fr); grid-auto-flow: column; gap:3px; overflow-x:auto; padding-bottom:10px;">';
+            
+            for (let i = 0; i < 53 * 7; i++) {
+                const current = new Date(startDay);
+                current.setDate(startDay.getDate() + i);
+                const dateStr = current.toISOString().split('T')[0];
+                const count = activityMap[dateStr] || 0;
+                
+                let level = 0;
+                if (count > 0) level = 1;
+                if (count > 3) level = 2;
+                if (count > 6) level = 3;
+                if (count > 10) level = 4;
+
+                const colors = ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'];
+                const color = colors[level];
+
+                html += `<div class="heatmap-day" title="${dateStr}: ${count} actions" style="width:12px; height:12px; border-radius:3px; background:${color}; cursor:pointer;" onclick="adminDashboard.showDayActivity('${dateStr}')"></div>`;
+            }
+            html += '</div>';
+            
+            // Add Legend
+            html += `
+                <div class="d-flex align-items-center justify-content-end mt-2 gap-2" style="font-size:0.75rem; color:#666;">
+                    <span>Less</span>
+                    <div style="width:10px; height:10px; background:#ebedf0; border-radius:2px;"></div>
+                    <div style="width:10px; height:10px; background:#9be9a8; border-radius:2px;"></div>
+                    <div style="width:10px; height:10px; background:#40c463; border-radius:2px;"></div>
+                    <div style="width:10px; height:10px; background:#30a14e; border-radius:2px;"></div>
+                    <div style="width:10px; height:10px; background:#216e39; border-radius:2px;"></div>
+                    <span>More</span>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        } catch (e) {
+            console.error("Heatmap Error:", e);
+        }
+    }
+
+    showDayActivity(date) {
+        const count = this.heatmapData[date] || 0;
+        alert(`Activity on ${date}: ${count} actions logged.`);
+    }
+
+    // ============================================================
+    //  CORE ADMIN METHODS
+    // ============================================================
     updateUserDisplay() {
         const userDisplayName = document.getElementById('userDisplayName');
         const name = this.currentUser.displayName || this.currentUser.email.split('@')[0];
-        if (userDisplayName) {
-            userDisplayName.textContent = name;
-        }
-
-        // Refresh Profile Circle Initials
-        if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
-            window.StaggeredMenu.updateInitials(name);
-        }
+        if (userDisplayName) userDisplayName.textContent = name;
     }
 
     setupNotifications() {
         if (typeof NotificationSystem !== 'undefined') {
-            const notificationSystem = new NotificationSystem(this.currentUser.uid);
-            notificationSystem.init('notificationBell');
+            const ns = new NotificationSystem(this.currentUser.uid);
+            ns.init('notificationBell');
         }
     }
 
     async loadStats() {
-        try {
-            const usersSnapshot = await getDocs(collection(db, 'users'));
-            const projectsSnapshot = await getDocs(collection(db, 'projects'));
-            const mentorsSnapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'mentor')));
-            const rejectionSnapshot = await getDocs(query(collection(db, 'mentorshipRequests'), where('status', '==', 'pending_admin_rejection')));
-            
-            // Basic Counts
-            document.getElementById('totalUsers').textContent = usersSnapshot.size;
-            document.getElementById('totalProjects').textContent = projectsSnapshot.size;
-            document.getElementById('totalMentors').textContent = mentorsSnapshot.size;
-            
-            // Badge: Pending Projects
-            const pendingProjectsCount = projectsSnapshot.docs.filter(doc => doc.data().status === 'pending').length;
-            document.getElementById('pendingProjects').textContent = pendingProjectsCount;
-
-            // Badge: Pending Mentors (assuming they have a status or isApproved field)
-            // If they are only 'mentors' after approval, then we might need to check 'pending_mentor' role or isApproved=false
-            const pendingMentorsCount = usersSnapshot.docs.filter(doc => doc.data().role === 'mentor' && doc.data().isApproved === false).length;
-            const pendingMentorsDisplay = document.getElementById('pendingMentors');
-            if (pendingMentorsDisplay) pendingMentorsDisplay.textContent = pendingMentorsCount;
-
-            // Badge: Pending Rejections
-            const pendingRejectionsCount = rejectionSnapshot.size;
-            const pendingRejectionsDisplay = document.getElementById('pendingRejections');
-            if (pendingRejectionsDisplay) pendingRejectionsDisplay.textContent = pendingRejectionsCount;
-            
-            // Update active mentorships
-            const mentorshipsSnapshot = await getDocs(collection(db, 'mentorshipRequests'));
-            const activeMentorshipsCount = mentorshipsSnapshot.docs.filter(doc => doc.data().status === 'accepted').length;
-            const activeMentorshipsDisplay = document.getElementById('activeMentorships');
-            if (activeMentorshipsDisplay) activeMentorshipsDisplay.textContent = activeMentorshipsCount;
-
-        } catch (error) {
-            console.error('Error loading stats:', error);
-        }
-    }
-
-    async loadProjectReviews() {
-        const container = document.getElementById('projectReviewsContainer');
+        const container = document.getElementById('adminStatsGrid');
         if (!container) return;
         
-        container.innerHTML = EmptyStates.templates.loadingState();
-        
         try {
-            const q = query(collection(db, 'projects'), where('status', '==', 'pending'));
-            const snapshot = await getDocs(q);
+            const [usersSnap, projectsSnap, pairsSnap] = await Promise.all([
+                getDocs(collection(db, 'users')),
+                getDocs(collection(db, 'projects')),
+                getDocs(collection(db, 'mentorshipRequests'))
+            ]);
             
-            if (snapshot.empty) {
-                container.innerHTML = EmptyStates.templates.noProjects();
-                return;
-            }
+            const users = usersSnap.docs.map(d => d.data());
+            const projects = projectsSnap.docs.map(d => d.data());
             
-            container.innerHTML = '';
-            snapshot.forEach(doc => {
-                const project = { id: doc.id, ...doc.data() };
-                const card = StructuredProjectCard.render(project, {
-                    showActions: false,
-                    isExpanded: true
-                });
-                
-                container.innerHTML += `
-                    <div class="mb-4 dashboard-card p-3 shadow-sm border-0">
-                        ${card}
-                        <div class="mt-3 d-flex gap-2">
-                            <button class="btn btn-success px-4" onclick="adminDashboard.reviewProject('${project.id}', 'approved')">
-                                <i class="fa fa-check me-2"></i>Approve
-                            </button>
-                            <button class="btn btn-danger px-4" onclick="adminDashboard.reviewProject('${project.id}', 'rejected')">
-                                <i class="fa fa-times me-2"></i>Reject
-                            </button>
-                        </div>
+            const stats = [
+                { label: 'Total Members', value: users.length, icon: 'fa-users', color: '#3b82f6' },
+                { label: 'Innovators', value: users.filter(u => u.role === 'innovator').length, icon: 'fa-lightbulb', color: '#10b981' },
+                { label: 'Mentors', value: users.filter(u => u.role === 'mentor').length, icon: 'fa-graduation-cap', color: '#f59e0b' },
+                { label: 'Active Projects', value: projects.filter(p => p.status === 'approved').length, icon: 'fa-project-diagram', color: '#6366f1' },
+                { label: 'Mentorship Pairs', value: pairsSnap.docs.filter(d => d.data().status === 'accepted').length, icon: 'fa-handshake', color: '#ec4899' },
+                { label: 'Pending Reviews', value: projects.filter(p => p.status === 'pending').length, icon: 'fa-clock', color: '#f43f5e' }
+            ];
+
+            container.innerHTML = stats.map(s => `
+                <div class="premium-card">
+                    <div class="premium-card-icon" style="background:rgba(0,0,0,0.03); color:${s.color};">
+                        <i class="fa ${s.icon}"></i>
                     </div>
-                `;
-            });
-        } catch (error) {
-            console.error('Error loading projects:', error);
-            container.innerHTML = EmptyStates.templates.errorState('Failed to load projects');
-        }
-    }
+                    <div>
+                        <div class="h3 fw-bold mb-0">${s.value}</div>
+                        <div class="text-uppercase fw-bold text-muted small" style="font-size:0.65rem;">${s.label}</div>
+                    </div>
+                </div>
+            `).join('');
 
-    async reviewProject(projectId, status) {
-        try {
-            await updateDoc(doc(db, 'projects', projectId), { 
-                status: status,
-                reviewedAt: serverTimestamp()
-            });
-            
-            // Notify user
-            const projectDoc = await getDoc(doc(db, 'projects', projectId));
-            const projectData = projectDoc.data();
-            
-            if (projectData && projectData.ownerId) {
-                await addDoc(collection(db, "notifications"), {
-                    userId: projectData.ownerId,
-                    type: "project_status",
-                    projectId: projectId,
-                    message: `Your project "${projectData.title}" has been ${status}.`,
-                    status: "unread",
-                    createdAt: serverTimestamp()
-                });
-            }
-
-            alert(`Project ${status} successfully!`);
-            await this.loadProjectReviews();
-            await this.loadStats();
-        } catch (error) {
-            console.error('Error reviewing project:', error);
-            alert('Failed to update project: ' + error.message);
+        } catch (e) {
+            console.error(e);
         }
     }
 
     showSection(sectionName) {
-        document.querySelectorAll('.dashboard-section').forEach(section => {
-            section.style.display = 'none';
-        });
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('active');
-        });
+        document.querySelectorAll('.dashboard-section').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        
         const section = document.getElementById(sectionName + 'Section');
         if (section) {
             section.style.display = 'block';
-            const activeLink = document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`);
-            if (activeLink) activeLink.classList.add('active');
+            const link = document.querySelector(`.nav-link[onclick*="'${sectionName}'"]`);
+            if (link) link.classList.add('active');
         }
-        
-        // Trigger specific loads
-        if (sectionName === 'rejectionRequests') this.loadRejectionRequests();
-        if (sectionName === 'users') this.loadUsers();
-        if (sectionName === 'eventsManagement') {
-            if (typeof window.loadAdminEvents === 'function') {
-                window.loadAdminEvents();
-            }
-        }
-        if (sectionName === 'mentorshipPairings') {
-            if (window.AdminPanel && window.AdminPanel.renderMentorshipsTable) {
-                window.AdminPanel.renderMentorshipsTable();
-            }
+
+        // Section Specific Loads
+        switch(sectionName) {
+            case 'adminOverview': this.loadStats(); this.renderActivityHeatmap(); break;
+            case 'projectApprovals': this.loadProjectReviews(); break;
+            case 'mentorApprovals': this.loadMentorApprovals(); break;
+            case 'users': this.loadUsers(); break;
+            case 'eventsManagement': this.loadAdminEvents(); break;
+            case 'mentorshipPairings': this.loadMentorships(); break;
+            case 'rejectionRequests': this.loadRejectionRequests(); break;
         }
     }
 
-    async loadRejectionRequests() {
-        const container = document.getElementById('rejectionRequestsContainer');
+    // ============================================================
+    //  PROJECT MANAGEMENT
+    // ============================================================
+    async loadProjectReviews() {
+        const container = document.getElementById('projectApprovalList');
         if (!container) return;
         
-        container.innerHTML = EmptyStates.templates.loadingState();
-        
+        container.innerHTML = '<div class="text-center p-5"><span class="spinner-border"></span></div>';
         try {
-            const q = query(collection(db, 'mentorshipRequests'), where('status', '==', 'pending_admin_rejection'));
-            const snapshot = await getDocs(q);
+            const q = query(collection(db, 'projects'), where('status', '==', 'pending'));
+            const snap = await getDocs(q);
             
-            if (snapshot.empty) {
-                container.innerHTML = `<div class="text-center p-5 text-muted"> <i class="fa fa-check-circle fa-3x mb-3 text-success d-block"></i> No pending rejection requests.</div>`;
+            if (snap.empty) {
+                container.innerHTML = '<div class="text-center p-5 text-muted">No projects pending review.</div>';
                 return;
             }
-            
-            container.innerHTML = '';
-            for (const docSnapshot of snapshot.docs) {
-                const req = { id: docSnapshot.id, ...docSnapshot.data() };
-                
-                // Fetch mentor and mentee details
-                const mentorDoc = await getDoc(doc(db, "users", req.mentorId));
-                const innovatorDoc = await getDoc(doc(db, "users", req.innovatorId));
-                const projectDoc = await getDoc(doc(db, "projects", req.projectId));
-                
-                const mentorName = mentorDoc.exists() ? mentorDoc.data().fullName : 'Unknown Mentor';
-                const innovatorName = innovatorDoc.exists() ? innovatorDoc.data().fullName : 'Unknown Innovator';
-                const projectTitle = projectDoc.exists() ? projectDoc.data().title : 'Unknown Project';
 
-                container.innerHTML += `
-                    <div class="dashboard-card mb-3 p-4 border-start border-danger border-4">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h5 class="mb-1">Rejection Request: ${projectTitle}</h5>
-                                <p class="mb-2 text-muted small">Requested by Mentor: <strong>${mentorName}</strong> | Mentee: <strong>${innovatorName}</strong></p>
-                                <div class="bg-light p-3 rounded mb-3">
-                                    <strong>Reason for Rejection:</strong><br>
-                                    <span class="text-dark">${req.rejectionReason || 'No reason provided'}</span>
-                                </div>
-                            </div>
-                            <span class="badge bg-danger">Pending Review</span>
+            container.innerHTML = snap.docs.map(docSnap => {
+                const p = { id: docSnap.id, ...docSnap.data() };
+                return `
+                    <div class="dashboard-card mb-3 p-4">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="fw-bold text-primary">${p.title}</h5>
+                            <span class="badge bg-warning text-dark">Pending</span>
                         </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-danger px-3" onclick="adminDashboard.handleRejectionApproval('${req.id}', true)">
-                                <i class="fa fa-check-circle me-1"></i>Approve Rejection
-                            </button>
-                            <button class="btn btn-sm btn-outline-secondary px-3" onclick="adminDashboard.handleRejectionApproval('${req.id}', false)">
-                                <i class="fa fa-times-circle me-1"></i>Deny & Resume
-                            </button>
+                        <p class="text-muted mt-2">${p.problemStatement ? p.problemStatement.substring(0, 150) + '...' : 'No description'}</p>
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="btn btn-sm btn-success px-3" onclick="adminDashboard.approveProject('${p.id}')">Approve</button>
+                            <button class="btn btn-sm btn-outline-danger px-3" onclick="adminDashboard.rejectProject('${p.id}')">Reject</button>
                         </div>
-                    </div>
-                `;
-            }
-        } catch (error) {
-            console.error('Error loading rejection requests:', error);
-            container.innerHTML = `<div class="alert alert-danger">Error loading requests: ${error.message}</div>`;
-        }
+                    </div>`;
+            }).join('');
+        } catch (e) {}
     }
 
-    async handleRejectionApproval(requestId, approved) {
-        if (!confirm(`Are you sure you want to ${approved ? 'approve' : 'deny'} this rejection request?`)) return;
-
+    async approveProject(id) {
         try {
-            const { updateDoc, doc, db, addDoc, collection, serverTimestamp, getDoc } = await import('../core/firebase-config.js');
-            
-            const reqRef = doc(db, "mentorshipRequests", requestId);
-            const reqDoc = await getDoc(reqRef);
-            const reqData = reqDoc.data();
-
-            if (approved) {
-                // Terminate mentorship
-                await updateDoc(reqRef, {
-                    status: "rejected",
-                    adminAction: "approved_rejection",
-                    adminActionAt: serverTimestamp()
-                });
-
-                // Notify both
-                const msg = `The mentorship session for project "${requestId}" has been terminated by the mentor (Admin Approved).`;
-                await this.sendNotification(reqData.mentorId, "mentorship_terminated", msg);
-                await this.sendNotification(reqData.innovatorId, "mentorship_terminated", msg);
-            } else {
-                // Reset to active
-                await updateDoc(reqRef, {
-                    status: "accepted",
-                    adminAction: "denied_rejection",
-                    adminActionAt: serverTimestamp()
-                });
-
-                // Notify mentor
-                await this.sendNotification(reqData.mentorId, "mentorship_rejection_denied", "Your request to stop mentorship was denied by the admin. Please continue the session.");
-            }
-
-            alert(`Rejection request ${approved ? 'approved' : 'denied'} successfully.`);
-            this.loadRejectionRequests();
-            this.loadStats();
-        } catch (error) {
-            console.error("Error handling rejection approval:", error);
-            alert("Error: " + error.message);
-        }
+            await updateDoc(doc(db, 'projects', id), { status: 'approved' });
+            alert('Project approved!');
+            this.loadProjectReviews();
+        } catch(e) { alert(e.message); }
     }
 
-    async sendNotification(userId, type, message) {
-        await addDoc(collection(db, "notifications"), {
-            userId: userId,
-            type: type,
-            message: message,
-            status: "unread",
-            createdAt: serverTimestamp()
-        });
+    async rejectProject(id) {
+        try {
+            await updateDoc(doc(db, 'projects', id), { status: 'rejected' });
+            alert('Project rejected.');
+            this.loadProjectReviews();
+        } catch(e) { alert(e.message); }
     }
 
+    // ============================================================
+    //  USER & MENTOR MANAGEMENT
+    // ============================================================
     async loadUsers() {
-        const container = document.getElementById('usersContainer');
+        const container = document.getElementById('usersCardGrid');
         if (!container) return;
         
-        container.innerHTML = EmptyStates.templates.loadingState();
+        container.innerHTML = '<div class="text-center p-5 w-100"><span class="spinner-border"></span></div>';
+        try {
+            const snap = await getDocs(collection(db, 'users'));
+            let users = [];
+            snap.forEach(d => { if (d.data().role !== 'admin') users.push({ id: d.id, ...d.data() }); });
+
+            container.innerHTML = users.map(u => `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="premium-user-card p-4" style="background:#fff; border-radius:20px; box-shadow:0 8px 30px rgba(0,0,0,0.05);">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div style="width:50px; height:50px; background:#f1f5f9; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#1a5e4f;">${(u.fullName || u.email).substring(0, 2).toUpperCase()}</div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">${u.fullName || 'User'}</h6>
+                                <p class="mb-0 small text-muted">${u.role}</p>
+                            </div>
+                        </div>
+                        <div class="small text-muted mb-3"><i class="fa fa-envelope me-2"></i>${u.email}</div>
+                        <button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="adminDashboard.deleteUser('${u.id}')">Block Account</button>
+                    </div>
+                </div>
+            `).join('');
+        } catch(e) {}
+    }
+
+    async deleteUser(id) {
+        if (!confirm('Permanently remove this user?')) return;
+        try {
+            await deleteDoc(doc(db, 'users', id));
+            alert('User removed.');
+            this.loadUsers();
+        } catch(e) {}
+    }
+
+    async loadMentorApprovals() {
+        const container = document.getElementById('mentorApprovalList');
+        if (!container) return;
         
         try {
-            const snapshot = await getDocs(collection(db, 'users'));
-            if (snapshot.empty) {
-                container.innerHTML = 'No users found.';
+            const q = query(collection(db, 'users'), where('role', '==', 'mentor'), where('status', '==', 'pending'));
+            const snap = await getDocs(q);
+            
+            if (snap.empty) {
+                container.innerHTML = '<div class="text-center p-5 text-muted">No pending mentor applications.</div>';
                 return;
             }
-            
-            let html = `
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="bg-light">
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            
-            snapshot.forEach(doc => {
-                const user = { id: doc.id, ...doc.data() };
-                const isRevoked = user.isRevoked || false;
+
+            container.innerHTML = snap.docs.map(docSnap => {
+                const m = { id: docSnap.id, ...docSnap.data() };
+                return `
+                    <div class="dashboard-card mb-3 p-4 border-start border-warning border-4">
+                        <h5 class="fw-bold">${m.fullName}</h5>
+                        <div class="small text-muted mb-2">${m.institution || 'N/A'} | ${m.expertise || 'Expert'}</div>
+                        <p class="small text-dark mb-3">${m.bio || 'No bio provided.'}</p>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-success px-4" onclick="adminDashboard.approveMentor('${m.id}')">Approve</button>
+                            <button class="btn btn-sm btn-outline-danger px-4" onclick="adminDashboard.rejectMentor('${m.id}')">Reject</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        } catch (e) {}
+    }
+
+    async approveMentor(id) {
+        try {
+            await updateDoc(doc(db, 'users', id), { status: 'approved', isApproved: true });
+            alert('Mentor approved!');
+            this.loadMentorApprovals();
+        } catch(e) {}
+    }
+
+    async rejectMentor(id) {
+        try {
+            await updateDoc(doc(db, 'users', id), { status: 'rejected' });
+            alert('Mentor rejected.');
+            this.loadMentorApprovals();
+        } catch(e) {}
+    }
+
+    // ============================================================
+    //  EVENT MANAGEMENT
+    // ============================================================
+    async loadAdminEvents() {
+        const container = document.getElementById('adminEventsGrid');
+        if (!container) return;
+        
+        container.innerHTML = '<div class="col-12 text-center p-4"><span class="spinner-border"></span></div>';
+        try {
+            const snap = await getDocs(query(collection(db, 'events'), orderBy('createdAt', 'desc')));
+            if (snap.empty) {
+                container.innerHTML = '<div class="col-12 text-center text-muted">No events found.</div>';
+                return;
+            }
+
+            container.innerHTML = snap.docs.map(docSnap => {
+                const ev = { id: docSnap.id, ...docSnap.data() };
+                return `
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; margin-bottom:0.5rem; background:#fff; border-radius:12px; border:1px solid #e2e8f0; gap:1rem;">
+                        <div style="min-width:0; flex:1;">
+                            <div style="font-weight:700; font-size:0.85rem; color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ev.title}</div>
+                            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${ev.date} &bull; ${ev.location}</div>
+                        </div>
+                        <div style="display:flex; gap:0.4rem; flex-shrink:0;">
+                            <button onclick="adminDashboard.editEvent('${ev.id}')" title="Edit"
+                                style="width:32px; height:32px; border-radius:8px; border:1px solid #c7d2fe; background:#eef2ff; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                            <button onclick="adminDashboard.deleteEvent('${ev.id}')" title="Delete"
+                                style="width:32px; height:32px; border-radius:8px; border:1px solid #fecaca; background:#fef2f2; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                            </button>
+                        </div>
+                    </div>`;
+            }).join('');
+        } catch(e) {}
+    }
+
+    async handleEventSubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        const btn = document.getElementById('adminEventSubmitBtn');
+        const id = document.getElementById('adminEventId').value;
+        const existingImageURL = document.getElementById('existingImageURL').value;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+        
+        let imageUrl = existingImageURL;
+        const fileInput = form.eventImage;
+        const file = fileInput.files[0];
+
+        try {
+            if (file) {
+                if (!window.supabase) throw new Error("Supabase is not initialized. Please refresh the page.");
+                
+                const fileExt = file.name.split('.').pop();
+                const fileName = `event-${Date.now()}.${fileExt}`;
+                const filePath = `events/${fileName}`;
+
+                const { data, error } = await window.supabase.storage
+                    .from('project-documents')
+                    .upload(filePath, file);
+
+                if (error) throw error;
+
+                const { data: { publicUrl } } = window.supabase.storage
+                    .from('project-documents')
+                    .getPublicUrl(filePath);
+
+                imageUrl = publicUrl;
+            }
+
+            const data = {
+                title: form.title.value,
+                description: form.description.value,
+                date: form.date.value,
+                time: form.time.value,
+                location: form.location.value,
+                imageLink: imageUrl,
+                updatedAt: serverTimestamp()
+            };
+
+            if (id) {
+                await updateDoc(doc(db, 'events', id), data);
+                alert('Event updated!');
+            } else {
+                data.createdAt = serverTimestamp();
+                await addDoc(collection(db, 'events'), data);
+                alert('Event created!');
+            }
+            form.reset();
+            document.getElementById('adminEventId').value = '';
+            document.getElementById('existingImageURL').value = 'assets/img/event-default.jpg';
+            btn.textContent = 'Publish Event';
+            document.getElementById('adminEventCancelBtn').style.display = 'none';
+            this.loadAdminEvents();
+        } catch (err) { 
+            alert(`Error saving event: ${err.message}`); 
+            btn.textContent = id ? 'Update Event' : 'Publish Event';
+        } finally { 
+            btn.disabled = false; 
+        }
+    }
+
+    async editEvent(id) {
+        try {
+            const snap = await getDoc(doc(db, 'events', id));
+            if (!snap.exists()) return;
+            const ev = snap.data();
+            const form = document.getElementById('adminEventForm');
+            form.title.value = ev.title;
+            form.description.value = ev.description;
+            form.date.value = ev.date;
+            form.time.value = ev.time;
+            form.location.value = ev.location;
+            document.getElementById('existingImageURL').value = ev.imageLink;
+            document.getElementById('adminEventId').value = id;
+            document.getElementById('adminEventSubmitBtn').textContent = 'Update Event';
+            document.getElementById('adminEventCancelBtn').style.display = 'block';
+            form.scrollIntoView({ behavior: 'smooth' });
+        } catch(e) {}
+    }
+
+    cancelEventEdit() {
+        const form = document.getElementById('adminEventForm');
+        form.reset();
+        document.getElementById('adminEventId').value = '';
+        document.getElementById('existingImageURL').value = 'assets/img/event-default.jpg';
+        document.getElementById('adminEventSubmitBtn').textContent = 'Publish Event';
+        document.getElementById('adminEventCancelBtn').style.display = 'none';
+        form.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async deleteEvent(id) {
+        if (!confirm('Delete this event?')) return;
+        try {
+            await deleteDoc(doc(db, 'events', id));
+            this.loadAdminEvents();
+        } catch(e) {}
+    }
+
+    // ============================================================
+    //  MENTORSHIP PAIRINGS
+    // ============================================================
+    async loadMentorships() {
+        const container = document.getElementById('mentorshipsTableBody');
+        if (!container) return;
+        
+        container.innerHTML = '<tr><td colspan="5" class="text-center py-4"><span class="spinner-border"></span></td></tr>';
+        try {
+            const snap = await getDocs(collection(db, 'mentorshipRequests'));
+            if (snap.empty) {
+                container.innerHTML = '<tr><td colspan="5" class="text-center py-4">No pairings found.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            for (let d of snap.docs) {
+                const r = { id: d.id, ...d.data() };
+                const iDoc = await getDoc(doc(db, 'users', r.innovatorId));
+                const mDoc = await getDoc(doc(db, 'users', r.mentorId));
+                
                 html += `
                     <tr>
-                        <td>${user.fullName || 'No Name'}</td>
-                        <td>${user.email}</td>
-                        <td><span class="badge bg-info text-dark">${user.role}</span></td>
-                        <td>
-                            <span class="badge ${isRevoked ? 'bg-danger' : 'bg-success'}">
-                                ${isRevoked ? 'Revoked' : 'Active'}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm ${isRevoked ? 'btn-success' : 'btn-outline-danger'}" 
-                                onclick="adminDashboard.toggleUserAccess('${user.id}', ${isRevoked})">
-                                ${isRevoked ? 'Restore Access' : 'Revoke Access'}
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            html += `</tbody></table></div>`;
+                        <td><strong>${iDoc.exists() ? iDoc.data().fullName : 'Unknown'}</strong></td>
+                        <td><strong>${mDoc.exists() ? mDoc.data().fullName : 'Unknown'}</strong></td>
+                        <td><span class="badge bg-light text-dark border">${r.status}</span></td>
+                        <td>${r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString() : 'N/A'}</td>
+                        <td><button class="btn btn-sm btn-outline-danger" onclick="adminDashboard.terminateMentorship('${r.id}')">Dissolve</button></td>
+                    </tr>`;
+            }
             container.innerHTML = html;
-        } catch (error) {
-            console.error('Error loading users:', error);
-            container.innerHTML = 'Error loading users.';
-        }
+        } catch(e) {}
     }
 
-    async toggleUserAccess(userId, currentlyRevoked) {
-        const action = currentlyRevoked ? 'restore' : 'revoke';
-        if (!confirm(`Are you sure you want to ${action} access for this user?`)) return;
+    async terminateMentorship(id) {
+        if (!confirm('Dissolve this mentorship link?')) return;
+        try {
+            await deleteDoc(doc(db, 'mentorshipRequests', id));
+            this.loadMentorships();
+        } catch(e) {}
+    }
+
+    // ============================================================
+    //  MANUAL MENTOR REGISTRATION
+    // ============================================================
+    async handleManualMentorRegistration(e) {
+        e.preventDefault();
+        const form = e.target;
+        const btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+
+        const data = {
+            fullName: form.fullName.value,
+            email: form.email.value.toLowerCase(),
+            role: 'mentor',
+            status: 'approved',
+            isApproved: true,
+            institution: form.institution.value,
+            expertise: form.expertise.value,
+            createdAt: serverTimestamp()
+        };
 
         try {
-            await updateDoc(doc(db, 'users', userId), {
-                isRevoked: !currentlyRevoked,
-                accessUpdatedAt: serverTimestamp()
-            });
-            alert(`User access ${action}d!`);
+            await addDoc(collection(db, 'users'), data);
+            alert('Mentor registered successfully!');
+            form.reset();
             this.loadUsers();
-        } catch (error) {
-            console.error(`Error ${action}ing user access:`, error);
-            alert('Error updating user access.');
-        }
+        } catch(e) { alert(e.message); }
+        finally { btn.disabled = false; }
     }
 
     async logout() {
@@ -393,18 +591,18 @@ class AdminDashboard {
             await auth.signOut();
             localStorage.removeItem('innovateHubUser');
             window.location.href = 'login.html';
-        } catch (error) {
-            console.error('Logout error:', error);
+        } catch (e) {
             window.location.href = 'login.html';
         }
     }
 }
 
-// Global functions for onclick
-window.logout = () => window.adminDashboard.logout();
-window.showSection = (sectionName) => window.adminDashboard.showSection(sectionName);
+// Global Exports
+window.AdminDashboard = AdminDashboard;
+window.logout = () => window.adminDashboard?.logout();
+window.showSection = (section) => window.adminDashboard?.showSection(section);
 
-// Initialize
+// Auto-init
 document.addEventListener('DOMContentLoaded', () => {
     new AdminDashboard();
 });

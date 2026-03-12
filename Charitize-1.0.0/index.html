@@ -31,24 +31,28 @@
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Template Stylesheet -->
-    <link href="assets/css/style.css?v=11.4.0" rel="stylesheet">
+    <link href="assets/css/style.css?v=10.0.0" rel="stylesheet">
     
     <!-- Innovate Hub Custom Styles -->
     <!-- Custom CSS file with splash screen, badges, dashboard styles, and AI chat -->
-    <link href="assets/css/innovate-hub.css?v=11.4.0" rel="stylesheet">
+    <link href="assets/css/innovate-hub.css?v=10.0.0" rel="stylesheet">
     
     <!-- Nuru Assistant Styles -->
-    <link href="assets/css/nuru-assistant.css?v=11.4.0" rel="stylesheet">
+    <link href="assets/css/nuru-assistant.css?v=10.0.0" rel="stylesheet">
     
     <!-- Mobile Enhancement Styles -->
-    <link href="assets/css/mobile-nav.css?v=11.4.0" rel="stylesheet">
+    <link href="assets/css/mobile-nav.css?v=10.0.0" rel="stylesheet">
     
     <!-- Auth UI Styles -->
-    <link href="assets/css/auth-ui.css?v=11.4.0" rel="stylesheet">
+    <link href="assets/css/auth-ui.css?v=10.0.0" rel="stylesheet">
     
     <!-- Unified Dashboard Styles -->
-    <link href="assets/css/responsive-dashboard.css?v=11.4.0" rel="stylesheet">
-    <link href="assets/css/dashboard-unified.css?v=3.2.0" rel="stylesheet">
+    <link href="assets/css/responsive-dashboard.css?v=10.0.0" rel="stylesheet">
+    <link href="assets/css/dashboard-unified.css?v=10.0.0" rel="stylesheet">
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/core/supabase-config.js"></script>
 </head>
 
 <body>
@@ -156,8 +160,8 @@
                             <div class="dropdown-menu m-0">
                                 <a href="signup.html" class="dropdown-item">Submit a Project</a>
                                 <a href="signup.html" class="dropdown-item">Join as a Mentor</a>
-                                <a href="contact.html" class="dropdown-item">Partner With Us</a>
-                                <a href="event.html" class="dropdown-item">Events</a>
+                                <a href="index.html#partner" class="dropdown-item">Partner With Us</a>
+                                <a href="index.html#events" class="dropdown-item">Events</a>
                             </div>
                         </div>
                         <a href="contact.html" class="nav-item nav-link">Contact Us</a>
@@ -431,7 +435,7 @@
                                 </div>
                                 <h3 class="lh-base">Agricultural Technology</h3>
                                 <p class="mb-2">Revolutionizing farming through smart sensing, automated machinery, and sustainable precision agriculture solutions.</p>
-                                <a href="#!" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalAgriTech" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4 wow fadeIn" data-wow-delay="0.3s">
@@ -441,7 +445,7 @@
                                 </div>
                                 <h3 class="lh-base">Robotics</h3>
                                 <p class="mb-2">Designing and building next-generation autonomous systems for industrial automation and personal assistance.</p>
-                                <a href="#!" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalRobotics" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4 wow fadeIn" data-wow-delay="0.5s">
@@ -451,7 +455,7 @@
                                 </div>
                                 <h3 class="lh-base">Artificial Intelligence</h3>
                                 <p class="mb-2">Developing advanced machine learning models and cognitive systems to solve complex data challenges.</p>
-                                <a href="#!" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalAI" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4 wow fadeIn" data-wow-delay="0.1s">
@@ -461,7 +465,7 @@
                                 </div>
                                 <h3 class="lh-base">Engineering</h3>
                                 <p class="mb-2">Innovative structural, mechanical, and electrical engineering solutions for the modern world's infrastructure.</p>
-                                <a href="#!" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalEngineering" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4 wow fadeIn" data-wow-delay="0.3s">
@@ -471,7 +475,7 @@
                                 </div>
                                 <h3 class="lh-base">Business Innovation</h3>
                                 <p class="mb-2">Creating new business models, streamlining operations, and fostering entrepreneurial growth strategies.</p>
-                                <a href="#!" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalBusiness" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4 wow fadeIn" data-wow-delay="0.5s">
@@ -481,7 +485,7 @@
                                 </div>
                                 <h3 class="lh-base">Technology</h3>
                                 <p class="mb-2">Exploring the frontiers of digital transformation, software development, and hardware innovation.</p>
-                                <a href="#!" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalTechnology" class="text-primary fw-bold">Learn More <i class="fa fa-arrow-right ms-2"></i></a>
                             </div>
                         </div>
                     </div>
@@ -490,6 +494,199 @@
         </div>
     </div>
     <!-- Service End -->
+
+    <!-- ===== Platform Feature Modals ===== -->
+    <style>
+        /* Blurred backdrop for feature modals */
+        .modal-feature .modal-content {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .modal-feature .modal-header {
+            border-bottom: none;
+            padding: 2rem 2rem 0.5rem;
+        }
+        .modal-feature .modal-body {
+            padding: 1.5rem 2rem 2rem;
+        }
+        .modal-feature .modal-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.25rem;
+        }
+    </style>
+    <script>
+        // Apply backdrop blur when any feature modal opens
+        document.addEventListener('DOMContentLoaded', function(){
+            document.querySelectorAll('.modal-feature').forEach(function(modal){
+                modal.addEventListener('show.bs.modal', function(){
+                    document.body.classList.add('modal-blur-active');
+                });
+                modal.addEventListener('hidden.bs.modal', function(){
+                    document.body.classList.remove('modal-blur-active');
+                });
+            });
+        });
+    </script>
+    <style>
+        .modal-blur-active .modal-backdrop { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); opacity: 0.6 !important; }
+    </style>
+
+    <!-- Modal: Agricultural Technology -->
+    <div class="modal fade modal-feature" id="modalAgriTech" tabindex="-1" aria-labelledby="modalAgriTechLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <div>
+                        <div class="modal-icon bg-light text-success"><i class="fa fa-leaf"></i></div>
+                        <h4 class="modal-title fw-bold" id="modalAgriTechLabel">Agricultural Technology</h4>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Revolutionizing farming through smart sensing, automated machinery, and sustainable precision agriculture solutions.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i>Smart irrigation and crop monitoring systems</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i>Drone-assisted field analysis and spraying</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i>AI-powered pest detection and soil analytics</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i>Vertical farming and hydroponics systems</li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-primary rounded-pill px-4 mt-2">Submit a Project</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Robotics -->
+    <div class="modal fade modal-feature" id="modalRobotics" tabindex="-1" aria-labelledby="modalRoboticsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <div>
+                        <div class="modal-icon bg-light text-secondary"><i class="fa fa-cog"></i></div>
+                        <h4 class="modal-title fw-bold" id="modalRoboticsLabel">Robotics</h4>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Designing and building next-generation autonomous systems for industrial automation and personal assistance.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fa fa-check-circle text-secondary me-2"></i>Autonomous mobile robots and cobots</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-secondary me-2"></i>Industrial process automation and control</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-secondary me-2"></i>Wearable assistive robotic exoskeletons</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-secondary me-2"></i>Real-time sensor fusion and path planning</li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-primary rounded-pill px-4 mt-2">Submit a Project</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Artificial Intelligence -->
+    <div class="modal fade modal-feature" id="modalAI" tabindex="-1" aria-labelledby="modalAILabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <div>
+                        <div class="modal-icon bg-light text-primary"><i class="fa fa-microchip"></i></div>
+                        <h4 class="modal-title fw-bold" id="modalAILabel">Artificial Intelligence</h4>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Developing advanced machine learning models and cognitive systems to solve complex data challenges.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fa fa-check-circle text-primary me-2"></i>Deep learning and neural network architectures</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-primary me-2"></i>Natural language processing and generation</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-primary me-2"></i>Computer vision and image recognition</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-primary me-2"></i>Predictive analytics and decision intelligence</li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-primary rounded-pill px-4 mt-2">Submit a Project</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Engineering -->
+    <div class="modal fade modal-feature" id="modalEngineering" tabindex="-1" aria-labelledby="modalEngineeringLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <div>
+                        <div class="modal-icon bg-light text-warning"><i class="fa fa-tools"></i></div>
+                        <h4 class="modal-title fw-bold" id="modalEngineeringLabel">Engineering</h4>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Innovative structural, mechanical, and electrical engineering solutions for the modern world's infrastructure.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fa fa-check-circle text-warning me-2"></i>Sustainable civil and structural design</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-warning me-2"></i>Embedded systems and IoT hardware</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-warning me-2"></i>Renewable energy systems and storage</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-warning me-2"></i>Mechatronics and control systems</li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-primary rounded-pill px-4 mt-2">Submit a Project</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Business Innovation -->
+    <div class="modal fade modal-feature" id="modalBusiness" tabindex="-1" aria-labelledby="modalBusinessLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <div>
+                        <div class="modal-icon bg-light text-danger"><i class="fa fa-chart-line"></i></div>
+                        <h4 class="modal-title fw-bold" id="modalBusinessLabel">Business Innovation</h4>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Creating new business models, streamlining operations, and fostering entrepreneurial growth strategies.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fa fa-check-circle text-danger me-2"></i>Business model canvas and lean startup methodology</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-danger me-2"></i>Market research and competitive analysis tools</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-danger me-2"></i>Financial modelling and investor readiness</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-danger me-2"></i>Growth hacking and go-to-market strategy</li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-primary rounded-pill px-4 mt-2">Submit a Project</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Technology -->
+    <div class="modal fade modal-feature" id="modalTechnology" tabindex="-1" aria-labelledby="modalTechnologyLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <div>
+                        <div class="modal-icon bg-light text-info"><i class="fa fa-laptop-code"></i></div>
+                        <h4 class="modal-title fw-bold" id="modalTechnologyLabel">Technology</h4>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Exploring the frontiers of digital transformation, software development, and hardware innovation.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fa fa-check-circle text-info me-2"></i>Full-stack web and mobile application development</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-info me-2"></i>Cloud architecture and DevOps pipelines</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-info me-2"></i>Cybersecurity and digital risk management</li>
+                        <li class="mb-2"><i class="fa fa-check-circle text-info me-2"></i>Blockchain and distributed ledger applications</li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-primary rounded-pill px-4 mt-2">Submit a Project</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <!-- Features Start -->
@@ -502,28 +699,28 @@
                             <div class="col-sm-6 wow fadeIn" data-wow-delay="0.1s">
                                 <div class="text-center bg-primary py-5 px-4 h-100">
                                     <i class="fa fa-users fa-3x text-secondary mb-3"></i>
-                                    <h1 class="display-5 mb-0" data-toggle="counter-up">150</h1>
+                                    <h1 class="display-5 mb-0" id="stat-mentors" data-toggle="counter-up">0</h1>
                                     <span class="text-dark">Expert Mentors</span>
                                 </div>
                             </div>
                             <div class="col-sm-6 wow fadeIn" data-wow-delay="0.3s">
                                 <div class="text-center bg-secondary py-5 px-4 h-100">
                                     <i class="fa fa-award fa-3x text-primary mb-3"></i>
-                                    <h1 class="display-5 text-white mb-0" data-toggle="counter-up">45</h1>
+                                    <h1 class="display-5 text-white mb-0" id="stat-awards" data-toggle="counter-up">0</h1>
                                     <span class="text-white">Innovation Awards</span>
                                 </div>
                             </div>
                             <div class="col-sm-6 wow fadeIn" data-wow-delay="0.5s">
                                 <div class="text-center bg-secondary py-5 px-4 h-100">
                                     <i class="fa fa-rocket fa-3x text-primary mb-3"></i>
-                                    <h1 class="display-5 text-white mb-0" data-toggle="counter-up">1200</h1>
+                                    <h1 class="display-5 text-white mb-0" id="stat-projects" data-toggle="counter-up">0</h1>
                                     <span class="text-white">Active Projects</span>
                                 </div>
                             </div>
                             <div class="col-sm-6 wow fadeIn" data-wow-delay="0.7s">
                                 <div class="text-center bg-primary py-5 px-4 h-100">
                                     <i class="fa fa-graduation-cap fa-3x text-secondary mb-3"></i>
-                                    <h1 class="display-5 mb-0" data-toggle="counter-up">5000</h1>
+                                    <h1 class="display-5 mb-0" id="stat-students" data-toggle="counter-up">0</h1>
                                     <span class="text-dark">Students Impacted</span>
                                 </div>
                             </div>
@@ -551,56 +748,25 @@
     <!-- Features End -->
 
     <!-- Event Start -->
-    <div class="container-fluid py-5">
+    <div class="container-fluid py-5" id="events">
         <div class="container">
             <div class="text-center mx-auto wow fadeIn" data-wow-delay="0.1s" style="max-width: 500px;">
                 <p class="section-title bg-white text-center text-primary px-3">Innovation Events</p>
                 <h1 class="display-6 mb-4">Engage in the Future of Technology</h1>
             </div>
-            <div class="row g-4">
-                <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.1s">
-                    <div class="event-item h-100 p-4">
-                        <img class="img-fluid w-100 mb-4" src="assets/img/event-1.jpg" alt="">
-                        <a href="#!" class="h3 d-inline-block">National STEM Exhibition</a>
-                        <p>A flagship platform showcasing hundreds of student scientific projects from across all counties.</p>
-                        <div class="bg-light p-4">
-                            <p class="mb-1"><i class="fa fa-clock text-primary me-2"></i>08:00 AM - 17:00 PM</p>
-                            <p class="mb-1"><i class="fa fa-calendar-alt text-primary me-2"></i>August 12 - 15</p>
-                            <p class="mb-0"><i class="fa fa-map-marker-alt text-primary me-2"></i>Kenyatta University, Nairobi</p>
-                        </div>
-                    </div>
+            <div class="row g-4" id="dynamicEventsGrid">
+                <!-- Dynamic events injected by homepage-dynamic.js -->
+                <div class="col-12 text-center p-5">
+                    <span class="spinner-border text-primary"></span>
                 </div>
-                <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.3s">
-                    <div class="event-item h-100 p-4">
-                        <img class="img-fluid w-100 mb-4" src="assets/img/event-2.jpg" alt="">
-                        <a href="#!" class="h3 d-inline-block">Innovation Bootcamp</a>
-                        <p>Intensive training rounds for young entrepreneurs focusing on business modeling and IP protection.</p>
-                        <div class="bg-light p-4">
-                            <p class="mb-1"><i class="fa fa-clock text-primary me-2"></i>09:00 AM - 16:00 PM</p>
-                            <p class="mb-1"><i class="fa fa-calendar-alt text-primary me-2"></i>September 05 - 10</p>
-                            <p class="mb-0"><i class="fa fa-map-marker-alt text-primary me-2"></i>Innovate Hub HQ, Westlands</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.5s">
-                    <div class="event-item h-100 p-4">
-                        <img class="img-fluid w-100 mb-4" src="assets/img/event-3.jpg" alt="">
-                        <a href="#!" class="h3 d-inline-block">Tech Outreach Demos</a>
-                        <p>Live demonstrations of cutting-edge technologies and coding sessions for secondary school students.</p>
-                        <div class="bg-light p-4">
-                            <p class="mb-1"><i class="fa fa-clock text-primary me-2"></i>10:00 AM - 14:00 PM</p>
-                            <p class="mb-1"><i class="fa fa-calendar-alt text-primary me-2"></i>October 20 - 22</p>
-                            <p class="mb-0"><i class="fa fa-map-marker-alt text-primary me-2"></i>Regional STEM Centers</p>
-                        </div>
-                    </div>
-                </div>
+            </div>
             </div>
         </div>
     </div>
     <!-- Event End -->
 
 
-    <div class="container-fluid donate py-5">
+    <div class="container-fluid donate py-5" id="partner">
         <div class="container">
             <div class="row g-0">
                 <div class="col-lg-7 donate-text bg-light py-5 wow fadeIn" data-wow-delay="0.1s">
@@ -763,16 +929,17 @@
     <script src="assets/lib/counterup/counterup.min.js"></script>
 
     <!-- Template Javascript -->
-    <script src="assets/js/pages/main.js?v=3.2.0"></script>
+    <script src="assets/js/pages/main.js?v=10.0.0"></script>
 
     <!-- Nuru Assistant -->
-    <script src="assets/js/components/nuru-assistant.js?v=3.2.0"></script>
+    <script src="assets/js/components/nuru-assistant.js?v=10.0.0"></script>
+    <script type="module" src="assets/js/pages/homepage-dynamic.js?v=13.0.0"></script>
     
     <!-- Innovate Hub Custom JavaScript -->
-    <script src="assets/js/utils/ui-utils.js?v=3.2.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=3.2.0"></script>
-    <script src="assets/js/core/api.js?v=3.2.0"></script>
-    <script type="module" src="assets/js/pages/innovate-hub.js?v=3.2.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=10.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=10.0.0"></script>
+    <script src="assets/js/core/api.js?v=10.0.0"></script>
+    <script type="module" src="assets/js/pages/innovate-hub.js?v=10.0.0"></script>
     <!-- Dashboard scripts moved to dashboard.html -->
 
     <!-- Mobile Hamburger Menu Enhancement Script -->

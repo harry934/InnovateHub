@@ -601,11 +601,7 @@
 /*** Footer ***/
 .footer {
     color: var(--bs-tertiary);
-    background: rgba(5, 19, 17, .95);
-    background-image: url(../img/bg-footer.jpg);
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-size: cover;
+    background-color: #0f172a; /* Slate 900 for a solid premium dark footer */
 }
 
 .footer .btn.btn-link {
