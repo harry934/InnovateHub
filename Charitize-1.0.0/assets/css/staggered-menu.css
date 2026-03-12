@@ -131,6 +131,15 @@
 .staggered-menu-header.collapsed .sm-logo,
 .staggered-menu-header.collapsed .nav-profile-circle,
 .staggered-menu-header.collapsed .nav-logout-btn,
+.staggered-menu-header.collapsed .sm-header-actions,
+.staggered-menu-header.collapsed .nav-notif-btn,
+.staggered-menu-header.collapsed .sm-toggle-textWrap {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
 .staggered-menu-header.collapsed .nav-notif-btn {
   opacity: 0;
   pointer-events: none;
@@ -214,16 +223,35 @@
 }
 
 /* Icon/Button - High Visibility Floating Mode */
-.staggered-menu-header.collapsed .sm-toggle {
-  background: rgba(255, 255, 255, 0.95); /* Solid high-contrast glass */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1), 
-              0 0 15px rgba(255, 255, 255, 0.5); /* Bright glow */
-  border: 1px solid rgba(255, 255, 255, 1);
-  border-radius: 16px;
-  width: 56px;
-  height: 56px;
+.staggered-menu-header.nav-hidden {
+  background: transparent !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  transform: translateY(0) !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+}
+
+.staggered-menu-header.collapsed {
+  background: transparent !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+.staggered-menu-header.collapsed .sm-header-right {
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.staggered-menu-header.collapsed .sm-toggle,
+.staggered-menu-header.nav-hidden .sm-toggle {
+  background: #ffffff;
+  box-shadow: 
+    0 10px 30px rgba(26, 94, 79, 0.2),
+    0 0 0 1px rgba(26, 94, 79, 0.1);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -286,12 +314,7 @@
   transform: scale(1);
 }
 
-.staggered-menu-header.collapsed .sm-toggle {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 8px 16px;
-  border-radius: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
+
 
 /* ==============================================
    PANEL — Editorial Bold Menu (side drawer)

@@ -57,6 +57,38 @@ html, body {
   z-index: 1;
 }
 
+/* ── ADMINISTRATION CARDS (CLEAN) ────────────────────────── */
+/* Standard Dashboard/Premium Card */
+.dashboard-grid-card {
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.card-glow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.4s ease;
+}
+
+.dashboard-grid-card:hover .card-glow {
+  opacity: 0.3;
+}
+
+.dashboard-card:hover,
+.premium-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08), 
+              0 0 20px rgba(26, 94, 79, 0.05);
+  border-color: rgba(26, 94, 79, 0.2);
+  background: white;
 /* Removed floating orbs for professional look */
 .premium-bg-orb {
   display: none !important;
@@ -64,17 +96,33 @@ html, body {
 
 /* ── ADMINISTRATION CARDS (CLEAN) ────────────────────────── */
 .premium-card {
-  background: white !important;
-  border-radius: 12px !important;
-  padding: 24px !important;
-  border: 1px solid #eef2f6 !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
-  transition: all 0.2s ease-in-out !important;
-  position: relative !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 16px !important;
-  cursor: pointer !important;
+  background: white;
+  border: 1.5px solid rgba(26, 94, 79, 0.1);
+  border-radius: 28px;
+  padding: 32px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.premium-card-large {
+  min-height: 320px;
+  justify-content: space-between;
+}
+
+.card-glow {
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 0;
+  transition: all 0.6s ease;
 }
 
 .premium-card:hover {

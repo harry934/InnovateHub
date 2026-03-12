@@ -66,9 +66,17 @@
     position: relative !important;
   }
 
-  /* Restore space-between when scrolled so toggler sits on right */
+  /* Restore space-between when scrolled so toggler sits on right and logo on left */
   .nav-bar.navbar-scrolled .navbar {
     justify-content: space-between !important;
+  }
+
+  /* Ensure logo is always visible on scroll in main site mobile */
+  .nav-bar.navbar-scrolled .sticky-logo {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    margin-right: auto !important;
   }
 
   /* ── Custom morphing hamburger icon (X animation) ──────── */
