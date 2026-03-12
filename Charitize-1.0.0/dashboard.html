@@ -28,110 +28,32 @@
     <link href="assets/lib/animate/animate.min.css" rel="stylesheet" />
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="assets/css/auth-ui.css" rel="stylesheet" />
-    <link href="assets/css/style.css?v=11.4.0" rel="stylesheet" />
-    <link href="assets/css/staggered-menu.css?v=11.4.0" rel="stylesheet" />
-    <link href="assets/css/dashboard-rebuild.css?v=11.4.0" rel="stylesheet" />
-    <link href="assets/css/innovate-hub.css?v=11.4.0" rel="stylesheet" />
-    <link href="assets/css/nuru-assistant.css?v=11.4.0" rel="stylesheet" />
-
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/core/supabase-config.js"></script>
+    <link href="assets/css/style.css?v=6.0.0" rel="stylesheet" />
+    <link href="assets/css/staggered-menu.css?v=6.0.0" rel="stylesheet" />
+    <link href="assets/css/dashboard-rebuild.css?v=7.0.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=6.0.0" rel="stylesheet" />
+    <link href="assets/css/nuru-assistant.css?v=6.0.0" rel="stylesheet" />
 
     <!-- GSAP for animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <!-- Project Modules -->
+    <script src="assets/js/pages/mentor-discovery.js" type="module"></script>
   </head>
 
   <body>
     <!-- Minimalist Header Bridge (Staggered Menu will inject the actual header) -->
     <div style="height: 100px"></div>
 
-    <!-- Background Symbols Container -->
-    <div id="backgroundSymbols"></div>
+    <!-- Animated background elements -->
+    <div class="background-pattern"></div>
+    <div class="background-symbols" id="backgroundSymbols"></div>
+    <div class="page-blob"></div>
 
-    <!-- Clean professional background -->
-    <div class="dashboard-bg-overlay"></div>
-
-    <!-- Admin Approval Gate (Mentors Only) -->
-    <div
-      id="adminApprovalGate"
-      class="py-5"
-      style="
-        display: none;
-        position: relative;
-        z-index: 2;
-        min-height: 60vh;
-        text-align: center;
-        display: none;
-      "
-    >
-      <div
-        class="container d-flex flex-column align-items-center justify-content-center h-100"
-      >
-        <div class="mb-4" style="color: var(--brand-yellow)">
-          <svg
-            width="64"
-            height="64"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="m9 12 2 2 4-4" />
-          </svg>
-        </div>
-        <h2
-          class="display-6 fw-bold"
-          style="color: var(--brand-green); font-family: var(--font-head)"
-        >
-          Account Under Review
-        </h2>
-        <p class="text-muted lead mx-auto" style="max-width: 600px">
-          Thank you for joining InnovateHub as a Mentor! Your profile is
-          currently being reviewed by our administration team. You will gain
-          full access to the dashboard once your account is approved.
-        </p>
-        <div
-          class="mt-4 p-3 rounded"
-          style="
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            display: inline-block;
-          "
-        >
-          <div
-            class="d-flex align-items-center gap-2"
-            style="color: #64748b; font-weight: 600"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              class="spin-slow"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="12" y1="2" x2="12" y2="6" />
-              <line x1="12" y1="18" x2="12" y2="22" />
-              <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
-              <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
-              <line x1="2" y1="12" x2="6" y2="12" />
-              <line x1="18" y1="12" x2="22" y2="12" />
-              <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
-              <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
-            </svg>
-            Status: Pending Approval
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Premium Background Elements -->
+    <div class="premium-bg-orb orb-primary"></div>
+    <div class="premium-bg-orb orb-secondary"></div>
 
     <!-- Dashboard Landing Page -->
     <div
@@ -156,7 +78,6 @@
               >Platform Overview</span
             >
             <h1
-              id="dashboardGreeting"
               class="display-5 fw-bold mb-2"
               style="
                 font-family: var(--font-head);
@@ -174,17 +95,7 @@
           <!-- Profile Completeness Tracker (Conditional) -->
           <div
             id="mentorCompleteness"
-            class="mb-4"
-            style="
-              display: none;
-              width: 100%;
-              max-width: 400px;
-              cursor: pointer;
-            "
-            onclick="
-              if (window.dashboard && window.dashboard.showOnboardingModal)
-                window.dashboard.showOnboardingModal();
-            "
+            style="display: none; width: 100%; max-width: 400px"
           >
             <div class="completeness-card">
               <div
@@ -200,21 +111,16 @@
                   >Profile Completeness</span
                 >
                 <span
-                  id="completenessTextHero"
+                  id="completenessText"
                   style="font-weight: 800; color: var(--brand-yellow)"
                   >0%</span
                 >
               </div>
               <div class="completeness-bar-bg">
-                <div
-                  id="completenessFillHero"
-                  class="completeness-bar-fill"
-                ></div>
+                <div id="completenessFill" class="completeness-bar-fill"></div>
               </div>
               <p style="font-size: 0.75rem; opacity: 0.8; margin: 0">
-                <span id="completenessStatusText"
-                  >Complete your profile to unlock all features.</span
-                >
+                Complete your profile to be discoverable by innovators.
               </p>
             </div>
           </div>
@@ -420,21 +326,7 @@
                   type="submit"
                   class="btn btn-primary px-5 py-3 rounded-pill fw-bold text-uppercase"
                 >
-                  Submit Project
-                  <svg
-                    class="ms-2"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <line x1="22" y1="2" x2="11" y2="13" />
-                    <polyline points="22 2 15 22 11 13 2 9 22 2" />
-                  </svg>
+                  Submit Project <i class="fa fa-paper-plane ms-2"></i>
                 </button>
               </div>
             </form>
@@ -525,21 +417,7 @@
                       justify-content: center;
                     "
                   >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path
-                        d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
-                      />
-                      <circle cx="12" cy="13" r="4" />
-                    </svg>
+                    <i class="fa fa-camera"></i>
                   </label>
                   <input type="file" id="profilePicInput" hidden />
                 </div>
@@ -553,36 +431,15 @@
               </div>
             </div>
             <div class="col-lg-8">
-              <!-- Profile Completeness (Mentor Profile Section) -->
-              <div
-                id="mentorCompletenessProfile"
-                class="mb-4"
-                style="display: none; cursor: pointer"
-                onclick="
-                  if (window.dashboard && window.dashboard.showOnboardingModal)
-                    window.dashboard.showOnboardingModal();
-                "
-              >
-                <div
-                  class="d-flex justify-content-between align-items-center mb-1"
-                >
-                  <span class="fw-bold text-dark small"
-                    >Profile Completeness (Click to update)</span
-                  >
-                  <span
-                    id="completenessTextProfile"
-                    class="fw-bold text-primary small"
-                    >0%</span
-                  >
-                </div>
-                <div class="progress" style="height: 8px">
-                  <div
-                    id="completenessFillProfile"
-                    class="progress-bar bg-primary"
-                    role="progressbar"
-                    style="width: 0%"
-                  ></div>
-                </div>
+              <!-- Profile Completeness (Mentor) -->
+              <div id="mentorCompleteness" class="mb-4" style="display:none; cursor:pointer;" onclick="window.showDashboardSection('profile')">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="fw-bold text-dark small">Profile Completeness (Click to complete)</span>
+                      <span id="completenessText" class="fw-bold text-primary small">0%</span>
+                  </div>
+                  <div class="progress" style="height: 8px;">
+                      <div id="completenessFill" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                  </div>
               </div>
 
               <div class="p-5 bg-white rounded shadow-sm border">
@@ -656,9 +513,7 @@
                       />
                     </div>
                     <div class="col-md-6" id="mentorExperienceGroup">
-                      <label class="form-label"
-                        >Years of Experience (Mentor)</label
-                      >
+                      <label class="form-label">Years of Experience (Mentor)</label>
                       <input
                         type="number"
                         class="form-control"
@@ -669,14 +524,8 @@
                       />
                     </div>
                     <div class="col-md-6" id="communicationGroup">
-                      <label class="form-label"
-                        >Preferred Communication Method</label
-                      >
-                      <select
-                        class="form-select"
-                        id="profileCommunication"
-                        name="communicationPreference"
-                      >
+                      <label class="form-label">Preferred Communication Method</label>
+                      <select class="form-select" id="profileCommunication" name="communicationPreference">
                         <option value="Zoom">Zoom</option>
                         <option value="Google Meet">Google Meet</option>
                         <option value="WhatsApp">WhatsApp</option>
@@ -703,7 +552,59 @@
           </div>
         </div>
 
-        <!-- Sections will be injected here dynamically -->
+        <!-- Mentor: Overview (Focus Panel) -->
+        <div
+          id="overviewSection"
+          class="dashboard-section"
+          style="display: none"
+        >
+          <div class="mb-4">
+            <h2 class="display-6 fw-bold">Impact Overview</h2>
+            <p class="text-muted">Your mentorship contributions at a glance</p>
+          </div>
+          <div class="row g-4">
+            <div class="col-md-4">
+              <div
+                class="card border-0 shadow-sm p-4 text-center rounded border-start border-5 border-primary"
+              >
+                <h5>Total Mentees</h5>
+                <h2
+                  class="display-4 fw-bold mb-0"
+                  id="totalMentees"
+                  style="color: #1a5e4f"
+                >
+                  0
+                </h2>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div
+                class="card border-0 shadow-sm p-4 text-center rounded border-start border-5 border-warning"
+              >
+                <h5>Pending Requests</h5>
+                <h2
+                  class="display-4 fw-bold mb-0 text-warning"
+                  id="pendingRequests"
+                >
+                  0
+                </h2>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div
+                class="card border-0 shadow-sm p-4 text-center rounded border-start border-5 border-success"
+              >
+                <h5>Impact Created</h5>
+                <h2
+                  class="display-4 fw-bold mb-0 text-success"
+                  id="completedProjects"
+                >
+                  0
+                </h2>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Mentor: Requests (Focus Panel) -->
         <div
@@ -732,301 +633,57 @@
         </div>
 
         <!-- Mentor: Schedule (Focus Panel) -->
-        <div
-          id="scheduleSection"
-          class="dashboard-section"
-          style="display: none"
-        >
-          <div class="mb-4">
-            <h2 class="display-6 fw-bold">My Schedule & Availability</h2>
-            <p class="text-muted">
-              Manage your time slots and meeting integration
-            </p>
-          </div>
-
-          <div class="row g-4">
-            <div class="col-lg-6">
-              <div class="dashboard-card h-100">
-                <h4 class="mb-3">Meeting Integration</h4>
-                <form id="scheduleForm">
-                  <div class="mb-3">
-                    <label class="form-label"
-                      >Default Meeting Link (Zoom, Google Meet, etc.)</label
-                    >
-                    <div class="input-group">
-                      <span class="input-group-text">
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <path d="m22 8-6 4 6 4V8Z" />
-                          <rect
-                            width="14"
-                            height="12"
-                            x="2"
-                            y="6"
-                            rx="2"
-                            ry="2"
-                          />
-                        </svg>
-                      </span>
-                      <input
-                        type="url"
-                        id="meetingLink"
-                        class="form-control"
-                        name="meetingLink"
-                        placeholder="https://zoom.us/j/..."
-                        required
-                      />
-                    </div>
-                    <div class="form-text">
-                      This link will be shared with mentees for your sessions.
-                    </div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label text-dark fw-bold"
-                      >Standard Availability</label
-                    >
-                    <textarea
-                      id="weeklyAvailability"
-                      class="form-control"
-                      name="weeklyAvailability"
-                      rows="3"
-                      placeholder="e.g. Mon, Wed: 4 PM - 6 PM (EAT)"
-                    ></textarea>
-                    <div class="form-text">
-                      Describe your general weekly availability for new
-                      requests.
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    class="btn btn-primary w-100 py-3 shadow-sm"
-                  >
-                    <i class="fa fa-save me-2"></i> Update Schedule
-                  </button>
-                </form>
-              </div>
+        <div id="scheduleSection" class="dashboard-section" style="display: none">
+            <div class="mb-4">
+                <h2 class="display-6 fw-bold">My Schedule & Availability</h2>
+                <p class="text-muted">Manage your time slots and meeting integration</p>
             </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="dashboard-card h-100">
+                        <h4 class="mb-3">Meeting Integration</h4>
+                        <form id="scheduleForm">
+                            <div class="mb-3">
+                                <label class="form-label">Default Meeting Link (Zoom, Google Meet, etc.)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa fa-video"></i></span>
+                                    <input type="url" id="meetingLink" class="form-control" name="meetingLink" placeholder="https://zoom.us/j/..." required>
+                                </div>
+                                <div class="form-text">This link will be shared with mentees for your sessions.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label text-dark fw-bold">Standard Availability</label>
+                                <textarea id="weeklyAvailability" class="form-control" name="weeklyAvailability" rows="3" placeholder="e.g. Mon, Wed: 4 PM - 6 PM (EAT)"></textarea>
+                                <div class="form-text">Describe your general weekly availability for new requests.</div>
+                            </div>
 
-            <div class="col-lg-6">
-              <div
-                class="dashboard-card h-100 bg-light-soft border-0 shadow-none"
-                style="background: rgba(26, 94, 79, 0.03)"
-              >
-                <h5 class="fw-bold text-dark mb-3">Availability Status</h5>
-                <div class="form-check form-switch custom-switch mb-3">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="availabilityToggle"
-                    checked
-                  />
-                  <label
-                    class="form-check-label fw-bold ml-2"
-                    for="availabilityToggle"
-                    id="availabilityText"
-                    >Available for new mentees</label
-                  >
-                </div>
-                <p class="small text-muted mb-0">
-                  Toggling this off will hide your profile from the mentor
-                  discovery list, but existing mentees can still contact you.
-                </p>
-
-                <hr class="my-4" />
-
-                <h6 class="fw-bold mb-3">Upcoming Meetings</h6>
-                <div id="upcomingMeetingsList">
-                  <p class="text-muted small">
-                    No meetings scheduled for today.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Shared: Collaboration Hub (Focus Panel) -->
-        <div id="collaborationSection" class="dashboard-section" style="display: none">
-          <!-- Premium Collab Header -->
-          <div class="row g-4 mb-4">
-            <div class="col-12">
-              <div class="collaboration-header-card p-4 rounded-4 shadow-sm border-0 position-relative overflow-hidden" 
-                   style="background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-2) 100%); color: white;">
-                <div class="position-relative z-1 d-flex flex-column gap-3 w-100">
-                  <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
-                  <div>
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="badge bg-white text-primary rounded-pill px-3 py-1 fw-bold small text-uppercase" style="font-size: 0.65rem;">Live Workspace</span>
-                        <div class="vr h-50 bg-white opacity-25"></div>
-                        <span class="small opacity-75 fw-bold" id="collabSessionId">#...</span>
+                            <button type="submit" class="btn btn-primary w-100 py-3 shadow-sm">
+                                <i class="fa fa-save me-2"></i> Update Schedule
+                            </button>
+                        </form>
                     </div>
-                    <h2 class="display-6 fw-bold mb-1" id="collabProjectTitle">Innovation Project</h2>
-                    <p class="mb-0 opacity-75 fw-medium" id="collabSubtext">Accelerating African Excellence through Mentorship</p>
-                  </div>
-                  
-                  <!-- Participant Profiles -->
-                  <div class="d-flex align-items-center gap-3">
-                    <div class="participant-group d-flex align-items-center">
-                        <div class="participant-card text-end pe-3 border-end border-white border-opacity-25 mr-2">
-                            <div class="small opacity-75 fw-bold text-uppercase" style="font-size: 0.65rem;">Innovator</div>
-                            <div class="fw-bold" id="collabInnovatorName">User</div>
-                        </div>
-                        <img id="collabInnovatorPhoto" src="assets/img/default-avatar.png" class="rounded-circle border border-2 border-white ms-2" style="width: 48px; height: 48px; object-fit: cover;">
-                    </div>
-                    
-                    <div class="mx-2 opacity-50">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3H1v13h15V3zM16 7l5-5v13l-5-5z"/></svg>
-                    </div>
-
-                    <div class="participant-group d-flex align-items-center">
-                        <img id="collabMentorPhoto" src="assets/img/default-avatar.png" class="rounded-circle border border-2 border-white me-2" style="width: 48px; height: 48px; object-fit: cover;">
-                        <div class="participant-card text-start ps-3 border-start border-white border-opacity-25 ml-2">
-                            <div class="small opacity-75 fw-bold text-uppercase" style="font-size: 0.65rem;">Mentor</div>
-                            <div class="fw-bold" id="collabMentorName">Mentor</div>
-                        </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Systematic Hub Layout -->
-          <div class="row g-4">
-            <!-- Navigation Sidebar -->
-            <div class="col-lg-3">
-              <div class="premium-card p-3 h-100 shadow-sm border-0 bg-white">
-                <h6 class="text-uppercase fw-bold text-muted small mb-4 pt-2 px-2" style="letter-spacing: 1px;">Workspace Hub</h6>
-                <div class="nav flex-column nav-pills gap-2" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                  <button class="nav-link active rounded-4 p-3 d-flex align-items-center gap-3 text-start transition-all" id="v-pills-overview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-overview" type="button">
-                    <div class="tab-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-                    <span class="fw-bold">Overview</span>
-                  </button>
-                  <button class="nav-link rounded-4 p-3 d-flex align-items-center gap-3 text-start transition-all" id="v-pills-chat-tab" data-bs-toggle="pill" data-bs-target="#v-pills-chat" type="button">
-                    <div class="tab-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-                    <span class="fw-bold">Collaboration Chat</span>
-                  </button>
-                  <button class="nav-link rounded-4 p-3 d-flex align-items-center gap-3 text-start transition-all" id="v-pills-milestones-tab" data-bs-toggle="pill" data-bs-target="#v-pills-milestones" type="button">
-                    <div class="tab-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-                    <span class="fw-bold">Milestones</span>
-                  </button>
-                  <button class="nav-link rounded-4 p-3 d-flex align-items-center gap-3 text-start transition-all" id="v-pills-resources-tab" data-bs-toggle="pill" data-bs-target="#v-pills-resources" type="button">
-                    <div class="tab-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg></div>
-                    <span class="fw-bold">Resources</span>
-                  </button>
                 </div>
                 
-                <div class="mt-auto px-2 pb-2 mt-5">
-                    <div class="p-3 rounded-4 bg-light border-0">
-                        <div class="small fw-bold text-muted mb-2">Next Meeting</div>
-                        <div id="collabNextMeeting" class="fw-bold text-dark small">TBD</div>
+                <div class="col-lg-6">
+                    <div class="dashboard-card h-100 bg-light-soft border-0 shadow-none" style="background: rgba(26, 94, 79, 0.03);">
+                        <h5 class="fw-bold text-dark mb-3">Availability Status</h5>
+                        <div class="form-check form-switch custom-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="availabilityToggle" checked>
+                            <label class="form-check-label fw-bold ml-2" for="availabilityToggle" id="availabilityText">Available for new mentees</label>
+                        </div>
+                        <p class="small text-muted mb-0">Toggling this off will hide your profile from the mentor discovery list, but existing mentees can still contact you.</p>
+                        
+                        <hr class="my-4">
+                        
+                        <h6 class="fw-bold mb-3">Upcoming Meetings</h6>
+                        <div id="upcomingMeetingsList">
+                            <p class="text-muted small">No meetings scheduled for today.</p>
+                        </div>
                     </div>
                 </div>
-              </div>
             </div>
-
-            <!-- Workspace Content -->
-            <div class="col-lg-9">
-              <div class="tab-content h-100" id="v-pills-tabContent">
-                <!-- Tab: Overview / Project Breakdown -->
-                <div class="tab-pane fade show active" id="v-pills-overview">
-                  <div class="premium-card p-4 shadow-sm border-0 bg-white h-100">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                      <h4 class="fw-bold mb-0">Project Deep-Dive</h4>
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown">Actions</button>
-                        <ul class="dropdown-menu border-0 shadow-lg p-2 rounded-4">
-                          <li><a class="dropdown-item rounded-3" href="#" onclick="window.dashboard.openMilestoneModal()"><i class="fa fa-plus-circle me-2 opacity-50"></i>Add Milestone</a></li>
-                          <li><a class="dropdown-item rounded-3" href="#" onclick="window.dashboard.openReportModal()"><i class="fa fa-file-text me-2 opacity-50"></i>Submit Report</a></li>
-                        </ul>
-                      </div>
-                    </div>
-                    <div id="collabProjectDetails" class="space-y-4">
-                      <div class="text-center py-5 text-muted">
-                        <div class="spinner-border spinner-border-sm me-2"></div>
-                        Initializing project workspace...
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Tab: Chat -->
-                <div class="tab-pane fade" id="v-pills-chat">
-                    <div class="premium-card p-0 shadow-sm border-0 bg-white h-100 d-flex flex-column" style="min-height: 550px;">
-                        <div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-light bg-opacity-50">
-                            <div>
-                                <h5 class="mb-0 fw-bold">Collaboration Chat</h5>
-                                <p class="small text-muted mb-0">Discussion for <span class="fw-bold" id="chatProjectTitle">Project</span></p>
-                            </div>
-                            <span class="badge bg-success rounded-pill px-3 py-2 fw-bold" id="chatStatus">Online</span>
-                        </div>
-                        <div id="collabChatBox" class="flex-grow-1 p-4 overflow-auto bg-light bg-opacity-25" style="max-height: 400px;">
-                            <div class="text-center py-5 text-muted small">Loading messages...</div>
-                        </div>
-                        <div class="p-4 border-top">
-                            <form id="collabChatForm" class="d-flex gap-2">
-                                <input type="text" class="form-control rounded-pill border-2 px-4 py-3" placeholder="Type your message here..." required>
-                                <button type="submit" class="btn btn-primary rounded-circle shadow-sm" style="width: 52px; height: 52px; flex-shrink: 0;">
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab: Milestones -->
-                <div class="tab-pane fade" id="v-pills-milestones">
-                  <div class="premium-card p-4 shadow-sm border-0 bg-white h-100">
-                    <h4 class="fw-bold mb-4">Milestones & Progress</h4>
-                    <div class="timeline-container px-2" id="collabTimeline">
-                      <div class="text-center py-5 text-muted">No milestones defined yet.</div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Tab: Resources -->
-                <div class="tab-pane fade" id="v-pills-resources">
-                  <div class="premium-card p-4 shadow-sm border-0 bg-white h-100">
-                    <h4 class="fw-bold mb-4">Workspace Resources</h4>
-                    <div class="row g-4">
-                      <div class="col-md-6">
-                        <div class="p-4 rounded-4 bg-light bg-opacity-50 border h-100">
-                          <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                            Video Link
-                          </h6>
-                          <div id="collabMeetingLink">
-                            <p class="text-muted small">No meeting link provided.</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="p-4 rounded-4 bg-light bg-opacity-50 border h-100">
-                          <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                            Shared Documents
-                          </h6>
-                          <div id="collabProjectDocs">
-                            <p class="text-muted small">No documents shared.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Shared: Notifications (Focus Panel) -->
@@ -1048,7 +705,6 @@
     </div>
 
     <!-- Modals -->
-    <!-- Professional Mentor Onboarding Wizard -->
     <div
       class="modal fade"
       id="onboardingModal"
@@ -1057,216 +713,57 @@
       data-bs-backdrop="static"
     >
       <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div
-          class="modal-content border-0 shadow-lg"
-          style="border-radius: 20px; overflow: hidden"
-        >
-          <div class="modal-header border-0 p-4 pb-0">
-            <div class="w-100">
-              <div
-                class="d-flex justify-content-between align-items-center mb-3"
-              >
-                <div>
-                  <h4
-                    class="fw-bold mb-1"
-                    id="onboardingTitle"
-                    style="
-                      color: var(--brand-green);
-                      font-family: var(--font-head);
-                    "
-                  >
-                    Complete Your Profile
-                  </h4>
-                  <p class="text-muted small mb-0">
-                    Step <span id="currentStepNum">1</span> of 5
-                  </p>
-                </div>
-                <div
-                  class="onboarding-logo"
-                  style="
-                    width: 40px;
-                    height: 40px;
-                    background: var(--brand-green);
-                    border-radius: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                  "
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                </div>
-              </div>
-              <!-- Progress Line -->
-              <div
-                class="onboarding-progress-container"
-                style="
-                  height: 6px;
-                  background: #f0f4f8;
-                  border-radius: 10px;
-                  margin-bottom: 5px;
-                "
-              >
-                <div
-                  id="onboardingProgress"
-                  style="
-                    height: 100%;
-                    width: 20%;
-                    background: var(--brand-yellow);
-                    border-radius: 10px;
-                    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                  "
-                ></div>
-              </div>
-            </div>
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5>Mentor Onboarding</h5>
           </div>
-          <div class="modal-body p-4" id="onboardingStepContainer">
-            <!-- Dynamic steps injected by JS -->
-            <div class="text-center py-5">
-              <div class="spinner-border text-primary" role="status"></div>
-            </div>
+          <div class="modal-body p-4">
+            <div id="onboardingStepContainer"></div>
           </div>
-          <div
-            class="modal-footer border-0 p-4 pt-0 d-flex justify-content-between"
-          >
-            <button
-              class="btn btn-link text-muted fw-bold text-decoration-none"
-              id="prevStepBtn"
-              style="display: none"
-            >
-              Back
-            </button>
-            <div class="ms-auto d-flex gap-2">
-              <button
-                class="btn btn-primary rounded-pill px-4 py-2 fw-bold"
-                id="nextStepBtn"
-              >
-                Next Step
-                <svg
-                  class="ms-1"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </button>
-            </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" id="nextStepBtn">Next</button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Rejection Modal -->
-    <div
-      class="modal fade"
-      id="rejectionModal"
-      tabindex="-1"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">
-              <svg
-                class="me-2"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="15" y1="9" x2="9" y2="15" />
-                <line x1="9" y1="9" x2="15" y2="15" />
-              </svg>
-              Reject Mentorship Request
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body p-4">
-            <p class="text-muted mb-3">
-              Please provide a brief reason for rejecting this request. This
-              helps the innovator improve their proposal.
-            </p>
-            <div class="mb-3">
-              <label class="form-label fw-bold">Reason for Rejection</label>
-              <textarea
-                id="rejectionReason"
-                class="form-control"
-                rows="4"
-                placeholder="e.g. Profile needs more detail or currently overbooked in this category."
-              ></textarea>
+    <div class="modal fade" id="rejectionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fa fa-times-circle me-2"></i>Reject Mentorship Request</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted mb-3">Please provide a brief reason for rejecting this request. This helps the innovator improve their proposal.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Reason for Rejection</label>
+                        <textarea id="rejectionReason" class="form-control" rows="4" placeholder="e.g. Profile needs more detail or currently overbooked in this category."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmRejectionBtn" class="btn btn-danger px-4 shadow-sm">Confirm Rejection</button>
+                </div>
             </div>
-          </div>
-          <div class="modal-footer border-0">
-            <button
-              type="button"
-              class="btn btn-light px-4"
-              data-bs-dismiss="modal"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              id="confirmRejectionBtn"
-              class="btn btn-danger px-4 shadow-sm"
-            >
-              Confirm Rejection
-            </button>
-          </div>
         </div>
-      </div>
     </div>
 
-    <!-- JS Libraries (Restored and moved to bottom for stability) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/pages/main.js?v=11.4.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=11.4.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=11.4.0"></script>
-    <script src="assets/js/core/api.js?v=11.4.0"></script>
+    <!-- JS Libraries -->
+    <script src="assets/js/pages/main.js?v=3.6.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=3.6.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=3.6.0"></script>
+    <script src="assets/js/core/api.js?v=3.6.0"></script>
     <!-- Feature Scripts -->
+    <script type="module" src="assets/js/pages/mentor-discovery.js?v=1.0.0"></script>
+    <script src="assets/js/components/file-upload.js?v=1.0.0"></script>
     <script
       type="module"
-      src="assets/js/pages/mentor-discovery.js?v=11.4.0"
+      src="assets/js/pages/innovate-hub.js?v=3.6.0"
     ></script>
-    <script src="assets/js/components/file-upload.js?v=11.4.0"></script>
-    <script
-      type="module"
-      src="assets/js/pages/innovate-hub.js?v=11.4.0"
-    ></script>
-    <script src="assets/js/components/staggered-menu.js?v=11.4.0"></script>
-    <script src="assets/js/components/nuru-assistant.js?v=11.4.0"></script>
-    <script
-      type="module"
-      src="assets/js/pages/collaboration.js?v=11.4.0"
-    ></script>
+    <script src="assets/js/components/staggered-menu.js?v=3.6.0"></script>
+    <script src="assets/js/components/nuru-assistant.js?v=3.6.0"></script>
     <script type="module">
       import { auth, db } from "./assets/js/core/firebase-config.js";
       import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -1329,9 +826,6 @@
         }
         if (sectionId === "requests" && window.renderMentorRequests) {
           renderMentorRequests();
-        }
-        if (sectionId === "collaboration" && window.CollaborationHub) {
-          console.log("Collaboration Hub section active.");
         }
       };
 
@@ -1482,37 +976,27 @@
 
         // ── Role-Specific Profile Settings Logic ─────────────────
         if (role === "mentor") {
-          const groupToHide = [
-            "innovatorSkillsGroup",
-            "innovatorInterestsGroup",
-          ];
-          groupToHide.forEach((id) => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = "none";
-          });
+            const groupToHide = ['innovatorSkillsGroup', 'innovatorInterestsGroup'];
+            groupToHide.forEach(id => {
+               const el = document.getElementById(id);
+               if (el) el.style.display = 'none';
+            });
         } else {
-          const groupToHide = [
-            "mentorExpertiseGroup",
-            "mentorProfessionGroup",
-            "mentorExperienceGroup",
-            "communicationGroup",
-            "mentorCompleteness",
-            "scheduleSection",
-          ];
-          groupToHide.forEach((id) => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = "none";
-          });
+            const groupToHide = ['mentorExpertiseGroup', 'mentorProfessionGroup', 'mentorExperienceGroup', 'communicationGroup', 'mentorCompleteness', 'scheduleSection'];
+            groupToHide.forEach(id => {
+               const el = document.getElementById(id);
+               if (el) el.style.display = 'none';
+            });
         }
 
         // Load role-specific module
-          const dashboardModule =
-            role === "mentor"
-              ? "./assets/js/pages/mentor-dashboard.js?v=11.4.0"
-              : "./assets/js/pages/innovator-dashboard.js?v=11.4.0";
+        const modulePath =
+          role === "mentor"
+            ? "./assets/js/pages/mentor-dashboard.js?v=3.6.0"
+            : "./assets/js/pages/innovator-dashboard.js?v=3.6.0";
 
         try {
-          const mod = await import(dashboardModule);
+          const mod = await import(modulePath);
           if (mod && typeof mod.initDashboard === "function") {
             await mod.initDashboard(user, userData);
           }
@@ -1520,7 +1004,7 @@
           console.error("Dashboard: Module load error:", err);
           try {
             const fallback =
-              await import("./assets/js/pages/innovator-dashboard.js?v=11.4.0");
+              await import("./assets/js/pages/innovator-dashboard.js?v=3.6.0");
             if (fallback && fallback.initDashboard)
               await fallback.initDashboard(user, userData);
           } catch (e2) {

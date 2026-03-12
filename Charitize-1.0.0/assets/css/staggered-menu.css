@@ -63,31 +63,18 @@
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-  height: 90px;
+  height: 80px;
   color: #ffffff;
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.staggered-menu-header.hidden {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transform: translateY(-100%);
-}
-
-.staggered-menu-header.nav-hidden {
-  transform: translateY(-120%) !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
 .staggered-menu-header.collapsed {
-  height: 0;
+  height: 60px;
   background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: none;
   padding: 0 1.5rem;
-  pointer-events: none;
 }
 
 .sm-logo {
@@ -103,7 +90,7 @@
 }
 
 .sm-site-name {
-  font-family: "Josefin Sans", sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-weight: 700;
   font-size: 1.5rem;
   color: #f3a813; /* Brand Yellow */
@@ -133,9 +120,7 @@
   align-items: center;
   justify-content: center;
   padding: 8px;
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .nav-notif-btn svg {
@@ -153,6 +138,12 @@
   pointer-events: none !important;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.staggered-menu-header.collapsed .nav-notif-btn {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px);
 }
 
 .notif-dot {
@@ -173,12 +164,12 @@
   border-radius: 50%;
   background: #f3a813 !important;
   color: #1a5e4f !important;
-  display: grid;
+  display: grid; 
   place-items: center;
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .nav-logout-btn {
@@ -213,7 +204,7 @@
   height: 1.2rem;
   overflow: hidden;
   position: relative;
-  font-family: "Josefin Sans", sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.9rem;
@@ -247,15 +238,7 @@
   box-shadow: none !important;
 }
 
-.staggered-menu-header.collapsed .sm-logo,
-.staggered-menu-header.collapsed .sm-header-actions,
-.staggered-menu-header.nav-hidden .sm-logo,
-.staggered-menu-header.nav-hidden .sm-header-actions {
-  display: none !important;
-}
-
-.staggered-menu-header.collapsed .sm-header-right,
-.staggered-menu-header.nav-hidden .sm-header-right {
+.staggered-menu-header.collapsed .sm-header-right {
   justify-content: flex-end;
   width: 100%;
 }
@@ -267,30 +250,30 @@
     0 10px 30px rgba(26, 94, 79, 0.2),
     0 0 0 1px rgba(26, 94, 79, 0.1);
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  margin-top: 25px;
-  margin-right: 10px;
-  pointer-events: auto;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  margin-right: -5px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Floating button hover effect */
-.staggered-menu-header.collapsed .sm-toggle:hover,
-.staggered-menu-header.nav-hidden .sm-toggle:hover {
-  transform: scale(1.1) translateY(-2px);
-  box-shadow: 0 15px 35px rgba(26, 94, 79, 0.25);
+.staggered-menu-header.collapsed .sm-toggle:hover {
+  transform: scale(1.08);
+  background: #ffffff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Hide the "Menu/Close" text when floating button is active */
+.staggered-menu-header.collapsed .sm-toggle-textWrap {
+  display: none;
 }
 
 /* Ensure the bars are thick and dark green to stand out */
 .staggered-menu-header.collapsed .sm-toggle-svg stroke,
-.staggered-menu-header.collapsed .sm-toggle-svg path,
-.staggered-menu-header.nav-hidden .sm-toggle-svg stroke,
-.staggered-menu-header.nav-hidden .sm-toggle-svg path {
+.staggered-menu-header.collapsed .sm-toggle-svg path {
   stroke: #1a5e4f !important;
   stroke-width: 2.5px;
 }
@@ -322,9 +305,7 @@
   display: none;
   opacity: 0;
   transform: scale(0.5);
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .staggered-menu-header.collapsed .sm-toggle-badge:not(.d-none) {
@@ -388,8 +369,8 @@
   gap: 0;
   text-decoration: none;
   color: #1a1a1a;
-  font-family: "Josefin Sans", sans-serif;
-  font-size: clamp(1.3rem, 3.2vw, 2.2rem);
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: clamp(1.1rem, 2.8vw, 1.8rem);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: -0.5px;
@@ -405,7 +386,7 @@
 
 /* Superscript number — positioned right after the label, small and elevated */
 .sm-item-num {
-  font-family: "Josefin Sans", sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 0.85rem;
   font-weight: 500;
   color: #1a5e4f; /* Brand Green */
@@ -425,12 +406,8 @@
 }
 
 /* No dividers, no footer in editorial mode */
-.sm-panel-divider {
-  display: none;
-}
-.sm-panel-footer {
-  display: none;
-}
+.sm-panel-divider { display: none; }
+.sm-panel-footer { display: none; }
 
 /* Responsiveness */
 @media (max-width: 768px) {

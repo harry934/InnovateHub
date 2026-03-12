@@ -398,7 +398,7 @@
   padding: 2rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s ease;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   border: 1px solid #eee;
 }
 
@@ -486,7 +486,7 @@
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08); /* Subtler shadow */
-  transition: all 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
   border-left: 4px solid #1a5e4f; /* Use brand colors */
 }
 

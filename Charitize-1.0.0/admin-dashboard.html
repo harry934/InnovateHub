@@ -20,9 +20,6 @@
     <link href="assets/css/dashboard-rebuild.css?v=7.0.0" rel="stylesheet">
     <link href="assets/css/nuru-assistant.css?v=3.2.0" rel="stylesheet">
     <link href="assets/css/mobile-nav.css?v=3.2.0" rel="stylesheet">
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/core/supabase-config.js"></script>
 </head>
 
 <body>
@@ -72,9 +69,9 @@
 
                 <div class="px-4 mb-2 mt-4"><span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);font-weight:700;">PREFERENCES</span></div>
                 <nav class="nav flex-column mb-4">
-                    <a class="nav-link" href="#" onclick="showSection('systemSettings')">
+                    <a class="nav-link" href="#" onclick="showSection('profile')">
                         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                        System Controls
+                        Admin Settings
                     </a>
                 </nav>
             </div>
@@ -142,12 +139,7 @@
             <div id="projectApprovalsSection" class="dashboard-section" style="display:none;">
                 <div class="dashboard-header mb-4">
                     <h2 style="font-family:var(--font-head);font-weight:800;color:var(--brand-green);">Project Submissions</h2>
-                    <p class="text-muted">Review and manage project submissions across the platform</p>
-                </div>
-                <div class="filter-group d-flex gap-2 mb-4">
-                    <button class="filter-btn active" id="filterProjPending" onclick="AdminPanel.setProjectFilter('pending')">Pending</button>
-                    <button class="filter-btn" id="filterProjApproved" onclick="AdminPanel.setProjectFilter('approved')">Approved</button>
-                    <button class="filter-btn" id="filterProjRejected" onclick="AdminPanel.setProjectFilter('rejected')">Rejected</button>
+                    <p class="text-muted">Review and approve or reject submitted projects</p>
                 </div>
                 <div id="projectApprovalList">
                     <!-- Injected by admin-panel.js -->
@@ -218,16 +210,12 @@
                                     <input type="text" class="form-control" name="location" placeholder="e.g. Innovation Hub, Nairobi" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Event Image</label>
-                                    <div class="input-group mb-2">
-                                        <input type="file" class="form-control" id="eventImageInput" accept="image/*">
-                                    </div>
-                                    <div class="text-muted small mb-2">Or paste a URL:</div>
-                                    <input type="url" class="form-control" name="imageLink" placeholder="https://..." value="assets/img/event-default.jpg">
+                                    <label class="form-label">Image URL</label>
+                                    <input type="url" class="form-control" name="imageLink" placeholder="https://..." value="assets/img/event-default.jpg" required>
                                 </div>
                                 <input type="hidden" id="adminEventId" name="eventId">
                                 <button type="submit" id="adminEventSubmitBtn" class="btn btn-primary w-100">Create Event</button>
-                                <button type="button" id="adminEventCancelBtn" class="btn btn-secondary w-100 mt-2" style="display:none;" onclick="AdminPanel.cancelEventEdit()">Cancel Edit</button>
+                                <button type="button" id="adminEventCancelBtn" class="btn btn-secondary w-100 mt-2" style="display:none;" onclick="cancelEventEdit()">Cancel Edit</button>
                             </form>
                         </div>
                     </div>
@@ -341,13 +329,11 @@
                         <div class="col-md-6">
                             <label class="form-label">Filter by Categories</label>
                             <div id="mentorCategoryCheckboxes" class="d-flex flex-wrap gap-2">
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="AI">AI</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="Software">Software</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="Agriculture">Agriculture</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="Healthcare">Healthcare</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="Business">Business</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="Education">Education</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="Marketing">Marketing</span>
+                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="technology">Technology</span>
+                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="healthcare">Healthcare</span>
+                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="education">Education</span>
+                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="environment">Environment</span>
+                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="agriculture">AgriTech</span>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -372,68 +358,67 @@
                 <div id="myMentorsContainer"></div>
             </div>
 
-            <!-- System Settings Section -->
-            <div id="systemSettingsSection" class="dashboard-section" style="display: none;">
+            <!-- Profile Section -->
+            <div id="profileSection" class="dashboard-section" style="display: none;">
                 <div class="dashboard-header mb-4">
-                    <h2 style="font-family:var(--font-head);font-weight:800;color:var(--brand-green);">Platform Controls</h2>
-                    <p class="text-muted">High-level system configuration and maintenance</p>
+                    <h2>My Profile</h2>
+                    <p class="text-muted">Manage your professional admin profile</p>
                 </div>
 
                 <div class="row">
-                    <div class="col-lg-4 mb-4">
-                        <div class="premium-card text-center">
-                            <div class="bg-primary-soft text-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
-                                <i class="fa fa-shield-alt fa-2x"></i>
+                    <div class="col-lg-4">
+                        <div class="dashboard-card text-center">
+                            <div class="profile-pic-wrapper mb-3">
+                                <img id="profilePreview" src="assets/img/user-default.png" alt="Profile Picture" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
+                                <div class="mt-3">
+                                    <label class="btn btn-sm btn-outline-primary" for="profilePicInput">
+                                        <i class="fa fa-camera me-1"></i> Change Photo
+                                    </label>
+                                    <input type="file" id="profilePicInput" hidden accept="image/*">
+                                </div>
                             </div>
-                            <h4>System Health</h4>
-                            <p class="text-muted small">Status: <span class="text-success fw-bold">OPERATIONAL</span></p>
+                            <h4 id="profileDisplayNameDisplay">Admin Name</h4>
+                            <p class="text-muted small">Admin</p>
                             <hr>
                             <div class="text-start">
-                                <h6 class="small fw-bold mb-3">Quick Controls</h6>
-                                <button class="btn btn-sm btn-outline-danger w-100 mb-2" onclick="alert('Maintenance mode toggled (Demo)')">
-                                    <i class="fa fa-power-off me-2"></i> Maintenance Mode
-                                </button>
-                                <button class="btn btn-sm btn-outline-primary w-100 mb-2" onclick="alert('Syncing system logs...')">
-                                    <i class="fa fa-sync me-2"></i> Sync Platform Data
-                                </button>
+                                <h6 class="small fw-bold">Skills</h6>
+                                <div id="skillsBadgeContainer" class="d-flex flex-wrap gap-1">
+                                    <!-- Skills will be loaded here -->
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-8">
-                        <div class="premium-card">
-                            <h5 class="mb-4">Global Constants</h5>
-                            <form id="systemConfigForm">
+                        <div class="dashboard-card">
+                            <form id="profileForm">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label">Support Email</label>
-                                        <input type="email" class="form-control" name="supportEmail" value="support@innovatehub.com">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" name="fullName" id="profileName" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label">Platform Version</label>
-                                        <input type="text" class="form-control" value="v7.2.1-Premium" readonly>
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="email" id="profileEmail" readonly>
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">System Announcement (Global Banner)</label>
-                                    <textarea class="form-control" name="globalAnnouncement" rows="3" placeholder="Welcome to the redesigned Innovate Hub!"></textarea>
+                                    <label class="form-label">Bio</label>
+                                    <textarea class="form-control" name="bio" id="profileBio" rows="3" placeholder="Tell us about yourself..."></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Moderation Policy Brief</label>
-                                    <textarea class="form-control" name="policyBrief" rows="3">All projects must undergo a 2-stage verification before status 'approved'.</textarea>
+                                    <label class="form-label">Institution / Organization</label>
+                                    <input type="text" class="form-control" name="institution" id="profileInstitution">
                                 </div>
-                                <button type="button" class="btn btn-signup-premium px-5" onclick="adminToast('Settings saved to local system.')">Update Controls</button>
+                                <div class="mb-3">
+                                    <label class="form-label">Skills (comma separated)</label>
+                                    <input type="text" class="form-control" name="skills" id="profileSkills" placeholder="e.g. Python, UX Design, Robotics">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Interests</label>
+                                    <input type="text" class="form-control" name="interests" id="profileInterests" placeholder="e.g. AI for social good, Clean Energy">
+                                </div>
+                                <button type="submit" class="btn btn-custom-signup">Save Changes</button>
                             </form>
-                        </div>
-                        
-                        <div class="premium-card mt-4" style="background: rgba(26,94,79,0.02);">
-                            <h5 class="mb-3 text-danger"><i class="fa fa-exclamation-triangle me-2"></i>Danger Zone</h5>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="fw-bold">Flush Platform Cache</div>
-                                    <div class="small text-muted">Clears temporary storage and re-fetches all Firestore nodes.</div>
-                                </div>
-                                <button class="btn btn-outline-danger btn-sm" onclick="location.reload()">Execute Flush</button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -449,9 +434,7 @@
                     <div id="notificationsPageList" class="list-group list-group-flush">
                         <!-- Notifications will be loaded here -->
                         <div class="text-center py-5">
-                            <div class="mb-3 opacity-25">
-                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                            </div>
+                            <i class="fa fa-bell-slash fa-3x text-light mb-3"></i>
                             <p class="text-muted">No notifications yet</p>
                         </div>
                     </div>
@@ -619,8 +602,14 @@
             const profileForm = document.getElementById('profileForm');
             if (profileForm) profileForm.addEventListener('submit', handleProfileUpdate);
             
+            const eventFormEl = document.getElementById('adminEventForm');
+            if (eventFormEl) eventFormEl.addEventListener('submit', handleEventSubmit);
+
+            const manualMentorFormEl = document.getElementById('manualMentorForm');
+            if (manualMentorFormEl) manualMentorFormEl.addEventListener('submit', handleManualMentorRegistration);
+
             // Load Events
-            // Handled by AdminPanel.init() which is called automatically or via showSection
+            await loadAdminEvents();
 
             // Filter Pills Handling
             document.querySelectorAll('.category-filter-pill').forEach(pill => {
@@ -897,11 +886,176 @@
             }
         };
 
-        // Event logic moved to admin-panel.js
-    </script>
+        // ── Admin Events Management Logic ───────────────────────
+        async function loadAdminEvents() {
+            const container = document.getElementById('adminEventsGrid');
+            if (!container) return;
+            container.innerHTML = '<div class="col-12 text-center py-5"><span class="spinner-border text-primary"></span></div>';
+
+            try {
+                const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'));
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="col-12 text-muted">No events created yet.</div>';
+                    return;
+                }
+
+                let html = '';
+                snapshot.forEach(docSnap => {
+                    const ev = docSnap.data();
+                    const id = docSnap.id;
+                    html += `
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm h-100 border-0">
+                                <img src="${ev.imageLink || 'assets/img/event-default.jpg'}" class="card-img-top" alt="Event Image" style="height:140px; object-fit:cover;">
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold">${ev.title}</h5>
+                                    <p class="card-text small text-muted mb-2"><i class="fa fa-calendar-alt me-1 text-primary"></i>${ev.date} | <i class="fa fa-clock me-1 text-primary"></i>${ev.time}</p>
+                                    <p class="card-text small mb-2"><i class="fa fa-map-marker-alt me-1 text-primary"></i>${ev.location}</p>
+                                    <p class="card-text small mb-3 line-clamp-2">${ev.description}</p>
+                                    <div class="d-flex gap-2 mt-auto">
+                                        <button class="btn btn-sm btn-outline-primary flex-fill" onclick="window.editAdminEvent('${id}')">
+                                            <i class="fa fa-edit me-1"></i> Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger flex-fill" onclick="window.deleteAdminEvent('${id}')">
+                                            <i class="fa fa-trash me-1"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading events:', error);
+                container.innerHTML = '<div class="col-12 text-danger">Failed to load events.</div>';
+            }
+        }
+
+        async function handleEventSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = document.getElementById('adminEventSubmitBtn');
+            const eventId = document.getElementById('adminEventId').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa fa-spinner fa-spin me-2"></i>${eventId ? 'Updating...' : 'Creating...'}`;
+
+            const eventData = {
+                title: form.title.value,
+                description: form.description.value,
+                date: form.date.value,
+                time: form.time.value,
+                location: form.location.value,
+                imageLink: form.imageLink.value || 'assets/img/event-default.jpg',
+                updatedAt: serverTimestamp()
+            };
+
+            try {
+                if (eventId) {
+                    await updateDoc(doc(db, 'events', eventId), eventData);
+                    alert('Event updated successfully!');
+                } else {
+                    eventData.createdAt = serverTimestamp();
+                    eventData.createdBy = currentUser.uid;
+                    await addDoc(collection(db, 'events'), eventData);
+                    alert('Event created successfully!');
+                }
+                cancelEventEdit();
+                await loadAdminEvents();
+            } catch (error) {
+                console.error('Error saving event:', error);
+                alert('Failed to save event: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = eventId ? 'Update Event' : 'Create Event';
+            }
+        }
+
+        window.editAdminEvent = async function(eventId) {
+            try {
+                const docSnap = await getDoc(doc(db, 'events', eventId));
+                if (docSnap.exists()) {
+                    const ev = docSnap.data();
+                    const form = document.getElementById('adminEventForm');
+                    form.title.value = ev.title || '';
+                    form.description.value = ev.description || '';
+                    form.date.value = ev.date || '';
+                    form.time.value = ev.time || '';
+                    form.location.value = ev.location || '';
+                    form.imageLink.value = ev.imageLink || 'assets/img/event-default.jpg';
+                    document.getElementById('adminEventId').value = eventId;
+                    
+                    document.getElementById('adminEventSubmitBtn').innerHTML = 'Update Event';
+                    document.getElementById('adminEventCancelBtn').style.display = 'block';
+                    form.scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                console.error('Error fetching event details:', error);
+                alert('Failed to load event details.');
+            }
+        };
+
+        window.cancelEventEdit = function() {
+            const form = document.getElementById('adminEventForm');
+            form.reset();
+            document.getElementById('adminEventId').value = '';
+            document.getElementById('adminEventSubmitBtn').innerHTML = 'Create Event';
+            document.getElementById('adminEventCancelBtn').style.display = 'none';
+        };
+
+        window.deleteAdminEvent = async function(eventId) {
+            if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) return;
+            try {
+                await deleteDoc(doc(db, 'events', eventId));
+                alert('Event deleted.');
+                await loadAdminEvents();
+            } catch (error) {
+                console.error('Error deleting event:', error);
+                alert('Failed to delete event.');
+            }
+        };
+
+        async function handleManualMentorRegistration(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                fullName: form.fullName.value,
+                email: form.email.value.toLowerCase(),
+                expertise: form.expertise.value,
+                institution: form.institution.value,
+                role: 'mentor',
+                status: 'approved',
+                isApproved: true,
+                joinDate: serverTimestamp(),
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                // Check if user exists
+                const q = query(collection(db, 'users'), where('email', '==', data.email));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    alert('User with this email already exists.');
+                    return;
+                }
+
+                // In a real app, we'd use Firebase Auth Admin SDK to create the user,
+                // but here we'll just create the Firestore document.
+                // The mentor will need to "Reset Password" to gain access if they haven't signed up yet.
+                await addDoc(collection(db, 'users'), data);
+                alert('Mentor registered and approved successfully!');
+                form.reset();
+            } catch (err) {
+                console.error("Error registering mentor:", err);
+                alert("Failed: " + err.message);
+            }
+        }
     </script>
     <!-- Admin Panel (Firebase Data Integration) -->
-    <script type="module" src="assets/js/pages/admin-panel.js?v=11.1.0"></script>
+    <script type="module" src="assets/js/pages/admin-panel.js?v=2.0.0"></script>
     <script>
         // Override showSection to set correct initial section and reinitialize dynamic views
         const _origShowSection = window.showSection;

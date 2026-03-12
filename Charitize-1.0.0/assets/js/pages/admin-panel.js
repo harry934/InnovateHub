@@ -1,6 +1,5 @@
-import { db, auth } from "../core/firebase-config.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { collection, getDocs, query, where, doc, getDoc, updateDoc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from "../core/firebase-config.js";
+import { collection, getDocs, query, where, doc, updateDoc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ============================================================
 //  HELPERS
@@ -82,17 +81,6 @@ async function renderAdminStats() {
                 </div>
             </div>
         `).join('');
-
-        // Update Sidebar Badge
-        const badge = document.getElementById('pendingMentorBadge');
-        if (badge) {
-            if (pendingMentors > 0) {
-                badge.textContent = pendingMentors;
-                badge.style.display = 'inline-block';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
     } catch (e) {}
 }
 
@@ -100,7 +88,6 @@ async function renderAdminStats() {
 //  USERS & MENTORS CARDS (Redesigned from logic)
 // ============================================================
 window.currentRoleFilter = 'all';
-window.currentProjectFilter = 'pending';
 
 window.setRoleFilter = function(role) {
     window.currentRoleFilter = role;
@@ -163,13 +150,8 @@ async function renderUsersCards() {
                             ${u.categories ? `<div class="d-flex flex-wrap gap-1 mt-2">${u.categories.map(c => `<span class="badge bg-light text-dark border">${c}</span>`).join('')}</div>` : ''}
                         </div>
                         
-                        <div class="mt-auto pt-3 border-top d-flex gap-2 justify-content-end flex-wrap">
-                            ${isMentor && u.status === 'pending' ? `
-                                <button class="btn btn-sm btn-success" onclick="AdminPanel.approveMentor('${u.id}')" style="border-radius:8px;">Approve</button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="AdminPanel.rejectMentor('${u.id}', '${u.fullName}')" style="border-radius:8px;">Reject</button>
-                            ` : ''}
-                            ${isMentor && u.status === 'approved' ? `<button class="btn btn-sm btn-outline-warning" onclick="AdminPanel.discontinueMentor('${u.id}', '${u.fullName}')" style="border-radius:8px;">Discontinue</button>` : ''}
-                            <button class="btn btn-sm text-danger border border-danger" onclick="AdminPanel.deleteUser('${u.id}')" style="border-radius:8px;">Delete Account</button>
+                        <div class="mt-auto pt-3 border-top d-flex gap-2 justify-content-end">
+                            <button class="btn btn-sm text-danger border border-danger" onclick="AdminPanel.deleteUser('${u.id}')" style="border-radius:8px;">Block Account</button>
                         </div>
                     </div>
                 </div>
@@ -190,110 +172,52 @@ async function renderMentorApprovals() {
     container.innerHTML = '<div class="text-center py-5"><i class="fa fa-spinner fa-spin text-primary fa-2x"></i></div>';
     
     try {
-        // Fetch all mentors and filter locally to avoid index errors
-        const qSnap = await getDocs(collection(db, 'users'));
-        console.log(`Admin Debug: Fetched ${qSnap.size} total users`);
+        const qSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'mentor'), where('status', '==', 'pending')));
         
-        const allMentors = qSnap.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .filter(u => {
-                const isMentor = u.role === 'mentor';
-                // Check multiple status fields for backward compatibility
-                const status = (u.status || u.mentorStatus || u.approvalStatus || 'pending').toLowerCase();
-                const isApproved = u.isApproved === true || status === 'approved';
-                
-                // Show ALL mentors (approved, pending, or even rejected) but NOT discontinued
-                return isMentor && status !== 'discontinued';
-            });
-        
-        console.log(`Admin Debug: ${allMentors.length} mentors found in total (approved + pending)`);
-        
-        if (allMentors.length === 0) {
-            container.innerHTML = '<div class="text-center py-5 text-muted">No mentors found.</div>';
+        if (qSnap.empty) {
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <div style="font-size:3rem;margin-bottom:16px;">🎉</div>
+                    <h5 style="font-family:var(--font-head);color:var(--brand-green);">All caught up!</h5>
+                    <p style="color:#aaa;">No pending mentor applications right now.</p>
+                </div>`;
             return;
         }
 
-        container.innerHTML = allMentors.map(m => {
-            const status = (m.status || 'pending').toLowerCase();
-            const isApproved = m.isApproved === true || status === 'approved';
-            
-            // Professional Status Config
-            let statusConfig = {
-                text: 'Pending Review',
-                color: '#f3a813',
-                bg: 'rgba(243, 168, 19, 0.1)',
-                border: 'rgba(243, 168, 19, 0.2)'
-            };
-            
-            if (status === 'approved' || isApproved) {
-                statusConfig = { text: 'Approved', color: '#1a5e4f', bg: 'rgba(26, 94, 79, 0.1)', border: 'rgba(26, 94, 79, 0.2)' };
-            } else if (status === 'rejected') {
-                statusConfig = { text: 'Rejected', color: '#dc3545', bg: 'rgba(220, 53, 69, 0.1)', border: 'rgba(220, 53, 69, 0.2)' };
-            }
-
+        container.innerHTML = qSnap.docs.map(doc => {
+            const m = { id: doc.id, ...doc.data() };
             return `
-            <div class="mentor-approval-card" id="mac-${m.id}" style="padding:28px; border-radius:18px; background:#fff; box-shadow:0 10px 40px rgba(0,0,0,0.04); border:1px solid #edf2f7; margin-bottom:24px; display:flex; gap:24px; position:relative; overflow:hidden;">
-                <!-- Professional Status Indicator Strip -->
-                <div style="position:absolute; left:0; top:0; bottom:0; width:6px; background:${statusConfig.color}; opacity:0.8;"></div>
-                
-                <div class="mac-avatar d-flex align-items-center justify-content-center text-white fw-bold" style="width:72px; height:72px; border-radius:16px; background:linear-gradient(135deg, #1a5e4f 0%, #2a8a75 100%); font-size:1.4rem; flex-shrink:0;">
+            <div class="mentor-approval-card" id="mac-${m.id}" style="padding:24px; border-radius:16px; background:#fff; box-shadow:0 8px 30px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); margin-bottom:20px; display:flex; gap:20px;">
+                <div class="mac-avatar d-flex align-items-center justify-content-center text-white fw-bold" style="width:80px; height:80px; border-radius:50%; background:var(--brand-yellow); font-size:1.6rem; flex-shrink:0;">
                     ${getInitials(m.fullName)}
                 </div>
-                
                 <div class="mac-body flex-grow-1">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <div class="mac-name" style="font-family:var(--font-head); font-weight:800; font-size:1.4rem; color:#1a202c;">${m.fullName}</div>
-                            <div class="d-flex align-items-center gap-2 mt-1">
-                                <span style="background:${statusConfig.bg}; color:${statusConfig.color}; border:1px solid ${statusConfig.border}; padding:4px 12px; border-radius:6px; font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">
-                                    ${statusConfig.text}
-                                </span>
-                                <span class="text-muted small d-flex align-items-center">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                    ${m.role.toUpperCase()}
-                                </span>
-                            </div>
-                        </div>
+                        <div class="mac-name" style="font-family:var(--font-head); font-weight:800; font-size:1.3rem;">${m.fullName}</div>
+                        <span class="badge bg-warning text-dark">Review Required</span>
                     </div>
                     
-                    <div class="mac-meta d-flex flex-wrap gap-4 text-muted mt-3 mb-4" style="font-size:0.85rem;">
-                        <span class="d-flex align-items-center">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            ${m.institution || 'Individual Mentor'}
-                        </span>
-                        <span class="d-flex align-items-center">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            Joined: ${timeAgo(m.createdAt || m.joinDate)}
-                        </span>
-                        ${m.experience ? `
-                        <span class="d-flex align-items-center">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                            Exp: ${m.experience} Years
-                        </span>` : ''}
+                    <div class="mac-meta d-flex gap-3 text-muted mb-3" style="font-size:0.85rem;">
+                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>${m.institution || 'N/A'}</span>
+                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>Applied: ${timeAgo(m.createdAt || m.joinDate)}</span>
                     </div>
                     
-                    <div style="background:#f7fafc; padding:20px; border-radius:14px; margin-bottom:20px; font-size:0.95rem; border:1px solid #edf2f7; color:#4a5568;">
-                        <div style="margin-bottom:12px; line-height:1.6;"><strong>Professional Overview:</strong><br>${m.bio || 'Detailed profile information has not been provided yet.'}</div>
-                        <div class="d-flex flex-wrap gap-2 mt-3">
-                            ${(m.categories || []).map(c => `<span style="background:#e2e8f0; color:#47566a; padding:4px 12px; border-radius:6px; font-size:0.75rem; font-weight:700;">${c}</span>`).join('')}
-                        </div>
+                    <div style="background:#f8fafb; padding:16px; border-radius:12px; margin-bottom:16px; font-size:0.9rem; border-left:4px solid var(--brand-green);">
+                        <div style="margin-bottom:8px;"><strong>Bio:</strong> ${m.bio || 'No bio provided.'}</div>
+                        <div style="margin-bottom:8px;"><strong>Expertise:</strong> ${m.expertise || 'Not listed'}</div>
+                        ${m.availability ? `<div><strong>Availability:</strong> ${m.availability}</div>` : ''}
                     </div>
                     
-                    <div class="mac-actions d-flex gap-2">
-                        ${!isApproved ? `
-                            <button class="btn btn-primary d-flex align-items-center" style="border-radius:10px; padding:10px 28px; font-weight:700; background:#1a5e4f; border:none;" onclick="AdminPanel.approveMentor('${m.id}')">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><polyline points="20 6 9 17 4 12"/></svg>
-                                <span>Approve Mentor</span>
-                            </button>
-                        ` : `
-                            <div class="d-flex align-items-center text-success fw-bold px-3 py-2 bg-light rounded-3 small">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><polyline points="20 6 9 17 4 12"/></svg>
-                                Access Granted
-                            </div>
-                        `}
-                        <button class="btn btn-outline-danger d-flex align-items-center" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.rejectMentor('${m.id}', '${m.fullName}')">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            <span>Reject</span>
+                    <div class="mac-categories mb-4">
+                        ${(m.categories || []).map(c => `<span class="badge bg-light text-dark border me-1">${c}</span>`).join('')}
+                    </div>
+                    
+                    <div class="mac-actions d-flex gap-3">
+                        <button class="btn btn-success" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.approveMentor('${m.id}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><polyline points="20 6 9 17 4 12"/></svg>Approve Mentor
+                        </button>
+                        <button class="btn btn-outline-danger" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.rejectMentor('${m.id}', '${m.fullName}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject
                         </button>
                     </div>
                 </div>
@@ -301,7 +225,6 @@ async function renderMentorApprovals() {
         }).join('');
     } catch (e) {
         console.error("Error loading pending mentors:", e);
-        container.innerHTML = '<div class="alert alert-danger mx-4">Critical Error: Unable to sync with mentor database.</div>';
     }
 }
 
@@ -312,90 +235,31 @@ async function renderProjectApprovals() {
     const container = document.getElementById('projectApprovalList');
     if (!container) return;
     
-    container.innerHTML = '<div class="text-center py-5"><i class="fa fa-spinner fa-spin text-primary fa-2x"></i></div>';
-    
     try {
-        // Fetch all and filter locally
-        const qSnap = await getDocs(collection(db, 'projects'));
-        const projects = qSnap.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .filter(p => p.status === window.currentProjectFilter);
-            
-        if (projects.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-5">
-                    <div style="font-size:3rem;margin-bottom:16px;">${window.currentProjectFilter === 'pending' ? '✅' : '📁'}</div>
-                    <h5 style="font-family:var(--font-head);color:var(--brand-green);">No ${window.currentProjectFilter} projects!</h5>
-                    <p style="color:#aaa;">${window.currentProjectFilter === 'pending' ? 'All submissions have been reviewed.' : 'Nothing to show here yet.'}</p>
-                </div>`;
+        const qSnap = await getDocs(query(collection(db, 'projects'), where('status', '==', 'pending')));
+        
+        if (qSnap.empty) {
+            container.innerHTML = `<div class="text-center py-5"><div style="font-size:3rem;margin-bottom:16px;">✅</div><h5 style="font-family:var(--font-head);color:var(--brand-green);">No pending projects!</h5><p style="color:#aaa;">All project submissions have been reviewed.</p></div>`;
             return;
         }
         
-        container.innerHTML = projects.map(p => {
-            const isPending = p.status === 'pending';
-
-            // Build file download button
-            const fileSection = p.fileUrl
-                ? `<div class="mb-4 p-3" style="background:rgba(26,94,79,0.05); border-radius:12px; border-left:4px solid var(--brand-green);">
-                        <div class="fw-bold mb-2" style="color:var(--brand-green); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.5px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                            Attached Document: ${p.fileName || 'View File'}
-                        </div>
-                        <a href="${p.fileUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="border-radius:8px; font-weight:700;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            Download Document
-                        </a>
-                   </div>`
-                : `<div class="mb-4 p-3 text-muted" style="background:#f8fafb; border-radius:12px; font-size:0.85rem;">
-                        <i class="fa fa-info-circle me-1"></i> No document uploaded.
-                   </div>`;
-
+        container.innerHTML = qSnap.docs.map(doc => {
+            const p = { id: doc.id, ...doc.data() };
             return `
-            <div class="request-card" id="pcard-${p.id}" style="padding:28px; border-radius:16px; background:#fff; box-shadow:0 8px 30px rgba(0,0,0,0.06); margin-bottom:20px; border: 1px solid rgba(0,0,0,0.03);">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <h4 style="font-family:var(--font-head); font-weight:800; color:var(--brand-green); margin:0">${p.title}</h4>
-                    <div>${statusBadge(p.status)}</div>
-                </div>
-                <div class="text-muted mb-4" style="font-size:0.85rem;">Submitted ${timeAgo(p.createdAt)}</div>
-
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6">
-                        <div style="background:#f8fafb; padding:16px; border-radius:12px; height:100%;">
-                            <div class="fw-bold mb-1" style="font-size:0.8rem; text-transform:uppercase; color:#888; letter-spacing:0.5px;">Problem</div>
-                            <p class="mb-0" style="font-size:0.9rem;">${p.problemStatement || 'N/A'}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div style="background:#f8fafb; padding:16px; border-radius:12px; height:100%;">
-                            <div class="fw-bold mb-1" style="font-size:0.8rem; text-transform:uppercase; color:#888; letter-spacing:0.5px;">Objectives</div>
-                            <p class="mb-0" style="font-size:0.9rem;">${p.objectives || 'N/A'}</p>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="request-card" id="pcard-${p.id}" style="padding:24px; border-radius:16px; background:#fff; box-shadow:0 8px 30px rgba(0,0,0,0.06); margin-bottom:20px;">
+                <h4 style="font-family:var(--font-head); font-weight:800; color:var(--brand-green);">${p.title}</h4>
+                <div class="text-muted mb-3" style="font-size:0.85rem;">Submitted ${timeAgo(p.createdAt)}</div>
                 <div class="mb-3">
-                    <strong style="font-size:0.85rem;">Categories:</strong>
-                    <span class="ms-2">${(p.categories || []).map(c => `<span class="badge bg-light text-dark border ms-1">${c}</span>`).join('')}</span>
+                    <strong>Problem Statement:</strong>
+                    <p class="text-muted">${p.problemStatement || 'N/A'}</p>
                 </div>
-
-                ${fileSection}
-
-                <div class="d-flex gap-2">
-                    ${isPending ? `
-                        <button class="btn btn-success px-4" style="border-radius:10px; font-weight:700;" onclick="AdminPanel.approveProject('${p.id}')">
-                            <i class="fa fa-check me-2"></i> Approve
-                        </button>
-                        <button class="btn btn-outline-danger px-4" style="border-radius:10px; font-weight:700;" onclick="AdminPanel.rejectProject('${p.id}')">
-                            <i class="fa fa-times me-2"></i> Reject
-                        </button>
-                    ` : `
-                        <button class="btn btn-sm btn-outline-danger" style="border-radius:8px;" onclick="AdminPanel.deleteProject('${p.id}')">
-                            <i class="fa fa-trash me-1"></i> Delete Permanent
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;" onclick="AdminPanel.revertProjectStatus('${p.id}')">
-                            <i class="fa fa-undo me-1"></i> Revert to Pending
-                        </button>
-                    `}
+                <div class="mb-4">
+                    <strong>Categories:</strong>
+                    ${(p.categories || []).map(c => `<span class="badge bg-light text-dark border ms-1">${c}</span>`).join('')}
+                </div>
+                <div class="d-flex gap-3">
+                    <button class="btn btn-success" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.approveProject('${p.id}')">Approve Project</button>
+                    <button class="btn btn-outline-danger" style="border-radius:10px; padding:10px 24px; font-weight:700;" onclick="AdminPanel.rejectProject('${p.id}')">Reject</button>
                 </div>
             </div>`;
         }).join('');
@@ -409,15 +273,8 @@ async function renderMentorshipsTable() {
     container.innerHTML = '<tr><td colspan="5" class="text-center py-4"><i class="fa fa-spinner fa-spin text-primary"></i> Loading pairings...</td></tr>';
 
     try {
-        // Fetch ALL mentorship requests and filter locally (more robust against index issues)
-        const snap = await getDocs(collection(db, 'mentorshipRequests'));
-        console.log(`Admin Debug: Fetched ${snap.size} mentorship requests`);
-
-        const requests = snap.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .filter(r => ['accepted', 'pending', 'rejected'].includes(r.status));
-        
-        console.log(`Admin Debug: ${requests.length} valid mentorship requests after filter`);
+        const q = query(collection(db, 'mentorshipRequests'), where('status', 'in', ['accepted', 'pending', 'rejected']));
+        const snap = await getDocs(q);
         
         // Also fetch termination requests
         const termSnap = await getDocs(collection(db, 'mentorshipTerminations'));
@@ -436,23 +293,12 @@ async function renderMentorshipsTable() {
         for (let docSnap of snap.docs) {
             const req = { id: docSnap.id, ...docSnap.data() };
             
-            // Refactor: Use getDoc direct reference for participant names
-            let innovator = 'Unknown Participant';
-            let mentor = 'Unknown Participant';
+            // Fetch names (could optimize with local cache or batch fetch)
+            const iSnap = await getDocs(query(collection(db, 'users'), where('__name__', '==', req.innovatorId)));
+            const mSnap = await getDocs(query(collection(db, 'users'), where('__name__', '==', req.mentorId)));
             
-            try {
-                if (req.innovatorId) {
-                    const iDoc = await getDoc(doc(db, 'users', req.innovatorId));
-                    if (iDoc.exists()) innovator = iDoc.data().fullName || 'No Name';
-                }
-                
-                if (req.mentorId) {
-                    const mDoc = await getDoc(doc(db, 'users', req.mentorId));
-                    if (mDoc.exists()) mentor = mDoc.data().fullName || 'No Name';
-                }
-            } catch (err) {
-                console.warn(`Admin Debug: Participant fetch error for request ${req.id}:`, err);
-            }
+            const innovator = iSnap.docs[0]?.data()?.fullName || 'Unknown';
+            const mentor = mSnap.docs[0]?.data()?.fullName || 'Unknown';
             
             const hasTermReq = terminations[req.id];
             const statusStyle = req.status === 'accepted' ? 'color:#1a5e4f;font-weight:700;' : '';
@@ -502,12 +348,8 @@ async function renderMentorshipsTable() {
         container.innerHTML = html;
         
     } catch (e) {
-        console.error("Critical error in renderMentorshipsTable:", e);
-        if (e.code === 'permission-denied') {
-            container.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-warning"><i class="fa fa-lock me-2"></i> Permission Denied. Are you logged in as Admin?</td></tr>';
-        } else {
-            container.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Failed to load data. See console for details.</td></tr>';
-        }
+        console.error("Error loading mentorships", e);
+        container.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Failed to load data.</td></tr>';
     }
 }
 
@@ -517,11 +359,7 @@ async function renderMentorshipsTable() {
 window.AdminPanel = {
     async approveMentor(userId) {
         try {
-            await updateDoc(doc(db, 'users', userId), { 
-                status: 'approved',
-                isApproved: true,
-                approvalDate: serverTimestamp()
-            });
+            await updateDoc(doc(db, 'users', userId), { status: 'approved' });
             adminToast('✓ Mentor approved successfully!');
             renderMentorApprovals();
             renderUsersCards();
@@ -533,14 +371,9 @@ window.AdminPanel = {
     async rejectMentor(userId, name) {
         if(confirm(`Reject application for ${name}?`)) {
             try {
-                await updateDoc(doc(db, 'users', userId), { 
-                    status: 'rejected',
-                    isApproved: false 
-                });
+                await updateDoc(doc(db, 'users', userId), { status: 'rejected' });
                 adminToast('✕ Mentor application rejected.', 'error');
                 renderMentorApprovals();
-                renderUsersCards();
-                renderAdminStats();
             } catch (e) {}
         }
     },
@@ -549,24 +382,9 @@ window.AdminPanel = {
         try {
             await deleteDoc(doc(db, 'users', userId));
             adminToast('User deleted permanently.', 'error');
-            renderMentorApprovals();
             renderUsersCards();
             renderAdminStats();
         } catch (e) {}
-    },
-    async discontinueMentor(userId, name) {
-        if(confirm(`Discontinue mentor account for ${name}? User will lose dashboard access but data will be preserved.`)) {
-            try {
-                await updateDoc(doc(db, 'users', userId), { 
-                    status: 'discontinued',
-                    isApproved: false 
-                });
-                adminToast('✕ Mentor account discontinued.', 'warning');
-                renderMentorApprovals();
-                renderUsersCards();
-                renderAdminStats();
-            } catch (e) {}
-        }
     },
     async approveProject(projectId) {
         try {
@@ -582,30 +400,6 @@ window.AdminPanel = {
             adminToast('Project rejected.', 'error');
             renderProjectApprovals();
         } catch (e) {}
-    },
-    async deleteProject(projectId) {
-        if (!confirm('Permanently delete this project? This cannot be undone.')) return;
-        try {
-            await deleteDoc(doc(db, 'projects', projectId));
-            adminToast('Project deleted.', 'error');
-            renderProjectApprovals();
-            renderAdminStats();
-        } catch (e) {}
-    },
-    async revertProjectStatus(projectId) {
-        try {
-            await updateDoc(doc(db, 'projects', projectId), { status: 'pending' });
-            adminToast('Project reverted to pending.');
-            renderProjectApprovals();
-        } catch (e) {}
-    },
-    setProjectFilter(status) {
-        window.currentProjectFilter = status;
-        document.querySelectorAll('#projectApprovalsSection .filter-btn').forEach(b => b.classList.remove('active'));
-        const btnId = status === 'pending' ? 'filterProjPending' : status === 'approved' ? 'filterProjApproved' : 'filterProjRejected';
-        const btn = document.getElementById(btnId);
-        if (btn) btn.classList.add('active');
-        renderProjectApprovals();
     },
     async terminateMentorship(requestId) {
         if (!confirm('Are you sure you want to permanently dissolve this mentorship link?')) return;
@@ -643,37 +437,21 @@ window.AdminPanel = {
         const form = e.target;
         const btn = document.getElementById('adminEventSubmitBtn');
         const eventId = document.getElementById('adminEventId').value;
-        const fileInput = document.getElementById('eventImageInput');
-        const file = fileInput ? fileInput.files[0] : null;
         
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Processing...';
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
 
-        let imageLink = form.imageLink.value || 'assets/img/event-default.jpg';
+        const eventData = {
+            title: form.title.value,
+            description: form.description.value,
+            date: form.date.value,
+            time: form.time.value,
+            location: form.location.value,
+            imageLink: form.imageLink.value,
+            updatedAt: serverTimestamp()
+        };
 
         try {
-            // Handle file upload if present
-            if (file) {
-                btn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Uploading Image...';
-                if (window.api && window.api.uploadProjectFile) {
-                    const response = await window.api.uploadProjectFile(file, 'events', 'admin');
-                    if (response && response.ok) {
-                        const baseUrl = window.api.API_URL || 'https://innovatehub.up.railway.app/api';
-                        imageLink = `${baseUrl}/projects/file/${response.data.fileId}`;
-                    }
-                }
-            }
-
-            const eventData = {
-                title: form.title.value,
-                description: form.description.value,
-                date: form.date.value,
-                time: form.time.value,
-                location: form.location.value,
-                imageLink: imageLink,
-                updatedAt: serverTimestamp()
-            };
-
             if (eventId) {
                 await updateDoc(doc(db, 'events', eventId), eventData);
                 adminToast('✓ Event updated successfully!');
@@ -682,7 +460,10 @@ window.AdminPanel = {
                 await addDoc(collection(db, 'events'), eventData);
                 adminToast('✓ Event created successfully!');
             }
-            this.cancelEventEdit();
+            form.reset();
+            document.getElementById('adminEventId').value = '';
+            document.getElementById('adminEventSubmitBtn').textContent = 'Create Event';
+            document.getElementById('adminEventCancelBtn').style.display = 'none';
             await this.loadAdminEvents();
         } catch (error) {
             console.error(error);
@@ -696,7 +477,7 @@ window.AdminPanel = {
         const container = document.getElementById('adminEventsGrid');
         if (!container) return;
         
-        container.innerHTML = '<div class="col-12 text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-primary"></i></div>';
+        container.innerHTML = '<div class="col-12 text-center py-4"><i class="fa fa-spinner fa-spin"></i> Loading...</div>';
 
         try {
             const snap = await getDocs(collection(db, 'events'));
@@ -708,49 +489,15 @@ window.AdminPanel = {
             container.innerHTML = snap.docs.map(docSnap => {
                 const ev = { id: docSnap.id, ...docSnap.data() };
                 return `
-                <div class="col-md-6 mb-4">
-                    <div class="premium-card h-100 p-0 overflow-hidden border-0 shadow-lg" style="transition: all 0.3s ease; background: #fff; border-radius: 20px;">
-                        <div style="position: relative; height: 180px; overflow: hidden;">
-                            <img src="${ev.imageLink}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.5s ease;">
-                            <div style="position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.9); padding: 5px 12px; border-radius: 10px; font-weight: 800; font-size: 0.7rem; color: var(--brand-green); box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-transform: uppercase; letter-spacing: 0.5px;">
-                                ${ev.date.split(',')[1] || 'Upcoming'}
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <h5 class="fw-bold mb-3" style="color:var(--brand-green); font-family: var(--font-head); font-size: 1.25rem;">${ev.title}</h5>
-                            
-                            <div class="d-grid gap-2 mb-4" style="grid-template-columns: 1fr 1fr;">
-                                <div class="d-flex align-items-center text-muted small">
-                                    <div style="width: 32px; height: 32px; background: rgba(26, 94, 79, 0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px; color: var(--brand-green);">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                    </div>
-                                    <span class="text-truncate">${ev.date}</span>
-                                </div>
-                                <div class="d-flex align-items-center text-muted small">
-                                    <div style="width: 32px; height: 32px; background: rgba(243, 168, 19, 0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px; color: var(--brand-yellow);">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                    </div>
-                                    <span class="text-truncate">${ev.time}</span>
-                                </div>
-                                <div class="d-flex align-items-center text-muted small" style="grid-column: span 2;">
-                                    <div style="width: 32px; height: 32px; background: rgba(26, 94, 79, 0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px; color: var(--brand-green);">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                                    </div>
-                                    <span class="text-truncate">${ev.location}</span>
-                                </div>
-                            </div>
-                            
-                            <p class="small text-muted mb-4 line-clamp-2" style="height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${ev.description}</p>
-                            
-                            <div class="d-flex gap-2 pt-3 border-top">
-                                <button class="btn btn-sm btn-outline-primary flex-fill fw-bold d-flex align-items-center justify-content-center gap-2" style="border-radius: 12px; padding: 8px;" onclick="AdminPanel.editEvent('${ev.id}')">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                    Edit
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger flex-fill fw-bold d-flex align-items-center justify-content-center gap-2" style="border-radius: 12px; padding: 8px;" onclick="AdminPanel.deleteEvent('${ev.id}')">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                    Delete
-                                </button>
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 shadow-sm border-0">
+                        <img src="${ev.imageLink}" class="card-img-top" style="height:120px; object-fit:cover;">
+                        <div class="card-body p-3">
+                            <h6 class="fw-bold mb-1">${ev.title}</h6>
+                            <p class="small text-muted mb-2">${ev.date} | ${ev.time}</p>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="AdminPanel.editEvent('${ev.id}')">Edit</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="AdminPanel.deleteEvent('${ev.id}')">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -758,7 +505,6 @@ window.AdminPanel = {
             }).join('');
         } catch (e) {
             console.error(e);
-            container.innerHTML = '<div class="col-12 text-center py-4 text-danger">Error loading events.</div>';
         }
     },
 
@@ -769,30 +515,18 @@ window.AdminPanel = {
             const ev = snap.docs[0].data();
             
             const form = document.getElementById('adminEventForm');
-            form.title.value = ev.title || '';
-            form.description.value = ev.description || '';
-            form.date.value = ev.date || '';
-            form.time.value = ev.time || '';
-            form.location.value = ev.location || '';
-            form.imageLink.value = ev.imageLink || '';
+            form.title.value = ev.title;
+            form.description.value = ev.description;
+            form.date.value = ev.date;
+            form.time.value = ev.time;
+            form.location.value = ev.location;
+            form.imageLink.value = ev.imageLink;
             document.getElementById('adminEventId').value = id;
             
             document.getElementById('adminEventSubmitBtn').textContent = 'Update Event';
             document.getElementById('adminEventCancelBtn').style.display = 'block';
             form.scrollIntoView({ behavior: 'smooth' });
-        } catch(e) {
-            console.error("Error editing event:", e);
-        }
-    },
-
-    cancelEventEdit() {
-        const form = document.getElementById('adminEventForm');
-        if (form) form.reset();
-        document.getElementById('adminEventId').value = '';
-        document.getElementById('adminEventSubmitBtn').textContent = 'Create Event';
-        document.getElementById('adminEventCancelBtn').style.display = 'none';
-        const fileInput = document.getElementById('eventImageInput');
-        if (fileInput) fileInput.value = '';
+        } catch(e) {}
     },
 
     async deleteEvent(id) {
@@ -859,23 +593,7 @@ window.AdminPanel = {
 };
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log("Admin Debug: Auth detected for", user.uid);
-                window.AdminPanel.init();
-            } else {
-                console.warn("Admin Debug: No auth found. Redirecting?");
-            }
-        });
-    });
+    document.addEventListener('DOMContentLoaded', () => window.AdminPanel.init());
 } else {
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            console.log("Admin Debug: Auth detected for", user.uid);
-            window.AdminPanel.init();
-        } else {
-            console.warn("Admin Debug: No auth found.");
-        }
-    });
+    window.AdminPanel.init();
 }

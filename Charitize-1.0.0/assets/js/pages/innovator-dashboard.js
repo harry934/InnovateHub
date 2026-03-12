@@ -2,7 +2,7 @@
 import { auth, db } from '../core/firebase-config.js';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import NotificationSystem from '../components/notification-system.js';
-import StructuredProjectCard from '../components/project-card-structured.js?v=8.0.0';
+import StructuredProjectCard from '../components/project-card-structured.js';
 import MentorProfileCard from '../components/mentor-profile-card.js';
 import EmptyStates from '../components/empty-states.js';
 import AutoSaveManager from '../utils/auto-save-manager.js';
@@ -51,41 +51,78 @@ const dashboardCards = [
     { title: 'Account Settings', id: 'profile',   section: 'profile',   types: ['Profile', 'Settings'], progress: 95, action: 'edit' }
 ];
 
+// ─── Enhanced background symbol system ───────────────────────
+// ─── Enhanced background symbol system ───────────────────────
+function initBackgroundSymbols() {
+    const container = document.getElementById('backgroundSymbols');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const symbols = [
+        '+', '−', '×', '÷', '◇', '○', '△', '□', 
+        '⟶', '⇌', '∞', '≈', '{ }', '< />', '[ ]', '#',
+        '⚡', '⚛', '◈', '❖', '★', '⚙', '⌘'
+    ];
+
+    const count = 100; // Boosted density
+    for (let i = 0; i < count; i++) {
+        const el = document.createElement('span');
+        el.className = 'bg-symbol';
+        el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+        const size = 0.8 + Math.random() * 2.2;         // 0.8–3.0rem (Larger)
+        const opacity = 0.04 + Math.random() * 0.08;    // More visible
+        const delay = Math.random() * 20;               
+        const dur = 15 + Math.random() * 25;            
+        const drift = (Math.random() - 0.5) * 150;      
+
+        el.style.cssText = `
+            position: absolute;
+            left: ${Math.random() * 100}%;
+            top: ${Math.random() * 140}%;
+            font-size: ${size}rem;
+            --sym-opacity: ${opacity};
+            opacity: ${opacity};
+            color: ${Math.random() > 0.6 ? '#1a5e4f' : '#f3a813'};
+            font-family: 'Courier New', monospace;
+            font-weight: 800;
+            pointer-events: none;
+            user-select: none;
+            animation: floatSymbol ${dur}s ${delay}s ease-in-out infinite alternate;
+            --drift: ${drift}px;
+            filter: blur(${Math.random() * 1}px);
+        `;
+        container.appendChild(el);
+    }
+}
+
 function renderQuickAccessCards() {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
 
-    // Vibrant color accents for cards
-    const cardColors = {
-        projects: '#1a5e4f',
-        submit: '#f3a813',
-        mentors: '#4A90E2',
-        myMentors: '#9B51E0',
-        profile: '#121331'
-    };
-
     container.innerHTML = dashboardCards.map(card => `
-        <article class="dashboard-grid-card premium-card premium-card-large" onclick="window.showDashboardSection('${card.section}')" style="cursor: pointer;">
-          <div class="card-glow" style="background: ${cardColors[card.id] || 'var(--brand-green)'};"></div>
-          <div class="card-icon-wrapper" style="background: ${cardColors[card.id]}15; color: ${cardColors[card.id]};">
+        <article class="premium-card" onclick="window.showDashboardSection('${card.section}')">
+          <div class="premium-card-icon">
             ${CARD_ICONS[card.id] || ''}
           </div>
-          <div class="card-content">
-            <div class="card-header">
-              <h3 class="card-title fw-bold" style="color: ${cardColors[card.id]};">${card.title}</h3>
-              <div class="card-action-icon" style="background: ${cardColors[card.id]}20;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${cardColors[card.id]}" stroke-width="2.5">
+          <div class="tc-content">
+            <div class="tc-header">
+              <h3 class="tc-title" style="font-family:var(--font-head); font-weight:800; font-size:1.4rem; color:var(--brand-green);">${card.title}</h3>
+              <div class="tc-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
               </div>
             </div>
-            <div class="card-tags mt-2">
-              ${card.types.map(t => `<span class="badge rounded-pill px-3 py-2" style="background: ${cardColors[card.id]}10; color: ${cardColors[card.id]}; font-weight: 700; font-size: 0.75rem;">${t}</span>`).join('')}
+            <div class="tc-tags" style="margin-top:8px; display:flex; gap:8px;">
+              ${card.types.map(t => `<span class="badge" style="background:rgba(26, 94, 79, 0.05); color:var(--brand-green); font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:4px 10px; border-radius:20px;">${t}</span>`).join('')}
             </div>
           </div>
         </article>
     `).join('');
+
+    initBackgroundSymbols();
 }
 
 
@@ -130,12 +167,6 @@ function renderQuickAccessCards() {
 
             // Sync UI with data
             const realName = (data && data.fullName) || initialName;
-            const firstName = realName.split(' ')[0];
-            
-            if (document.getElementById('dashboardGreeting')) {
-                document.getElementById('dashboardGreeting').textContent = `Welcome, ${firstName}!`;
-            }
-
             if (userDisplayName) userDisplayName.textContent = realName;
             if (profileDisplayNameDisplay) profileDisplayNameDisplay.textContent = realName;
 
@@ -154,9 +185,6 @@ function renderQuickAccessCards() {
                 
                 if (data.photoURL && profilePreview) {
                     profilePreview.src = data.photoURL;
-                    if (window.StaggeredMenu && window.StaggeredMenu.updatePhoto) {
-                        window.StaggeredMenu.updatePhoto(data.photoURL);
-                    }
                 }
 
                 // Render skills badges
@@ -253,34 +281,26 @@ function renderQuickAccessCards() {
                     if (preview) preview.style.opacity = '0.5';
 
                     try {
-                        const fileExt = file.name.split('.').pop();
-                        const fileName = `${currentUser.uid}-${Date.now()}.${fileExt}`;
-                        const filePath = `avatars/${fileName}`;
-
-                        const { data, error } = await window.supabase.storage
-                            .from('project-documents')
-                            .upload(filePath, file);
-
-                        if (error) throw error;
-
-                        const { data: { publicUrl } } = window.supabase.storage
-                            .from('project-documents')
-                            .getPublicUrl(filePath);
-
-                        const photoURL = publicUrl;
-                        
-                        const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-                        await updateProfile(currentUser, { photoURL });
-                        
-                        await updateDoc(doc(db, "users", currentUser.uid), { 
-                            photoURL, 
-                            updatedAt: serverTimestamp() 
-                        });
-                        
-                        alert('Profile picture updated!');
+                        const response = await window.api.uploadProjectFile(file, 'profile', currentUser.uid);
+                        if (response && response.ok) {
+                            const baseUrl = window.api ? window.api.API_URL : 'https://innovatehub.up.railway.app/api';
+                            const photoURL = `${baseUrl}/projects/file/${response.data.fileId}`;
+                            
+                            const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+                            await updateProfile(currentUser, { photoURL });
+                            
+                            await updateDoc(doc(db, "users", currentUser.uid), { 
+                                photoURL, 
+                                updatedAt: serverTimestamp() 
+                            });
+                            
+                            alert('Profile picture updated!');
+                        } else {
+                            throw new Error("Upload failed.");
+                        }
                     } catch (err) {
                         console.error("Profile pic upload failed:", err);
-                        alert('Failed to update profile picture: ' + err.message);
+                        alert('Failed to update profile picture.');
                     } finally {
                         if (preview) preview.style.opacity = '1';
                     }
@@ -316,93 +336,7 @@ function renderQuickAccessCards() {
             }
         }
         
-        window.renderMyMentors = async function() {
-            const container = document.getElementById('myMentorsContainer');
-            if (!container) return;
-            container.innerHTML = EmptyStates.templates.loadingState();
-            
-            try {
-                const q = query(collection(db, 'mentorshipRequests'), where('innovatorId', '==', currentUser.uid), where('status', '==', 'accepted'));
-                const snapshot = await getDocs(q);
-                
-                if (snapshot.empty) {
-                    container.innerHTML = `
-                        <div class="text-center py-5">
-                            <div class="mb-3 opacity-25">
-                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            </div>
-                            <h5>No active mentors yet</h5>
-                            <p class="text-muted">Once your mentorship requests are accepted, they'll appear here.</p>
-                            <button class="btn btn-primary rounded-pill px-4 mt-2" onclick="window.showDashboardSection('mentors')">Find a Mentor</button>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                container.innerHTML = '<div class="row g-4"></div>';
-                const row = container.querySelector('.row');
-                
-                for (const docSnap of snapshot.docs) {
-                    const req = { id: docSnap.id, ...docSnap.data() };
-                    
-                    // Safety check for mentorId
-                    if (!req.mentorId) {
-                        console.warn(`Mentorship request ${req.id} is missing mentorId.`, req);
-                        continue;
-                    }
-
-                    try {
-                        const mentorDoc = await getDoc(doc(db, "users", req.mentorId));
-                        const mentor = mentorDoc.exists() ? mentorDoc.data() : { fullName: 'Unknown Mentor' };
-                        
-                        let projectTitle = 'General Mentorship';
-                        if (req.projectId) {
-                            const projectDoc = await getDoc(doc(db, "projects", req.projectId));
-                            projectTitle = projectDoc.exists() ? projectDoc.data().title : 'Unknown Project';
-                        }
-                        
-                        const firstName = mentor.fullName ? mentor.fullName.split(' ')[0] : 'Mentor';
-                        const mentorPhoto = mentor.photoURL || 'assets/img/default-avatar.png';
-                        
-                        row.innerHTML += `
-                            <div class="col-md-6 col-lg-4">
-                                <article class="dashboard-card premium-card hover-lift h-100 p-4 d-flex flex-column" onclick="window.CollaborationHub.init('${req.id}')" style="cursor: pointer;">
-                                    <div class="card-glow" style="background: var(--brand-yellow);"></div>
-                                    <div class="d-flex align-items-center gap-3 mb-4 position-relative z-1">
-                                        <div class="position-relative">
-                                            <img src="${mentorPhoto}" class="rounded-circle shadow-sm border border-2 border-white" style="width: 56px; height: 56px; object-fit: cover;">
-                                            <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white" style="width: 14px; height: 14px;"></div>
-                                        </div>
-                                        <div>
-                                            <h6 class="fw-bold mb-0 text-dark">${firstName}</h6>
-                                            <p class="text-muted smaller mb-0 fw-bold text-uppercase opacity-75" style="letter-spacing: 0.5px;">${mentor.profession || 'Expert'}</p>
-                                        </div>
-                                    </div>
-                                    <div class="position-relative z-1 flex-grow-1">
-                                        <div class="small text-muted mb-1 text-uppercase fw-bold opacity-75" style="font-size: 0.65rem;">Mentorship Focus</div>
-                                        <h5 class="fw-bold text-primary mb-3" style="font-family: var(--font-head);">${projectTitle}</h5>
-                                    </div>
-                                    <div class="mt-auto pt-3 border-top position-relative z-1 d-flex justify-content-between align-items-center">
-                                         <div class="small fw-bold text-muted d-flex align-items-center gap-2">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                            Active Hub
-                                        </div>
-                                        <button class="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm">
-                                            Open Hub
-                                        </button>
-                                    </div>
-                                </article>
-                            </div>
-                        `;
-                    } catch (innerError) {
-                        console.error(`Error rendering individual mentor card (${req.id}):`, innerError);
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading my mentors:', error);
-                container.innerHTML = EmptyStates.templates.errorState('Failed to load mentors');
-            }
-        };
+        // loadMentors() removed: handled by mentor-discovery.js
         
         async function handleProjectSubmit(e) {
             e.preventDefault();
@@ -486,215 +420,25 @@ function renderQuickAccessCards() {
         }
 
         window.confirmDeleteProject = async function(projectId) {
-            if (!confirm('Are you sure you want to delete this project? This cannot be undone.')) return;
+            if (!confirm('Are you sure you want to delete this project? This will also remove any uploaded documents from MongoDB and cannot be undone.')) {
+                return;
+            }
 
             try {
-                // Fetch the project first to get the Supabase file path (if any)
-                const { deleteDoc, doc: fsDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-                const snap = await getDoc(fsDoc(db, "projects", projectId));
-                const projectData = snap.exists() ? snap.data() : {};
+                // 1. Delete from Firebase Firestore
+                const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+                await deleteDoc(doc(db, "projects", projectId));
 
-                // 1. Delete file from Supabase Storage if applicable
-                if (projectData.fileStoragePath && projectData.fileStorageType === 'supabase' && window.supabase) {
-                    const { error } = await window.supabase.storage
-                        .from('project-documents')
-                        .remove([projectData.fileStoragePath]);
-                    if (error) console.warn('Could not remove Supabase file:', error.message);
+                // 2. Delete from MongoDB via API
+                if (window.api && window.api.deleteProject) {
+                    await window.api.deleteProject(projectId);
                 }
 
-                // 2. Delete Firestore document
-                await deleteDoc(fsDoc(db, "projects", projectId));
-
                 alert('Project deleted successfully.');
-                await loadProjects();
+                await loadProjects(); // Refresh the list
             } catch (error) {
                 console.error('Error deleting project:', error);
                 alert('Failed to delete project: ' + error.message);
-            }
-        };
-
-        // ── EDIT PROJECT ─────────────────────────────────────────────
-        window.editProject = async function(projectId) {
-            const { doc: fsDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-            const snap = await getDoc(fsDoc(db, "projects", projectId));
-            if (!snap.exists()) return alert('Project not found.');
-            const p = snap.data();
-
-            const overlay = document.createElement('div');
-            overlay.className = 'ihub-modal-overlay';
-            overlay.id = 'editProjectModal';
-            overlay.innerHTML = `
-                <div class="ihub-modal">
-                    <div class="ihub-modal__header">
-                        <h3 class="ihub-modal__title">✏️ Edit Project</h3>
-                        <button class="ihub-modal__close" onclick="document.getElementById('editProjectModal').remove()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
-                    </div>
-                    <div class="ihub-form-group"><label>Project Title</label><input id="epTitle" value="${p.title || ''}"></div>
-                    <div class="ihub-form-group"><label>Problem Statement</label><textarea id="epProblem" rows="3">${p.problemStatement || ''}</textarea></div>
-                    <div class="ihub-form-group"><label>Objectives</label><textarea id="epObjectives" rows="3">${p.objectives || ''}</textarea></div>
-                    <div class="ihub-form-group"><label>Proposed Solution</label><textarea id="epSolution" rows="3">${p.proposedSolution || ''}</textarea></div>
-                    <div class="ihub-form-group"><label>Expected Impact</label><textarea id="epImpact" rows="3">${p.expectedImpact || ''}</textarea></div>
-                    <button class="ihub-btn-primary" onclick="window._saveProjectEdit('${projectId}')">Save Changes</button>
-                </div>`;
-            document.body.appendChild(overlay);
-        };
-
-        window._saveProjectEdit = async function(projectId) {
-            const btn = document.querySelector('#editProjectModal .ihub-btn-primary');
-            btn.disabled = true; btn.textContent = 'Saving...';
-            try {
-                await updateDoc(doc(db, 'projects', projectId), {
-                    title: document.getElementById('epTitle').value,
-                    problemStatement: document.getElementById('epProblem').value,
-                    objectives: document.getElementById('epObjectives').value,
-                    proposedSolution: document.getElementById('epSolution').value,
-                    expectedImpact: document.getElementById('epImpact').value,
-                    updatedAt: serverTimestamp()
-                });
-                document.getElementById('editProjectModal').remove();
-                alert('Project updated!');
-                await loadProjects();
-            } catch (e) {
-                alert('Failed to update: ' + e.message);
-                btn.disabled = false; btn.textContent = 'Save Changes';
-            }
-        };
-
-        // ── ADD MILESTONE ────────────────────────────────────────────
-        window.showAddMilestone = function(projectId) {
-            const overlay = document.createElement('div');
-            overlay.className = 'ihub-modal-overlay';
-            overlay.id = 'addMilestoneModal';
-            overlay.innerHTML = `
-                <div class="ihub-modal">
-                    <div class="ihub-modal__header">
-                        <h3 class="ihub-modal__title">🏁 Add Milestone</h3>
-                        <button class="ihub-modal__close" onclick="document.getElementById('addMilestoneModal').remove()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
-                    </div>
-                    <div class="ihub-form-group"><label>Milestone Title</label><input id="msTitle" placeholder="e.g. Prototype Completed"></div>
-                    <div class="ihub-form-group"><label>Description</label><textarea id="msDesc" rows="3" placeholder="What was achieved?"></textarea></div>
-                    <div class="ihub-form-group"><label>Status</label>
-                        <select id="msStatus">
-                            <option value="pending">Pending</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                    </div>
-                    <div class="ihub-form-group"><label>Target Date (optional)</label><input id="msDate" type="date"></div>
-                    <button class="ihub-btn-primary" onclick="window._saveMilestone('${projectId}')">Add Milestone</button>
-                </div>`;
-            document.body.appendChild(overlay);
-        };
-
-        window._saveMilestone = async function(projectId) {
-            const title = document.getElementById('msTitle').value.trim();
-            if (!title) return alert('Please enter a milestone title.');
-            const btn = document.querySelector('#addMilestoneModal .ihub-btn-primary');
-            btn.disabled = true; btn.textContent = 'Saving...';
-            try {
-                await addDoc(collection(db, 'milestones'), {
-                    projectId, title,
-                    description: document.getElementById('msDesc').value,
-                    status: document.getElementById('msStatus').value,
-                    targetDate: document.getElementById('msDate').value || null,
-                    innovatorId: currentUser.uid,
-                    createdAt: serverTimestamp()
-                });
-                document.getElementById('addMilestoneModal').remove();
-                alert('Milestone added!');
-            } catch (e) {
-                alert('Failed to save milestone: ' + e.message);
-                btn.disabled = false; btn.textContent = 'Add Milestone';
-            }
-        };
-
-        // ── VIEW MILESTONES ──────────────────────────────────────────
-        window.viewMilestones = async function(projectId) {
-            const overlay = document.createElement('div');
-            overlay.className = 'ihub-modal-overlay';
-            overlay.id = 'viewMilestonesModal';
-            overlay.innerHTML = `
-                <div class="ihub-modal">
-                    <div class="ihub-modal__header">
-                        <h3 class="ihub-modal__title">📋 Milestones</h3>
-                        <button class="ihub-modal__close" onclick="document.getElementById('viewMilestonesModal').remove()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
-                    </div>
-                    <div id="milestonesListContainer"><div class="text-center py-3"><i class="fa fa-spinner fa-spin"></i> Loading...</div></div>
-                    <button class="ihub-btn-primary mt-3" onclick="document.getElementById('viewMilestonesModal').remove(); showAddMilestone('${projectId}')">+ Add New Milestone</button>
-                </div>`;
-            document.body.appendChild(overlay);
-
-            try {
-                const { getDocs: gd, collection: col, query: q, where: wh } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-                const snap = await gd(q(col(db, 'milestones'), wh('projectId', '==', projectId)));
-                const container = document.getElementById('milestonesListContainer');
-                if (snap.empty) {
-                    container.innerHTML = '<p class="text-muted text-center">No milestones yet. Add your first one!</p>';
-                    return;
-                }
-                const statusClass = { completed: 'status-completed', 'in-progress': 'status-in-progress', pending: 'status-pending' };
-                container.innerHTML = snap.docs.map(d => {
-                    const m = d.data();
-                    return `<div class="ihub-milestone-item">
-                        <div>
-                            <div class="ihub-milestone-item__title">${m.title}</div>
-                            <div class="ihub-milestone-item__desc">${m.description || ''}</div>
-                        </div>
-                        <span class="ihub-milestone-item__status ${statusClass[m.status] || 'status-pending'}">${m.status}</span>
-                    </div>`;
-                }).join('');
-            } catch (e) {
-                document.getElementById('milestonesListContainer').innerHTML = '<p class="text-danger">Failed to load milestones.</p>';
-            }
-        };
-
-        // ── ADD REPORT ───────────────────────────────────────────────
-        window.showAddReport = function(projectId) {
-            const overlay = document.createElement('div');
-            overlay.className = 'ihub-modal-overlay';
-            overlay.id = 'addReportModal';
-            overlay.innerHTML = `
-                <div class="ihub-modal">
-                    <div class="ihub-modal__header">
-                        <h3 class="ihub-modal__title">📝 Add Progress Report</h3>
-                        <button class="ihub-modal__close" onclick="document.getElementById('addReportModal').remove()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
-                    </div>
-                    <div class="ihub-form-group"><label>Report Title</label><input id="rpTitle" placeholder="e.g. Week 3 Progress Update"></div>
-                    <div class="ihub-form-group"><label>Summary</label><textarea id="rpSummary" rows="4" placeholder="What progress have you made?"></textarea></div>
-                    <div class="ihub-form-group"><label>Challenges Faced</label><textarea id="rpChallenges" rows="3" placeholder="Any blockers or issues?"></textarea></div>
-                    <div class="ihub-form-group"><label>Next Steps</label><textarea id="rpNext" rows="3" placeholder="What's planned next?"></textarea></div>
-                    <button class="ihub-btn-primary" onclick="window._saveReport('${projectId}')">Submit Report</button>
-                </div>`;
-            document.body.appendChild(overlay);
-        };
-
-        window._saveReport = async function(projectId) {
-            const title = document.getElementById('rpTitle').value.trim();
-            if (!title) return alert('Please enter a report title.');
-            const btn = document.querySelector('#addReportModal .ihub-btn-primary');
-            btn.disabled = true; btn.textContent = 'Submitting...';
-            try {
-                await addDoc(collection(db, 'reports'), {
-                    projectId, title,
-                    summary: document.getElementById('rpSummary').value,
-                    challenges: document.getElementById('rpChallenges').value,
-                    nextSteps: document.getElementById('rpNext').value,
-                    innovatorId: currentUser.uid,
-                    createdAt: serverTimestamp()
-                });
-                document.getElementById('addReportModal').remove();
-                alert('Report submitted!');
-            } catch (e) {
-                alert('Failed to submit report: ' + e.message);
-                btn.disabled = false; btn.textContent = 'Submit Report';
             }
         };
 

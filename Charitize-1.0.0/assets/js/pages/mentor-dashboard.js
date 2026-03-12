@@ -41,10 +41,11 @@ const CARD_ICONS = {
 };
 
 const dashboardCards = [
-    { title: 'Requests',         id: 'requests', section: 'requests',      types: ['New', 'Review'],    icon: 'requests' },
-    { title: 'My Mentees',       id: 'mentees',  section: 'mentees',       types: ['Manage', 'Active'], icon: 'mentees'  },
-    { title: 'Schedule',         id: 'schedule', section: 'schedule',      types: ['Time', 'Meetings'], icon: 'schedule' },
-    { title: 'Account Settings', id: 'profile',  section: 'profile',       types: ['Profile', 'Settings'], icon: 'profile'  }
+    { title: 'Overview',         id: 'overview', section: 'overview',      types: ['Stats', 'Metrics'], progress: 100, action: 'view' },
+    { title: 'Requests',         id: 'requests', section: 'requests',      types: ['New', 'Review'],    progress: 25,  action: 'search' },
+    { title: 'My Mentees',       id: 'mentees',  section: 'mentees',       types: ['Manage', 'Active'], progress: 75,  action: 'chat' },
+    { title: 'Schedule',         id: 'schedule', section: 'schedule',      types: ['Time', 'Meetings'], progress: 50,  action: 'plus' },
+    { title: 'Account Settings', id: 'profile',  section: 'profile', types: ['Profile', 'Settings'], progress: 90, action: 'edit' }
 ];
 
 // ─── Enhanced background symbol system ───────────────────────
@@ -91,95 +92,31 @@ function initBackgroundSymbols() {
     }
 }
 
-function renderQuickAccessCards(profileComplete = false) {
+function renderQuickAccessCards() {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
 
-    // ── Inline Stats Row (replaces hidden overviewSection) ────────
-    const statsHtml = `
-        <div class="mentor-inline-stats" id="mentorInlineStats" style="
-            background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-2, #14493e) 100%);
-            border-radius: 20px;
-            padding: 28px 32px;
-            color: white;
-            display: flex;
-            gap: 0;
-            align-items: center;
-            margin-bottom: 0;
-            box-shadow: 0 10px 40px rgba(26,94,79,0.2);
-            position: relative;
-            overflow: hidden;
-        ">
-            <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:rgba(255,255,255,0.04);border-radius:50%;pointer-events:none;"></div>
-            <div style="flex:1;text-align:center;padding:0 20px;border-right:1px solid rgba(255,255,255,0.15);">
-                <div id="totalMentees" style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--brand-yellow,#f3a813);line-height:1;">—</div>
-                <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.8;margin-top:6px;">Active Mentees</div>
-            </div>
-            <div style="flex:1;text-align:center;padding:0 20px;border-right:1px solid rgba(255,255,255,0.15);">
-                <div id="pendingRequests" style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--brand-yellow,#f3a813);line-height:1;">—</div>
-                <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.8;margin-top:6px;">Pending Requests</div>
-            </div>
-            <div style="flex:1;text-align:center;padding:0 20px;">
-                <div id="completedProjects" style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--brand-yellow,#f3a813);line-height:1;">0</div>
-                <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.8;margin-top:6px;">Impact Created</div>
-            </div>
-        </div>
-    `;
-
-    // ── Lock gate ────────────────────────────────────────────────
-    const locked = !profileComplete;
-
-    const cardsHtml = dashboardCards.map(card => {
-        const lockOverlay = locked ? `
-            <div style="
-                position:absolute;inset:0;border-radius:20px;
-                background:rgba(255,255,255,0.85);
-                backdrop-filter:blur(4px);
-                display:flex;flex-direction:column;
-                align-items:center;justify-content:center;
-                z-index:10;gap:8px;
-            ">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1a5e4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    container.innerHTML = dashboardCards.map(card => `
+        <article class="premium-card" onclick="window.showDashboardSection('${card.section}')">
+          <div class="premium-card-icon">
+            ${CARD_ICONS[card.id] || ''}
+          </div>
+          <div class="tc-content">
+            <div class="tc-header">
+              <h3 class="tc-title" style="font-family:var(--font-head); font-weight:800; font-size:1.4rem; color:var(--brand-green);">${card.title}</h3>
+              <div class="tc-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
-                <span style="font-family:var(--font-head);font-weight:800;font-size:0.78rem;text-transform:uppercase;letter-spacing:1px;color:#1a5e4f;text-align:center;padding:0 16px;">Complete your profile to unlock</span>
-            </div>` : '';
-
-        const clickAction = locked
-            ? `window.dashboard && window.dashboard.showOnboardingModal()`
-            : `window.showDashboardSection('${card.section}')`;
-
-        return `
-            <article class="premium-card" style="cursor:pointer;" onclick="${clickAction}">
-                ${lockOverlay}
-                <div class="premium-card-icon">
-                    ${CARD_ICONS[card.id] || CARD_ICONS['profile']}
-                </div>
-                <div class="tc-content">
-                    <div class="tc-header">
-                        <h3 class="tc-title" style="font-family:var(--font-head);font-weight:800;font-size:1.4rem;color:var(--brand-green);">${card.title}</h3>
-                        <div class="tc-arrow">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                                <polyline points="12 5 19 12 12 19"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="tc-tags" style="margin-top:8px;display:flex;gap:8px;">
-                        ${card.types.map(t => `<span class="badge" style="background:rgba(26,94,79,0.05);color:var(--brand-green);font-size:0.7rem;font-weight:700;text-transform:uppercase;padding:4px 10px;border-radius:20px;">${t}</span>`).join('')}
-                    </div>
-                    ${locked ? '<div style="margin-top:12px;font-size:0.78rem;color:#aaa;display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Locked</div>' : ''}
-                </div>
-            </article>
-        `;
-    }).join('');
-
-    // Put stats in first grid column spanning all cols, then cards
-    container.innerHTML = `
-        <div style="grid-column:1/-1;">${statsHtml}</div>
-        ${cardsHtml}
-    `;
+              </div>
+            </div>
+            <div class="tc-tags" style="margin-top:8px; display:flex; gap:8px;">
+              ${card.types.map(t => `<span class="badge" style="background:rgba(26, 94, 79, 0.05); color:var(--brand-green); font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:4px 10px; border-radius:20px;">${t}</span>`).join('')}
+            </div>
+          </div>
+        </article>
+    `).join('');
 
     initBackgroundSymbols();
 }
@@ -215,140 +152,50 @@ class MentorDashboard {
           if (userDoc.exists()) userData = userDoc.data();
       }
 
-      let mStatus = userData.status || userData.mentorStatus || userData.approvalStatus || null;
-      let isApproved = userData.isApproved === true || mStatus === 'approved';
-
-      if (!isApproved) {
-        // Inject global "Kill Switch" CSS to ensure NO leakage even if other scripts run
-        if (!document.getElementById("mentorApprovalKillSwitch")) {
-            const killStyle = document.createElement('style');
-            killStyle.id = "mentorApprovalKillSwitch";
-            killStyle.innerHTML = `
-                #dashboardQuickAccess, #activeSectionContainer, #dashboard-content, #mentorCompleteness, .dashboard-grid-container {
-                    display: none !important;
-                }
-                body::after {
-                    content: '';
-                    position: fixed;
-                    top: 0; left: 0; width: 100%; height: 100%;
-                    background: white;
-                    z-index: 1; /* Below the gate but above content */
-                }
-            `;
-            document.head.appendChild(killStyle);
+      if (userData) {
+        if (!userData.profileComplete) {
+          this.showOnboardingModal();
+        } else {
+          document.getElementById("dashboard-content").style.display = "block";
         }
 
-        // Show Admin Approval Gate
-        if (document.getElementById("adminApprovalGate")) {
-            document.getElementById("adminApprovalGate").style.setProperty("display", "block", "important");
-            document.getElementById("adminApprovalGate").style.zIndex = "10";
-        }
-
-        console.warn("Mentor Dashboard: Access blocked - Account pending approval.");
-        return; 
+        // Update User Identity in Sidebar
+        this.updateUserIdentity(
+          userData.fullName || this.currentUser.displayName || this.currentUser.email.split('@')[0],
+        );
+        
+        // Populate Profile Forms with existing data
+        this.populateProfileForms(userData);
       }
-      
-      // If we reach here, user IS approved - remove kill switch if it exists
-      document.getElementById("mentorApprovalKillSwitch")?.remove();
-
-      this.profileComplete = userData.profileComplete === true;
-
-      // Always show dashboard quick access for approved mentors so they see locked cards
-      if (document.getElementById("dashboardQuickAccess")) {
-          document.getElementById("dashboardQuickAccess").style.display = "block";
-      }
-
-      if (!userData.profileComplete) {
-        this.showOnboardingModal();
-      } else {
-        // Only show main content (sections) if profile complete
-        if (document.getElementById("dashboard-content")) document.getElementById("dashboard-content").style.display = "block";
-      }
-
-      // Update User Identity in Sidebar
-      this.updateUserIdentity(
-        userData.fullName || this.currentUser.displayName || this.currentUser.email.split('@')[0],
-      );
-      
-      // Populate Profile Forms with existing data
-      this.populateProfileForms(userData);
-
-    } catch (err) {
-      console.error("Error checking profile completion:", err);
+    } catch (error) {
+      console.error("Error checking profile:", error);
     }
   }
 
   updateProfileCompleteness(userData) {
     if (!userData) return;
     
-    // Show both trackers if they exist
-    const heroTracker = document.getElementById("mentorCompleteness");
-    const profileTracker = document.getElementById("mentorCompletenessProfile");
-    if (heroTracker) heroTracker.style.display = "block";
-    if (profileTracker) profileTracker.style.display = "block";
+    document.getElementById("mentorCompleteness").style.display = "block";
     
     let filledFields = 0;
-    const fields = [
-        userData.fullName,
-        userData.bio,
-        userData.institution,
-        (userData.categories && userData.categories.length > 0),
-        userData.experience,
-        userData.style,
-        userData.availability,
-        userData.meetingLink
-    ];
+    const totalFields = 5;
     
-    filledFields = fields.filter(f => !!f).length;
-    const totalFieldsCount = fields.length;
+    if (userData.fullName) filledFields++;
+    if (userData.bio) filledFields++;
+    if (userData.profession) filledFields++;
+    if (userData.expertise && userData.expertise.length > 0) filledFields++;
+    if (userData.availability || userData.meetingLink) filledFields++;
+    if (userData.experience) filledFields++; // Added experience
+    if (userData.communicationPreference) filledFields++; // Added communication preference
+    
+    const totalFieldsCount = 7;
     const percentage = Math.round((filledFields / totalFieldsCount) * 100);
     
-    // Update Hero Tracker
-    const fillHero = document.getElementById("completenessFillHero");
-    const textHero = document.getElementById("completenessTextHero");
-    const statusText = document.getElementById("completenessStatusText");
+    const fill = document.getElementById("completenessFill");
+    const text = document.getElementById("completenessText");
     
-    if (fillHero) fillHero.style.width = percentage + "%";
-    if (textHero) textHero.textContent = percentage + "%";
-    if (statusText) {
-        if (percentage < 100) {
-            statusText.innerHTML = `
-                <div class="d-flex align-items-center justify-content-between mt-2">
-                    <span class="text-white-50">Profile incomplete</span>
-                    <button class="btn btn-sm btn-warning fw-bold px-3 py-1 rounded-pill pulsate-button" 
-                            style="font-size: 0.7rem;" 
-                            onclick="window.dashboard.showOnboardingModal()">
-                        CLICK TO COMPLETE
-                    </button>
-                </div>
-            `;
-            // Add pulsate animation if not exists
-            if (!document.getElementById('pulsateStyle')) {
-                const s = document.createElement('style');
-                s.id = 'pulsateStyle';
-                s.innerHTML = `
-                    @keyframes pulsate-b {
-                        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(243, 168, 19, 0.4); }
-                        50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(243, 168, 19, 0); }
-                        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(243, 168, 19, 0); }
-                    }
-                    .pulsate-button { animation: pulsate-b 2s infinite ease-in-out; }
-                    .completeness-card { transition: all 0.3s ease; }
-                    .completeness-card:hover { transform: translateY(-3px); border: 1px solid var(--brand-yellow); }
-                `;
-                document.head.appendChild(s);
-            }
-        } else {
-            statusText.textContent = "Your profile is 100% complete and discoverable.";
-        }
-    }
-
-    // Update Profile Section Tracker
-    const fillProfile = document.getElementById("completenessFillProfile");
-    const textProfile = document.getElementById("completenessTextProfile");
-    
-    if (fillProfile) fillProfile.style.width = percentage + "%";
-    if (textProfile) textProfile.textContent = percentage + "%";
+    if (fill) fill.style.width = percentage + "%";
+    if (text) text.textContent = percentage + "%";
     
     // Update profileComplete status in DB if reached 100%
     if (percentage === 100 && !userData.profileComplete) {
@@ -367,11 +214,6 @@ class MentorDashboard {
   }
   
   populateProfileForms(data) {
-      if (data.photoURL) {
-          const preview = document.getElementById('profilePreview');
-          if (preview) preview.src = data.photoURL;
-      }
-      
       // Profile Form
       if(document.getElementById('profileName')) document.getElementById('profileName').value = data.fullName || '';
       if(document.getElementById('profileProfession')) document.getElementById('profileProfession').value = data.profession || '';
@@ -391,28 +233,15 @@ class MentorDashboard {
   // ==========================================
 
   showOnboardingModal() {
-    const bootstrapRef = window.bootstrap || (typeof bootstrap !== 'undefined' ? bootstrap : null);
-    if (!bootstrapRef) {
-        console.error("Mentor Dashboard: Bootstrap library not found! Ensure bootstrap.bundle.min.js is loaded in dashboard.html head.");
-        alert("System Error: Required libraries not loaded. Please refresh the page.");
-        return;
-    }
-    
-    setTimeout(() => {
-        const modal = new bootstrapRef.Modal(
-          document.getElementById("onboardingModal"),
-          {
-            backdrop: "static",
-            keyboard: false,
-          },
-        );
-        
-        // Hide navbar to reduce distraction during onboarding
-        if (window.StaggeredMenu) window.StaggeredMenu.hide();
-        
-        modal.show();
-        this.renderOnboardingStep();
-    }, 0);
+    const modal = new bootstrap.Modal(
+      document.getElementById("onboardingModal"),
+      {
+        backdrop: "static",
+        keyboard: false,
+      },
+    );
+    modal.show();
+    this.renderOnboardingStep();
 
     // Bind Next/Back buttons - Check if listeners already added
     const nextBtn = document.getElementById("nextStepBtn");
@@ -431,136 +260,97 @@ class MentorDashboard {
   renderOnboardingStep() {
     const container = document.getElementById("onboardingStepContainer");
     const progressBar = document.getElementById("onboardingProgress");
-    const stepNum = document.getElementById("currentStepNum");
     const title = document.getElementById("onboardingTitle");
 
-    // Update Progress UI
-    const percent = (this.onboardingStep / this.totalSteps) * 100;
-    if (progressBar) progressBar.style.width = `${percent}%`;
-    if (stepNum) stepNum.textContent = this.onboardingStep;
+    // Update Progress
+    const percent = ((this.onboardingStep - 1) / this.totalSteps) * 100;
+    progressBar.style.width = `${percent}%`;
 
     let html = "";
 
     switch (this.onboardingStep) {
       case 1:
-        title.textContent = "Tell us about yourself";
+        title.textContent = "Step 1: Areas of Expertise";
         html = `
-            <div class="mb-4">
-                <label class="form-label fw-bold">Full Name</label>
-                <input type="text" class="form-control form-control-lg" id="ob-fullName" value="${this.onboardingData.fullName || this.currentUser.displayName || ''}" placeholder="Enter your full name">
-            </div>
-            <div class="mb-4">
-                <label class="form-label fw-bold">Professional Bio</label>
-                <textarea class="form-control" id="ob-bio" rows="3" placeholder="A brief summary of your background and what you offer to mentees...">${this.onboardingData.bio || ''}</textarea>
-            </div>
-            <div class="mb-0">
-                <label class="form-label fw-bold">Institution / Workplace</label>
-                <input type="text" class="form-control" id="ob-institution" value="${this.onboardingData.institution || ''}" placeholder="Where do you currently work or study?">
-            </div>
-        `;
+                    <div class="mb-3">
+                        <label class="form-label">Select your areas of expertise (Multi-select)</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            ${this.renderCheckbox("expertise", "Technology")}
+                            ${this.renderCheckbox("expertise", "Healthcare")}
+                            ${this.renderCheckbox("expertise", "Education")}
+                            ${this.renderCheckbox("expertise", "Environment")}
+                            ${this.renderCheckbox("expertise", "Business")}
+                            ${this.renderCheckbox("expertise", "Marketing")}
+                        </div>
+                    </div>
+                `;
         break;
       case 2:
-        title.textContent = "Select your specialization";
-        const cats = ['AI', 'Software', 'Agriculture', 'Healthcare', 'Business', 'Education', 'Finance', 'Marketing', 'Strategy', 'Legal', 'Operations', 'Social', 'Sustainability'];
+        title.textContent = "Step 2: Experience Level";
         html = `
-            <p class="text-muted small mb-4">Choose the primary categories you can mentor in. This helps innovators find you.</p>
-            <div class="d-flex flex-wrap gap-2">
-                ${cats.map(c => `
-                    <input type="checkbox" class="btn-check" name="ob-categories" id="ob-cat-${c}" value="${c}" ${ (this.onboardingData.categories || []).includes(c) ? 'checked' : '' }>
-                    <label class="btn btn-outline-primary rounded-pill px-3" for="ob-cat-${c}">${c}</label>
-                `).join('')}
-            </div>
-        `;
+                    <div class="mb-3">
+                        <label class="form-label">Years of Experience</label>
+                        <select class="form-select" id="experienceSelect">
+                            <option value="1-3">1-3 Years</option>
+                            <option value="4-7">4-7 Years</option>
+                            <option value="8-10">8-10 Years</option>
+                            <option value="10+">10+ Years</option>
+                        </select>
+                    </div>
+                `;
         break;
       case 3:
-        title.textContent = "Expertise & Style";
+        title.textContent = "Step 3: Mentoring Style";
         html = `
-            <div class="mb-4">
-                <label class="form-label fw-bold">Years of Experience</label>
-                <select class="form-select form-select-lg" id="ob-experience">
-                    <option value="1-3" ${this.onboardingData.experience === '1-3' ? 'selected' : ''}>1-3 Years</option>
-                    <option value="4-7" ${this.onboardingData.experience === '4-7' ? 'selected' : ''}>4-7 Years</option>
-                    <option value="8-10" ${this.onboardingData.experience === '8-10' ? 'selected' : ''}>8-10 Years</option>
-                    <option value="10+" ${this.onboardingData.experience === '10+' ? 'selected' : ''}>10+ Years</option>
-                </select>
-            </div>
-            <div class="mb-0">
-                <label class="form-label fw-bold">Preferred Mentoring Style</label>
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="ob-style" value="Hands-on" id="style1" ${this.onboardingData.style === 'Hands-on' ? 'checked' : ''}>
-                    <label class="form-check-label" for="style1"><strong>Hands-on</strong>: Code reviews, technical debugging, direct guidance</label>
-                </div>
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="ob-style" value="Strategic" id="style2" ${this.onboardingData.style === 'Strategic' ? 'checked' : ''}>
-                    <label class="form-check-label" for="style2"><strong>Strategic</strong>: High-level advice, business strategy, career growth</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="ob-style" value="Hybrid" id="style3" ${(!this.onboardingData.style || this.onboardingData.style === 'Hybrid') ? 'checked' : ''}>
-                    <label class="form-check-label" for="style3"><strong>Hybrid</strong>: A mix of both technical and strategic support</label>
-                </div>
-            </div>
-        `;
+                    <div class="mb-3">
+                        <label class="form-label">How do you prefer to mentor?</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="style" value="Hands-on" id="style1">
+                            <label class="form-check-label" for="style1">Hands-on (Code reviews, direct guidance)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="style" value="Strategic" id="style2">
+                            <label class="form-check-label" for="style2">Strategic (High-level advice, career growth)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="style" value="Hybrid" id="style3" checked>
+                            <label class="form-check-label" for="style3">Hybrid</label>
+                        </div>
+                    </div>
+                `;
         break;
       case 4:
-        title.textContent = "Scheduling & Availability";
+        title.textContent = "Step 4: Availability";
         html = `
-            <div class="mb-4">
-                <label class="form-label fw-bold">Weekly Slots</label>
-                <textarea class="form-control" id="ob-availability" rows="2" placeholder="e.g. Mon, Wed: 4 PM - 6 PM (EAT)">${this.onboardingData.availability || ''}</textarea>
-            </div>
-            <div class="mb-0">
-                <label class="form-label fw-bold">Default Meeting Link (Zoom/Meet)</label>
-                <input type="url" class="form-control" id="ob-meetingLink" value="${this.onboardingData.meetingLink || ''}" placeholder="https://zoom.us/j/...">
-                <p class="text-muted small mt-2">This link will be automatically shared with innovators who request your mentorship.</p>
-            </div>
-        `;
+                    <div class="mb-3">
+                        <label class="form-label">Weekly Availability</label>
+                        <select class="form-select" id="availabilitySelect">
+                            <option value="1-2 hours">1-2 hours/week</option>
+                            <option value="3-5 hours">3-5 hours/week</option>
+                            <option value="5+ hours">5+ hours/week</option>
+                        </select>
+                    </div>
+                `;
         break;
       case 5:
-        title.textContent = "Profile Photo & Review";
+        title.textContent = "Step 5: Industries of Interest";
         html = `
-            <!-- Photo Upload -->
-            <div class="mb-4">
-                <label class="form-label fw-bold">Profile Photo <span class="text-muted fw-normal">(optional but recommended)</span></label>
-                <div class="d-flex align-items-center gap-4">
-                    <div id="ob-photoPreviewWrap" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--brand-green,#1a5e4f),#f3a813);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
-                        ${this.onboardingData.photoURL
-                            ? `<img src="${this.onboardingData.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
-                            : `<span style="font-family:var(--font-head,sans-serif);font-weight:800;font-size:1.5rem;color:white;">${(this.onboardingData.fullName||'M')[0]}</span>`
-                        }
+                    <div class="mb-3">
+                        <label class="form-label">Industries you are interested in mentoring</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            ${this.renderCheckbox("industries", "FinTech")}
+                            ${this.renderCheckbox("industries", "HealthTech")}
+                            ${this.renderCheckbox("industries", "EdTech")}
+                            ${this.renderCheckbox("industries", "Clean Energy")}
+                            ${this.renderCheckbox("industries", "Social Enterprise")}
+                        </div>
                     </div>
-                    <div style="flex:1;">
-                        <input type="file" id="ob-photoInput" accept="image/*" class="form-control mb-2" />
-                        <p class="text-muted small mb-0">Stored securely in Supabase. Visible to innovators on your mentor profile.</p>
-                        <div id="ob-photo-status" class="small mt-1" style="color:var(--brand-green);"></div>
-                    </div>
-                </div>
-            </div>
-            <hr/>
-            <!-- Review Summary -->
-            <div class="review-box p-4 bg-light rounded-4 border">
-                <div class="d-flex align-items-center gap-3 mb-4">
-                    <div style="width:50px;height:50px;border-radius:50%;background:var(--brand-green,#1a5e4f);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0;">
-                        ${(this.onboardingData.fullName||'M')[0]}
-                    </div>
-                    <div>
-                        <h6 class="mb-0 fw-bold">${this.onboardingData.fullName || '—'}</h6>
-                        <p class="text-muted small mb-0">${this.onboardingData.institution || '—'}</p>
-                    </div>
-                </div>
-                <div class="row g-3 small">
-                    <div class="col-6"><strong>Categories:</strong><br>${(this.onboardingData.categories || []).join(', ') || '—'}</div>
-                    <div class="col-6"><strong>Experience:</strong><br>${this.onboardingData.experience || '—'} Years</div>
-                    <div class="col-12 border-top pt-2"><strong>Mentoring Style:</strong><br>${this.onboardingData.style || '—'}</div>
-                    <div class="col-12 border-top pt-2"><strong>Availability:</strong><br>${this.onboardingData.availability || '—'}</div>
-                    <div class="col-12 border-top pt-2"><strong>Meeting Link:</strong><br>${this.onboardingData.meetingLink || 'Not set'}</div>
-                </div>
-            </div>
-            <p class="text-center mt-4 small text-muted">By clicking <strong>Finish</strong>, your profile becomes discoverable by the InnovateHub community.</p>
-        `;
+                `;
         break;
     }
 
     container.innerHTML = html;
+    this.restoreStepData();
   }
 
   renderCheckbox(name, value) {
@@ -571,115 +361,48 @@ class MentorDashboard {
   }
 
   saveStepData() {
+    // Capture data from current step
     if (this.onboardingStep === 1) {
-      this.onboardingData.fullName = document.getElementById("ob-fullName").value;
-      this.onboardingData.bio = document.getElementById("ob-bio").value;
-      this.onboardingData.institution = document.getElementById("ob-institution").value;
+      this.onboardingData.expertise = this.getMultiSelectValues("expertise");
     } else if (this.onboardingStep === 2) {
-      this.onboardingData.categories = Array.from(document.querySelectorAll('input[name="ob-categories"]:checked')).map(cb => cb.value);
+      this.onboardingData.experience =
+        document.getElementById("experienceSelect").value;
     } else if (this.onboardingStep === 3) {
-      this.onboardingData.experience = document.getElementById("ob-experience").value;
-      const styleEl = document.querySelector('input[name="ob-style"]:checked');
-      if (styleEl) this.onboardingData.style = styleEl.value;
+      const el = document.querySelector('input[name="style"]:checked');
+      if (el) this.onboardingData.style = el.value;
     } else if (this.onboardingStep === 4) {
-      this.onboardingData.availability = document.getElementById("ob-availability").value;
-      this.onboardingData.meetingLink = document.getElementById("ob-meetingLink").value;
+      this.onboardingData.availability =
+        document.getElementById("availabilitySelect").value;
     } else if (this.onboardingStep === 5) {
-      // Photo upload is handled async inline — photoURL stored in this.onboardingData.photoURL
-      // Nothing to read synchronously here
+      this.onboardingData.industries = this.getMultiSelectValues("industries");
     }
   }
 
-  // Called from step 5 photo input change
-  async handleWizardPhotoUpload(file) {
-    if (!file) return;
-    const statusEl = document.getElementById('ob-photo-status');
-    const previewWrap = document.getElementById('ob-photoPreviewWrap');
-    if (statusEl) statusEl.textContent = 'Uploading...';
-
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${this.currentUser.uid}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
-
-      const { data, error } = await window.supabase.storage
-          .from('project-documents')
-          .upload(filePath, file);
-
-      if (error) throw error;
-
-      const { data: { publicUrl } } = window.supabase.storage
-          .from('project-documents')
-          .getPublicUrl(filePath);
-
-      this.onboardingData.photoURL = publicUrl;
-
-      if (previewWrap) {
-          previewWrap.innerHTML = `<img src="${publicUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
-      }
-      if (statusEl) statusEl.textContent = '✓ Photo uploaded successfully!';
-    } catch (err) {
-      console.error('Wizard photo upload failed:', err);
-      if (statusEl) statusEl.style.color = '#dc3545';
-      if (statusEl) statusEl.textContent = '⚠ Upload failed: ' + err.message;
-    }
+  restoreStepData() {
+    // Restore previous selections if backing up
+    // (Simplified for this version - complex restoration can be added)
   }
 
-  validateCurrentStep() {
-    if (this.onboardingStep === 1) {
-        if (!document.getElementById("ob-fullName").value.trim()) return "Please enter your full name.";
-        if (document.getElementById("ob-bio").value.trim().length < 20) return "Please provide a bio of at least 20 characters.";
-        if (!document.getElementById("ob-institution").value.trim()) return "Please enter your institution.";
-    } else if (this.onboardingStep === 2) {
-        const checked = document.querySelectorAll('input[name="ob-categories"]:checked');
-        if (checked.length === 0) return "Please select at least one category.";
-    } else if (this.onboardingStep === 4) {
-        if (!document.getElementById("ob-availability").value.trim()) return "Please specify your availability.";
-        const link = document.getElementById("ob-meetingLink").value.trim();
-        if (link && !link.startsWith('http')) return "Please enter a valid URL for your meeting link.";
-    }
-    return null;
+  getMultiSelectValues(name) {
+    return Array.from(
+      document.querySelectorAll(`input[name="${name}"]:checked`),
+    ).map((cb) => cb.value);
   }
 
-  async nextStep() {
-    const error = this.validateCurrentStep();
-    if (error) {
-        alert(error);
-        return;
-    }
-
+  nextStep() {
     this.saveStepData();
 
     if (this.onboardingStep < this.totalSteps) {
       this.onboardingStep++;
       this.renderOnboardingStep();
-
-      // Bind photo input on step 5 after render
-      if (this.onboardingStep === 5) {
-          setTimeout(() => {
-              const photoInput = document.getElementById('ob-photoInput');
-              if (photoInput) {
-                  photoInput.addEventListener('change', (e) => {
-                      const file = e.target.files[0];
-                      if (file) this.handleWizardPhotoUpload(file);
-                  });
-              }
-          }, 100);
-      }
     } else {
       this.completeOnboarding();
     }
 
     // Update buttons
-    const prevBtn = document.getElementById("prevStepBtn");
-    if (prevBtn) prevBtn.style.display = this.onboardingStep === 1 ? 'none' : 'block';
-    
-    const nextBtn = document.getElementById("nextStepBtn");
-    if (nextBtn) {
-        nextBtn.innerHTML = this.onboardingStep === this.totalSteps 
-            ? 'Finish <svg class="ms-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>'
-            : 'Next Step <svg class="ms-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
-    }
+    document.getElementById("prevStepBtn").disabled = this.onboardingStep === 1;
+    document.getElementById("nextStepBtn").textContent =
+      this.onboardingStep === this.totalSteps ? "Finish" : "Next";
   }
 
   prevStep() {
@@ -687,40 +410,24 @@ class MentorDashboard {
       this.onboardingStep--;
       this.renderOnboardingStep();
     }
-    const prevBtn = document.getElementById("prevStepBtn");
-    if (prevBtn) prevBtn.style.display = this.onboardingStep === 1 ? 'none' : 'block';
-    
-    const nextBtn = document.getElementById("nextStepBtn");
-    if (nextBtn) {
-        nextBtn.innerHTML = 'Next Step <svg class="ms-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
-    }
+    document.getElementById("prevStepBtn").disabled = this.onboardingStep === 1;
+    document.getElementById("nextStepBtn").textContent = "Next";
   }
 
   async completeOnboarding() {
     try {
       const btn = document.getElementById("nextStepBtn");
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+      btn.innerHTML =
+        '<span class="spinner-border spinner-border-sm"></span> Saving...';
       btn.disabled = true;
 
-      const saveData = {
-          ...this.onboardingData,
-          profileComplete: true,
-          updatedAt: serverTimestamp(),
-      };
+      await updateDoc(doc(db, "users", this.currentUser.uid), {
+        ...this.onboardingData,
+        profileComplete: true,
+        updatedAt: serverTimestamp(),
+      });
 
-      // If photo was uploaded in step 5, also update Firebase Auth profile
-      if (this.onboardingData.photoURL) {
-          try {
-              const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-              await updateProfile(this.currentUser, { photoURL: this.onboardingData.photoURL });
-          } catch (photoErr) {
-              console.warn('Could not update auth profile photo:', photoErr);
-          }
-      }
-
-      await updateDoc(doc(db, "users", this.currentUser.uid), saveData);
-
-      location.reload(); // Reload to clear modal and show unlocked dashboard
+      location.reload(); // Reload to clear modal and show dashboard
     } catch (error) {
       console.error("Onboarding failed:", error);
       alert("Failed to save profile. Please try again.");
@@ -737,8 +444,54 @@ class MentorDashboard {
     if (this.uiInitialized) return;
     this.uiInitialized = true;
 
-    // Render Quick Access Cards with profile lock state
-    renderQuickAccessCards(this.profileComplete);
+    // Navigation Logic handled in dashboard.html
+    // We just need to make sure renderQuickAccessCards is called
+    renderQuickAccessCards();
+
+    // Initialize CardNav for Mentor
+    const navItems = [
+        { 
+            label: 'Mentorship', 
+            bgColor: '#1a5e4f', 
+            textColor: '#fff', 
+            links: [
+                { label: 'Overview', href: 'javascript:showDashboardSection("overview")' }, 
+                { label: 'Requests', href: 'javascript:showDashboardSection("requests")' }
+            ] 
+        },
+        { 
+            label: 'Management', 
+            bgColor: '#f3a813', 
+            textColor: '#000', 
+            links: [
+                { label: 'My Mentees', href: 'javascript:showDashboardSection("mentees")' }, 
+                { label: 'Schedule', href: 'javascript:showDashboardSection("schedule")' }
+            ] 
+        },
+        { 
+            label: 'Account', 
+            bgColor: '#121331', 
+            textColor: '#fff', 
+            links: [
+                { label: 'Profile', href: 'javascript:showDashboardSection("profile")' }, 
+                { label: 'Notifications', href: 'javascript:showDashboardSection("notifications")' }
+            ] 
+        }
+    ];
+
+    /* CardNav removed in favor of standard navbar + landing cards */
+    /*
+    new CardNav({
+        user: { name: this.currentUser.displayName || this.currentUser.email.split('@')[0] },
+        items: navItems,
+        baseColor: '#1a5e4f',
+        buttonBgColor: '#f3a813',
+        buttonTextColor: '#000'
+    });
+    */
+
+    // Render Quick Access Cards
+    renderQuickAccessCards();
     
     // Attach Event Listeners for Forms
     const scheduleForm = document.getElementById('scheduleForm');
@@ -746,33 +499,6 @@ class MentorDashboard {
     
     const profileForm = document.getElementById('profileForm');
     if(profileForm) profileForm.addEventListener('submit', (e) => this.handleProfileUpdate(e));
-    
-    // Profile Picture Upload in Account Settings (post-onboarding update)
-    const profilePicInput = document.getElementById('profilePicInput');
-    if (profilePicInput) {
-        profilePicInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const preview = document.getElementById('profilePreview');
-            if (preview) preview.style.opacity = '0.5';
-            try {
-                const fileExt = file.name.split('.').pop();
-                const filePath = `avatars/${this.currentUser.uid}-${Date.now()}.${fileExt}`;
-                const { data, error } = await window.supabase.storage.from('project-documents').upload(filePath, file);
-                if (error) throw error;
-                const { data: { publicUrl } } = window.supabase.storage.from('project-documents').getPublicUrl(filePath);
-                const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-                await updateProfile(this.currentUser, { photoURL: publicUrl });
-                await updateDoc(doc(db, "users", this.currentUser.uid), { photoURL: publicUrl, updatedAt: serverTimestamp() });
-                if (preview) { preview.src = publicUrl; preview.style.opacity = '1'; }
-                alert('Profile picture updated!');
-            } catch (err) {
-                console.error("Profile pic upload failed:", err);
-                alert('Failed to update profile picture: ' + err.message);
-                if (preview) preview.style.opacity = '1';
-            }
-        });
-    }
     
     // Toggle handling
     const toggle = document.getElementById('availabilityToggle');
@@ -907,18 +633,18 @@ class MentorDashboard {
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
                             <div>
                                 <div class="d-flex align-items-center gap-2 mb-2">
-                                    <h5 class="mb-0 text-primary fw-bold">${innovatorName}</h5>
+                                    <h5 class="mb-0">${innovatorName}</h5>
                                     <span class="badge bg-light text-dark border">${category}</span>
                                 </div>
                                 <p class="mb-1"><strong>Project:</strong> ${projectTitle}</p>
                                 <p class="text-muted small mb-0">Requested: ${dateStr}</p>
                             </div>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-outline-success btn-sm rounded-pill px-3" onclick="window.dashboard.handleRequest('${requestId}', 'accepted')">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polyline points="20 6 9 17 4 12"/></svg> Accept
+                                <button class="btn btn-success btn-sm" onclick="window.dashboard.handleRequest('${requestId}', 'accepted')">
+                                    <i class="fa fa-check me-1"></i> Accept
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="window.dashboard.handleRequest('${requestId}', 'rejected')">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reject
+                                <button class="btn btn-danger btn-sm" onclick="window.dashboard.handleRequest('${requestId}', 'rejected')">
+                                    <i class="fa fa-times me-1"></i> Reject
                                 </button>
                             </div>
                         </div>
@@ -1028,40 +754,46 @@ class MentorDashboard {
                 hasProject = true;
             }
 
-            const onclickAttr = `window.CollaborationHub.init('${requestId}')`;
-            const firstName = (innovator.fullName || "Innovator").split(' ')[0];
-            const innovatorPhoto = innovator.photoURL || 'assets/img/default-avatar.png';
+            const onclickAttr = hasProject ? `window.dashboard.viewMenteeProject('${project.id}')` : `alert('This mentee joined via direct request without a specific project.')`;
 
             row.innerHTML += `
                     <div class="col-md-6 col-lg-4">
-                        <div class="dashboard-card premium-card hover-lift h-100 p-4 d-flex flex-column" onclick="${onclickAttr}" style="cursor: pointer;">
-                            <div class="card-glow" style="background: var(--brand-green);"></div>
-                            <div class="d-flex align-items-center gap-3 mb-4 position-relative z-1">
-                                <div class="position-relative">
-                                    <img src="${innovatorPhoto}" class="rounded-circle shadow-sm border border-2 border-white" style="width: 56px; height: 56px; object-fit: cover;">
-                                    <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white" style="width: 14px; height: 14px;"></div>
+                        <div class="dashboard-card h-100 cursor-pointer hover-card" onclick="${onclickAttr}">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                    ${(innovator.fullName || "U").charAt(0)}
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold mb-0 text-dark">${firstName}</h6>
-                                    <p class="text-muted smaller mb-0 fw-bold text-uppercase opacity-75" style="letter-spacing: 0.5px;">${project.categories?.[0] || 'Innovation'}</p>
+                                    <h5 class="mb-0">${innovator.fullName || "Innovator"}</h5>
+                                    <small class="text-muted">Innovator</small>
                                 </div>
                             </div>
-                            <div class="position-relative z-1 flex-grow-1">
-                                <h5 class="fw-bold mb-2 text-primary" style="font-family: var(--font-head);">${project.title}</h5>
-                                <p class="text-muted small mb-4" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6;">
-                                    ${project.problemStatement || "No description provided."}
-                                </p>
-                            </div>
+                            <hr class="my-2">
+                            <h6 class="text-primary mb-2">${project.title}</h6>
+                            <p class="text-muted small mb-2 line-clamp-2">${project.problemStatement || "No description"}</p>
                             
-                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top position-relative z-1">
-                                <div class="d-flex align-items-center gap-2 small text-muted fw-bold">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                    ${request.nextMeetingDate || 'Schedule Meeting'}
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <div class="small fw-bold text-dark">Category</div>
+                                    <span class="badge bg-light text-dark border">${project.categories?.[0] || "General"}</span>
                                 </div>
-                                <button class="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm">
-                                    Open Hub
-                                </button>
+                                <div class="col-6">
+                                    <div class="small fw-bold text-dark">Comm. Method</div>
+                                    <div class="small text-muted">${innovator.communicationPreference || 'Any'}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="small fw-bold text-dark">Status</div>
+                                    ${StatusBadge.render(project.status || 'active')}
+                                </div>
+                                <div class="col-6">
+                                    <div class="small fw-bold text-dark">Next Meeting</div>
+                                    <div class="small text-muted">${request.nextMeetingDate || 'Not scheduled'}</div>
+                                </div>
                             </div>
+
+                            <button class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="event.stopPropagation(); window.dashboard.openRejectionModal('${requestId}')">
+                                <i class="fa fa-times-circle me-1"></i>Request to Stop Mentorship
+                            </button>
                         </div>
                     </div>
                 `;
