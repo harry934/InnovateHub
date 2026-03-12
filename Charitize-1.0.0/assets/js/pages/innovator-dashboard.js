@@ -43,12 +43,69 @@ const CARD_ICONS = {
     </svg>`
 };
 
+// ─── Card config: title, section, colour theme, icon, subtitle ─
 const dashboardCards = [
-    { title: 'My Projects',      id: 'projects',  section: 'projects',  types: ['Manage', 'Track'], progress: 85, action: 'view' },
-    { title: 'Submit Project',   id: 'submit',    section: 'submit',    types: ['Innovate', 'Launch'], progress: 0, action: 'plus' },
-    { title: 'Find Mentors',     id: 'mentors',   section: 'mentors',   types: ['Connect', 'Experts'], progress: 40, action: 'search' },
-    { title: 'My Mentors',       id: 'myMentors', section: 'myMentors', types: ['Assigned', 'Requests'], progress: 60, action: 'chat' },
-    { title: 'Account Settings', id: 'profile',   section: 'profile',   types: ['Profile', 'Settings'], progress: 95, action: 'edit' }
+    {
+        title: 'My Projects',
+        section: 'projects',
+        subtitle: 'Track & manage',
+        gradient: 'linear-gradient(135deg, #1a5e4f 0%, #2d8c72 100%)',
+        accent: '#f3a813',
+        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="8" width="24" height="18" rx="3" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+          <path d="M4 13h24" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+          <path d="M4 8l5-5h6l2 5" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M11 19h10M11 23h6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>`,
+    },
+    {
+        title: 'Submit Project',
+        section: 'submit',
+        subtitle: 'Share your vision',
+        gradient: 'linear-gradient(135deg, #f3a813 0%, #e07b00 100%)',
+        accent: '#fff',
+        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="12" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+          <path d="M16 10v12M11 15l5-5 5 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`,
+    },
+    {
+        title: 'Find Mentors',
+        section: 'mentors',
+        subtitle: 'Connect with experts',
+        gradient: 'linear-gradient(135deg, #0d7a9e 0%, #0a5a76 100%)',
+        accent: '#fff',
+        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="12" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+          <circle cx="16" cy="16" r="4" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="1.8"/>
+          <path d="M16 4v3M16 25v3M4 16h3M25 16h3" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>`,
+    },
+    {
+        title: 'My Mentors',
+        section: 'myMentors',
+        subtitle: 'Your connections',
+        gradient: 'linear-gradient(135deg, #5c3d8f 0%, #8b5cf6 100%)',
+        accent: '#fff',
+        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="5" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+          <circle cx="21" cy="11" r="5" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+          <path d="M3 28c0-4.4 3.6-8 8-8" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M29 28c0-4.4-3.6-8-8-8" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="16" cy="21" r="4" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="1.8"/>
+        </svg>`,
+    },
+    {
+        title: 'My Profile',
+        section: 'profile',
+        subtitle: 'Settings & account',
+        gradient: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+        accent: '#f3a813',
+        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="11" r="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+          <path d="M4 28c0-6 5.4-10 12-10s12 4 12 10" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>`,
+    },
 ];
 
 // ─── Enhanced background symbol system ───────────────────────
@@ -100,29 +157,34 @@ function renderQuickAccessCards() {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
 
-    container.innerHTML = dashboardCards.map(card => `
-        <article class="premium-card" onclick="window.showDashboardSection('${card.section}')">
-          <div class="premium-card-icon">
-            ${CARD_ICONS[card.id] || ''}
-          </div>
-          <div class="tc-content">
-            <div class="tc-header">
-              <h3 class="tc-title" style="font-family:var(--font-head); font-weight:800; font-size:1.4rem; color:var(--brand-green);">${card.title}</h3>
-              <div class="tc-arrow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
+    container.innerHTML = dashboardCards.map((card, i) => `
+        <article
+            class="dash-nav-card"
+            style="background:${card.gradient}; animation-delay:${i * 0.08}s"
+            onclick="window.showDashboardSection('${card.section}')"
+            tabindex="0"
+            role="button"
+        >
+            <div class="dnc-shine"></div>
+            <div class="dnc-icon" style="border-color:rgba(255,255,255,0.25)">
+                ${card.icon}
+            </div>
+            <div class="dnc-body">
+                <h3 class="dnc-title">${card.title}</h3>
+                <p class="dnc-sub">${card.subtitle}</p>
+            </div>
+            <div class="dnc-arrow">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
                 </svg>
-              </div>
             </div>
-            <div class="tc-tags" style="margin-top:8px; display:flex; gap:8px;">
-              ${card.types.map(t => `<span class="badge" style="background:rgba(26, 94, 79, 0.05); color:var(--brand-green); font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:4px 10px; border-radius:20px;">${t}</span>`).join('')}
-            </div>
-          </div>
         </article>
     `).join('');
 
-    initBackgroundSymbols();
+    // Subtle animated particles still enabled via CSS
+    const symbolContainer = document.getElementById('backgroundSymbols');
+    if (symbolContainer) symbolContainer.innerHTML = '';
 }
 
 
@@ -136,6 +198,14 @@ function renderQuickAccessCards() {
             
             // Render cards immediately
             renderQuickAccessCards();
+            
+            // Initialize Dashboard Charts
+            if (window.DashboardCharts) {
+                window.DashboardCharts.init('innovator', user.uid);
+            }
+            
+            // Expose renderMyMentors to window for dashboard.html hook
+            window.renderMyMentors = renderMyMentors;
             
             try {
                 await initializeDashboard(userData);
@@ -333,6 +403,58 @@ function renderQuickAccessCards() {
             } catch (error) {
                 console.error('Error loading projects:', error);
                 container.innerHTML = EmptyStates.templates.errorState('Failed to load projects');
+            }
+        }
+
+        async function renderMyMentors() {
+            const container = document.getElementById('myMentorsContainer');
+            if (!container) return;
+            container.innerHTML = EmptyStates.templates.loadingState();
+
+            try {
+                const q = query(collection(db, 'mentorshipRequests'), where('innovatorId', '==', currentUser.uid));
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    container.innerHTML = `<div class="text-center py-5"><p class="text-muted">You haven't requested any mentorship yet.</p><button class="btn btn-primary" onclick="window.showDashboardSection('mentors')">Find Mentors</button></div>`;
+                    return;
+                }
+
+                container.innerHTML = '<div class="row g-4"></div>';
+                const row = container.querySelector('.row');
+
+                for (const docSnap of snapshot.docs) {
+                    const request = { id: docSnap.id, ...docSnap.data() };
+                    const mentorDoc = await getDoc(doc(db, "users", request.mentorId));
+                    if (!mentorDoc.exists()) continue;
+
+                    const mentor = mentorDoc.data();
+                    const statusClass = request.status === 'accepted' ? 'success' : (request.status === 'pending' ? 'warning' : 'danger');
+
+                    row.innerHTML += `
+                        <div class="col-md-6">
+                            <div class="dash-nav-card" style="background:white; border:1px solid #eee; cursor:default; box-shadow:none; padding:20px;">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                                        ${(mentor.fullName || 'M').charAt(0)}
+                                    </div>
+                                    <div style="flex:1">
+                                        <h5 class="mb-0" style="color:var(--brand-green)">${mentor.fullName || 'Mentor'}</h5>
+                                        <small class="text-muted">${mentor.expertise || 'Expert'}</small>
+                                    </div>
+                                    <span class="badge bg-${statusClass}-soft text-${statusClass}">${request.status.toUpperCase()}</span>
+                                </div>
+                                <div class="p-2 rounded bg-light mb-3" style="font-size:0.85rem;">
+                                    <strong>Contact:</strong> ${mentor.communicationPreference || 'Not set'}
+                                </div>
+                                ${request.status === 'accepted' ? `<button class="btn btn-sm btn-outline-primary w-100" onclick="window.location.href='mailto:${mentor.email}'"><i class="fa fa-envelope me-1"></i> Send Email</button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error("Error loading my mentors:", err);
+                container.innerHTML = EmptyStates.templates.errorState("Failed to load your mentors");
             }
         }
         
