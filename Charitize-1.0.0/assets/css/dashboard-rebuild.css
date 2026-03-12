@@ -687,9 +687,9 @@ section,
 /* ── DASHBOARD GRID – QUICK ACCESS CARDS ────────────────────── */
 .dashboard-grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  gap: 3rem;
-  padding: 40px 0;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  padding: 24px 0;
   width: 100%;
 }
 
@@ -698,7 +698,7 @@ section,
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: var(--radius-card);
-  padding: 40px;
+  padding: 24px;
   border: 1px solid rgba(255, 255, 255, 0.4);
   cursor: pointer;
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -706,8 +706,7 @@ section,
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 280px;
-  /* Always visible by default — prevents GSAP from leaving cards hidden */
+  min-height: 180px;
   opacity: 1;
   transform: none;
   visibility: visible;
