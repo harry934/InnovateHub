@@ -136,6 +136,8 @@ window.logout = function () {
     }
   };
 
+
+
   // Initialization
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
@@ -143,11 +145,13 @@ window.logout = function () {
       window.initNavigationListener();
       window.updateNavbarUI();
       window.checkDashboardFlag();
+      window.initBackgroundSymbols();
     });
   } else {
     window.handlePreloader();
     window.initNavigationListener();
     window.updateNavbarUI();
     window.checkDashboardFlag();
+    window.initBackgroundSymbols();
   }
 })();

@@ -601,7 +601,10 @@
 /*** Footer ***/
 .footer {
     color: var(--bs-tertiary);
-    background: linear-gradient(rgba(5, 19, 17, .95), rgba(5, 19, 17, .95)), url(../img/bg-footer.jpg) center center no-repeat;
+    background: rgba(5, 19, 17, .95);
+    background-image: url(../img/bg-footer.jpg);
+    background-position: center center;
+    background-repeat: no-repeat;
     background-size: cover;
 }
 

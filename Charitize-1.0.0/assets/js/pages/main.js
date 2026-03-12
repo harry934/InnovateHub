@@ -16,20 +16,32 @@
 
   // ── Sticky Navbar ──────────────────────────────────────
   var mobileMenuIsOpen = false;
+  var lastScrollTop = 0;
 
   function updateNavbarScrollState() {
-    var scrolled = $(window).scrollTop() > 45;
+    var st = $(window).scrollTop();
+    var scrolled = st > 45;
+    var scrollingDown = st > lastScrollTop && st > 100;
+    lastScrollTop = Math.max(0, st);
+
     if (scrolled) {
       $(".nav-bar").addClass("fixed-top");
-      // Only add blur class (navbar-scrolled) when mobile menu is NOT open
       if (!mobileMenuIsOpen) {
         $(".nav-bar").addClass("navbar-scrolled");
       }
+      
+      // Feature: Hide navbar content on scroll down, keep only hamburger
+      if (scrollingDown && !mobileMenuIsOpen) {
+         $(".nav-bar").addClass("navbar-hidden");
+      } else {
+         $(".nav-bar").removeClass("navbar-hidden");
+      }
+
       if ($(window).width() >= 992) {
         $(".nav-bar").css("padding", "0");
       }
     } else {
-      $(".nav-bar").removeClass("fixed-top navbar-scrolled");
+      $(".nav-bar").removeClass("fixed-top navbar-scrolled navbar-hidden");
       if ($(window).width() >= 992) {
         $(".nav-bar").css("padding", "0px 90px");
       } else {
