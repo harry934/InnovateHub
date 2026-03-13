@@ -214,6 +214,13 @@ function renderQuickAccessCards() {
                 }
             }
 
+            // [NEW] Check Approval Status for Innovator
+            if (data && (data.status === 'pending' || data.status === 'pending_approval')) {
+                console.log("Innovator Dashboard: Approval pending...");
+                showPendingApprovalUI();
+                return;
+            }
+
             // Sync UI with data
             const realName = (data && data.fullName) || initialName;
             if (userDisplayName) userDisplayName.textContent = realName;
@@ -597,3 +604,45 @@ function renderQuickAccessCards() {
                 alert('Failed to send request: ' + error.message);
             }
         };
+
+        function showPendingApprovalUI() {
+            // Hide dashboard content
+            const dashContent = document.getElementById("dashboard-content");
+            const landingCards = document.getElementById("dashboardQuickAccess");
+            if (dashContent) dashContent.style.display = "none";
+            if (landingCards) landingCards.style.display = "none";
+
+            // Show a premium "Awaiting Approval" message
+            const welcomeContainer = document.querySelector('body');
+            const pendingOverlay = document.createElement('div');
+            pendingOverlay.id = "pendingApprovalOverlay";
+            pendingOverlay.style.cssText = `
+                position: fixed;
+                inset: 0;
+                background: rgba(255,255,255,0.9);
+                backdrop-filter: blur(10px);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 2rem;
+            `;
+            
+            pendingOverlay.innerHTML = `
+                <div class="card border-0 shadow-lg p-5 rounded-4" style="max-width: 500px; background: white;">
+                    <div class="mb-4">
+                        <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        </div>
+                    </div>
+                    <h2 class="fw-bold mb-3" style="color: #1a5e4f;">Innovator Account Pending Approval</h2>
+                    <p class="text-muted mb-4">Welcome to Innovate Hub! Your application is currently being reviewed by our Admin team. You'll receive full access to the dashboard and project tools once approved.</p>
+                    <div class="d-grid">
+                        <button class="btn btn-outline-secondary py-3 rounded-pill fw-bold" onclick="logout()">Sign Out</button>
+                    </div>
+                </div>
+            `;
+            
+            welcomeContainer.appendChild(pendingOverlay);
+        }
