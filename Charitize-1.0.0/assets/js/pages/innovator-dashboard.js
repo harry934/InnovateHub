@@ -184,10 +184,18 @@ function renderQuickAccessCards() {
             window.renderMyMentors = renderMyMentors;
             
             try {
-                await initializeDashboard(userData);
+                const isReady = await initializeDashboard(userData);
+                if (!isReady) {
+                    console.log("Innovator Dashboard: Gating active, stopping init.");
+                    return;
+                }
+                
                 // Ensure dashboard content is visible
                 const dashContent = document.getElementById("dashboard-content");
-                if (dashContent) dashContent.style.display = "block";
+                if (dashContent) {
+                    dashContent.style.display = "block";
+                    dashContent.style.visibility = "visible";
+                }
             } catch (err) {
                 console.error("Critical Dashboard Init Error:", err);
                 if(typeof window.showDashboardSection === 'function') window.showDashboardSection('projects');
@@ -215,10 +223,20 @@ function renderQuickAccessCards() {
             }
 
             // [NEW] Check Approval Status for Innovator
-            if (data && (data.status === 'pending' || data.status === 'pending_approval')) {
-                console.log("Innovator Dashboard: Approval pending...");
-                showPendingApprovalUI();
-                return;
+            if (data) {
+                const status = data.status || data.approvalStatus || data.userStatus;
+                if (status === 'pending' || status === 'pending_approval') {
+                    console.log("Innovator Dashboard: Approval pending...");
+                    showPendingApprovalUI();
+                    return false;
+                }
+                if (status === 'rejected') {
+                    // Logic for rejection handled by common gates usually, 
+                    // but we return false to stop init here.
+                    return false;
+                }
+            } else {
+                return false; // No data, stick to gating
             }
 
             // Sync UI with data

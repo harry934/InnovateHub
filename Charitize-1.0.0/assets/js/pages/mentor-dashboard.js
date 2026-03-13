@@ -171,7 +171,12 @@ class MentorDashboard {
     this.currentUser = user;
     
     try {
-        await this.checkProfileCompletion(userData);
+        const isReady = await this.checkProfileCompletion(userData);
+        if (!isReady) {
+            console.log("Mentor Dashboard: Profile not ready (pending or onboarding), stopping further init.");
+            return;
+        }
+
         await this.initializeUI();
         this.updateProfileCompleteness(userData);
         this.loadDashboardData();
@@ -190,10 +195,15 @@ class MentorDashboard {
 
       if (userData) {
         // 1. Check Approval Status first
-        if (userData.status === 'pending' || userData.status === 'pending_approval') {
+        const status = userData.status || userData.mentorStatus || userData.approvalStatus;
+        if (status === 'pending' || status === 'pending_approval') {
             console.log("MentorDashboard: Approval pending...");
             this.showPendingApprovalUI();
-            return;
+            return false;
+        }
+
+        if (status === 'rejected') {
+            return false; // dashboard.html handles this guard usually, but for safety
         }
 
         // 2. Check Profile Completion (for approved mentors)
@@ -206,14 +216,11 @@ class MentorDashboard {
           if (dashContent) dashContent.style.display = "none";
           if (landingCards) landingCards.style.display = "none";
           
-          // Ensure modal is visible regardless of wrapper
-          const modalEl = document.getElementById("onboardingModal");
-          if (modalEl) modalEl.style.display = 'block'; 
-
           this.showOnboardingModal();
           
           // Disable background interactions
           document.body.style.overflow = 'hidden';
+          return false;
         } else {
           console.log("MentorDashboard: Profile complete, showing dashboard.");
           const dashContent = document.getElementById("dashboard-content");
@@ -224,18 +231,21 @@ class MentorDashboard {
           }
           if (landingCards) landingCards.style.display = "block";
           document.body.style.overflow = 'auto';
+          
+          // Update User Identity in Sidebar
+          this.updateUserIdentity(
+            userData.fullName || this.currentUser.displayName || this.currentUser.email.split('@')[0],
+          );
+          
+          // Populate Profile Forms with existing data
+          this.populateProfileForms(userData);
+          return true;
         }
-
-        // Update User Identity in Sidebar
-        this.updateUserIdentity(
-          userData.fullName || this.currentUser.displayName || this.currentUser.email.split('@')[0],
-        );
-        
-        // Populate Profile Forms with existing data
-        this.populateProfileForms(userData);
       }
+      return false;
     } catch (error) {
       console.error("Error checking profile:", error);
+      return false;
     }
   }
 

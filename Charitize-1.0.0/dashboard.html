@@ -805,22 +805,68 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/pages/main.js?v=16.0.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=16.0.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=16.0.0"></script>
-    <script src="assets/js/core/api.js?v=10.0.0"></script>
+    <script src="assets/js/pages/main.js?v=35.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=35.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=35.0.0"></script>
+    <script src="assets/js/core/api.js?v=35.0.0"></script>
     <!-- Feature Scripts -->
-    <script type="module" src="assets/js/pages/mentor-discovery.js?v=10.0.0"></script>
-    <script src="assets/js/components/file-upload.js?v=10.0.0"></script>
+    <script type="module" src="assets/js/pages/mentor-discovery.js?v=35.0.0"></script>
+    <script src="assets/js/components/file-upload.js?v=35.0.0"></script>
     <script
       type="module"
-      src="assets/js/pages/innovate-hub.js?v=10.0.0"
+      src="assets/js/pages/innovate-hub.js?v=35.0.0"
     ></script>
-    <script src="assets/js/components/staggered-menu.js?v=10.0.0"></script>
-    <script src="assets/js/components/nuru-assistant.js?v=10.0.0"></script>
-    <script type="module" src="assets/js/components/collab-screen.js?v=10.0.0"></script>
+    <script src="assets/js/components/staggered-menu.js?v=35.0.0"></script>
+    <script src="assets/js/components/nuru-assistant.js?v=35.0.0"></script>
+    <script type="module" src="assets/js/components/collab-screen.js?v=35.0.0"></script>
+    
+    <!-- Fail-Safe Helper -->
+    <div id="dashboardFailSafe" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:10000;">
+        <button class="btn btn-danger shadow-lg px-4 py-2 fw-bold" onclick="forceFixDashboard()">
+            <i class="fa fa-magic me-2"></i> Fix Dashboard Visibility
+        </button>
+    </div>
+
+    <script>
+        function forceFixDashboard() {
+            const dash = document.getElementById('dashboard-content');
+            if(dash) {
+                dash.style.display = 'block';
+                dash.style.visibility = 'visible';
+                dash.style.opacity = '1';
+            }
+            const modal = document.getElementById('onboardingModal');
+            if(modal) modal.style.display = 'none';
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = 'auto';
+            alert('Dashboard visibility forced. If you still see issues, please refresh.');
+        }
+
+        // Show fail-safe if dashboard doesn't load in 8 seconds
+        setTimeout(() => {
+            const dash = document.getElementById('dashboard-content');
+            const overlay = document.getElementById('pendingApprovalOverlay');
+            const modal = document.getElementById('onboardingModal');
+            const isModalOpen = modal && (modal.classList.contains('show') || modal.style.display === 'block');
+            
+            if (!overlay && (!dash || dash.style.display === 'none') && !isModalOpen) {
+                document.getElementById('dashboardFailSafe').style.display = 'block';
+            }
+        }, 8000);
+
+        // Global Error Alert
+        window.onerror = function(msg, url, line) {
+            console.error("Global Error:", msg, "at", url, ":", line);
+            // Only show to user if it seems critical
+            if (msg.includes('Firebase') || msg.includes('Bootstrap') || msg.includes('init')) {
+                // Silently log or simple toast
+            }
+            return false;
+        };
+    </script>
+    
     <script type="module">
       import { auth, db } from "./assets/js/core/firebase-config.js";
       import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
