@@ -740,14 +740,13 @@ section,
   position: relative;
   background: #ffffff;
   border-radius: 20px;
-  padding: 40px 32px;
+  padding: 32px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  min-height: 250px;
+  min-height: 220px;
   border: 1px solid rgba(0, 0, 0, 0.05);
-  border-top: 4px solid var(--brand-yellow);
   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
   overflow: hidden;
@@ -755,10 +754,9 @@ section,
 }
 
 .dash-nav-card:hover {
-  transform: translateY(-10px);
-  border-color: rgba(243, 168, 19, 0.3);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-  background: linear-gradient(180deg, #ffffff 0%, rgba(243, 168, 19, 0.03) 100%);
+  transform: translateY(-8px);
+  border-color: rgba(26, 94, 79, 0.2);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
 }
 
 .dash-nav-card:active {
@@ -767,10 +765,10 @@ section,
 
 /* Icon Styling - Simplified & Consistent */
 .dnc-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  background: rgba(243, 168, 19, 0.1);
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(26, 94, 79, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -780,10 +778,9 @@ section,
 }
 
 .dash-nav-card:hover .dnc-icon {
-  background: var(--brand-yellow);
-  color: var(--brand-dark);
+  background: var(--brand-green);
+  color: #ffffff;
   transform: scale(1.1) rotate(-8deg);
-  box-shadow: 0 8px 20px rgba(243, 168, 19, 0.3);
 }
 
 .dnc-icon svg {
@@ -796,7 +793,7 @@ section,
 .minimalist-title {
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   color: #1e293b;
   margin: 0;
   letter-spacing: -0.02em;
