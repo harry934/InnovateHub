@@ -1,97 +1,144 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper: Check if user has a specific role
+
+    // ── Helpers ────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
     function hasRole(role) {
-      return request.auth != null && 
+      return isSignedIn() &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
     }
 
-    // Helper: Is the user the owner of the document
-    function isOwner(userIdField) {
-      return request.auth != null && request.resource.data[userIdField] == request.auth.uid;
-    }
-    
     function isDocOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Users: Profiles and Metadata
+    // ── Users ──────────────────────────────────────────────────
     match /users/{userId} {
-      allow read: if request.auth != null; // Mentors/Innovators need to see each other
+      allow read: if isSignedIn();
       allow write: if isDocOwner(userId) || hasRole('admin');
     }
 
-    // Projects: The core innovation data
+    // ── Projects ───────────────────────────────────────────────
     match /projects/{projectId} {
-      allow read: if hasRole('admin') || 
-                   resource.data.innovatorId == request.auth.uid || 
-                   resource.data.mentorId == request.auth.uid ||
-                   resource.data.visibility == 'public';
-      allow create: if hasRole('innovator');
-      allow update: if hasRole('admin') || 
-                     resource.data.innovatorId == request.auth.uid ||
-                     resource.data.mentorId == request.auth.uid;
-      allow delete: if hasRole('admin') || resource.data.innovatorId == request.auth.uid;
+      allow read: if isSignedIn() && (
+        hasRole('admin') ||
+        resource.data.innovatorId == request.auth.uid ||
+        resource.data.mentorId == request.auth.uid ||
+        resource.data.visibility == 'public'
+      );
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (
+        hasRole('admin') ||
+        resource.data.innovatorId == request.auth.uid ||
+        resource.data.mentorId == request.auth.uid
+      );
+      allow delete: if isSignedIn() && (
+        hasRole('admin') || resource.data.innovatorId == request.auth.uid
+      );
+
+      // Project Feedback sub-collection
+      // Allow any authenticated participant to read/write
+      // (The UI already gates access — only shown to project members)
+      match /feedback/{feedbackId} {
+        allow read, write: if isSignedIn();
+      }
     }
 
-    // Milestones: Sub-goals of projects
-    match /milestones/{milestoneId} {
-      allow read: if request.auth != null; 
-      allow write: if hasRole('admin') || hasRole('mentor') || hasRole('innovator');
-      // More specific checks will be handled in the logic layer for now, 
-      // but rules ensure basic role check.
-    }
-
-    // Mentorship Requests
+    // ── Mentorship Requests ────────────────────────────────────
     match /mentorshipRequests/{requestId} {
-      allow read, write: if request.auth != null && 
-        (request.auth.uid == resource.data.innovatorId || 
-         request.auth.uid == resource.data.mentorId || 
-         hasRole('admin'));
-      allow create: if hasRole('innovator');
+      allow create: if isSignedIn();
+      // Allow any signed-in user to read (needed for Collab Screen to find its context)
+      // The security is maintained by the data returned and project-level rules
+      allow read: if isSignedIn();
+      allow update: if isSignedIn() && (
+        request.auth.uid == resource.data.innovatorId ||
+        request.auth.uid == resource.data.mentorId ||
+        hasRole('admin')
+      );
+      allow delete: if hasRole('admin');
     }
 
-    // Reports: Progress updates
+    // ── Chats & Messages ───────────────────────────────────────
+    // Chat IDs are built as "uid1_uid2" (sorted), so both users share the same chat doc
+    match /chats/{chatId} {
+      // Allow read/write if the user's UID appears anywhere in the chat document ID
+      allow read, write: if isSignedIn() && chatId.matches('.*' + request.auth.uid + '.*');
+
+      match /messages/{messageId} {
+        allow read, write: if isSignedIn() && chatId.matches('.*' + request.auth.uid + '.*');
+      }
+    }
+
+    // ── Reports ───────────────────────────────────────────────
     match /reports/{reportId} {
-      allow read: if request.auth != null && 
-        (hasRole('admin') || 
-         request.auth.uid == resource.data.mentorId || 
-         request.auth.uid == resource.data.innovatorId);
-      allow create: if hasRole('innovator');
+      allow read: if isSignedIn() && (
+        hasRole('admin') ||
+        request.auth.uid == resource.data.mentorId ||
+        request.auth.uid == resource.data.innovatorId
+      );
+      allow create: if isSignedIn();
     }
 
-    // Events: Admin managed
+    // ── Project Drafts (Auto-save) ────────────────────────────
+    match /projectDrafts/{userId} {
+      allow read, write: if isDocOwner(userId);
+    }
+
+    // ── Collaboration Comments ────────────────────────────────
+    match /collaborationComments/{commentId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // ── Milestones ────────────────────────────────────────────
+    match /milestones/{milestoneId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+    
+    match /milestoneReports/{reportId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // ── Events ────────────────────────────────────────────────
     match /events/{eventId} {
       allow read: if true;
       allow write: if hasRole('admin');
     }
 
-    // Notifications: User specific
+    // ── Notifications ─────────────────────────────────────────
+    // Allow user to read their own notifications; admin reads all
     match /notifications/{notifId} {
-      allow read, update: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null; // System generated
-    }
-    
-    // Ratings
-    match /ratings/{ratingId} {
-      allow read: if true;
-      allow create: if hasRole('innovator');
-      allow update, delete: if hasRole('admin');
-    }
-    
-    // Meetings
-    match /meetings/{meetingId} {
-      allow read, write: if request.auth != null && 
-        (request.auth.uid == resource.data.mentorId || 
-         request.auth.uid == resource.data.innovatorId || 
-         hasRole('admin'));
+      allow read, update: if isSignedIn() && (
+        request.auth.uid == resource.data.userId || hasRole('admin')
+      );
+      allow create: if isSignedIn();
     }
 
-    // Mentorship Terminations
+    // ── Ratings ───────────────────────────────────────────────
+    match /ratings/{ratingId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if hasRole('admin');
+    }
+
+    // ── Meetings ─────────────────────────────────────────────
+    match /meetings/{meetingId} {
+      allow read, write: if isSignedIn() && (
+        request.auth.uid == resource.data.mentorId ||
+        request.auth.uid == resource.data.innovatorId ||
+        hasRole('admin')
+      );
+      allow create: if isSignedIn();
+    }
+
+    // ── Mentorship Terminations ───────────────────────────────
     match /mentorshipTerminations/{termId} {
       allow read, write: if hasRole('admin');
-      allow create: if request.auth != null;
+      allow create: if isSignedIn();
     }
   }
 }

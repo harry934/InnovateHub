@@ -187,7 +187,8 @@ export class AutoSaveManager {
             if (draftSnap.exists()) {
                 const draftData = draftSnap.data();
                 
-                // Show restore prompt
+                // Show restore prompt (Disabled per user request for a cleaner experience)
+                /*
                 const shouldRestore = confirm(
                     'We found a saved draft from your last session. Would you like to restore it?'
                 );
@@ -198,6 +199,9 @@ export class AutoSaveManager {
                     // Delete the draft if user doesn't want it
                     await this.clearDraft();
                 }
+                */
+               // Default behavior: just clear it to avoid stale data issues described by user
+               await this.clearDraft();
             }
         } catch (error) {
             console.error('Error loading draft:', error);

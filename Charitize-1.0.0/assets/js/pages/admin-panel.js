@@ -316,10 +316,16 @@ async function renderMentorshipsTable() {
                 <td>${timeAgo(req.requestedAt)}</td>
                 <td>
                     ${statusBadge(req.status)}
+                    ${req.status === 'accepted' && !req.adminApproved ? '<div class="text-warning fw-bold mt-1" style="font-size:0.7rem;"><i class="fa fa-clock"></i> Awaiting Admin</div>' : ''}
                     ${hasTermReq ? '<div class="text-danger fw-bold mt-1" style="font-size:0.7rem;"><i class="fa fa-exclamation-triangle"></i> Termination Requested</div>' : ''}
                 </td>
                 <td>
                     <div class="d-flex gap-2">
+                        ${req.status === 'accepted' && !req.adminApproved ? `
+                            <button class="btn btn-sm btn-success" onclick="AdminPanel.approvePairing('${req.id}')">
+                                Approve Pair
+                            </button>
+                        ` : ''}
                         ${hasTermReq ? `
                             <button class="btn btn-sm btn-danger" onclick="AdminPanel.handleTermination('${req.id}', '${hasTermReq.id}', true)">
                                 Approve Stop
@@ -410,6 +416,19 @@ window.AdminPanel = {
             renderAdminStats();
         } catch (e) {
             adminToast('Failed to terminate.', 'error');
+        }
+    },
+    async approvePairing(requestId) {
+        try {
+            await updateDoc(doc(db, 'mentorshipRequests', requestId), { 
+                adminApproved: true,
+                approvedAt: serverTimestamp()
+            });
+            adminToast('✓ Mentorship pairing approved!');
+            renderMentorshipsTable();
+            renderAdminStats();
+        } catch (e) {
+            adminToast('Failed to approve pairing.', 'error');
         }
     },
     async handleTermination(requestId, termReqId, approve) {

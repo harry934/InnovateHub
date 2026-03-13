@@ -48,67 +48,36 @@ const dashboardCards = [
     {
         title: 'My Projects',
         section: 'projects',
-        subtitle: 'Track & manage',
-        gradient: 'linear-gradient(135deg, #1a5e4f 0%, #2d8c72 100%)',
-        accent: '#f3a813',
-        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="8" width="24" height="18" rx="3" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
-          <path d="M4 13h24" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
-          <path d="M4 8l5-5h6l2 5" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M11 19h10M11 23h6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>`,
+        subtitle: 'Manage and scale your projects',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`,
     },
     {
-        title: 'Submit Project',
+        title: 'Submit a Project',
         section: 'submit',
-        subtitle: 'Share your vision',
-        gradient: 'linear-gradient(135deg, #f3a813 0%, #e07b00 100%)',
-        accent: '#fff',
-        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="12" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
-          <path d="M16 10v12M11 15l5-5 5 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>`,
+        subtitle: 'Submit your next big idea',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-5c1.62-2.2 5-3 5-3"></path><path d="M12 15v5s3.03-.55 5-2c2.2-1.62 3-5 3-5"></path></svg>`,
     },
     {
         title: 'Find Mentors',
         section: 'mentors',
-        subtitle: 'Connect with experts',
-        gradient: 'linear-gradient(135deg, #0d7a9e 0%, #0a5a76 100%)',
-        accent: '#fff',
-        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="12" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
-          <circle cx="16" cy="16" r="4" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="1.8"/>
-          <path d="M16 4v3M16 25v3M4 16h3M25 16h3" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>`,
+        subtitle: 'Access the USIU-A Global Mentor Network',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>`,
     },
     {
         title: 'My Mentors',
         section: 'myMentors',
-        subtitle: 'Your connections',
-        gradient: 'linear-gradient(135deg, #5c3d8f 0%, #8b5cf6 100%)',
-        accent: '#fff',
-        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="11" cy="11" r="5" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
-          <circle cx="21" cy="11" r="5" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
-          <path d="M3 28c0-4.4 3.6-8 8-8" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M29 28c0-4.4-3.6-8-8-8" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round"/>
-          <circle cx="16" cy="21" r="4" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="1.8"/>
-        </svg>`,
+        subtitle: 'Collaborate with your advisors',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
     },
     {
-        title: 'My Profile',
+        title: 'Account Settings',
         section: 'profile',
-        subtitle: 'Settings & account',
-        gradient: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-        accent: '#f3a813',
-        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="11" r="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
-          <path d="M4 28c0-6 5.4-10 12-10s12 4 12 10" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>`,
-    },
+        subtitle: 'System and account controls',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+    }
 ];
 
-// ─── Enhanced background symbol system ───────────────────────
+
 // ─── Enhanced background symbol system ───────────────────────
 function initBackgroundSymbols() {
     const container = document.getElementById('backgroundSymbols');
@@ -157,34 +126,41 @@ function renderQuickAccessCards() {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
 
-    container.innerHTML = dashboardCards.map((card, i) => `
+    container.innerHTML = dashboardCards.map((card, i) => {
+        // Add tags based on section
+        let tags = [];
+        if (card.section === 'projects') tags = ['Lab', 'Active'];
+        else if (card.section === 'submit') tags = ['Launch', 'New'];
+        else if (card.section === 'mentors') tags = ['Connect', 'Pro'];
+        else if (card.section === 'myMentors') tags = ['Board', 'Me'];
+        else if (card.section === 'profile') tags = ['Admin', 'Account'];
+
+        return `
         <article
             class="dash-nav-card"
-            style="background:${card.gradient}; animation-delay:${i * 0.08}s"
+            style="animation-delay:${i * 0.1}s"
             onclick="window.showDashboardSection('${card.section}')"
             tabindex="0"
             role="button"
         >
-            <div class="dnc-shine"></div>
-            <div class="dnc-icon" style="border-color:rgba(255,255,255,0.25)">
+            <div class="dnc-icon">
                 ${card.icon}
             </div>
-            <div class="dnc-body">
+            <div class="dnc-content">
                 <h3 class="dnc-title">${card.title}</h3>
-                <p class="dnc-sub">${card.subtitle}</p>
+                <p class="dnc-desc">${card.subtitle}</p>
+                <div class="card-tags">
+                    ${tags.map(t => `<span class="card-tag">• ${t}</span>`).join('')}
+                </div>
             </div>
             <div class="dnc-arrow">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
             </div>
         </article>
-    `).join('');
-
-    // Subtle animated particles still enabled via CSS
-    const symbolContainer = document.getElementById('backgroundSymbols');
-    if (symbolContainer) symbolContainer.innerHTML = '';
+    `; }).join('');
 }
 
 
@@ -209,6 +185,9 @@ function renderQuickAccessCards() {
             
             try {
                 await initializeDashboard(userData);
+                // Ensure dashboard content is visible
+                const dashContent = document.getElementById("dashboard-content");
+                if (dashContent) dashContent.style.display = "block";
             } catch (err) {
                 console.error("Critical Dashboard Init Error:", err);
                 if(typeof window.showDashboardSection === 'function') window.showDashboardSection('projects');
@@ -351,23 +330,20 @@ function renderQuickAccessCards() {
                     if (preview) preview.style.opacity = '0.5';
 
                     try {
-                        const response = await window.api.uploadProjectFile(file, 'profile', currentUser.uid);
-                        if (response && response.ok) {
-                            const baseUrl = window.api ? window.api.API_URL : 'https://innovatehub.up.railway.app/api';
-                            const photoURL = `${baseUrl}/projects/file/${response.data.fileId}`;
-                            
-                            const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-                            await updateProfile(currentUser, { photoURL });
-                            
-                            await updateDoc(doc(db, "users", currentUser.uid), { 
-                                photoURL, 
-                                updatedAt: serverTimestamp() 
-                            });
-                            
-                            alert('Profile picture updated!');
-                        } else {
-                            throw new Error("Upload failed.");
-                        }
+                        const { ref, uploadBytes, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js");
+                        const storageRef = ref(storage, `profiles/${currentUser.uid}/${file.name}`);
+                        const uploadResult = await uploadBytes(storageRef, file);
+                        const photoURL = await getDownloadURL(uploadResult.ref);
+                        
+                        const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+                        await updateProfile(currentUser, { photoURL });
+                        
+                        await updateDoc(doc(db, "users", currentUser.uid), { 
+                            photoURL, 
+                            updatedAt: serverTimestamp() 
+                        });
+                        
+                        alert('Profile picture updated!');
                     } catch (err) {
                         console.error("Profile pic upload failed:", err);
                         alert('Failed to update profile picture.');
@@ -435,8 +411,10 @@ function renderQuickAccessCards() {
                         <div class="col-md-6">
                             <div class="dash-nav-card" style="background:white; border:1px solid #eee; cursor:default; box-shadow:none; padding:20px;">
                                 <div class="d-flex align-items-center mb-3">
-                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
-                                        ${(mentor.fullName || 'M').charAt(0)}
+                                    <div class="me-3 d-flex align-items-center justify-content-center overflow-hidden bg-primary-soft" style="width: 50px; height: 50px; border-radius: 12px;">
+                                        ${mentor.photoURL || mentor.photoUrl ? 
+                                            `<img src="${mentor.photoURL || mentor.photoUrl}" class="w-100 h-100 object-fit-cover" alt="${mentor.fullName}">` : 
+                                            `<span class="text-primary fw-bold">${(mentor.fullName || 'M').charAt(0)}</span>`}
                                     </div>
                                     <div style="flex:1">
                                         <h5 class="mb-0" style="color:var(--brand-green)">${mentor.fullName || 'Mentor'}</h5>

@@ -29,6 +29,26 @@ const ALL_CATEGORIES = ['ai', 'technology', 'agriculture', 'healthcare', 'educat
 let selectedCategories = [];
 let currentMentorForRequest = null;
 
+function renderCategoryFilters() {
+    const container = document.getElementById('mentorCategoryCheckboxes');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="category-filter-bar d-flex flex-wrap gap-2">
+            ${ALL_CATEGORIES.map(cat => `
+                <div class="cat-filter-pill ${selectedCategories.includes(cat) ? 'active' : ''}" 
+                     style="padding: 6px 16px; border-radius: 50px; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: all 0.2s; 
+                            background: ${selectedCategories.includes(cat) ? 'var(--brand-green)' : '#f1f5f9'}; 
+                            color: ${selectedCategories.includes(cat) ? 'white' : '#64748b'};
+                            border: 1px solid ${selectedCategories.includes(cat) ? 'var(--brand-green)' : 'transparent'};"
+                     onclick="MentorDiscovery.toggleCategory('${cat}')">
+                    ${cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
 // ============================================================
 //  MENTOR DISCOVERY
 // ============================================================
@@ -43,8 +63,7 @@ async function renderMentorDiscovery() {
         const searchInput = document.getElementById('mentorSearchInput');
         const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
 
-        // NOTE: Single-field query only to avoid needing a Firestore composite index.
-        // Filtering by approval status is done in JS after fetching all mentors by role.
+        // Fetch all users with role 'mentor'
         const q = query(
             collection(db, 'users'),
             where('role', '==', 'mentor')
@@ -54,11 +73,10 @@ async function renderMentorDiscovery() {
         let allMentors = [];
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
-            // Accept mentor if explicitly approved, OR if no status field exists (legacy accounts)
-            const isApproved = data.status === 'approved'
-                || data.approvalStatus === 'approved'
-                || data.mentorStatus === 'approved'
-                || (!data.status && !data.approvalStatus && !data.mentorStatus);
+            // Robust approval check
+            const status = (data.status || data.mentorStatus || data.approvalStatus || '').toLowerCase();
+            const isApproved = status === 'approved' || data.isApproved === true || data.isApproved === 'true';
+            
             if (isApproved) {
                 allMentors.push({ id: docSnap.id, ...data });
             }
@@ -67,122 +85,138 @@ async function renderMentorDiscovery() {
         // Apply local search/category filters
         let filteredMentors = allMentors.filter(m => {
             const matchesCategory = selectedCategories.length === 0 || 
-                selectedCategories.some(c => (m.categories || []).includes(c) || (m.expertise || '').toLowerCase().includes(c));
+                selectedCategories.some(c => 
+                    (m.categories || []).map(cat => cat.toLowerCase()).includes(c.toLowerCase()) || 
+                    (m.expertise || '').toLowerCase().includes(c.toLowerCase())
+                );
             
             const matchesSearch = !searchVal || 
                 (m.fullName || '').toLowerCase().includes(searchVal) || 
                 (m.expertise || '').toLowerCase().includes(searchVal) ||
-                (m.institution || '').toLowerCase().includes(searchVal);
+                (m.institution || '').toLowerCase().includes(searchVal) ||
+                (m.bio || '').toLowerCase().includes(searchVal);
                 
             return matchesCategory && matchesSearch;
         });
 
         if (filteredMentors.length === 0) {
-            container.innerHTML = `<div class="col-12 text-center py-5">
-                <div style="font-size:3rem;margin-bottom:16px;">🔍</div>
-                <h5 style="font-family:var(--font-head);color:var(--brand-green);">No mentors found</h5>
-                <p style="color:#aaa;">Try adjusting your filters or search term.</p></div>`;
+            container.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <div class="empty-state-card p-5" style="background:white; border-radius:24px; border:1px solid rgba(0,0,0,0.05);">
+                        <div style="font-size:3.5rem;margin-bottom:20px;filter:grayscale(1);">👨‍🏫</div>
+                        <h4 style="font-family:var(--font-head);color:var(--brand-green);font-weight:800;">No Approved Mentors Found</h4>
+                        <p style="color:#64748b;max-width:400px;margin:0 auto 24px;">Try adjusting your filters or search terms. Only admin-approved mentors are visible.</p>
+                        <button class="btn btn-primary rounded-pill px-4" onclick="selectedCategories=[]; MentorDiscovery.init();">Clear All Filters</button>
+                    </div>
+                </div>`;
             return;
         }
 
-        // SMART Nuru Suggestion System
-        let userInterests = [];
-        let userSkills = [];
+        // SMART Nuru Suggestion System (Simplified for speed)
+        let userContext = { interests: [], skills: [] };
         if (auth.currentUser) {
             try {
                 const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
                 if (userDoc.exists()) {
                     const ud = userDoc.data();
-                    userInterests = (ud.interests || "").split(',').map(i => i.trim().toLowerCase()).filter(i => i);
-                    userSkills = ud.skills || [];
+                    userContext.interests = Array.isArray(ud.interests) ? ud.interests : (ud.interests || "").split(',').map(i => i.trim().toLowerCase()).filter(i => i);
+                    userContext.skills = ud.skills || [];
                 }
-            } catch(e) { console.warn("Nuru couldn't fetch user context for suggestions"); }
+            } catch(e) { console.warn("Nuru couldn't fetch user context"); }
         }
 
         const matchScore = (m) => {
             let score = 0;
-            const mentorCats = (m.categories || []).map(c => c.toLowerCase());
-            const exp = (m.expertise || '').toLowerCase();
+            const mentorCats = (m.categories || []).map(c => String(c).toLowerCase());
+            const exp = Array.isArray(m.expertise) ? m.expertise.join(' ').toLowerCase() : String(m.expertise || '').toLowerCase();
             
-            // Match against selected categories (High weight)
             selectedCategories.forEach(c => {
-                if (mentorCats.includes(c.toLowerCase()) || exp.includes(c.toLowerCase())) score += 10;
+                const lowC = c.toLowerCase();
+                if (mentorCats.includes(lowC) || exp.includes(lowC)) score += 10;
             });
             
-            // Match against user interests (Medium weight)
-            userInterests.forEach(i => {
-                if (mentorCats.includes(i) || exp.includes(i)) score += 5;
-            });
-
-            // Match against user skills (Low weight)
-            userSkills.forEach(s => {
-                if (mentorCats.includes(s.toLowerCase()) || exp.includes(s.toLowerCase())) score += 2;
+            userContext.interests.forEach(i => {
+                const lowI = i.toLowerCase();
+                if (mentorCats.includes(lowI) || exp.includes(lowI)) score += 5;
             });
             
             return score;
         };
 
-        // Rank mentors by score
         const scoredMentors = filteredMentors.map(m => ({ ...m, score: matchScore(m) }))
             .sort((a, b) => b.score - a.score);
 
         const nuruSuggested = scoredMentors.filter(m => m.score > 0).slice(0, 3);
         
-        const nuruBanner = nuruSuggested.length > 0 ? `
-            <div class="col-12">
-                <div class="nuru-suggestion-banner">
-                    <div class="nuru-sug-icon">🤖</div>
+        let html = '';
+        if (nuruSuggested.length > 0 && !searchVal && selectedCategories.length === 0) {
+            html += `
+            <div class="col-12 mb-4">
+                <div class="nuru-suggestion-banner shadow-sm" style="background: linear-gradient(135deg, #1a5e4f 0%, #0d4237 100%); border:none; padding:1.5rem; border-radius:20px; display:flex; align-items:center; gap:20px; color:white;">
+                    <div style="font-size:2.5rem; background:rgba(255,255,255,0.1); width:70px; height:70px; display:flex; align-items:center; justify-content:center; border-radius:18px;">🤖</div>
                     <div>
-                        <div class="nuru-sug-title">Nuru AI Suggestions</div>
-                        <div class="nuru-sug-sub">Matched based on your ${selectedCategories.length > 0 ? 'selections' : 'profile interests'}: <strong>${nuruSuggested.map(m => (m.fullName||'').split(' ')[0]).join(', ')}</strong></div>
+                        <h5 style="margin:0; font-weight:800; font-family:var(--font-head); letter-spacing:0.5px;">Nuru Smart Matches</h5>
+                        <p style="margin:0; opacity:0.8; font-size:0.9rem;">We found mentors that match your profile interests.</p>
                     </div>
                 </div>
-            </div>` : '';
+            </div>`;
+        }
 
-        const isNuruSuggested = (id) => nuruSuggested.some(m => m.id === id);
+        html += scoredMentors.map(m => {
+            const isNuruMatch = nuruSuggested.some(s => s.id === m.id);
+            return `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="mentor-disco-card shadow-sm border-0 ${isNuruMatch ? 'nuru-highlight' : ''}" 
+                     onclick="MentorDiscovery.openProfile('${m.id}')" 
+                     style="cursor:pointer; transition:all 0.3s ease; background:white; position:relative; overflow:hidden; border-radius:24px; height:100%; display:flex; flex-direction:column; border:1px solid rgba(0,0,0,0.03);">
+                    
+                    ${isNuruMatch ? '<div style="position:absolute; top:12px; right:12px; background:var(--brand-yellow); color:#000; font-size:0.65rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; padding:4px 10px; border-radius:8px; z-index:2; box-shadow:0 4px 10px rgba(243,168,19,0.3);">TOP MATCH</div>' : ''}
+                    
+                    <div style="height:110px; background:linear-gradient(45deg, #f8fafc 0%, #f1f5f9 100%); position:relative;">
+                         <div style="position:absolute; bottom:-35px; left:20px;">
+                            ${m.photoURL ? 
+                                `<img src="${m.photoURL}" style="width:80px; height:80px; border-radius:24px; border:4px solid white; object-fit:cover; box-shadow:0 8px 20px rgba(0,0,0,0.1);">` :
+                                `<div style="width:80px; height:80px; border-radius:24px; border:4px solid white; background:var(--brand-green); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.6rem; box-shadow:0 8px 20px rgba(0,0,0,0.1);">${getInitials(m.fullName)}</div>`
+                            }
+                         </div>
+                    </div>
 
-        container.innerHTML = nuruBanner + filteredMentors.map(m => `
-            <div class="col-md-6 col-lg-4">
-                <div class="mentor-disco-card${isNuruSuggested(m.id) ? ' nuru-highlight' : ''}" onclick="MentorDiscovery.openProfile('${m.id}')">
-                    ${isNuruSuggested(m.id) ? '<div style="position:absolute;top:12px;right:12px;background:var(--brand-yellow);color:#000;font-size:0.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;padding:3px 8px;border-radius:6px;">⭐ Nuru Pick</div>' : ''}
-                    <div class="mdc-avatar">${getInitials(m.fullName || 'User')}</div>
-                    <div class="mdc-name">${m.fullName || 'Mentor'}</div>
-                    <div class="mdc-expertise">${m.expertise || 'Expert Mentor'}</div>
-                    <div class="mdc-institution">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="me-1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${m.institution || 'N/A'}
+                    <div class="p-4 pt-5 flex-grow-1" style="margin-top:5px;">
+                        <h5 style="font-family:var(--font-head); font-weight:800; color:#1e293b; margin-bottom:4px;">${m.fullName || 'Mentor'}</h5>
+                        <div style="font-size:0.85rem; color:#64748b; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+                            <span style="font-weight:700; color:var(--brand-green);">${m.expertise || 'Expert'}</span>
+                            <span style="opacity:0.3;">|</span>
+                            <span>${m.institution || 'USIU-Africa'}</span>
+                        </div>
+                        
+                        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
+                            ${(m.categories || []).slice(0, 3).map(c => `<span style="font-size:0.65rem; background:#f1f5f9; color:#475569; padding:4px 8px; border-radius:6px; font-weight:700; text-transform:uppercase;">${c}</span>`).join('')}
+                        </div>
+                        <p style="font-size:0.8rem; color:#64748b; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${m.bio || 'Professional mentor ready to guide your next big innovation.'}</p>
                     </div>
-                    <div class="mdc-categories">
-                        ${(m.categories || []).slice(0, 3).map(c => `<span class="category-chip">${c}</span>`).join('')}
+
+                    <div class="p-4 border-top" style="background:#fafafa;">
+                        <button class="btn w-100 rounded-pill py-2" style="background:var(--brand-green); color:white; font-weight:700; font-size:0.85rem; border:none;">
+                            View Profile
+                        </button>
                     </div>
-                    <button class="btn-premium-action" onClick="event.stopPropagation();MentorDiscovery.openProfile('${m.id}')">
-                        View Profile
-                    </button>
                 </div>
             </div>
-        `).join('');
+        `; }).join('');
+
+        container.innerHTML = html;
 
     } catch (e) {
         console.error("Error fetching mentors: ", e);
-        container.innerHTML = `<div class="col-12 text-center text-danger py-5">Failed to load mentors.</div>`;
+        container.innerHTML = `<div class="col-12 text-center text-danger py-5">
+            <i class="fa fa-exclamation-triangle mb-3" style="font-size:2rem;"></i>
+            <p>Failed to load mentors. Please try again later.</p>
+        </div>`;
     }
 }
 
 // ============================================================
-//  CATEGORY FILTER BAR
-// ============================================================
-function renderCategoryFilters() {
-    const container = document.getElementById('mentorCategoryCheckboxes');
-    if (!container) return;
-    container.innerHTML = `<div class="category-filter-bar">
-        ${ALL_CATEGORIES.map(c => `
-            <button class="cat-filter-pill ${selectedCategories.includes(c) ? 'active' : ''}" onclick="MentorDiscovery.toggleCategory('${c}')">
-                ${c}
-            </button>`).join('')}
-    </div>`;
-}
-
-// ============================================================
-//  INSTAGRAM-STYLE MENTOR PROFILE MODAL
+//  PROFESSIONAL MENTOR PROFILE MODAL (LinkedIn Style)
 // ============================================================
 async function openMentorProfileModal(mentorId) {
     if (!mentorId) return;
@@ -210,9 +244,11 @@ async function openMentorProfileModal(mentorId) {
 
         // Count accepted mentees for this mentor
         let menteeCount = 0;
-        const countQ = query(collection(db, 'mentorshipRequests'), where('mentorId', '==', mentorId), where('status', '==', 'accepted'));
-        const countSnap = await getDocs(countQ);
-        menteeCount = countSnap.size;
+        try {
+            const countQ = query(collection(db, 'mentorshipRequests'), where('mentorId', '==', mentorId), where('status', '==', 'accepted'));
+            const countSnap = await getDocs(countQ);
+            menteeCount = countSnap.size;
+        } catch(e) {}
 
         const existing = document.getElementById('mentorProfileModalOverlay');
         if (existing) existing.remove();
@@ -220,66 +256,94 @@ async function openMentorProfileModal(mentorId) {
         const overlay = document.createElement('div');
         overlay.className = 'mentor-profile-modal-overlay';
         overlay.id = 'mentorProfileModalOverlay';
+        
         overlay.innerHTML = `
-            <div class="mentor-profile-modal">
-                <div class="mpm-header">
-                    <button class="mpm-close" onclick="document.getElementById('mentorProfileModalOverlay').remove()">✕</button>
-                    <div class="mpm-avatar-wrap"><span>${getInitials(m.fullName || 'User')}</span></div>
-                    <div class="mpm-name">${m.fullName || 'Mentor'}</div>
-                    <div class="mpm-role">Expert Mentor &nbsp;·&nbsp; ${(m.categories || []).slice(0,2).join(', ')}</div>
-                </div>
-                <div class="mpm-body">
-                    <div class="mpm-stats">
-                        <div class="mpm-stat">
-                            <div class="mpm-stat-value">${menteeCount}</div>
-                            <div class="mpm-stat-label">Mentees</div>
-                        </div>
-                        <div class="mpm-stat">
-                            <div class="mpm-stat-value">${(m.categories || []).length}</div>
-                            <div class="mpm-stat-label">Fields</div>
-                        </div>
-                        <div class="mpm-stat">
-                            <div class="mpm-stat-value">${m.availability ? '✓' : '—'}</div>
-                            <div class="mpm-stat-label">Available</div>
-                        </div>
-                    </div>
-
-                    <div class="mpm-section-label">About</div>
-                    <div class="mpm-bio">${m.bio || 'This mentor has not added a bio yet.'}</div>
-
-                    <div class="mpm-section-label">Expertise & Fields</div>
-                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;">
-                        ${(m.categories || []).map(c => `<span class="category-chip">${c}</span>`).join('')}
-                    </div>
-
-                    <div class="mpm-info-row">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        <span>${m.institution || 'N/A'}</span>
-                    </div>
-                    <div class="mpm-info-row">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
-                        <span>${m.expertise || 'General Mentorship'}</span>
-                    </div>
-                    ${m.experience ? `<div class="mpm-info-row"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>${m.experience} Years of Experience</span></div>` : ''}
-                    <div class="mpm-info-row">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        <span>Communication: ${m.communicationPreference || 'Zoom/Slack'}</span>
-                    </div>
-                    ${m.availability ? `<div class="mpm-info-row"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Availability: ${m.availability}</span></div>` : ''}
+            <div class="mentor-profile-modal shadow-2xl" 
+                 style="width:95%; max-width:800px; max-height:90vh; background:white; border-radius:32px; overflow:hidden; display:flex; flex-direction:column; border: 1px solid rgba(0,0,0,0.05);">
+                
+                <!-- Professional Banner -->
+                <div style="height:160px; background:linear-gradient(135deg, #1a5e4f 0%, #0a2d26 100%); position:relative;">
+                    <button class="mpm-close" style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.2); border:none; color:white; width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="document.getElementById('mentorProfileModalOverlay').remove()">✕</button>
                     
-                    <div class="mpm-info-row text-warning">
-                        <i class="fa fa-star me-2"></i>
-                        <span>Rating: ${m.rating || '4.8'} / 5.0</span>
+                    <div style="position:absolute; bottom:-60px; left:40px;">
+                        ${m.photoURL ? 
+                            `<img src="${m.photoURL}" style="width:130px; height:130px; border-radius:32px; border:6px solid white; object-fit:cover; box-shadow:0 12px 30px rgba(0,0,0,0.15);">` :
+                            `<div style="width:130px; height:130px; border-radius:32px; border:6px solid white; background:var(--brand-yellow); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:3rem; box-shadow:0 12px 30px rgba(0,0,0,0.15);">${getInitials(m.fullName)}</div>`
+                        }
+                    </div>
+                </div>
+
+                <div style="padding:80px 40px 40px; overflow-y:auto; flex:1;">
+                    <div class="row g-4">
+                        <div class="col-lg-7">
+                            <div class="mb-4">
+                                <h2 style="font-family:var(--font-head); font-weight:800; color:#1e293b; margin-bottom:4px; font-size:2rem;">${m.fullName || 'Mentor'}</h2>
+                                <p style="font-size:1.1rem; color:var(--brand-green); font-weight:700; margin-bottom:12px;">${m.expertise || 'Professional Expert'}</p>
+                                <div style="color:#64748b; font-size:0.9rem; display:flex; flex-wrap:wrap; gap:16px;">
+                                    <span><i class="fa fa-university me-2"></i>${m.institution || 'USIU-Africa'}</span>
+                                    <span><i class="fa fa-map-marker-alt me-2"></i>Nairobi, Kenya</span>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:32px;">
+                                <h6 style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:1px; color:#94a3b8; margin-bottom:12px;">Professional Biography</h6>
+                                <p style="line-height:1.7; color:#475569; font-size:0.95rem;">${m.bio || 'Experienced professional dedicated to fostering innovation and supporting next-generation talent in the African tech ecosystem.'}</p>
+                            </div>
+
+                            <div>
+                                <h6 style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:1px; color:#94a3b8; margin-bottom:12px;">Focus Areas</h6>
+                                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                    ${(m.categories || []).map(c => `
+                                        <span style="background:#f1f5f9; color:#475569; padding:6px 14px; border-radius:10px; font-weight:700; font-size:0.75rem; border:1px solid rgba(0,0,0,0.03);">
+                                            ${c.toUpperCase()}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-5">
+                            <div style="background:#f8fafc; border-radius:24px; padding:28px; border:1px solid rgba(0,0,0,0.03);">
+                                <h6 style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:1px; color:#94a3b8; margin-bottom:24px;">Mentorship Stats</h6>
+                                
+                                <div class="d-flex align-items-center gap-3 mb-4">
+                                    <div style="width:50px; height:50px; background:white; border-radius:14px; display:flex; align-items:center; justify-content:center; color:var(--brand-green); box-shadow:0 4px 10px rgba(0,0,0,0.03); font-size:1.2rem; font-weight:800;">${menteeCount}</div>
+                                    <div>
+                                        <div style="font-size:0.75rem; color:#64748b; font-weight:600;">Active Mentees</div>
+                                        <div style="font-size:0.85rem; font-weight:700; color:#1e293b;">Guided Innovators</div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-3 mb-4">
+                                    <div style="width:50px; height:50px; background:white; border-radius:14px; display:flex; align-items:center; justify-content:center; color:#f3a813; box-shadow:0 4px 10px rgba(0,0,0,0.03);"><i class="fa fa-calendar-check"></i></div>
+                                    <div>
+                                        <div style="font-size:0.75rem; color:#64748b; font-weight:600;">Availability</div>
+                                        <div style="font-size:0.85rem; font-weight:700; color:#1e293b;">${m.availability || 'Weekends, 10am - 4pm'}</div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-3">
+                                    <div style="width:50px; height:50px; background:white; border-radius:14px; display:flex; align-items:center; justify-content:center; color:#3b82f6; box-shadow:0 4px 10px rgba(0,0,0,0.03);"><i class="fa fa-comments"></i></div>
+                                    <div>
+                                        <div style="font-size:0.75rem; color:#64748b; font-weight:600;">Preferred Communication</div>
+                                        <div style="font-size:0.85rem; font-weight:700; color:#1e293b;">${m.communicationPreference || 'Zoom & Slack'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    ${existingReq
-                        ? `<button class="mpm-request-btn" disabled style="background:${existingReq.status==='accepted'?'#1a5e4f':'#b47b00'}">
-                            ${existingReq.status === 'accepted' ? '✓ Currently your Mentor' : '⏳ Request Pending'}
-                        </button>`
-                        : `<button class="mpm-request-btn" onclick="MentorDiscovery.openRequestFlow('${mentorId}')">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>Request Mentorship
-                        </button>`
-                    }
+                    <div style="margin-top:40px;">
+                        ${existingReq
+                            ? `<button disabled style="width:100%; padding:20px; border-radius:18px; border:none; color:white; font-weight:800; font-size:1rem; background:${existingReq.status === 'accepted' ? 'var(--brand-green)' : '#f3a813'}; opacity:0.8; display:flex; align-items:center; justify-content:center; gap:12px;">
+                                ${existingReq.status === 'accepted' ? '<i class="fa fa-check-circle"></i> Connected Mentor' : '<i class="fa fa-clock"></i> Request Pending Approval'}
+                               </button>`
+                            : `<button onclick="MentorDiscovery.openRequestFlow('${mentorId}')" 
+                                       style="width:100%; padding:20px; border-radius:18px; border:none; background:linear-gradient(135deg, var(--brand-green) 0%, #0a2d26 100%); color:white; font-weight:800; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:12px; box-shadow:0 12px 24px rgba(26,94,79,0.3); transition:all 0.3s ease;">
+                                <i class="fa fa-paper-plane"></i> Apply for Mentorship Session
+                               </button>`
+                        }
+                    </div>
                 </div>
             </div>`;
 
@@ -361,6 +425,7 @@ async function submitRequest(mentorId) {
             projectId: projectId,
             message: message,
             status: 'pending',
+            adminApproved: false, // NEW: Requires admin gate
             requestedAt: serverTimestamp(),
             updatedAt: serverTimestamp()
         });
@@ -417,6 +482,9 @@ async function renderMyMentors() {
                 if (pSnap.exists()) project = pSnap.data();
             }
 
+            const isApproved = req.status === 'accepted' && req.adminApproved === true;
+            const statusLabel = isApproved ? '✓ Active' : (req.status === 'accepted' ? '⏳ Pending Admin Approval' : (req.status === 'pending' ? '⏳ Request Sent' : '✕ Rejected'));
+
             html += `
             <div class="my-mentor-item">
                 <div class="my-mentor-avatar">${getInitials(mentor.fullName)}</div>
@@ -426,35 +494,21 @@ async function renderMyMentors() {
                             <div style="font-family:var(--font-head);font-weight:800;font-size:1rem;color:var(--brand-green);">${mentor.fullName}</div>
                             <div style="font-size:0.8rem;color:#8a9aaa;">${mentor.expertise || 'Mentor'} &nbsp;·&nbsp; ${mentor.institution || ''}</div>
                         </div>
-                        <span class="badge-premium" style="background:rgba(${req.status==='accepted'?'26,94,79':req.status==="pending"?'243,168,19':'220,53,69'},0.1);color:${statusColors[req.status]||'#666'};border:1px solid;border-color:${statusColors[req.status]||'#ccc'}22;">
-                            ${req.status === 'accepted' ? '✓ Active' : req.status === 'pending' ? '⏳ Pending' : '✕ Rejected'}
+                        <span class="badge-premium" style="background:rgba(${isApproved ? '26,94,79' : (req.status==='rejected'?'220,53,69':'243,168,19')},0.1);color:${isApproved ? '#1a5e4f' : (req.status==='rejected'?'#dc3545':'#b47b00')};border:1px solid;border-color:${isApproved ? '#1a5e4f' : (req.status==='rejected'?'#dc3545':'#b47b00')}22;">
+                            ${statusLabel}
                         </span>
                     </div>
 
                     ${project ? `<div style="margin-top:10px;font-size:0.82rem;color:#777;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Linked to: <strong>${project.title}</strong></div>` : ''}
-                    ${req.status === 'rejected' && req.rejectionReason ? `
-                        <div class="rejection-reason-box" style="margin-top:12px;padding:12px 16px;">
-                            <strong>Reason for rejection</strong>
-                            <p>${req.rejectionReason}</p>
-                        </div>` : ''}
-
-                    ${req.scheduledMeeting ? `
-                        <div class="meeting-card" style="margin-top:14px;padding:16px;">
-                            <div style="font-family:var(--font-head);font-weight:800;font-size:0.9rem;color:var(--brand-green);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                                Scheduled Meeting
-                            </div>
-                            <div class="meeting-info-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>${formatDate(req.scheduledMeeting.date)} at ${req.scheduledMeeting.time}</span></div>
-                            <a class="meeting-zoom-btn" href="${req.scheduledMeeting.zoomLink}" target="_blank">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>Join Zoom Meeting
-                            </a>
-                        </div>` : (req.status === 'accepted' ? `<div style="margin-top:10px;font-size:0.82rem;color:#aaa;display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>Waiting for mentor to schedule a meeting.</div>` : '')}
                     
                     <div style="margin-top:20px;display:flex;gap:10px;">
                         <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="MentorDiscovery.openProfile('${req.mentorId}')">
                             <i class="fa fa-user me-1"></i> View Profile
                         </button>
-                        ${req.status === 'accepted' ? `
+                        ${isApproved ? `
+                            <button class="btn btn-sm btn-success rounded-pill px-3" onclick="window.showProjectCollaboration('${req.projectId}', '${req.mentorId}')">
+                                <i class="fa fa-comments me-1"></i> Collab Hub
+                            </button>
                             <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="MentorDiscovery.requestTermination('${req.id}', '${mentor.fullName}')">
                                 <i class="fa fa-user-minus me-1"></i> Stop Mentorship
                             </button>
@@ -517,16 +571,18 @@ async function renderMentorRequests() {
 
             const actionButtons = req.status === 'pending'
                 ? `<button class="btn-approve" onclick="MentorView.acceptRequest('${req.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="20 6 9 17 4 12"/></svg>Accept
+                        <i class="fa fa-check me-1"></i>Accept
                    </button>
                    <button class="btn-reject-soft" onclick="MentorView.promptRejectRequest('${req.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject
+                        <i class="fa fa-times me-1"></i>Reject
                    </button>`
                 : req.status === 'accepted'
-                ? `<span class="badge-premium badge-premium-approved">✓ Accepted</span>
-                   <button class="btn-approve" style="margin-left:8px;" onclick="MentorView.openScheduler('${req.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="me-1" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule Meeting
-                   </button>`
+                ? (req.adminApproved ? 
+                    `<span class="badge-premium badge-premium-approved">✓ Fully Approved</span>
+                     <button class="btn btn-sm btn-success rounded-pill px-3 ms-2" onclick="window.showProjectCollaboration('${req.projectId}', '${req.innovatorId}')">
+                        <i class="fa fa-comments me-1"></i> Collab Hub
+                     </button>` : 
+                    `<span class="badge-premium badge-premium-pending">⏳ Awaiting Admin Approval</span>`)
                 : `<span class="badge-premium badge-premium-rejected">✕ Rejected</span>`;
 
             html += `
@@ -565,6 +621,22 @@ const MentorView = {
     async acceptRequest(requestId) {
         try {
             await updateDoc(doc(db, 'mentorshipRequests', requestId), { status: 'accepted', updatedAt: serverTimestamp() });
+            
+            // Link mentor to project for permissions
+            try {
+                const reqSnap = await getDoc(doc(db, 'mentorshipRequests', requestId));
+                if (reqSnap.exists()) {
+                    const reqData = reqSnap.data();
+                    if (reqData.projectId) {
+                        await updateDoc(doc(db, 'projects', reqData.projectId), {
+                            mentorId: auth.currentUser.uid
+                        });
+                    }
+                }
+            } catch (linkErr) {
+                console.error('Link Error:', linkErr);
+            }
+
             renderMentorRequests();
             showToast('✓ Request accepted! You can now schedule a meeting.');
         } catch(e) {
@@ -666,15 +738,28 @@ const MentorView = {
 //  PUBLIC API
 // ============================================================
 const MentorDiscovery = {
-    init() {
+    async init() {
         renderCategoryFilters();
-        renderMentorDiscovery();
+        
+        // Fix: Wait for auth if not ready
+        if (!auth.currentUser) {
+            console.log("MentorDiscovery: Waiting for auth...");
+            auth.onAuthStateChanged((user) => {
+                if (user) renderMentorDiscovery();
+            });
+        } else {
+            renderMentorDiscovery();
+        }
+
         const searchInput = document.getElementById('mentorSearchInput');
         if (searchInput) {
-            searchInput.addEventListener('input', () => {
-                let filteredMentors = []; // Using mock query inside or re-render
+            // Remove old listener if exists to prevent duplicates
+            const newSearchInput = searchInput.cloneNode(true);
+            searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+            
+            newSearchInput.addEventListener('input', (e) => {
                 renderMentorDiscovery();
-            }); // Re-renders
+            });
         }
     },
 

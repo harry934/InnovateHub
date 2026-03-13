@@ -54,12 +54,12 @@ export class StructuredProjectCard {
                     </div>
                     <button 
                         class="btn btn-sm rounded-pill toggle-expand-btn d-flex align-items-center gap-2 px-3"
-                        style="border: 1px solid #1a5e4f; color: #1a5e4f; background: transparent; transition: all 0.3s ease;"
-                        onmouseover="this.style.background='#1a5e4f'; this.style.color='#fff';"
-                        onmouseout="this.style.background='transparent'; this.style.color='#1a5e4f';"
+                        style="border: 2px solid var(--brand-green); color: var(--brand-green); background: transparent; transition: all 0.3s ease; font-weight: 700;"
+                        onmouseover="this.style.background='var(--brand-green)'; this.style.color='#fff';"
+                        onmouseout="this.style.background='transparent'; this.style.color='var(--brand-green)';"
                         onclick="toggleProjectCard('${project.id}')">
                         ${isExpanded ? icons.collapse : icons.expand}
-                        <span class="fw-bold fs-7">${isExpanded ? 'Collapse' : 'Expand'}</span>
+                        <span class="fs-7">${isExpanded ? 'Collapse Details' : 'View Full Details'}</span>
                     </button>
                 </div>
 
@@ -191,19 +191,11 @@ export class StructuredProjectCard {
         const taskIcon = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         const editIcon = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-        // Add milestone button
+        // View Details / Manage (if applicable)
         actions.push(`
-            <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" onclick="showAddMilestone('${project.id}')">
-                ${plusIcon}
-                Add Milestone
-            </button>
-        `);
-
-        // View milestones
-        actions.push(`
-            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2" onclick="viewMilestones('${project.id}')">
-                ${taskIcon}
-                View Milestones
+            <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" onclick="window.showProjectCollaboration('${project.id}')">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Open Collaboration
             </button>
         `);
 

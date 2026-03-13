@@ -30,11 +30,17 @@
         $(".nav-bar").addClass("navbar-scrolled");
       }
       
-      // Feature: Hide navbar content on scroll down, keep only hamburger
-      if (scrollingDown && !mobileMenuIsOpen) {
-         $(".nav-bar").addClass("navbar-hidden");
+      // Feature: Hide navbar on scroll down (DESKTOP ONLY)
+      // On mobile, we always keep logo + hamburger visible with the blur effect
+      if ($(window).width() >= 992) {
+        if (scrollingDown && !mobileMenuIsOpen) {
+          $(".nav-bar").addClass("navbar-hidden");
+        } else {
+          $(".nav-bar").removeClass("navbar-hidden");
+        }
       } else {
-         $(".nav-bar").removeClass("navbar-hidden");
+        // Mobile: never hide — always remove navbar-hidden
+        $(".nav-bar").removeClass("navbar-hidden");
       }
 
       if ($(window).width() >= 992) {
