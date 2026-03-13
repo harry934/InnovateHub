@@ -199,13 +199,18 @@ class MentorDashboard {
         // 2. Check Profile Completion (for approved mentors)
         if (!userData.profileComplete) {
           console.log("MentorDashboard: Profile incomplete, gating access...");
-          this.showOnboardingModal();
           
           // Strictly hide main content until complete
           const dashContent = document.getElementById("dashboard-content");
           const landingCards = document.getElementById("dashboardQuickAccess");
           if (dashContent) dashContent.style.display = "none";
           if (landingCards) landingCards.style.display = "none";
+          
+          // Ensure modal is visible regardless of wrapper
+          const modalEl = document.getElementById("onboardingModal");
+          if (modalEl) modalEl.style.display = 'block'; 
+
+          this.showOnboardingModal();
           
           // Disable background interactions
           document.body.style.overflow = 'hidden';

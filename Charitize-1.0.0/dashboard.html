@@ -59,7 +59,7 @@
     <div id="liveWallpaperBg" style="position: fixed; inset: 0; z-index: -1; pointer-events: none;"></div>
 
     <!-- Dashboard Content Wrapper (Hidden until onboarding check) -->
-    <div id="dashboard-content" style="display: none; position: relative; z-index: 1;">
+    <div id="dashboard-content" style="display: none; position: relative; z-index: 10;">
         <!-- Dashboard Landing Page -->
         <div
           id="dashboardQuickAccess"
@@ -745,9 +745,9 @@
           ></div>
         </div>
       </div>
-    </div>
+    </div> <!-- End of dashboard-content -->
 
-    <!-- Modals -->
+    <!-- Modals (Moved outside for visibility gating) -->
     <div
       class="modal fade"
       id="onboardingModal"
@@ -805,10 +805,11 @@
     </div>
 
     <!-- JS Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/pages/main.js?v=16.0.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=10.0.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=10.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=16.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=16.0.0"></script>
     <script src="assets/js/core/api.js?v=10.0.0"></script>
     <!-- Feature Scripts -->
     <script type="module" src="assets/js/pages/mentor-discovery.js?v=10.0.0"></script>
@@ -956,9 +957,9 @@
         // ── Mentor Access Control Guard ──────────────────────────
         if (role === "mentor") {
           let mentorStatus =
-            userData.mentorStatus || userData.approvalStatus || null;
+            userData.status || userData.mentorStatus || userData.approvalStatus || null;
 
-          if (mentorStatus === "pending") {
+          if (mentorStatus === "pending" || mentorStatus === "pending_approval") {
             showMentorPendingScreen();
             return;
           }
@@ -967,7 +968,6 @@
             showMentorRejectedScreen(reason);
             return;
           }
-          // If status is 'approved' or null (default — don't block existing approved mentors)
         }
 
         // Init StaggeredMenu
@@ -1158,6 +1158,5 @@
         }
       });
     </script>
-    </div>
   </body>
 </html>
