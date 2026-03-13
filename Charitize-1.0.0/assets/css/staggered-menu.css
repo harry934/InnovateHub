@@ -382,12 +382,12 @@
   text-decoration: none;
   color: #1a1a1a;
   font-family: 'Josefin Sans', sans-serif;
-  font-size: clamp(1.1rem, 2.8vw, 1.8rem);
+  font-size: clamp(1.4rem, 3.5vw, 2.4rem);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: -0.5px;
   line-height: 1.2;
-  padding: 0.6rem 0;
+  padding: 0.8rem 0;
   position: relative;
   transition: color 0.3s ease;
 }
@@ -430,6 +430,6 @@
     padding: 0 1.5rem;
   }
   .sm-panel-item {
-    font-size: clamp(1.5rem, 8vw, 2.2rem);
+    font-size: clamp(1.8rem, 10vw, 2.8rem);
   }
 }
