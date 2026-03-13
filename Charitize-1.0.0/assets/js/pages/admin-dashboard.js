@@ -188,13 +188,16 @@ class AdminDashboard {
             const users = usersSnap.docs.map(d => d.data());
             const projects = projectsSnap.docs.map(d => d.data());
             
+            const pendingMentors = users.filter(u => u.role === 'mentor' && (u.status === 'pending' || u.status === 'pending_approval')).length;
+            const pendingProjects = projects.filter(p => p.status === 'pending').length;
+
             const stats = [
                 { label: 'Total Members', value: users.length, icon: 'fa-users', color: '#3b82f6' },
                 { label: 'Innovators', value: users.filter(u => u.role === 'innovator').length, icon: 'fa-lightbulb', color: '#10b981' },
                 { label: 'Mentors', value: users.filter(u => u.role === 'mentor').length, icon: 'fa-graduation-cap', color: '#f59e0b' },
-                { label: 'Active Projects', value: projects.filter(p => p.status === 'approved').length, icon: 'fa-project-diagram', color: '#6366f1' },
+                { label: 'Pending Mentors', value: pendingMentors, icon: 'fa-user-clock', color: '#f59e0b' },
                 { label: 'Mentorship Pairs', value: pairsSnap.docs.filter(d => d.data().status === 'accepted').length, icon: 'fa-handshake', color: '#ec4899' },
-                { label: 'Pending Reviews', value: projects.filter(p => p.status === 'pending').length, icon: 'fa-clock', color: '#f43f5e' }
+                { label: 'Pending Reviews', value: pendingProjects + pendingMentors, icon: 'fa-clock', color: '#f43f5e' }
             ];
 
             container.innerHTML = stats.map(s => `
@@ -208,6 +211,17 @@ class AdminDashboard {
                     </div>
                 </div>
             `).join('');
+
+            // Update Sidebar Badge
+            const badge = document.getElementById('pendingMentorBadge');
+            if (badge) {
+                if (pendingMentors > 0) {
+                    badge.textContent = pendingMentors;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
 
         } catch (e) {
             console.error(e);
@@ -334,7 +348,7 @@ class AdminDashboard {
         if (!container) return;
         
         try {
-            const q = query(collection(db, 'users'), where('role', '==', 'mentor'), where('status', '==', 'pending'));
+            const q = query(collection(db, 'users'), where('role', '==', 'mentor'), where('status', 'in', ['pending', 'pending_approval']));
             const snap = await getDocs(q);
             
             if (snap.empty) {
