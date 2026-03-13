@@ -193,29 +193,24 @@ class MentorDashboard {
           console.log("MentorDashboard: Profile incomplete, gating access...");
           this.showOnboardingModal();
           
-          // Hide main content until complete
+          // Strictly hide main content until complete
           const dashContent = document.getElementById("dashboard-content");
-          if (dashContent) dashContent.style.visibility = "hidden";
+          const landingCards = document.getElementById("dashboardQuickAccess");
+          if (dashContent) dashContent.style.display = "none";
+          if (landingCards) landingCards.style.display = "none";
           
-          // Also disable dashboard nav cards
-          setTimeout(() => {
-              const cards = document.querySelectorAll('.dash-nav-card');
-              cards.forEach(card => {
-                  const onclick = card.getAttribute('onclick') || '';
-                  if (!onclick.includes('profile') && !onclick.includes('onboarding')) {
-                      card.style.opacity = '0.3';
-                      card.style.pointerEvents = 'none';
-                      card.style.filter = 'grayscale(1)';
-                  }
-              });
-          }, 500);
+          // Disable background interactions
+          document.body.style.overflow = 'hidden';
         } else {
           console.log("MentorDashboard: Profile complete, showing dashboard.");
           const dashContent = document.getElementById("dashboard-content");
+          const landingCards = document.getElementById("dashboardQuickAccess");
           if (dashContent) {
               dashContent.style.display = "block";
               dashContent.style.visibility = "visible";
           }
+          if (landingCards) landingCards.style.display = "block";
+          document.body.style.overflow = 'auto';
         }
 
         // Update User Identity in Sidebar
@@ -637,8 +632,16 @@ class MentorDashboard {
       this.loadStats(),
       this.loadRequests(),
       this.loadMentees(),
-      this.loadNotifications()
+      this.loadNotifications(),
+      this.initializeOverview()
     ]);
+  }
+
+  async initializeOverview() {
+    // Ensure Overview is the default landing section for mentors
+    if (window.showDashboardSection) {
+        window.showDashboardSection('overview');
+    }
   }
 
   async loadStats() {

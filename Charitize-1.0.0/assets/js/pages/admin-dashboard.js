@@ -230,6 +230,7 @@ class AdminDashboard {
             case 'adminOverview': this.loadStats(); this.renderActivityHeatmap(); break;
             case 'projectApprovals': this.loadProjectReviews(); break;
             case 'mentorApprovals': this.loadMentorApprovals(); break;
+            case 'mentorshipApprovals': this.loadMentorshipApprovals(); break;
             case 'users': this.loadUsers(); break;
             case 'eventsManagement': this.loadAdminEvents(); break;
             case 'mentorshipPairings': this.loadMentorships(); break;
@@ -371,6 +372,85 @@ class AdminDashboard {
             alert('Mentor rejected.');
             this.loadMentorApprovals();
         } catch(e) {}
+    }
+
+    // ============================================================
+    //  MENTORSHIP PAIRING APPROVALS
+    // ============================================================
+    async loadMentorshipApprovals() {
+        const container = document.getElementById('mentorshipApprovalList');
+        if (!container) return;
+        
+        container.innerHTML = '<div class="text-center p-5"><span class="spinner-border"></span></div>';
+        try {
+            const q = query(collection(db, 'mentorshipRequests'), where('status', '==', 'pending_admin'));
+            const snap = await getDocs(q);
+            
+            if (snap.empty) {
+                container.innerHTML = '<div class="text-center p-5 text-muted">No pairings awaiting admin approval.</div>';
+                return;
+            }
+
+            let html = '';
+            for (const docSnap of snap.docs) {
+                const r = { id: docSnap.id, ...docSnap.data() };
+                const [iDoc, mDoc, pDoc] = await Promise.all([
+                    getDoc(doc(db, 'users', r.innovatorId)),
+                    getDoc(doc(db, 'users', r.mentorId)),
+                    getDoc(doc(db, 'projects', r.projectId))
+                ]);
+
+                html += `
+                    <div class="dashboard-card mb-3 p-4 border-start border-info border-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Mentorship Pair Request</h5>
+                            <span class="badge bg-info text-white">Pending Admin</span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="small text-muted">Innovator</div>
+                                <div class="fw-bold text-dark">${iDoc.exists() ? iDoc.data().fullName : 'Unknown'}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="small text-muted">Mentor</div>
+                                <div class="fw-bold text-dark">${mDoc.exists() ? mDoc.data().fullName : 'Unknown'}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="small text-muted">Project</div>
+                                <div class="fw-bold text-dark">${pDoc.exists() ? pDoc.data().title : 'General Mentorship'}</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-4">
+                            <button class="btn btn-sm btn-success px-4" onclick="adminDashboard.approvePairing('${r.id}')">Approve Pairing</button>
+                            <button class="btn btn-sm btn-outline-danger px-4" onclick="adminDashboard.rejectPairing('${r.id}')">Reject Pairing</button>
+                        </div>
+                    </div>`;
+            }
+            container.innerHTML = html;
+        } catch (e) {
+            container.innerHTML = '<div class="alert alert-danger">Failed to load pairings: ' + e.message + '</div>';
+        }
+    }
+
+    async approvePairing(id) {
+        if (!confirm('Approve this mentor-mentee pairing? Both parties will gain access to the Collaboration Hub.')) return;
+        try {
+            await updateDoc(doc(db, 'mentorshipRequests', id), { 
+                status: 'active',
+                approvedAt: serverTimestamp()
+            });
+            alert('Pairing approved!');
+            this.loadMentorshipApprovals();
+        } catch(e) { alert(e.message); }
+    }
+
+    async rejectPairing(id) {
+        if (!confirm('Reject this pairing request?')) return;
+        try {
+            await updateDoc(doc(db, 'mentorshipRequests', id), { status: 'rejected' });
+            alert('Pairing rejected.');
+            this.loadMentorshipApprovals();
+        } catch(e) { alert(e.message); }
     }
 
     // ============================================================

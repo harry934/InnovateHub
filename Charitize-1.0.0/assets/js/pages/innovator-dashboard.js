@@ -586,7 +586,7 @@ function renderQuickAccessCards() {
                         innovatorId: currentUser.uid,
                         mentorId: mentorId,
                         projectId: projectId,
-                        status: 'pending',
+                        status: 'pending_admin',
                         createdAt: serverTimestamp()
                     });
                 }

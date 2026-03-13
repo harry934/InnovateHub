@@ -74,35 +74,67 @@ class CollaborationHub {
     }
 
     async updateHeader() {
-        document.getElementById('collabProjectTitle').textContent = this.projectData.title;
-        document.getElementById('collabSessionId').textContent = `#${this.activeMentorshipId.substring(0, 8).toUpperCase()}`;
+        const header = document.querySelector('.collaboration-header-card');
+        if (header) {
+            document.getElementById('collabProjectTitle').textContent = this.projectData.title;
+            document.getElementById('collabSessionId').textContent = `#${this.activeMentorshipId.substring(0, 8).toUpperCase()}`;
+        }
 
-        // Fetch real names and photos
         try {
-            const [innovatorSnap, mentorSnap] = await Promise.all([
-                getDoc(doc(db, 'users', this.mentorshipData.innovatorId)),
-                getDoc(doc(db, 'users', this.mentorshipData.mentorId))
-            ]);
+            const isInnovator = auth.currentUser.uid === this.mentorshipData.innovatorId;
+            const targetId = isInnovator ? this.mentorshipData.mentorId : this.mentorshipData.innovatorId;
             
-            if (innovatorSnap.exists()) {
-                const data = innovatorSnap.data();
-                document.getElementById('collabInnovatorName').textContent = data.fullName || 'Innovator';
-                document.getElementById('collabInnovatorPhoto').src = data.photoURL || 'assets/img/default-avatar.png';
-            }
-            
-            if (mentorSnap.exists()) {
-                const data = mentorSnap.data();
-                document.getElementById('collabMentorName').textContent = data.fullName || 'Mentor';
-                document.getElementById('collabMentorPhoto').src = data.photoURL || 'assets/img/default-avatar.png';
-                this._mentorData = data;
+            const snap = await getDoc(doc(db, 'users', targetId));
+            if (snap.exists()) {
+                const data = snap.data();
+                const avatar = document.getElementById('collaboratorAvatar');
+                const name = document.getElementById('collaboratorName');
                 
-                // Update meeting details if exists
-                const nextMeeting = this.mentorshipData.scheduledMeeting?.date || 'TBD';
-                document.getElementById('collabNextMeeting').textContent = nextMeeting;
+                if (name) name.textContent = data.fullName || 'Partner';
+                if (avatar) {
+                    if (data.photoURL) {
+                        avatar.innerHTML = `<img src="${data.photoURL}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`;
+                    } else {
+                        const initials = (data.fullName || 'P').split(' ').map(n => n[0]).join('').toUpperCase();
+                        avatar.textContent = initials.substring(0, 2);
+                    }
+                }
+                this._partnerData = data;
+                this.updateMeetingUI();
             }
-
         } catch (err) {
-            console.warn('CollaborationHub: Could not fetch participant details', err);
+            console.warn('CollaborationHub: Could not fetch partner details', err);
+        }
+    }
+
+    updateMeetingUI() {
+        const meetingUI = document.getElementById('meetingStatusUI');
+        if (!meetingUI) return;
+
+        const meetingLink = this.mentorshipData.meetingLink || this._partnerData?.meetingLink;
+        if (meetingLink) {
+            meetingUI.innerHTML = `
+                <p class="small text-muted mb-2">Sync with your partner</p>
+                <div class="fw-bold text-success mb-0">
+                    <i class="fa fa-video me-1"></i> Meeting Link Ready
+                </div>
+            `;
+            this._meetingLink = meetingLink;
+        } else {
+            meetingUI.innerHTML = `
+                <p class="small text-muted mb-2">Sync with your partner</p>
+                <div class="fw-bold text-muted mb-0">
+                    <i class="fa fa-clock me-1"></i> No link available yet.
+                </div>
+            `;
+        }
+    }
+
+    joinMeeting() {
+        if (this._meetingLink) {
+            window.open(this._meetingLink, '_blank');
+        } else {
+            alert("No meeting link has been shared yet. Please chat with your partner to coordinate.");
         }
     }
 
@@ -164,7 +196,7 @@ class CollaborationHub {
                 const msgDiv = document.createElement('div');
                 msgDiv.className = `d-flex ${isMe ? 'justify-content-end' : 'justify-content-start'} mb-3`;
                 msgDiv.innerHTML = `
-                    <div class="message-bubble p-3 rounded-4 shadow-sm" style="max-width: 80%; background: ${isMe ? 'var(--brand-green)' : 'white'}; color: ${isMe ? 'white' : 'inherit'}; border: ${isMe ? 'none' : '1px solid #eee'};">
+                    <div class="message-bubble-saas shadow-sm ${isMe ? 'sent' : 'received'}">
                         <div class="small fw-bold mb-1" style="opacity: 0.8;">${isMe ? 'You' : 'Collaborator'}</div>
                         <div>${msg.text}</div>
                         <div class="mt-1" style="font-size: 0.65rem; opacity: 0.6; text-align: right;">
@@ -188,15 +220,18 @@ class CollaborationHub {
         ];
 
         container.innerHTML = sections.map(s => `
-            <div class="project-review-card p-4 rounded-4 bg-white border mb-4 shadow-sm">
+            <div class="review-section-premium mb-5">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0 text-primary">${s.title}</h5>
-                    <button class="btn btn-sm btn-light rounded-pill px-3" onclick="window.CollaborationHub.openCommentModal('${s.id}')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <h5 class="mb-0">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                        ${s.title}
+                    </h5>
+                    <button class="btn btn-sm btn-light rounded-pill px-3 fw-bold" onclick="window.CollaborationHub.openCommentModal('${s.id}')" style="background:rgba(26,94,79,0.05); color:var(--brand-green); border:none;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         Feedback
                     </button>
                 </div>
-                <div class="p-3 bg-light rounded-3" style="line-height: 1.6; border-left: 4px solid var(--brand-green);">
+                <div class="review-content-box shadow-sm">
                     ${this.projectData[s.id] || 'Not specified.'}
                 </div>
                 <div id="comments-${s.id}" class="mt-3 space-y-2">
@@ -364,61 +399,27 @@ class CollaborationHub {
             if (!progressWrap) {
                 progressWrap = document.createElement('div');
                 progressWrap.id = 'collabProgressWrap';
-                progressWrap.className = 'mt-4 pt-3 border-top border-white border-opacity-10';
-                progressWrap.style.maxWidth = '400px';
-                header.querySelector('.z-1').parentNode.appendChild(progressWrap);
+                progressWrap.className = 'mt-3 pt-3 border-top border-white border-opacity-10';
+                progressWrap.style.width = '1000px';
+                progressWrap.style.maxWidth = '100%';
+                header.querySelector('.collab-project-info').appendChild(progressWrap);
             }
             
             progressWrap.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center mb-2 small fw-bold">
-                    <span>PROJECT READINESS</span>
+                    <span style="letter-spacing:1px; opacity:0.8;">PROJECT COMPLETION</span>
                     <span>${percent}%</span>
                 </div>
                 <div class="progress rounded-pill bg-white bg-opacity-10" style="height: 6px;">
-                    <div class="progress-bar bg-white rounded-pill shadow-sm" style="width: ${percent}%; transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
+                    <div class="progress-bar bg-warning rounded-pill shadow-sm" style="width: ${percent}%; transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
                 </div>
             `;
         }
     }
 
     loadResources() {
-        const linkBox = document.getElementById('collabMeetingLink');
-        const docBox = document.getElementById('collabProjectDocs');
-
-        // Meeting Link — prefer mentorship-level link, fallback to mentor profile link
-        const meetingLink = this.mentorshipData.meetingLink || this._mentorData?.meetingLink;
-        if (meetingLink) {
-            linkBox.innerHTML = `
-                <a href="${meetingLink}" target="_blank" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2 rounded-pill py-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>
-                    Join Video Call
-                </a>
-            `;
-        } else {
-            linkBox.innerHTML = '<p class="text-muted small text-center">Mentor hasn\'t provided a meeting link yet.</p>';
-        }
-
-        // Communication preference
-        if (this._mentorData?.communicationPreference) {
-            linkBox.innerHTML += `
-                <div style="margin-top:10px;padding:10px 14px;background:#f8fafc;border-radius:10px;font-size:0.82rem;">
-                    <span style="font-weight:700;color:#1a5e4f;">Preferred Channel:</span>
-                    ${this._mentorData.communicationPreference}
-                </div>
-            `;
-        }
-
-        // Project Document
-        if (this.projectData.fileUrl) {
-            docBox.innerHTML = `
-                <a href="${this.projectData.fileUrl}" target="_blank" class="text-decoration-none p-3 border rounded-3 bg-white d-block hover-lift">
-                    <div class="fw-bold text-dark small mb-1">${this.projectData.fileName || 'Project Document'}</div>
-                    <div class="text-primary smaller">Download Original <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
-                </a>
-            `;
-        } else {
-            docBox.innerHTML = '<p class="text-muted small">No documents attached to this project.</p>';
-        }
+        // Resources are now handled more implicitly in the UI, but we can add secondary docs here if needed
+        console.log("Resources loaded for hub.");
     }
 }
 
