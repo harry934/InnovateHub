@@ -28,12 +28,12 @@
     <link href="assets/lib/animate/animate.min.css" rel="stylesheet" />
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="assets/css/auth-ui.css" rel="stylesheet" />
-    <link href="assets/css/style.css?v=12.0.0" rel="stylesheet" />
-    <link href="assets/css/staggered-menu.css?v=11.4.0" rel="stylesheet" />
-    <link href="assets/css/dashboard-rebuild.css?v=11.4.0" rel="stylesheet" />
-    <link href="assets/css/collab-screen.css?v=12.0.0" rel="stylesheet" />
-    <link href="assets/css/innovate-hub.css?v=12.0.0" rel="stylesheet" />
-    <link href="assets/css/nuru-assistant.css?v=12.0.0" rel="stylesheet" />
+    <link href="assets/css/style.css?v=15.0.0" rel="stylesheet" />
+    <link href="assets/css/staggered-menu.css?v=15.0.0" rel="stylesheet" />
+    <link href="assets/css/dashboard-rebuild.css?v=15.0.0" rel="stylesheet" />
+    <link href="assets/css/collab-screen.css?v=15.0.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=15.0.0" rel="stylesheet" />
+    <link href="assets/css/nuru-assistant.css?v=15.0.0" rel="stylesheet" />
 
     <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -45,10 +45,10 @@
     <script src="assets/js/core/supabase-config.js"></script>
 
     <!-- Project Modules -->
-    <script src="assets/js/components/live-wallpaper.js?v=12.0.0" type="module"></script>
-    <script src="assets/js/components/activity-heatmap.js?v=12.0.0" type="module"></script>
-    <script src="assets/js/pages/mentor-discovery.js?v=12.0.0" type="module"></script>
-    <script src="assets/js/pages/dashboard-charts.js?v=12.0.0" type="module"></script>
+    <script src="assets/js/components/live-wallpaper.js?v=15.0.0" type="module"></script>
+    <script src="assets/js/components/activity-heatmap.js?v=15.0.0" type="module"></script>
+    <script src="assets/js/pages/mentor-discovery.js?v=15.0.0" type="module"></script>
+    <script src="assets/js/pages/dashboard-charts.js?v=15.0.0" type="module"></script>
   </head>
 
   <body>
@@ -1076,8 +1076,8 @@
         // Load role-specific module
         const modulePath =
           role === "mentor"
-            ? "./assets/js/pages/mentor-dashboard.js?v=10.0.0"
-            : "./assets/js/pages/innovator-dashboard.js?v=10.0.0";
+            ? "./assets/js/pages/mentor-dashboard.js?v=15.0.0"
+            : "./assets/js/pages/innovator-dashboard.js?v=15.0.0";
 
         try {
           const mod = await import(modulePath);
@@ -1088,7 +1088,7 @@
           console.error("Dashboard: Module load error:", err);
           try {
             const fallback =
-              await import("./assets/js/pages/innovator-dashboard.js?v=10.0.0");
+              await import("./assets/js/pages/innovator-dashboard.js?v=15.0.0");
             if (fallback && fallback.initDashboard)
               await fallback.initDashboard(user, userData);
           } catch (e2) {

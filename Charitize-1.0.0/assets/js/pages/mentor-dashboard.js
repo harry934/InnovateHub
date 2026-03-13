@@ -526,6 +526,7 @@ class MentorDashboard {
       await updateDoc(doc(db, "users", this.currentUser.uid), {
         ...this.onboardingData,
         photoUrl: photoUrl || "",
+        status: "pending",
         profileComplete: true,
         updatedAt: serverTimestamp(),
       });
