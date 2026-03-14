@@ -140,5 +140,13 @@ service cloud.firestore {
       allow read, write: if hasRole('admin');
       allow create: if isSignedIn();
     }
+    // ── User Activity (Heatmap Tracking) ─────────────────────
+    match /userActivity/{docId} {
+      allow read, write: if isSignedIn() && (
+        request.auth.uid == resource.data.uid || // existing docs
+        request.auth.uid == request.resource.data.uid || // new docs
+        hasRole('admin')
+      );
+    }
   }
 }

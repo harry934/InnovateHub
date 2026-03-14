@@ -75,38 +75,43 @@ export class ActivityHeatmap {
     }
 
     renderGrid() {
+        if (!this.gridContainer) return;
         this.gridContainer.innerHTML = '';
+        
         const today = new Date();
         const oneYearAgo = new Date();
         oneYearAgo.setDate(today.getDate() - 364);
 
-        // Find the first Monday before or on oneYearAgo
+        // Find the first Monday
         const start = new Date(oneYearAgo);
         const day = start.getDay();
-        const diff = start.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
+        const diff = start.getDate() - day + (day === 0 ? -6 : 1);
         start.setDate(diff);
 
+        let gridHtml = '';
         for (let w = 0; w < 53; w++) {
-            const weekEl = document.createElement('div');
-            weekEl.className = 'heatmap-week';
-
+            gridHtml += '<div class="heatmap-week">';
             for (let d = 0; d < 7; d++) {
                 const currentDate = new Date(start);
                 currentDate.setDate(start.getDate() + (w * 7) + d);
                 
-                if (currentDate > today) break;
+                if (currentDate > today) {
+                    gridHtml += '<div class="heatmap-day empty"></div>';
+                    continue;
+                }
 
                 const dateStr = currentDate.toISOString().split('T')[0];
                 const count = this.data[dateStr] || 0;
                 const level = this.calculateLevel(count);
-                curr.setDate(curr.getDate() + 1);
-                if (curr > end && d < 6) {
-                   // Fill remaining days of last week if needed
-                }
+                
+                gridHtml += `<div class="heatmap-day level-${level}" 
+                    data-date="${dateStr}" 
+                    data-count="${count}"></div>`;
             }
             gridHtml += '</div>';
         }
-        return gridHtml;
+        this.gridContainer.innerHTML = gridHtml;
+        this.setupTooltips();
     }
 
     calculateLevel(count) {

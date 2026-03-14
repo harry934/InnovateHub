@@ -12,7 +12,11 @@
   spinner();
 
   // Initiate the wowjs
-  new WOW().init();
+  if (typeof WOW !== 'undefined') {
+    new WOW().init();
+  } else {
+    console.warn("WOW library not loaded. Animations may be disabled.");
+  }
 
   // ── Sticky Navbar ──────────────────────────────────────
   var mobileMenuIsOpen = false;

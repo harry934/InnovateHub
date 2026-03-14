@@ -48,19 +48,22 @@ export class ActivityTracker {
 
         const q = query(
             this.collectionRef,
-            where('uid', '==', this.uid),
-            where('timestamp', '>=', oneYearAgo),
-            orderBy('timestamp', 'asc')
+            where('uid', '==', this.uid)
         );
 
         try {
             const snapshot = await getDocs(q);
             const activityMap = {};
+            const oneYearAgoMs = oneYearAgo.getTime();
             
             snapshot.forEach(doc => {
                 const data = doc.data();
-                const date = data.date;
-                activityMap[date] = (activityMap[date] || 0) + 1;
+                const ts = data.timestamp?.toDate ? data.timestamp.toDate().getTime() : 0;
+                
+                if (ts >= oneYearAgoMs) {
+                    const date = data.date;
+                    activityMap[date] = (activityMap[date] || 0) + 1;
+                }
             });
             
             return activityMap;

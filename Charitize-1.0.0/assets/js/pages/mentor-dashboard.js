@@ -116,6 +116,7 @@ function initBackgroundSymbols() {
         container.appendChild(el);
     }
 }
+window.initBackgroundSymbols = () => { console.log("Legacy background symbols disabled in favor of LiveCanvas."); };
 
 function renderQuickAccessCards() {
     const container = document.getElementById('dashboardCardsGrid');
@@ -153,6 +154,7 @@ function renderQuickAccessCards() {
                     <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
             </div>
+            <div class="dash-nav-card-bottom-line"></div>
         </article>
     `; }).join('');
 }
@@ -195,56 +197,80 @@ class MentorDashboard {
 
       if (userData) {
         // 1. Check Approval Status first
-        const status = userData.status || userData.mentorStatus || userData.approvalStatus;
-        if (status === 'pending' || status === 'pending_approval') {
-            console.log("MentorDashboard: Approval pending...");
+        // Standardize status: treat 'active', 'approved' and isApproved:true as valid.
+        const status = userData.status || userData.mentorStatus || userData.approvalStatus || 'pending';
+        const isApprovedByFlag = userData.isApproved === true;
+        const isActuallyApproved = status === 'active' || status === 'approved' || isApprovedByFlag;
+
+        if (status === 'rejected') {
+            console.log("MentorDashboard: Account rejected.");
+            // Guard: dashboard.html handles full-page rejection UI, but we ensure we stop here.
+            return false;
+        }
+
+        if (!isActuallyApproved) {
+            console.log("MentorDashboard: Approval pending or unknown status:", status);
             this.showPendingApprovalUI();
             return false;
         }
 
-        if (status === 'rejected') {
-            return false; // dashboard.html handles this guard usually, but for safety
-        }
-
-        // 2. Check Profile Completion (for approved mentors)
+        // 2. Check Profile Completion
         if (!userData.profileComplete) {
-          console.log("MentorDashboard: Profile incomplete, gating access...");
+          console.log("MentorDashboard: Profile incomplete, showing onboarding wizard.");
           
-          // Strictly hide main content until complete
-          const dashContent = document.getElementById("dashboard-content");
+          // Force a pleasant background for the wizard
+          document.body.style.background = 'linear-gradient(135deg, #edf7f4 0%, #fdf6e9 100%)';
+          document.body.style.minHeight = '100vh';
+          document.body.style.overflow = 'auto';
+
+          // Hide main content cards rather than the whole background wrapper
           const landingCards = document.getElementById("dashboardQuickAccess");
-          if (dashContent) dashContent.style.display = "none";
-          if (landingCards) landingCards.style.display = "none";
+          const activeSectionContainer = document.getElementById("activeSectionContainer");
+          if (landingCards) {
+              landingCards.style.display = "none";
+              landingCards.style.visibility = "hidden";
+          }
+          if (activeSectionContainer) {
+              activeSectionContainer.style.display = "none";
+          }
           
-          this.showOnboardingModal();
-          
-          // Disable background interactions
-          document.body.style.overflow = 'hidden';
+          // Wait for Bootstrap/DOM
+          setTimeout(() => {
+              this.showOnboardingInline();
+          }, 150);
           return false;
         } else {
           console.log("MentorDashboard: Profile complete, showing dashboard.");
           const dashContent = document.getElementById("dashboard-content");
           const landingCards = document.getElementById("dashboardQuickAccess");
+          const onboardingContent = document.getElementById("onboarding-content");
+          
+          if (onboardingContent) {
+              onboardingContent.style.display = "none";
+          }
           if (dashContent) {
               dashContent.style.display = "block";
               dashContent.style.visibility = "visible";
           }
-          if (landingCards) landingCards.style.display = "block";
+          if (landingCards) {
+              landingCards.style.display = "block";
+              landingCards.style.visibility = "visible";
+          }
           document.body.style.overflow = 'auto';
+          document.body.style.background = '';
           
-          // Update User Identity in Sidebar
           this.updateUserIdentity(
             userData.fullName || this.currentUser.displayName || this.currentUser.email.split('@')[0],
           );
           
-          // Populate Profile Forms with existing data
           this.populateProfileForms(userData);
           return true;
         }
       }
       return false;
     } catch (error) {
-      console.error("Error checking profile:", error);
+      console.error("MentorDashboard: Error checking profile:", error);
+      if (window.showConnectionErrorUI) window.showConnectionErrorUI();
       return false;
     }
   }
@@ -309,15 +335,18 @@ class MentorDashboard {
   // ONBOARDING WIZARD
   // ==========================================
 
-  showOnboardingModal() {
-    const modal = new bootstrap.Modal(
-      document.getElementById("onboardingModal"),
-      {
-        backdrop: "static",
-        keyboard: false,
-      },
-    );
-    modal.show();
+  showOnboardingInline() {
+    const onboardingEl = document.getElementById("onboarding-content");
+    if (!onboardingEl) {
+        console.error("MentorDashboard: onboarding-content element not found!");
+        return;
+    }
+
+    onboardingEl.style.display = "block";
+    onboardingEl.style.zIndex = "100"; // Top of the stack on the dashboard
+    
+    // Removed window.StaggeredMenu.hide() to keep the navbar accessible during onboarding
+    
     this.renderOnboardingStep();
 
     // Bind Next/Back buttons - Check if listeners already added
@@ -374,7 +403,7 @@ class MentorDashboard {
         html = `
                     <div class="mb-3">
                         <label class="form-label">Select your areas of expertise (Multi-select)</label>
-                        <div class="d-flex flex-wrap gap-2">
+                        <div class="expertise-grid">
                             ${this.renderCheckbox("expertise", "Technology")}
                             ${this.renderCheckbox("expertise", "Healthcare")}
                             ${this.renderCheckbox("expertise", "Education")}
@@ -384,6 +413,13 @@ class MentorDashboard {
                             ${this.renderCheckbox("expertise", "Design")}
                         </div>
                     </div>
+                    <style>
+                        .expertise-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                            gap: 10px;
+                        }
+                    </style>
                 `;
         break;
       case 3:
@@ -438,7 +474,7 @@ class MentorDashboard {
         html = `
                     <div class="mb-3">
                         <label class="form-label">Industries you are interested in mentoring</label>
-                        <div class="d-flex flex-wrap gap-2">
+                        <div class="expertise-grid">
                             ${this.renderCheckbox("industries", "FinTech")}
                             ${this.renderCheckbox("industries", "HealthTech")}
                             ${this.renderCheckbox("industries", "EdTech")}
@@ -528,21 +564,27 @@ class MentorDashboard {
 
       // 1. Upload Photo to Supabase if provided
       if (window._mentorPhotoUpload && window._mentorPhotoUpload.files.length > 0) {
-          const fileObj = window._mentorPhotoUpload.files[0].file;
-          const fileName = `${this.currentUser.uid}_${Date.now()}.${fileObj.name.split('.').pop()}`;
-          
-          const { data, error } = await window.supabase.storage
-              .from('profiles')
-              .upload(`mentors/${fileName}`, fileObj);
-          
-          if (error) throw error;
-          
-          // Get Public URL
-          const { data: publicUrlData } = window.supabase.storage
-              .from('profiles')
-              .getPublicUrl(`mentors/${fileName}`);
-          
-          photoUrl = publicUrlData.publicUrl;
+          try {
+              const fileObj = window._mentorPhotoUpload.files[0].file;
+              const fileName = `${this.currentUser.uid}_${Date.now()}.${fileObj.name.split('.').pop()}`;
+              
+              const { data, error } = await window.supabase.storage
+                  .from('profiles')
+                  .upload(`mentors/${fileName}`, fileObj);
+              
+              if (error) {
+                  console.warn("Notice: Could not upload photo. Is the 'profiles' bucket created in Supabase?", error);
+              } else {
+                  // Get Public URL
+                  const { data: publicUrlData } = window.supabase.storage
+                      .from('profiles')
+                      .getPublicUrl(`mentors/${fileName}`);
+                  
+                  photoUrl = publicUrlData.publicUrl;
+              }
+          } catch (e) {
+              console.warn("File upload threw an exception:", e);
+          }
       }
 
       // 2. Update Firestore User Profile
@@ -550,6 +592,7 @@ class MentorDashboard {
         ...this.onboardingData,
         photoUrl: photoUrl || "",
         status: "active",
+        isApproved: true,
         profileComplete: true,
         updatedAt: serverTimestamp(),
       });

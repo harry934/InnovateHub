@@ -5,7 +5,7 @@ import {
     setPersistence, 
     browserSessionPersistence 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
@@ -33,4 +33,24 @@ const googleProvider = new GoogleAuthProvider();
 
 const analytics = getAnalytics(app);
 
-export { auth, db, analytics, googleProvider, storage };
+// Connectivity Check Utility
+const firestoreConnected = () => {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve(false), 5000);
+    try {
+      // Simple probe to verify connection
+      onSnapshot(doc(db, '.info', 'connected'), (snap) => {
+        clearTimeout(timeout);
+        resolve(snap.exists());
+      }, () => {
+        clearTimeout(timeout);
+        resolve(false);
+      });
+    } catch (e) {
+      clearTimeout(timeout);
+      resolve(false);
+    }
+  });
+};
+
+export { auth, db, analytics, googleProvider, storage, firestoreConnected };

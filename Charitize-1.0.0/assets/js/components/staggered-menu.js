@@ -16,7 +16,8 @@ const StaggeredMenu = (function() {
             openMenuButtonColor: '#fff',
             onMenuOpen: null,
             onMenuClose: null
-        }
+        },
+        menuWallpaper: null
     };
 
     let elements = {};
@@ -36,7 +37,10 @@ const StaggeredMenu = (function() {
 
     function renderBaseHTML() {
         const existing = document.querySelector('.staggered-menu-wrapper');
-        if (existing) existing.remove();
+        if (existing) {
+            existing.removeAttribute('data-open');
+            existing.remove();
+        }
 
         const menuHTML = `
             <div class="staggered-menu-wrapper" data-position="${state.config.position}">
@@ -94,6 +98,7 @@ const StaggeredMenu = (function() {
                     </div>
                 </header>
                 <aside id="staggered-menu-panel" class="staggered-menu-panel">
+                    <canvas id="menuWallpaperBg"></canvas>
                     <div class="sm-panel-inner">
                         ${(() => {
                             const items = state.config.items || [];
@@ -277,6 +282,14 @@ const StaggeredMenu = (function() {
         animateIcon(true);
         animateText(true);
         animateColor(true);
+
+        // Initialize and start menu wallpaper
+        if (window.LiveWallpaper && !state.menuWallpaper) {
+            state.menuWallpaper = new window.LiveWallpaper('menuWallpaperBg');
+        }
+        if (state.menuWallpaper && state.menuWallpaper.start) {
+            state.menuWallpaper.start();
+        }
     }
 
     function closeMenu() {
@@ -312,6 +325,11 @@ const StaggeredMenu = (function() {
         animateIcon(false);
         animateText(false);
         animateColor(false);
+
+        // Stop menu wallpaper
+        if (state.menuWallpaper && state.menuWallpaper.stop) {
+            state.menuWallpaper.stop();
+        }
     }
 
     function animateIcon(opening) {

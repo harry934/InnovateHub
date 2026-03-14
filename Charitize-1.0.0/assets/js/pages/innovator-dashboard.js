@@ -80,46 +80,7 @@ const dashboardCards = [
 
 // ─── Enhanced background symbol system ───────────────────────
 function initBackgroundSymbols() {
-    const container = document.getElementById('backgroundSymbols');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const symbols = [
-        '+', '−', '×', '÷', '◇', '○', '△', '□', 
-        '⟶', '⇌', '∞', '≈', '{ }', '< />', '[ ]', '#',
-        '⚡', '⚛', '◈', '❖', '★', '⚙', '⌘'
-    ];
-
-    const count = 100; // Boosted density
-    for (let i = 0; i < count; i++) {
-        const el = document.createElement('span');
-        el.className = 'bg-symbol';
-        el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-
-        const size = 0.8 + Math.random() * 2.2;         // 0.8–3.0rem (Larger)
-        const opacity = 0.04 + Math.random() * 0.08;    // More visible
-        const delay = Math.random() * 20;               
-        const dur = 15 + Math.random() * 25;            
-        const drift = (Math.random() - 0.5) * 150;      
-
-        el.style.cssText = `
-            position: absolute;
-            left: ${Math.random() * 100}%;
-            top: ${Math.random() * 140}%;
-            font-size: ${size}rem;
-            --sym-opacity: ${opacity};
-            opacity: ${opacity};
-            color: ${Math.random() > 0.6 ? '#1a5e4f' : '#f3a813'};
-            font-family: 'Courier New', monospace;
-            font-weight: 800;
-            pointer-events: none;
-            user-select: none;
-            animation: floatSymbol ${dur}s ${delay}s ease-in-out infinite alternate;
-            --drift: ${drift}px;
-            filter: blur(${Math.random() * 1}px);
-        `;
-        container.appendChild(el);
-    }
+    console.log("Legacy background symbols disabled in favor of LiveCanvas.");
 }
 
 function renderQuickAccessCards() {
@@ -159,6 +120,7 @@ function renderQuickAccessCards() {
                     <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
             </div>
+            <div class="dash-nav-card-bottom-line"></div>
         </article>
     `; }).join('');
 }
@@ -222,22 +184,6 @@ function renderQuickAccessCards() {
                 }
             }
 
-            // [NEW] Check Approval Status for Innovator
-            if (data) {
-                const status = data.status || data.approvalStatus || data.userStatus;
-                if (status === 'pending' || status === 'pending_approval') {
-                    console.log("Innovator Dashboard: Approval pending...");
-                    showPendingApprovalUI();
-                    return false;
-                }
-                if (status === 'rejected') {
-                    // Logic for rejection handled by common gates usually, 
-                    // but we return false to stop init here.
-                    return false;
-                }
-            } else {
-                return false; // No data, stick to gating
-            }
 
             // Sync UI with data
             const realName = (data && data.fullName) || initialName;
@@ -377,6 +323,7 @@ function renderQuickAccessCards() {
                     }
                 });
             }
+            return true;
         }
         
         async function loadProjects() {

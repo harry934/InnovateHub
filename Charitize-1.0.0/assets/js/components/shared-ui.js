@@ -145,13 +145,17 @@ window.logout = function () {
       window.initNavigationListener();
       window.updateNavbarUI();
       window.checkDashboardFlag();
-      window.initBackgroundSymbols();
+      if (typeof window.initBackgroundSymbols === 'function') {
+        window.initBackgroundSymbols();
+      }
     });
   } else {
     window.handlePreloader();
     window.initNavigationListener();
     window.updateNavbarUI();
     window.checkDashboardFlag();
-    window.initBackgroundSymbols();
+    if (typeof window.initBackgroundSymbols === 'function') {
+      window.initBackgroundSymbols();
+    }
   }
 })();

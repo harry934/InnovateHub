@@ -170,16 +170,23 @@ export class NotificationSystem {
 
         const notificationsQuery = query(
             collection(db, 'notifications'),
-            where('userId', '==', this.userId),
-            orderBy('createdAt', 'desc')
+            where('userId', '==', this.userId)
         );
 
         this.unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
-            this.notifications = snapshot.docs.map(doc => ({
+            let fetchedNotifications = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
 
+            // Sort client-side to avoid Firestore index requirement natively
+            fetchedNotifications.sort((a, b) => {
+                const timeA = a.createdAt && typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : 0;
+                const timeB = b.createdAt && typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : 0;
+                return timeB - timeA;
+            });
+
+            this.notifications = fetchedNotifications;
             this.updateUI();
         });
     }

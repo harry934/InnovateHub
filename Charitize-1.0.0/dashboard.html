@@ -28,12 +28,12 @@
     <link href="assets/lib/animate/animate.min.css" rel="stylesheet" />
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="assets/css/auth-ui.css" rel="stylesheet" />
-    <link href="assets/css/style.css?v=16.0.0" rel="stylesheet" />
-    <link href="assets/css/staggered-menu.css?v=16.0.0" rel="stylesheet" />
-    <link href="assets/css/dashboard-rebuild.css?v=16.0.0" rel="stylesheet" />
-    <link href="assets/css/collab-screen.css?v=16.0.0" rel="stylesheet" />
-    <link href="assets/css/innovate-hub.css?v=16.0.0" rel="stylesheet" />
-    <link href="assets/css/nuru-assistant.css?v=16.0.0" rel="stylesheet" />
+    <link href="assets/css/style.css?v=80.0.0" rel="stylesheet" />
+    <link href="assets/css/staggered-menu.css?v=80.0.0" rel="stylesheet" />
+    <link href="assets/css/dashboard-rebuild.css?v=80.0.0" rel="stylesheet" />
+    <link href="assets/css/collab-screen.css?v=80.0.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=80.0.0" rel="stylesheet" />
+    <link href="assets/css/nuru-assistant.css?v=80.0.0" rel="stylesheet" />
 
     <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -44,11 +44,15 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/js/core/supabase-config.js"></script>
 
+    <!-- Core Dependencies (jQuery first, then Bootstrap) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- Project Modules -->
-    <script src="assets/js/components/live-wallpaper.js?v=16.0.0" type="module"></script>
-    <script src="assets/js/components/activity-heatmap.js?v=16.0.0" type="module"></script>
-    <script src="assets/js/pages/mentor-discovery.js?v=16.0.0" type="module"></script>
-    <script src="assets/js/pages/dashboard-charts.js?v=16.0.0" type="module"></script>
+    <script src="assets/js/components/live-wallpaper.js?v=80.0.0" type="module"></script>
+    <script src="assets/js/components/activity-heatmap.js?v=80.0.0" type="module"></script>
+    <script src="assets/js/pages/mentor-discovery.js?v=80.0.0" type="module"></script>
+    <script src="assets/js/pages/dashboard-charts.js?v=80.0.0" type="module"></script>
   </head>
 
   <body>
@@ -62,6 +66,7 @@
     <div id="dashboard-content" style="display: none; position: relative; z-index: 10;">
         <!-- Dashboard Landing Page -->
         <div
+
           id="dashboardQuickAccess"
           class="py-5"
       style="position: relative; z-index: 2"
@@ -747,38 +752,31 @@
       </div>
     </div> <!-- End of dashboard-content -->
 
-    <!-- Modals (Moved outside for visibility gating) -->
-    <div
-      class="modal fade"
-      id="onboardingModal"
-      tabindex="-1"
-      aria-hidden="true"
-      data-bs-backdrop="static"
-      data-bs-keyboard="false"
-    >
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius:24px; overflow:hidden;">
-          <div class="modal-header border-0 text-white" style="background: linear-gradient(135deg, #1a5e4f 0%, #2d8c72 100%); padding: 1.5rem 2rem;">
-            <div class="w-100">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="mb-0 fw-bold" id="onboardingTitle">Complete Your Mentor Profile</h5>
-                <small class="opacity-75" id="onboardingStepCount">Step 1 of 6</small>
-              </div>
-              <div class="progress" style="height: 6px; background: rgba(255,255,255,0.2); border-radius:3px;">
-                <div class="progress-bar bg-warning" id="onboardingProgress" role="progressbar" style="width:0%; border-radius:3px; transition: width 0.4s ease;"></div>
-              </div>
-              <small class="opacity-75 mt-1 d-block">Complete all steps before accessing your mentor dashboard.</small>
+    <!-- Inline Onboarding Container -->
+    <div id="onboarding-content" style="display: none; position: relative; z-index: 10; padding: 40px 20px;">
+        <div class="container" style="max-width: 800px; margin: 0 auto;">
+            <div class="card border-0 shadow-lg" style="border-radius:24px; overflow:hidden;">
+                <div class="card-header border-0 text-white" style="background: linear-gradient(135deg, #1a5e4f 0%, #2d8c72 100%); padding: 1.5rem 2rem;">
+                    <div class="w-100">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0 fw-bold" id="onboardingTitle">Complete Your Mentor Profile</h5>
+                        <small class="opacity-75" id="onboardingStepCount">Step 1 of 6</small>
+                      </div>
+                      <div class="progress" style="height: 6px; background: rgba(255,255,255,0.2); border-radius:3px;">
+                        <div class="progress-bar bg-warning" id="onboardingProgress" role="progressbar" style="width:0%; border-radius:3px; transition: width 0.4s ease;"></div>
+                      </div>
+                      <small class="opacity-75 mt-1 d-block">Complete all steps before accessing your mentor dashboard.</small>
+                    </div>
+                </div>
+                <div class="card-body p-4" style="min-height: 200px;">
+                    <div id="onboardingStepContainer"></div>
+                </div>
+                <div class="card-footer border-0 bg-light d-flex" style="padding: 1.5rem 2rem; border-top: 1px solid rgba(0,0,0,0.05);">
+                    <button class="btn btn-outline-secondary px-4 me-auto" id="prevStepBtn" disabled>← Back</button>
+                    <button class="btn btn-primary px-4 ms-auto" id="nextStepBtn" style="background:#1a5e4f; border-color:#1a5e4f;">Next →</button>
+                </div>
             </div>
-          </div>
-          <div class="modal-body p-4" style="min-height: 200px;">
-            <div id="onboardingStepContainer"></div>
-          </div>
-          <div class="modal-footer border-0 bg-light" style="padding: 1rem 2rem;">
-            <button class="btn btn-outline-secondary px-4" id="prevStepBtn" disabled>← Back</button>
-            <button class="btn btn-primary px-4 ms-auto" id="nextStepBtn" style="background:#1a5e4f; border-color:#1a5e4f;">Next →</button>
-          </div>
         </div>
-      </div>
     </div>
 
     <!-- Rejection Modal -->
@@ -805,27 +803,52 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="assets/js/pages/main.js?v=35.0.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=35.0.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=35.0.0"></script>
-    <script src="assets/js/core/api.js?v=35.0.0"></script>
+    <script src="assets/js/pages/main.js?v=80.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=80.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=80.0.0"></script>
+    <script src="assets/js/core/api.js?v=80.0.0"></script>
     <!-- Feature Scripts -->
-    <script type="module" src="assets/js/pages/mentor-discovery.js?v=35.0.0"></script>
-    <script src="assets/js/components/file-upload.js?v=35.0.0"></script>
-    <script
-      type="module"
-      src="assets/js/pages/innovate-hub.js?v=35.0.0"
-    ></script>
-    <script src="assets/js/components/staggered-menu.js?v=35.0.0"></script>
-    <script src="assets/js/components/nuru-assistant.js?v=35.0.0"></script>
-    <script type="module" src="assets/js/components/collab-screen.js?v=35.0.0"></script>
+    <script type="module" src="assets/js/pages/mentor-discovery.js?v=80.0.0"></script>
+    <script src="assets/js/components/file-upload.js?v=80.0.0"></script>
+    <script type="module" src="assets/js/pages/innovate-hub.js?v=80.0.0"></script>
+    <script src="assets/js/components/staggered-menu.js?v=80.0.0"></script>
+    <script src="assets/js/components/nuru-assistant.js?v=80.0.0"></script>
+    <script type="module" src="assets/js/components/collab-screen.js?v=80.0.0"></script>
     
     <!-- Fail-Safe Helper -->
-    <div id="dashboardFailSafe" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:10000;">
-        <button class="btn btn-danger shadow-lg px-4 py-2 fw-bold" onclick="forceFixDashboard()">
-            <i class="fa fa-magic me-2"></i> Fix Dashboard Visibility
+    <div id="dashboardFailSafe" style="display:none; position:fixed; bottom:20px; right:20px; z-index:10000; animation: slideUp 0.5s ease-out;">
+        <button class="btn btn-warning shadow-lg px-4 py-3 fw-bold rounded-pill text-dark" onclick="forceFixDashboard()" style="border: 2px solid white;">
+            <i class="fa fa-magic me-2"></i> Stuck? Fix Dashboard View
         </button>
     </div>
+
+    <script>
+        // Emergency Auto-Unblock Fail-Safe
+        setTimeout(() => {
+            console.log("Running interaction safety check...");
+            const blockers = [
+                document.querySelector('.staggered-menu-panel'),
+                document.getElementById('logo-preloader'),
+                document.querySelector('.modal-backdrop')
+            ];
+            
+            // If any of these are accidentally blocking clicks without an active state
+            const menuWrapper = document.querySelector('.staggered-menu-wrapper');
+            if (menuWrapper && !menuWrapper.hasAttribute('data-open')) {
+                const panel = document.querySelector('.staggered-menu-panel');
+                if (panel) {
+                    panel.style.pointerEvents = 'none';
+                    panel.style.visibility = 'hidden';
+                    panel.style.opacity = '0';
+                    console.log("Force cleared menu panel block.");
+                }
+            }
+        }, 3000);
+    </script>
+
+    <style>
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
 
     <script>
         function forceFixDashboard() {
@@ -835,8 +858,9 @@
                 dash.style.visibility = 'visible';
                 dash.style.opacity = '1';
             }
-            const modal = document.getElementById('onboardingModal');
-            if(modal) modal.style.display = 'none';
+            const onboardingContent = document.getElementById('onboarding-content');
+            // Do NOT hide onboarding content if it's currently active and we're just forcing visibility of the generic dashboard elements
+            // if(onboardingContent) onboardingContent.style.display = 'none';
             const backdrops = document.querySelectorAll('.modal-backdrop');
             backdrops.forEach(b => b.remove());
             document.body.classList.remove('modal-open');
@@ -844,17 +868,18 @@
             alert('Dashboard visibility forced. If you still see issues, please refresh.');
         }
 
-        // Show fail-safe if dashboard doesn't load in 8 seconds
+        // Show fail-safe if dashboard doesn't load in 5 seconds
         setTimeout(() => {
             const dash = document.getElementById('dashboard-content');
             const overlay = document.getElementById('pendingApprovalOverlay');
-            const modal = document.getElementById('onboardingModal');
-            const isModalOpen = modal && (modal.classList.contains('show') || modal.style.display === 'block');
-            
-            if (!overlay && (!dash || dash.style.display === 'none') && !isModalOpen) {
+            const connectionError = document.getElementById('connection-error-overlay');
+            const onboardingContent = document.getElementById('onboarding-content');
+            const isOnboardingVisible = onboardingContent && onboardingContent.style.display === 'block';
+
+            if (!overlay && !connectionError && (!dash || dash.style.display === 'none') && !isOnboardingVisible) {
                 document.getElementById('dashboardFailSafe').style.display = 'block';
             }
-        }, 8000);
+        }, 5000);
 
         // Global Error Alert
         window.onerror = function(msg, url, line) {
@@ -879,6 +904,13 @@
 
       // ── Helper: show/hide sections ───────────────────────────
       window.showDashboardSection = function (sectionId) {
+        // If a modal is active (like onboarding), don't force section visibility yet
+        // This prevents the "gray screen" backdrop from being visible without content
+        if (document.body.classList.contains('modal-open') && sectionId === 'home') {
+            console.log("Dashboard: Modal active, skipping section switch to 'home'");
+            return;
+        }
+
         const quickAccess = document.getElementById("dashboardQuickAccess");
         const container = document.getElementById("activeSectionContainer");
         const sections = document.querySelectorAll(".dashboard-section");
@@ -989,10 +1021,13 @@
             role = userData.role || "innovator";
           }
         } catch (e) {
-          console.warn(
-            "Dashboard: Firestore fetch failed, defaulting to innovator.",
-            e,
-          );
+          console.error("Dashboard: Critical Firestore fetch failure.", e);
+          if (window.showConnectionErrorUI) {
+            window.showConnectionErrorUI();
+          } else {
+            alert("Connection error. Please check your internet and refresh.");
+          }
+          return; // Stop execution
         }
 
         if (role === "admin") {
@@ -1135,8 +1170,8 @@
         // Load role-specific module
         const modulePath =
           role === "mentor"
-            ? "./assets/js/pages/mentor-dashboard.js?v=16.0.0"
-            : "./assets/js/pages/innovator-dashboard.js?v=16.0.0";
+            ? "./assets/js/pages/mentor-dashboard.js?v=80.0.0"
+            : "./assets/js/pages/innovator-dashboard.js?v=80.0.0";
 
         try {
           const mod = await import(modulePath);
@@ -1147,7 +1182,7 @@
           console.error("Dashboard: Module load error:", err);
           try {
             const fallback =
-              await import("./assets/js/pages/innovator-dashboard.js?v=16.0.0");
+              await import("./assets/js/pages/innovator-dashboard.js?v=80.0.0");
             if (fallback && fallback.initDashboard)
               await fallback.initDashboard(user, userData);
           } catch (e2) {
@@ -1157,7 +1192,30 @@
 
         window.dashboardReady = true;
         document.body.classList.add("role-" + role);
-        window.showDashboardSection("home");
+        
+        // Ensure the main container is visible if profile is complete
+        const dashContent = document.getElementById("dashboard-content");
+        if (dashContent && role !== "mentor") {
+            // Innovators always see the dashboard
+            dashContent.style.display = "block";
+            dashContent.style.visibility = "visible";
+        } else if (dashContent && role === "mentor" && userData && userData.profileComplete) {
+            // Mentors see the dashboard only when profile is complete
+            dashContent.style.display = "block";
+            dashContent.style.visibility = "visible";
+        } else if (dashContent && role === "mentor") {
+            // Make sure the background wrapper is active, but the QuickAccess cards are hidden
+            dashContent.style.display = "block";
+            dashContent.style.visibility = "visible";
+            const landingCards = document.getElementById("dashboardQuickAccess");
+            if (landingCards) landingCards.style.display = "none";
+        }
+
+        // Only show home section if we're not potentially showing onboarding
+        // mentor-dashboard.js will manage its own visibility if profile is incomplete
+        if (role !== "mentor" || (userData && userData.profileComplete)) {
+            window.showDashboardSection("home");
+        }
 
         // Initialize file upload on submit section
         if (window.FileUploadComponent) {

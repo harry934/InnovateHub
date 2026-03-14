@@ -13,8 +13,9 @@
   left: 0;
   width: 100%;
   height: 0; /* Expanded by JS when open */
-  z-index: 100000; /* Priority depth */
+  z-index: 1030; /* Below modals (1050) */
   pointer-events: none;
+  overflow: visible !important; /* Allow toggle to show when height is 0 */
 }
 
 .staggered-menu-wrapper[data-open] {
@@ -57,7 +58,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 2.5rem;
-  z-index: 10010;
+  z-index: 1020; /* Stay below modals and panel */
   pointer-events: auto;
   background: rgba(26, 94, 79, 0.9);
   backdrop-filter: blur(15px);
@@ -233,9 +234,14 @@
   background: transparent !important;
   border-bottom: none !important;
   box-shadow: none !important;
+  z-index: 1020 !important;
   transform: translateY(-100%) !important; /* Slide header out */
   pointer-events: none !important;
   opacity: 1 !important;
+}
+
+.staggered-menu-header.nav-hidden .sm-toggle {
+  pointer-events: auto !important;
 }
 
 .staggered-menu-header.collapsed {
@@ -251,8 +257,8 @@
 
 .staggered-menu-header.collapsed .sm-toggle,
 .staggered-menu-header.nav-hidden .sm-toggle {
-  background: transparent; /* Removed white circle */
-  box-shadow: none; /* Removed heavy shadows */
+  background: #ffffff; /* Floating circle */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   border-radius: 50%;
   width: 56px;
   height: 56px;
@@ -261,14 +267,16 @@
   justify-content: center;
   padding: 0;
   margin-right: -10px;
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); /* Synced with header transition */
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   pointer-events: auto !important;
 }
 
 /* When header is hidden, push toggle back into viewport */
 .staggered-menu-header.nav-hidden .sm-toggle {
-  transform: translateY(115px) translateX(0); /* Perfect floating position */
+  transform: translateY(115px) translateX(0); /* Floating position */
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .staggered-menu-header.collapsed .sm-toggle:hover {
@@ -333,28 +341,51 @@
    ============================================== */
 .staggered-menu-panel {
   position: fixed;
-  top: 0;
+  top: 80px; /* Start below header */
   right: 0;
   left: auto;
   width: 420px;
   max-width: 94vw;
-  height: 100vh;
+  height: calc(100vh - 80px); /* Height minus header */
   background: #ffffff;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  z-index: 10005;
+  justify-content: flex-start; /* Items at top of panel */
+  z-index: 1015; /* Below header (1020) but above content */
   padding: 0 2.5rem;
-  box-shadow: -4px 0 40px rgba(0, 0, 0, 0.1);
+  box-shadow: -4px 10px 40px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   overflow-x: hidden;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.staggered-menu-wrapper[data-open] .staggered-menu-panel {
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .sm-panel-inner {
   width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 5rem 0 3rem;
+  padding: 4rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+#menuWallpaperBg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.6; /* Balanced visibility */
 }
 
 .sm-panel-section-label {
@@ -382,14 +413,15 @@
   text-decoration: none;
   color: #1a1a1a;
   font-family: 'Josefin Sans', sans-serif;
-  font-size: clamp(1.4rem, 3.5vw, 2.4rem);
-  font-weight: 700;
+  font-size: 2rem; /* Significantly larger */
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-  padding: 0.8rem 0;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  padding: 1.2rem 0;
   position: relative;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+  z-index: 2;
 }
 
 .sm-panel-item:hover {
@@ -430,6 +462,13 @@
     padding: 0 1.5rem;
   }
   .sm-panel-item {
-    font-size: clamp(1.8rem, 10vw, 2.8rem);
+    font-size: clamp(1.2rem, 8vw, 2.22rem);
   }
+}
+
+/* Visibility Utilities */
+.staggered-menu-header.hidden {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
