@@ -16,7 +16,8 @@ const StaggeredMenu = (function() {
             openMenuButtonColor: '#fff',
             onMenuOpen: null,
             onMenuClose: null
-        }
+        },
+        menuWallpaper: null
     };
 
     let elements = {};
@@ -36,7 +37,10 @@ const StaggeredMenu = (function() {
 
     function renderBaseHTML() {
         const existing = document.querySelector('.staggered-menu-wrapper');
-        if (existing) existing.remove();
+        if (existing) {
+            existing.removeAttribute('data-open');
+            existing.remove();
+        }
 
         const menuHTML = `
             <div class="staggered-menu-wrapper" data-position="${state.config.position}">
@@ -94,6 +98,7 @@ const StaggeredMenu = (function() {
                     </div>
                 </header>
                 <aside id="staggered-menu-panel" class="staggered-menu-panel">
+                    <canvas id="menuWallpaperBg"></canvas>
                     <div class="sm-panel-inner">
                         ${(() => {
                             const items = state.config.items || [];
@@ -161,58 +166,67 @@ const StaggeredMenu = (function() {
 
     function bindEvents() {
         elements.toggle.addEventListener('click', toggleMenu);
-
-        // Aggressive Scroll listener for collapse effect tailored to dashboard layout
-        let lastKnownScrollPosition = 0;
+        // Aggressive Scroll listener for collapse effect tailored to dashboard layout
         let lastScrollTop = 0;
         let ticking = false;
 
-        // The dashboard sometimes traps scroll in the body or document element 
-        // depending on how overflow-x: hidden is rendered, so we listen on window but 
-        // also check multiple scroll sources.
-        
-        const handleScroll = () => {
-             // Try to get scroll from window, body, or documentElement
-             lastKnownScrollPosition = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop;
-             
-             // If we're inside a specific scrollable container, check that too
-             const dashboardMain = document.querySelector('.dashboard-container');
-             if (dashboardMain && dashboardMain.scrollTop > lastKnownScrollPosition) {
-                 lastKnownScrollPosition = dashboardMain.scrollTop;
-             }
+        const getScrollPos = () => {
+            // Check window/document
+            let pos = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+            
+            // Aggressive check for dashboard containers
+            const containers = ['.dashboard-container', '.dashboard-main-content', '#dashboard-content'];
+            containers.forEach(selector => {
+                const el = document.querySelector(selector);
+                if (el && el.scrollTop > pos) pos = el.scrollTop;
+            });
+            
+            return pos;
+        };
+
+        const handleScroll = (e) => {
+            // Some events might be from child elements, get the current "master" scroll position
+            const currentScroll = getScrollPos();
 
             if (!ticking) {
                 window.requestAnimationFrame(() => {
                     const header = elements.wrapper.querySelector('.staggered-menu-header');
                     if (header) {
-                        if (lastKnownScrollPosition > 50) {
-                            if (lastKnownScrollPosition > lastScrollTop) {
-                                // Scrolling down
+                        const diff = currentScroll - lastScrollTop;
+                        
+                        // We use a broader check here for desktop
+                        if (currentScroll > 50 && window.innerWidth >= 992) {
+                            if (diff > 5) {
+                                // Scrolling down - Hide
                                 header.classList.add('nav-hidden');
-                            } else {
-                                // Scrolling up
+                                header.classList.remove('collapsed');
+                            } else if (diff < -15) {
+                                // Scrolling up - Show
                                 header.classList.remove('nav-hidden');
                                 header.classList.add('collapsed');
                             }
                         } else {
-                            header.classList.remove('collapsed');
+                            // At top or on mobile
                             header.classList.remove('nav-hidden');
+                            header.classList.remove('collapsed');
                         }
                     }
-                    lastScrollTop = lastKnownScrollPosition <= 0 ? 0 : lastKnownScrollPosition;
+                    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
                     ticking = false;
                 });
                 ticking = true;
             }
         };
 
-        window.addEventListener('scroll', handleScroll, { passive: true });
+        // GLOBAL LISTENERS: Capture phase ensures we see events even if they don't bubble
+        window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+        document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
         
-        // Also attach to the container in case it's the element actually scrolling
-        const container = document.querySelector('.dashboard-container');
-        if (container) {
-            container.addEventListener('scroll', handleScroll, { passive: true });
-        }
+        // Also listen specifically on potential scroll blocks
+        const dashMain = document.querySelector('.dashboard-container');
+        if (dashMain) dashMain.addEventListener('scroll', handleScroll, { passive: true });
+
+
 
         if (state.config.closeOnClickAway) {
             document.addEventListener('mousedown', (e) => {
@@ -268,6 +282,14 @@ const StaggeredMenu = (function() {
         animateIcon(true);
         animateText(true);
         animateColor(true);
+
+        // Initialize and start menu wallpaper
+        if (window.LiveWallpaper && !state.menuWallpaper) {
+            state.menuWallpaper = new window.LiveWallpaper('menuWallpaperBg');
+        }
+        if (state.menuWallpaper && state.menuWallpaper.start) {
+            state.menuWallpaper.start();
+        }
     }
 
     function closeMenu() {
@@ -303,6 +325,11 @@ const StaggeredMenu = (function() {
         animateIcon(false);
         animateText(false);
         animateColor(false);
+
+        // Stop menu wallpaper
+        if (state.menuWallpaper && state.menuWallpaper.stop) {
+            state.menuWallpaper.stop();
+        }
     }
 
     function animateIcon(opening) {

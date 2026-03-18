@@ -3,11 +3,7 @@
  * High-end interface for Innovators and Mentors to interact
  */
 
-import { auth, db } from '../core/firebase-config.js';
-import { 
-    collection, query, where, orderBy, onSnapshot, addDoc, 
-    serverTimestamp, doc, getDoc, updateDoc, getDocs, or, and
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { auth } from '../core/firebase-config.js';
 
 console.log("Collab Screen Module Loading...");
 
@@ -17,10 +13,10 @@ window.showProjectCollaboration = (projectId) => {
     if (window.showDashboardSection) {
         window.showDashboardSection('collab');
     }
-    if (window.CollaborationScreen) {
-        window.CollaborationScreen.init(projectId);
+    if (window.CollaborationHub) {
+        window.CollaborationHub.init(projectId);
     } else {
-        console.error("CollaborationScreen class not yet initialized");
+        console.error("CollaborationHub not yet initialized");
     }
 };
 
@@ -29,8 +25,8 @@ class CollaborationScreen {
         this.currentProjectId = null;
         this.currentPartner = null; // { id, name, role }
         this.currentMentorshipId = null;
-        this.unsubscribeChat = null;
-        this.unsubscribeFeedback = null;
+        this.chatSubscription = null;
+        this.feedbackSubscription = null;
     }
 
     async init(projectId) {
@@ -41,59 +37,46 @@ class CollaborationScreen {
         container.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>`;
 
         try {
-            // 1. Fetch Project Data
-            const projectDoc = await getDoc(doc(db, "projects", projectId));
-            if (!projectDoc.exists()) throw new Error("Project not found");
-            const project = projectDoc.data();
+            if (!window.SupabaseService) {
+                throw new Error("SupabaseService not found. Please refresh.");
+            }
 
-            // 2. Fetch Mentorship Context
             const myId = auth.currentUser.uid;
-            const mentorshipQ = query(
-                collection(db, "mentorshipRequests"),
-                and(
-                    where("projectId", "==", projectId),
-                    where("status", "==", "accepted"),
-                    where("adminApproved", "==", true),
-                    or(
-                        where("innovatorId", "==", myId),
-                        where("mentorId", "==", myId)
-                    )
-                )
-            );
-            const mentorshipSnap = await getDocs(mentorshipQ);
-            if (mentorshipSnap.empty) {
+            
+            // 1. Fetch Mentorship Context (Enriched with project and profiles)
+            const mentorship = await window.SupabaseService.getMentorshipByProject(projectId, myId);
+            
+            if (!mentorship) {
                 container.innerHTML = `
                     <div class="alert alert-warning text-center">
                         <h5>No active mentorship found</h5>
-                        <p>This project does not have an active mentor session.</p>
+                        <p>This project does not have an active mentor session or is not yet approved.</p>
                         <button class="btn btn-primary" onclick="window.showDashboardSection('home')">Back to Dashboard</button>
                     </div>`;
                 return;
             }
             
-            const mentorshipDoc = mentorshipSnap.docs[0];
-            this.currentMentorshipId = mentorshipDoc.id;
-            const mentorship = mentorshipDoc.data();
+            this.currentMentorshipId = mentorship.id;
+            const project = mentorship.project;
 
-            // 3. Determine Collaboration Partner
-            const partnerId = mentorship.mentorId === myId ? mentorship.innovatorId : mentorship.mentorId;
-            const partnerDoc = await getDoc(doc(db, "users", partnerId));
+            // 2. Determine Collaboration Partner
+            const isMentor = mentorship.mentor_id === myId;
+            const partner = isMentor ? mentorship.innovator : mentorship.mentor;
             
-            const partnerData = partnerDoc.exists() ? partnerDoc.data() : {};
             this.currentPartner = {
-                id: partnerId,
-                name: partnerData.fullName || "Partner",
-                photoURL: partnerData.photoURL || partnerData.photoUrl || null,
-                role: mentorship.mentorId === partnerId ? "Mentor" : "Innovator",
-                isMentor: mentorship.mentorId === partnerId
+                id: partner.id,
+                name: partner.full_name || "Partner",
+                photoURL: partner.avatar_url || null,
+                role: mentorship.mentor_id === partner.id ? "Mentor" : "Innovator",
+                isMentor: mentorship.mentor_id === partner.id
             };
 
-            const amIMentor = mentorship.mentorId === myId;
+            const amIMentor = isMentor;
 
-            // 4. Render Main Interface
+            // 3. Render Main Interface
             this.render(project, mentorship, amIMentor);
             
-            // 5. Start Real-time Listeners
+            // 4. Start Real-time Listeners
             this.initChat();
             this.initFeedback();
             
@@ -169,26 +152,26 @@ class CollaborationScreen {
                                     <i class="fa fa-book text-success"></i> 
                                     Project Blueprint
                                 </h5>
-                                <div class="review-section bg-light p-3 rounded mb-4" data-field="problemStatement">
+                                <div class="review-section bg-light p-3 rounded mb-4" data-field="problem_statement">
                                     <div class="review-header small text-muted fw-bold mb-2 uppercase">Problem Statement</div>
                                     <div class="review-content position-relative p-3 bg-white rounded border" id="review-problem">
-                                        ${project.problemStatement || "No content provided."}
-                                        <div class="comment-trigger position-absolute top-0 end-0 m-2" onclick="window.CollaborationScreen.openCommentModal('problemStatement', 'Problem Statement')">
+                                        ${project.problem_statement || project.problemStatement || "No content provided."}
+                                        <div class="comment-trigger position-absolute top-0 end-0 m-2" onclick="window.CollaborationScreen.openCommentModal('problem_statement', 'Problem Statement')">
                                             <button class="btn btn-sm btn-success rounded-circle shadow-sm" style="width:24px; height:24px; padding:0;"><i class="fa fa-plus" style="font-size:0.7rem;"></i></button>
                                         </div>
                                     </div>
-                                    <div class="active-comments mt-2" id="comments-problemStatement"></div>
+                                    <div class="active-comments mt-2" id="comments-problem_statement"></div>
                                 </div>
 
-                                <div class="review-section bg-light p-3 rounded" data-field="proposedSolution">
+                                <div class="review-section bg-light p-3 rounded" data-field="proposed_solution">
                                     <div class="review-header small text-muted fw-bold mb-2 uppercase">Proposed Solution</div>
                                     <div class="review-content position-relative p-3 bg-white rounded border" id="review-solution">
-                                        ${project.proposedSolution || "No content provided."}
-                                        <div class="comment-trigger position-absolute top-0 end-0 m-2" onclick="window.CollaborationScreen.openCommentModal('proposedSolution', 'Proposed Solution')">
+                                        ${project.proposed_solution || project.proposedSolution || "No content provided."}
+                                        <div class="comment-trigger position-absolute top-0 end-0 m-2" onclick="window.CollaborationScreen.openCommentModal('proposed_solution', 'Proposed Solution')">
                                             <button class="btn btn-sm btn-success rounded-circle shadow-sm" style="width:24px; height:24px; padding:0;"><i class="fa fa-plus" style="font-size:0.7rem;"></i></button>
                                         </div>
                                     </div>
-                                    <div class="active-comments mt-2" id="comments-proposedSolution"></div>
+                                    <div class="active-comments mt-2" id="comments-proposed_solution"></div>
                                 </div>
                             </div>
 
@@ -240,14 +223,14 @@ class CollaborationScreen {
                                 <span class="text-muted small d-block mb-2 text-uppercase fw-bold" style="letter-spacing:1px; font-size:0.6rem;">Active Meeting Link</span>
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="bg-white p-2 border rounded flex-grow-1 overflow-hidden" style="max-width:250px;">
-                                        <strong id="meetingLinkDisplay" class="text-dark small text-truncate d-block">${mentorship.meetingLink || 'No link scheduled yet'}</strong>
+                                        <strong id="meetingLinkDisplay" class="text-dark small text-truncate d-block">${mentorship.meeting_link || mentorship.meetingLink || 'No link scheduled yet'}</strong>
                                     </div>
                                     ${amIMentor ? `<button class="btn btn-sm btn-link text-success p-0" onclick="window.CollaborationScreen.showMeetingEdit()"><i class="fa fa-edit fa-lg"></i></button>` : ''}
                                 </div>
                             </div>
                             
                             <div class="mt-5 d-flex justify-content-center gap-3">
-                                <button class="btn btn-success btn-lg px-5 rounded-pill shadow-sm" onclick="window.open('${mentorship.meetingLink || '#'}', '_blank')" ${!mentorship.meetingLink ? 'disabled' : ''}>
+                                <button class="btn btn-success btn-lg px-5 rounded-pill shadow-sm" onclick="window.open('${mentorship.meeting_link || mentorship.meetingLink || '#'}', '_blank')" ${!(mentorship.meeting_link || mentorship.meetingLink) ? 'disabled' : ''}>
                                     <i class="fa fa-play me-2"></i> Join Session Now
                                 </button>
                             </div>
@@ -385,23 +368,23 @@ class CollaborationScreen {
             
             let fileUrl = '';
             if (file) {
-                 // Simulate file upload or use placeholder
                  fileUrl = "doc_placeholder_" + Date.now(); 
             }
 
-            await addDoc(collection(db, `mentorships/${this.currentMentorshipId}/reports`), {
-                title,
-                content,
-                fileUrl,
-                fileName: file ? file.name : '',
-                authorId: auth.currentUser.uid,
-                authorName: auth.currentUser.displayName || "Innovator",
-                createdAt: serverTimestamp(),
-                feedback: []
-            });
+            if (window.SupabaseService) {
+                await window.SupabaseService.submitProgressReport({
+                    mentorship_id: this.currentMentorshipId,
+                    title: title,
+                    content: content,
+                    file_url: fileUrl,
+                    file_name: file ? file.name : '',
+                    author_id: auth.currentUser.uid
+                });
+            }
 
             window.reportModal.hide();
-            adminToast("✓ Progress report submitted successfully!");
+            if (window.adminToast) adminToast("✓ Progress report submitted successfully!");
+            this.initReports(); // Refresh local list
         } catch (e) {
             console.error("Report Error:", e);
             alert("Failed to submit report.");
@@ -411,131 +394,93 @@ class CollaborationScreen {
         }
     }
 
-    initReports() {
+    async initReports() {
         const container = document.getElementById('reportsContainer');
         if (!container) return;
 
-        const q = query(
-            collection(db, `mentorships/${this.currentMentorshipId}/reports`),
-            orderBy("createdAt", "desc")
-        );
-
-        onSnapshot(q, (snapshot) => {
-            if (snapshot.empty) {
-                container.innerHTML = `
-                    <div class="text-center py-5 bg-light rounded border-dashed" style="border: 2px dashed #ddd;">
-                        <i class="fa fa-folder-open fa-2x text-muted mb-3 d-block"></i>
-                        <p class="text-muted mb-0">No progress reports submitted yet.</p>
-                    </div>`;
-                return;
-            }
-
-            container.innerHTML = '';
-            snapshot.forEach(docSnap => {
-                const report = docSnap.data();
-                const reportId = docSnap.id;
-                const isMentor = this.currentPartner.role === 'Mentor'; // If partner is mentor, I am innovator
+        if (window.SupabaseService) {
+            try {
+                const reports = await window.SupabaseService.getProgressReports(this.currentMentorshipId);
                 
-                const card = document.createElement('div');
-                card.className = 'report-card p-4 bg-white rounded shadow-sm border mb-3';
-                card.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h5 class="fw-bold mb-1">${report.title}</h5>
-                            <small class="text-muted"><i class="fa fa-calendar me-1"></i> ${report.createdAt?.toDate().toLocaleDateString() || 'Just now'}</small>
-                        </div>
-                        ${report.fileName ? `<div class="badge bg-light text-dark border"><i class="fa fa-paperclip me-1"></i> ${report.fileName}</div>` : ''}
-                    </div>
-                    <div class="report-text mb-4 text-muted small">${report.content.substring(0, 150)}${report.content.length > 150 ? '...' : ''}</div>
-                    
-                    <div class="report-feedback-section border-top pt-3">
-                        <div id="report-feedback-${reportId}" class="mb-3">
-                            ${(report.feedback || []).map(fb => `
-                                <div class="feedback-item mb-2 p-2 bg-light rounded small">
-                                    <strong class="text-success">${fb.authorName}:</strong> ${fb.text}
-                                </div>
-                            `).join('')}
-                        </div>
-                        ${this.currentPartner.isMentor === false ? `
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" id="fb-input-${reportId}" placeholder="Leave a comment...">
-                                <button class="btn btn-success" onclick="window.CollaborationScreen.addReportFeedback('${reportId}')">
-                                    <i class="fa fa-comment"></i>
-                                </button>
+                if (!reports || reports.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5 bg-light rounded border-dashed" style="border: 2px dashed #ddd;">
+                            <i class="fa fa-folder-open fa-2x text-muted mb-3 d-block"></i>
+                            <p class="text-muted mb-0">No progress reports submitted yet.</p>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = '';
+                reports.forEach(report => {
+                    const card = document.createElement('div');
+                    card.className = 'report-card p-4 bg-white rounded shadow-sm border mb-3';
+                    card.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1">${report.title}</h5>
+                                <small class="text-muted"><i class="fa fa-calendar me-1"></i> ${new Date(report.created_at).toLocaleDateString()}</small>
                             </div>
-                        ` : ''}
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        });
-    }
-
-    async addReportFeedback(reportId) {
-        const input = document.getElementById(`fb-input-${reportId}`);
-        const text = input.value.trim();
-        if (!text) return;
-
-        try {
-            const reportRef = doc(db, `mentorships/${this.currentMentorshipId}/reports`, reportId);
-            const reportSnap = await getDoc(reportRef);
-            if (!reportSnap.exists()) return;
-
-            const feedback = reportSnap.data().feedback || [];
-            feedback.push({
-                text,
-                authorId: auth.currentUser.uid,
-                authorName: auth.currentUser.displayName || (this.currentPartner.isMentor ? "Innovator" : "Mentor"),
-                createdAt: new Date().toISOString()
-            });
-
-            await updateDoc(reportRef, { feedback });
-            input.value = '';
-        } catch (e) {
-            console.error("Feedback Error:", e);
+                            ${report.file_name ? `<div class="badge bg-light text-dark border"><i class="fa fa-paperclip me-1"></i> ${report.file_name}</div>` : ''}
+                        </div>
+                        <div class="report-text mb-4 text-muted small">${report.content.substring(0, 150)}${report.content.length > 150 ? '...' : ''}</div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Supabase Reports Load Error:", err);
+            }
         }
     }
 
-    initChat() {
+    async initChat() {
         const chatContainer = document.getElementById('chatMessages');
         if (!chatContainer) return;
 
-        const chatId = [auth.currentUser.uid, this.currentPartner.id].sort().join('_');
-        const q = query(
-            collection(db, "chats", chatId, "messages"),
-            orderBy("timestamp", "asc")
-        );
+        if (this.chatSubscription) {
+            this.chatSubscription.unsubscribe();
+        }
 
-        if (this.unsubscribeChat) this.unsubscribeChat();
-
-        this.unsubscribeChat = onSnapshot(q, (snapshot) => {
+        // 1. Initial Load from Supabase
+        if (window.SupabaseService) {
+            const messages = await window.SupabaseService.getMessages(this.currentMentorshipId);
             chatContainer.innerHTML = '';
-            snapshot.forEach((doc) => {
-                const msg = doc.data();
-                const isMe = msg.senderId === auth.currentUser.uid;
+            messages.forEach(msg => {
+                const isMe = msg.author_id === auth.currentUser.uid;
                 chatContainer.innerHTML += `
                     <div class="msg ${isMe ? 'sent' : 'received'}">
-                        ${msg.text}
+                        ${msg.content}
                     </div>
                 `;
             });
             chatContainer.scrollTop = chatContainer.scrollHeight;
-        });
+
+            // 2. Real-time Subscription
+            this.chatSubscription = window.SupabaseService.subscribeToMessages(this.currentMentorshipId, (newMsg) => {
+                const isMe = newMsg.author_id === auth.currentUser.uid;
+                chatContainer.innerHTML += `
+                    <div class="msg ${isMe ? 'sent' : 'received'}">
+                        ${newMsg.content}
+                    </div>
+                `;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            });
+        }
     }
 
     async sendMessage() {
         const input = document.getElementById('chatMsgInput');
         const text = input.value.trim();
         if (!text) return;
-
-        const chatId = [auth.currentUser.uid, this.currentPartner.id].sort().join('_');
         
         try {
-            await addDoc(collection(db, "chats", chatId, "messages"), {
-                senderId: auth.currentUser.uid,
-                text: text,
-                timestamp: serverTimestamp()
-            });
+            if (window.SupabaseService) {
+                await window.SupabaseService.sendMessage({
+                    mentorship_id: this.currentMentorshipId,
+                    content: text,
+                    author_id: auth.currentUser.uid
+                });
+            }
             input.value = '';
         } catch (e) {
             console.error("Chat Error:", e);
@@ -544,41 +489,51 @@ class CollaborationScreen {
 
     /* FEEDBACK / COMMENTING SYSTEM */
 
-    initFeedback() {
-        const fields = ['problemStatement', 'proposedSolution', 'expectedImpact'];
+    async initFeedback() {
+        const fields = ['problem_statement', 'proposed_solution', 'expected_impact'];
         
-        if (this.unsubscribeFeedback) this.unsubscribeFeedback();
+        if (this.feedbackSubscription) this.feedbackSubscription.unsubscribe();
 
-        // One listener for all project feedback
-        const q = query(
-            collection(db, `projects/${this.currentProjectId}/feedback`),
-            orderBy("createdAt", "asc")
-        );
-
-        this.unsubscribeFeedback = onSnapshot(q, (snapshot) => {
-            // Clear current UI areas
-            fields.forEach(f => {
+        if (window.SupabaseService) {
+            // 1. Initial Load
+            for (const f of fields) {
                 const el = document.getElementById(`comments-${f}`);
-                if (el) el.innerHTML = '';
-            });
-
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                const el = document.getElementById(`comments-${data.field}`);
-                if (el) {
-                    const isMe = data.authorId === auth.currentUser.uid;
+                if (!el) continue;
+                
+                const comments = await window.SupabaseService.getSectionFeedback(this.currentMentorshipId, f);
+                el.innerHTML = '';
+                comments.forEach(data => {
+                    const isMe = data.author_id === auth.currentUser.uid;
                     el.innerHTML += `
                         <div class="comment-bubble ${isMe ? 'my-comment' : 'partner-comment'}">
                             <div class="d-flex justify-content-between align-items-start mb-1">
-                                <span class="author">${data.authorName}</span>
-                                <span class="time">${data.createdAt?.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) || 'Just now'}</span>
+                                <span class="author">${data.author_name || (isMe ? "Me" : "Partner")}</span>
+                                <span class="time">${new Date(data.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            </div>
+                            <div class="text">${data.content}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            // 2. Real-time Subscription
+            this.feedbackSubscription = window.SupabaseService.subscribeToProjectFeedback(this.currentProjectId, (payload) => {
+                const data = payload.new;
+                const el = document.getElementById(`comments-${data.field_id}`);
+                if (el) {
+                    const isMe = data.author_id === auth.currentUser.uid;
+                    el.innerHTML += `
+                        <div class="comment-bubble ${isMe ? 'my-comment' : 'partner-comment'}">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <span class="author">${data.author_name || (isMe ? "Me" : "Partner")}</span>
+                                <span class="time">${new Date(data.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                             </div>
                             <div class="text">${data.content}</div>
                         </div>
                     `;
                 }
             });
-        });
+        }
     }
 
     openCommentModal(field, title) {
@@ -598,13 +553,16 @@ class CollaborationScreen {
             const modalEl = document.getElementById('commentModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
             
-            await addDoc(collection(db, `projects/${this.currentProjectId}/feedback`), {
-                field: field,
-                content: text,
-                authorId: auth.currentUser.uid,
-                authorName: auth.currentUser.displayName || "Someone",
-                createdAt: serverTimestamp()
-            });
+            if (window.SupabaseService) {
+                await window.SupabaseService.submitSectionFeedback({
+                    mentorship_id: this.currentMentorshipId,
+                    project_id: this.currentProjectId,
+                    field_id: field,
+                    content: text,
+                    author_id: auth.currentUser.uid,
+                    author_name: auth.currentUser.displayName || (this.currentPartner.isMentor ? "Mentor" : "Innovator")
+                });
+            }
 
             modal.hide();
         } catch (e) {
@@ -625,17 +583,22 @@ class CollaborationScreen {
         if (!link) return;
 
         try {
-            await updateDoc(doc(db, "mentorshipRequests", this.currentMentorshipId), {
-                meetingLink: link,
-                updatedAt: serverTimestamp()
-            });
+            if (window.SupabaseService) {
+                await window.SupabaseService.updateMentorshipStatus(this.currentMentorshipId, "accepted", {
+                    meeting_link: link
+                });
+            }
 
-            document.getElementById('meetingLinkDisplay').textContent = link;
+            if (document.getElementById('meetingLinkDisplay')) {
+                document.getElementById('meetingLinkDisplay').textContent = link;
+            }
+            
             const modalEl = document.getElementById('meetingModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
+            if (modal) modal.hide();
             
-            alert("Meeting link updated! Your mentee can now see it.");
+            if (window.adminToast) adminToast("✓ Meeting link updated!");
+            else alert("Meeting link updated!");
         } catch (e) {
             console.error("Meeting Link Error:", e);
             alert("Failed to update link.");

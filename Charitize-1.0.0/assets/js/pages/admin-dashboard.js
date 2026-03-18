@@ -1,18 +1,5 @@
-import { auth, db } from '../core/firebase-config.js';
-import { 
-    collection, 
-    query, 
-    where, 
-    getDocs, 
-    doc, 
-    updateDoc, 
-    onSnapshot,
-    serverTimestamp,
-    addDoc,
-    getDoc,
-    orderBy,
-    deleteDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { auth } from '../core/firebase-config.js';
+// Firestore imports removed
 
 class AdminDashboard {
     constructor() {
@@ -77,19 +64,20 @@ class AdminDashboard {
         if (!container) return;
 
         try {
-            // Fetch multiple collections to consolidate activity
-            const [projects, reports, comments, pairings] = await Promise.all([
-                getDocs(collection(db, 'projects')),
-                getDocs(collection(db, 'milestoneReports')),
-                getDocs(collection(db, 'collaborationComments')),
-                getDocs(collection(db, 'mentorshipRequests'))
+            // Fetch consolidation activity from Supabase
+            if (!window.SupabaseService) return;
+            
+            const [projects, mentorships] = await Promise.all([
+                window.SupabaseService.getProjects(),
+                window.SupabaseService.getMentorships()
             ]);
 
             const activityMap = {};
-            const process = (snap) => {
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const date = data.createdAt?.toDate ? data.createdAt.toDate() : (data.createdAt ? new Date(data.createdAt) : null);
+            
+            const process = (items) => {
+                if (!items) return;
+                items.forEach(item => {
+                    const date = item.created_at ? new Date(item.created_at) : null;
                     if (date) {
                         const dateString = date.toISOString().split('T')[0];
                         activityMap[dateString] = (activityMap[dateString] || 0) + 1;
@@ -98,9 +86,7 @@ class AdminDashboard {
             };
 
             process(projects);
-            process(reports);
-            process(comments);
-            process(pairings);
+            process(mentorships);
 
             this.heatmapData = activityMap;
 
@@ -175,26 +161,28 @@ class AdminDashboard {
     }
 
     async loadStats() {
+        if (!window.SupabaseService) return;
         const container = document.getElementById('adminStatsGrid');
         if (!container) return;
         
         try {
-            const [usersSnap, projectsSnap, pairsSnap] = await Promise.all([
-                getDocs(collection(db, 'users')),
-                getDocs(collection(db, 'projects')),
-                getDocs(collection(db, 'mentorshipRequests'))
+            // Using Supabase as the single source for stats
+            const [profiles, projects, mentorships] = await Promise.all([
+                window.SupabaseService.getAllProfiles(),
+                window.SupabaseService.getProjects(),
+                window.SupabaseService.getMentorships()
             ]);
-            
-            const users = usersSnap.docs.map(d => d.data());
-            const projects = projectsSnap.docs.map(d => d.data());
-            
+
+            const pMentors = (profiles || []).filter(u => u.role === 'mentor' && (u.status === 'pending' || u.status === 'pending_approval')).length;
+            const pProjects = (projects || []).filter(p => p.status === 'pending').length;
+
             const stats = [
-                { label: 'Total Members', value: users.length, icon: 'fa-users', color: '#3b82f6' },
-                { label: 'Innovators', value: users.filter(u => u.role === 'innovator').length, icon: 'fa-lightbulb', color: '#10b981' },
-                { label: 'Mentors', value: users.filter(u => u.role === 'mentor').length, icon: 'fa-graduation-cap', color: '#f59e0b' },
-                { label: 'Active Projects', value: projects.filter(p => p.status === 'approved').length, icon: 'fa-project-diagram', color: '#6366f1' },
-                { label: 'Mentorship Pairs', value: pairsSnap.docs.filter(d => d.data().status === 'accepted').length, icon: 'fa-handshake', color: '#ec4899' },
-                { label: 'Pending Reviews', value: projects.filter(p => p.status === 'pending').length, icon: 'fa-clock', color: '#f43f5e' }
+                { label: 'Total Members', value: (profiles || []).length, icon: 'fa-users', color: '#3b82f6' },
+                { label: 'Innovators', value: (profiles || []).filter(u => u.role === 'innovator').length, icon: 'fa-lightbulb', color: '#10b981' },
+                { label: 'Mentors', value: (profiles || []).filter(u => u.role === 'mentor').length, icon: 'fa-graduation-cap', color: '#f59e0b' },
+                { label: 'Pending Mentors', value: pMentors, icon: 'fa-user-clock', color: '#f59e0b' },
+                { label: 'Mentorship Pairs', value: (mentorships || []).filter(m => m.status === 'accepted').length, icon: 'fa-handshake', color: '#ec4899' },
+                { label: 'Pending Reviews', value: pProjects + pMentors, icon: 'fa-clock', color: '#f43f5e' }
             ];
 
             container.innerHTML = stats.map(s => `
@@ -209,8 +197,19 @@ class AdminDashboard {
                 </div>
             `).join('');
 
+            // Update Sidebar Badge
+            const badge = document.getElementById('pendingMentorBadge');
+            if (badge) {
+                if (pMentors > 0) {
+                    badge.textContent = pMentors;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+
         } catch (e) {
-            console.error(e);
+            console.error("Admin Stats: Supabase sync failed", e);
         }
     }
 
@@ -230,6 +229,7 @@ class AdminDashboard {
             case 'adminOverview': this.loadStats(); this.renderActivityHeatmap(); break;
             case 'projectApprovals': this.loadProjectReviews(); break;
             case 'mentorApprovals': this.loadMentorApprovals(); break;
+            case 'mentorshipApprovals': this.loadMentorshipApprovals(); break;
             case 'users': this.loadUsers(); break;
             case 'eventsManagement': this.loadAdminEvents(); break;
             case 'mentorshipPairings': this.loadMentorships(); break;
@@ -246,35 +246,40 @@ class AdminDashboard {
         
         container.innerHTML = '<div class="text-center p-5"><span class="spinner-border"></span></div>';
         try {
-            const q = query(collection(db, 'projects'), where('status', '==', 'pending'));
-            const snap = await getDocs(q);
+            const projects = await window.SupabaseService.getProjects({ status: 'pending' });
             
-            if (snap.empty) {
+            if (!projects || projects.length === 0) {
                 container.innerHTML = '<div class="text-center p-5 text-muted">No projects pending review.</div>';
                 return;
             }
 
-            container.innerHTML = snap.docs.map(docSnap => {
-                const p = { id: docSnap.id, ...docSnap.data() };
+            container.innerHTML = projects.map(p => {
                 return `
                     <div class="dashboard-card mb-3 p-4">
                         <div class="d-flex justify-content-between">
                             <h5 class="fw-bold text-primary">${p.title}</h5>
                             <span class="badge bg-warning text-dark">Pending</span>
                         </div>
-                        <p class="text-muted mt-2">${p.problemStatement ? p.problemStatement.substring(0, 150) + '...' : 'No description'}</p>
+                        <p class="text-muted mt-2">${p.problem_statement ? p.problem_statement.substring(0, 150) + '...' : 'No description'}</p>
                         <div class="d-flex gap-2 mt-3">
                             <button class="btn btn-sm btn-success px-3" onclick="adminDashboard.approveProject('${p.id}')">Approve</button>
                             <button class="btn btn-sm btn-outline-danger px-3" onclick="adminDashboard.rejectProject('${p.id}')">Reject</button>
                         </div>
                     </div>`;
             }).join('');
-        } catch (e) {}
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = '<div class="alert alert-danger">Error loading projects.</div>';
+        }
     }
 
     async approveProject(id) {
         try {
-            await updateDoc(doc(db, 'projects', id), { status: 'approved' });
+            if (window.SupabaseService) {
+                await window.SupabaseService.updateProjectStatus(id, 'approved');
+            }
+            // Firestore background sync removed
+
             alert('Project approved!');
             this.loadProjectReviews();
         } catch(e) { alert(e.message); }
@@ -282,7 +287,11 @@ class AdminDashboard {
 
     async rejectProject(id) {
         try {
-            await updateDoc(doc(db, 'projects', id), { status: 'rejected' });
+            if (window.SupabaseService) {
+                await window.SupabaseService.updateProjectStatus(id, 'rejected');
+            }
+            // Firestore background sync removed
+
             alert('Project rejected.');
             this.loadProjectReviews();
         } catch(e) { alert(e.message); }
@@ -297,9 +306,9 @@ class AdminDashboard {
         
         container.innerHTML = '<div class="text-center p-5 w-100"><span class="spinner-border"></span></div>';
         try {
-            const snap = await getDocs(collection(db, 'users'));
-            let users = [];
-            snap.forEach(d => { if (d.data().role !== 'admin') users.push({ id: d.id, ...d.data() }); });
+            if (!window.SupabaseService) return;
+            const profiles = await window.SupabaseService.getAllProfiles();
+            let users = (profiles || []).filter(u => u.role !== 'admin');
 
             container.innerHTML = users.map(u => `
                 <div class="col-md-6 col-lg-4 mb-4">
@@ -322,8 +331,10 @@ class AdminDashboard {
     async deleteUser(id) {
         if (!confirm('Permanently remove this user?')) return;
         try {
-            await deleteDoc(doc(db, 'users', id));
-            alert('User removed.');
+            if (window.SupabaseService) {
+                await window.SupabaseService.updateProfileStatus(id, 'blocked');
+            }
+            alert('User blocked.');
             this.loadUsers();
         } catch(e) {}
     }
@@ -332,45 +343,187 @@ class AdminDashboard {
         const container = document.getElementById('mentorApprovalList');
         if (!container) return;
         
+        container.innerHTML = '<div class="text-center p-5"><span class="spinner-border text-primary"></span></div>';
+
         try {
-            const q = query(collection(db, 'users'), where('role', '==', 'mentor'), where('status', '==', 'pending'));
-            const snap = await getDocs(q);
-            
-            if (snap.empty) {
+            let pendingMentors = [];
+
+            // 1. Fetch from Supabase (Primary)
+            if (window.SupabaseService) {
+                const sbMentors = await window.SupabaseService.getProfilesByRole('mentor');
+                if (sbMentors) {
+                    pendingMentors = sbMentors
+                        .filter(m => m.status === 'pending' || m.status === 'pending_approval')
+                        .map(m => ({
+                            id: m.id,
+                            fullName: m.full_name,
+                            institution: m.institution,
+                            expertise: m.expertise,
+                            bio: m.bio,
+                            status: m.status
+                        }));
+                    console.log("Admin: Loaded pending mentors from Supabase ✓");
+                }
+            }
+
+            if (pendingMentors.length === 0) {
                 container.innerHTML = '<div class="text-center p-5 text-muted">No pending mentor applications.</div>';
                 return;
             }
 
-            container.innerHTML = snap.docs.map(docSnap => {
-                const m = { id: docSnap.id, ...docSnap.data() };
-                return `
-                    <div class="dashboard-card mb-3 p-4 border-start border-warning border-4">
-                        <h5 class="fw-bold">${m.fullName}</h5>
-                        <div class="small text-muted mb-2">${m.institution || 'N/A'} | ${m.expertise || 'Expert'}</div>
-                        <p class="small text-dark mb-3">${m.bio || 'No bio provided.'}</p>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-success px-4" onclick="adminDashboard.approveMentor('${m.id}')">Approve</button>
-                            <button class="btn btn-sm btn-outline-danger px-4" onclick="adminDashboard.rejectMentor('${m.id}')">Reject</button>
-                        </div>
-                    </div>`;
-            }).join('');
-        } catch (e) {}
+            container.innerHTML = pendingMentors.map(m => `
+                <div class="dashboard-card mb-3 p-4 border-start border-warning border-4">
+                    <h5 class="fw-bold">${m.fullName}</h5>
+                    <div class="small text-muted mb-2">${m.institution || 'N/A'} | ${m.expertise || 'Expert'}</div>
+                    <p class="small text-dark mb-3">${m.bio || 'No bio provided.'}</p>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-success px-4" onclick="adminDashboard.approveMentor('${m.id}')">Approve</button>
+                        <button class="btn btn-sm btn-outline-danger px-4" onclick="adminDashboard.rejectMentor('${m.id}')">Reject</button>
+                    </div>
+                </div>`).join('');
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = '<div class="alert alert-danger">Error loading mentors.</div>';
+        }
     }
 
     async approveMentor(id) {
         try {
-            await updateDoc(doc(db, 'users', id), { status: 'approved', isApproved: true });
+            if (window.SupabaseService) {
+                await window.SupabaseService.updateProfileStatus(id, 'approved');
+            }
+            // Firestore sync removed
+            
             alert('Mentor approved!');
             this.loadMentorApprovals();
-        } catch(e) {}
+        } catch(e) {
+            console.error("Error approving mentor:", e);
+        }
     }
 
     async rejectMentor(id) {
         try {
-            await updateDoc(doc(db, 'users', id), { status: 'rejected' });
+            // Sync with Supabase
+            if (window.SupabaseService) {
+                await window.SupabaseService.updateProfileStatus(id, 'rejected');
+            }
+            // Firestore sync removed
+            
             alert('Mentor rejected.');
             this.loadMentorApprovals();
-        } catch(e) {}
+        } catch(e) {
+            console.error("Error rejecting mentor:", e);
+        }
+    }
+
+    // ============================================================
+    //  MENTORSHIP PAIRING APPROVALS
+    // ============================================================
+    async loadMentorshipApprovals() {
+        const container = document.getElementById('mentorshipApprovalList');
+        if (!container) return;
+        
+        container.innerHTML = '<div class="text-center p-5"><span class="spinner-border text-primary"></span></div>';
+        try {
+            let pendingPairings = [];
+
+            // Supabase (Primary)
+            if (window.SupabaseService) {
+                const sbReqs = await window.SupabaseService.getPendingAdminMentorships();
+                if (sbReqs && sbReqs.length > 0) {
+                    pendingPairings = sbReqs.map(r => ({
+                        id: r.id,
+                        innovatorId: r.innovator_id,
+                        mentorId: r.mentor_id,
+                        projectId: r.project_id,
+                        status: r.status,
+                        innovatorName: r.innovator?.full_name || 'Innovator',
+                        mentorName: r.mentor?.full_name || 'Mentor',
+                        projectTitle: r.project?.title || 'General Mentorship'
+                    }));
+                    console.log("Admin: Loaded pending pairings from Supabase ✓");
+                }
+            }
+
+            if (pendingPairings.length === 0) {
+                container.innerHTML = '<div class="text-center p-5 text-muted">No pairings awaiting admin approval.</div>';
+                return;
+            }
+
+            let html = '';
+            for (const r of pendingPairings) {
+                html += `
+                    <div class="dashboard-card mb-3 p-4 border-start border-info border-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Mentorship Pair Request</h5>
+                            <span class="badge bg-info text-white">Pending Admin</span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="small text-muted">Innovator</div>
+                                <div class="fw-bold text-dark">${r.innovatorName}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="small text-muted">Mentor</div>
+                                <div class="fw-bold text-dark">${r.mentorName}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="small text-muted">Project</div>
+                                <div class="fw-bold text-dark">${r.projectTitle}</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-4">
+                            <button class="btn btn-sm btn-success px-4" onclick="adminDashboard.approvePairing('${r.id}')">Approve Pairing</button>
+                            <button class="btn btn-sm btn-outline-danger px-4" onclick="adminDashboard.rejectPairing('${r.id}')">Reject Pairing</button>
+                        </div>
+                    </div>`;
+            }
+            container.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = `<div class="alert alert-danger">Failed to load pairings.</div>`;
+        }
+    }
+
+    async approvePairing(id) {
+        if (!confirm('Approve this mentor-mentee pairing? Both parties will gain access to the Collaboration Hub.')) return;
+        try {
+            // 1. Optional Firestore Sync removed
+
+
+            // 2. Supabase Sync: Update Status
+            if (window.SupabaseService) {
+                try {
+                    await window.SupabaseService.updateMentorshipStatus(id, 'accepted');
+                    console.log("Admin: Pairing approval synced to Supabase");
+                } catch (sbErr) {
+                    console.error("Admin: Supabase pairing sync failed", sbErr);
+                }
+            }
+
+            alert('Pairing approved!');
+            this.loadMentorshipApprovals();
+        } catch(e) { alert(e.message); }
+    }
+
+    async rejectPairing(id) {
+        if (!confirm('Reject this pairing request?')) return;
+        try {
+            // 1. Update Firestore - Removed
+
+            // 2. Supabase Sync: Update Status
+            if (window.SupabaseService) {
+                try {
+                    await window.SupabaseService.updateMentorshipStatus(id, 'rejected');
+                    console.log("Admin: Pairing rejection synced to Supabase");
+                } catch (sbErr) {
+                    console.error("Admin: Supabase pairing sync failed", sbErr);
+                }
+            }
+
+            alert('Pairing rejected.');
+            this.loadMentorshipApprovals();
+        } catch(e) { alert(e.message); }
     }
 
     // ============================================================
@@ -382,15 +535,14 @@ class AdminDashboard {
         
         container.innerHTML = '<div class="col-12 text-center p-4"><span class="spinner-border"></span></div>';
         try {
-            const snap = await getDocs(query(collection(db, 'events'), orderBy('createdAt', 'desc')));
-            if (snap.empty) {
+            if (!window.SupabaseService) return;
+            const events = await window.SupabaseService.getEvents();
+            if (!events || events.length === 0) {
                 container.innerHTML = '<div class="col-12 text-center text-muted">No events found.</div>';
                 return;
             }
 
-            container.innerHTML = snap.docs.map(docSnap => {
-                const ev = { id: docSnap.id, ...docSnap.data() };
-                return `
+            container.innerHTML = events.map(ev => `
                     <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; margin-bottom:0.5rem; background:#fff; border-radius:12px; border:1px solid #e2e8f0; gap:1rem;">
                         <div style="min-width:0; flex:1;">
                             <div style="font-weight:700; font-size:0.85rem; color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ev.title}</div>
@@ -406,8 +558,8 @@ class AdminDashboard {
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                             </button>
                         </div>
-                    </div>`;
-            }).join('');
+                    </div>`
+            ).join('');
         } catch(e) {}
     }
 
@@ -452,16 +604,47 @@ class AdminDashboard {
                 date: form.date.value,
                 time: form.time.value,
                 location: form.location.value,
-                imageLink: imageUrl,
-                updatedAt: serverTimestamp()
+                imageLink: imageUrl
             };
 
             if (id) {
-                await updateDoc(doc(db, 'events', id), data);
+                // Supabase Sync: Upsert Event
+                if (window.SupabaseService) {
+                    try {
+                        await window.SupabaseService.upsertEvent({
+                            id: id,
+                            title: data.title,
+                            description: data.description,
+                            event_date: data.date,
+                            event_time: data.time,
+                            location: data.location,
+                            image_url: data.imageLink
+                        });
+                        console.log("Supabase Event Sync: Updated");
+                    } catch (sbErr) {
+                        console.error("Supabase Event Sync Error", sbErr);
+                    }
+                }
                 alert('Event updated!');
             } else {
-                data.createdAt = serverTimestamp();
-                await addDoc(collection(db, 'events'), data);
+                const newId = 'event_' + Date.now();
+                // Supabase Sync: Upsert Event
+                if (window.SupabaseService) {
+                    try {
+                        await window.SupabaseService.upsertEvent({
+                            id: newId,
+                            title: data.title,
+                            description: data.description,
+                            event_date: data.date,
+                            event_time: data.time,
+                            location: data.location,
+                            image_url: data.imageLink
+                        });
+                        console.log("Supabase Event Sync: Created");
+                    } catch (sbErr) {
+                        console.error("Supabase Event Sync Error", sbErr);
+                    }
+                }
                 alert('Event created!');
             }
             form.reset();
@@ -480,9 +663,21 @@ class AdminDashboard {
 
     async editEvent(id) {
         try {
-            const snap = await getDoc(doc(db, 'events', id));
-            if (!snap.exists()) return;
-            const ev = snap.data();
+            let ev = null;
+            if (window.SupabaseService) {
+                const sbEvent = await window.SupabaseService.getEventById(id);
+                if (sbEvent) {
+                    ev = {
+                        title: sbEvent.title,
+                        description: sbEvent.description,
+                        date: sbEvent.event_date,
+                        time: sbEvent.event_time,
+                        location: sbEvent.location,
+                        imageLink: sbEvent.image_url
+                    };
+                }
+            }
+            if (!ev) return;
             const form = document.getElementById('adminEventForm');
             form.title.value = ev.title;
             form.description.value = ev.description;
@@ -510,7 +705,10 @@ class AdminDashboard {
     async deleteEvent(id) {
         if (!confirm('Delete this event?')) return;
         try {
-            await deleteDoc(doc(db, 'events', id));
+            if (window.SupabaseService) {
+                await window.SupabaseService.deleteEvent(id);
+            }
+            // Firestore delete removed
             this.loadAdminEvents();
         } catch(e) {}
     }
@@ -522,39 +720,74 @@ class AdminDashboard {
         const container = document.getElementById('mentorshipsTableBody');
         if (!container) return;
         
-        container.innerHTML = '<tr><td colspan="5" class="text-center py-4"><span class="spinner-border"></span></td></tr>';
+        container.innerHTML = '<tr><td colspan="5" class="text-center py-4"><span class="spinner-border text-primary"></span></td></tr>';
         try {
-            const snap = await getDocs(collection(db, 'mentorshipRequests'));
-            if (snap.empty) {
+            let matches = [];
+
+            // 1. Try Supabase First
+            if (window.SupabaseService) {
+                try {
+                    const sbMatches = await window.SupabaseService.getMentorships();
+                    if (sbMatches && sbMatches.length > 0) {
+                        matches = sbMatches.map(m => ({
+                            id: m.id,
+                            innovatorName: m.innovator?.full_name || 'Unknown',
+                            mentorName: m.mentor?.full_name || 'Unknown',
+                            status: m.status,
+                            createdAt: m.created_at
+                        }));
+                        console.log("Admin Pairings: Loaded from Supabase");
+                    }
+                } catch (sbErr) {
+                    console.error("Admin Pairings: Supabase fetch failed", sbErr);
+                }
+            }
+
+            // 2. Fallback removed
+            if (matches.length === 0) {
+                console.log("Admin Pairings: No records found in Supabase");
+            }
+
+            if (matches.length === 0) {
                 container.innerHTML = '<tr><td colspan="5" class="text-center py-4">No pairings found.</td></tr>';
                 return;
             }
 
-            let html = '';
-            for (let d of snap.docs) {
-                const r = { id: d.id, ...d.data() };
-                const iDoc = await getDoc(doc(db, 'users', r.innovatorId));
-                const mDoc = await getDoc(doc(db, 'users', r.mentorId));
-                
-                html += `
-                    <tr>
-                        <td><strong>${iDoc.exists() ? iDoc.data().fullName : 'Unknown'}</strong></td>
-                        <td><strong>${mDoc.exists() ? mDoc.data().fullName : 'Unknown'}</strong></td>
-                        <td><span class="badge bg-light text-dark border">${r.status}</span></td>
-                        <td>${r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString() : 'N/A'}</td>
-                        <td><button class="btn btn-sm btn-outline-danger" onclick="adminDashboard.terminateMentorship('${r.id}')">Dissolve</button></td>
-                    </tr>`;
-            }
-            container.innerHTML = html;
-        } catch(e) {}
+            container.innerHTML = matches.map(m => `
+                <tr>
+                    <td><strong>${m.innovatorName}</strong></td>
+                    <td><strong>${m.mentorName}</strong></td>
+                    <td><span class="badge bg-light text-dark border">${m.status}</span></td>
+                    <td>${m.createdAt ? new Date(m.createdAt).toLocaleDateString() : 'N/A'}</td>
+                    <td><button class="btn btn-sm btn-outline-danger" onclick="adminDashboard.terminateMentorship('${m.id}')">Dissolve</button></td>
+                </tr>`).join('');
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Error loading pairings</td></tr>';
+        }
     }
 
     async terminateMentorship(id) {
         if (!confirm('Dissolve this mentorship link?')) return;
         try {
-            await deleteDoc(doc(db, 'mentorshipRequests', id));
+            // 1. Delete from Firestore - Removed
+
+            // 2. Supabase Sync: Update Status to terminated (or delete)
+            if (window.SupabaseService) {
+                try {
+                    await window.SupabaseService.updateMentorshipStatus(id, 'terminated');
+                    console.log("Admin: Termination synced to Supabase");
+                } catch (sbErr) {
+                    console.error("Admin: Supabase termination sync failed", sbErr);
+                }
+            }
+
+            showToast('Mentorship dissolved successfully.');
             this.loadMentorships();
-        } catch(e) {}
+        } catch(e) {
+            console.error(e);
+            showToast('Failed to dissolve mentorship.', 'error');
+        }
     }
 
     // ============================================================
@@ -572,18 +805,67 @@ class AdminDashboard {
             role: 'mentor',
             status: 'approved',
             isApproved: true,
+            approvalStatus: 'approved',
+            mentorStatus: 'approved',
             institution: form.institution.value,
             expertise: form.expertise.value,
-            createdAt: serverTimestamp()
+            expertise: form.expertise.value,
         };
 
         try {
-            await addDoc(collection(db, 'users'), data);
+            // 1. Add to Firestore - Removed
+            const mockId = 'mentor_' + Date.now();
+
+            if (window.SupabaseService) {
+                try {
+                    await window.SupabaseService.upsertProfile({
+                        id: mockId,
+                        email: data.email,
+                        full_name: data.fullName,
+                        role: 'mentor',
+                        status: 'approved',
+                        approval_status: 'approved',
+                        institution: data.institution,
+                        expertise: data.expertise
+                    });
+                    console.log("Admin: Manual mentor sync to Supabase success");
+                } catch (sbErr) {
+                    console.error("Admin: Supabase manual mentor sync failed", sbErr);
+                }
+            }
+
             alert('Mentor registered successfully!');
             form.reset();
             this.loadUsers();
-        } catch(e) { alert(e.message); }
-        finally { btn.disabled = false; }
+            this.loadStats();
+        } catch(e) { 
+            alert(e.message); 
+        } finally { 
+            btn.disabled = false; 
+        }
+    }
+
+    async deleteUser(id) {
+        if (!confirm('Permanently remove this user?')) return;
+        try {
+            // 1. Delete from Firestore - Removed
+
+            // 2. Supabase Sync: Update Status to 'blocked' or 'deleted'
+            if (window.SupabaseService) {
+                try {
+                    await window.SupabaseService.updateProfileStatus(id, 'blocked');
+                    console.log("Admin: User block synced to Supabase");
+                } catch (sbErr) {
+                    console.error("Admin: Supabase user block sync failed", sbErr);
+                }
+            }
+
+            alert('User removed.');
+            this.loadUsers();
+            this.loadStats();
+        } catch(e) {
+            console.error(e);
+        }
     }
 
     async logout() {

@@ -41,13 +41,13 @@
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
 
     <!-- Template Stylesheet -->
-    <link href="assets/css/style.css?v=10.0.0" rel="stylesheet" />
+    <link href="assets/css/style.css?v=16.0.0" rel="stylesheet" />
 
     <!-- Innovate Hub Custom Styles -->
-    <link href="assets/css/innovate-hub.css?v=10.0.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=16.0.0" rel="stylesheet" />
 
     <!-- Mobile Enhancement Styles -->
-    <link href="assets/css/mobile-nav.css?v=10.0.0" rel="stylesheet" />
+    <link href="assets/css/mobile-nav.css?v=16.0.0" rel="stylesheet" />
 
     <!-- Page-specific styles -->
     <style>
@@ -777,11 +777,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Template Javascript -->
-    <script src="assets/js/pages/main.js?v=10.0.0"></script>
+    <script src="assets/js/pages/main.js?v=16.0.0"></script>
 
-    <script src="assets/js/components/shared-ui.js?v=10.0.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=10.0.0"></script>
-    <script type="module" src="assets/js/pages/innovate-hub.js?v=10.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=16.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=16.0.0"></script>
+    <script type="module" src="assets/js/pages/innovate-hub.js?v=16.0.0"></script>
 
     <!-- Mobile Hamburger Menu Enhancement Script -->
     <script>
@@ -833,7 +833,6 @@
     <script type="module">
       import {
         auth,
-        db,
         googleProvider,
       } from "./assets/js/core/firebase-config.js";
       import {
@@ -842,11 +841,7 @@
         signInWithPhoneNumber,
         RecaptchaVerifier,
       } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-      import {
-        doc,
-        setDoc,
-        getDoc,
-      } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import SupabaseService from "./assets/js/core/supabase-service.js";
 
       let currentStep = 1;
       let confirmationResult = null;
@@ -954,24 +949,27 @@
           );
           return;
         }
-        try {
-          const result = await signInWithPopup(auth, googleProvider);
-          const user = result.user;
+          try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
 
-          // Fetch profile - if exists, it's a login attempt on signup page
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            await auth.signOut();
-            window.showErrorMessage(
-              "Email already exists. Please proceed to login.",
-            );
-          } else {
+            // Check if profile exists in Supabase
+            if (window.SupabaseService) {
+                const profile = await window.SupabaseService.getProfile(user.uid);
+                if (profile) {
+                    await auth.signOut();
+                    window.showErrorMessage(
+                      "Email already exists. Please proceed to login.",
+                    );
+                    return;
+                }
+            }
+            
             // Pre-fill Step 2
             document.getElementById("email").value = user.email || "";
             document.getElementById("fullName").value = user.displayName || "";
             window.nextStep(1);
-          }
-        } catch (error) {
+          } catch (error) {
           console.error("Google Sign-In Error:", error);
           window.showErrorMessage(
             "Google authentication failed: " + error.message,
@@ -1076,29 +1074,35 @@
             }
 
             // Determine status
-            const status = role === "mentor" ? "pending_approval" : "active";
+            const status = role === "mentor" ? "pending" : "active";
 
-            // Save to Firestore (Frontend Legacy)
+            // Profile data for Supabase
             const profileData = {
-              uid: user.uid,
+              id: user.uid,
               email: email,
-              fullName: fullName,
+              full_name: fullName,
               role: role,
               phone: phone,
-              status: status,
-              createdAt: new Date().toISOString(),
+              status: status
             };
 
             if (role === "innovator") {
-              if (area) profileData.area = area;
-              if (project) profileData.project = project;
+              // Innovator specific fields can be added here if needed
             } else if (role === "mentor") {
               profileData.organization = organization;
               profileData.expertise = expertise;
               profileData.motivation = motivation;
             }
 
-            await setDoc(doc(db, "users", user.uid), profileData);
+            // Sync with Supabase (Single Source of Truth)
+            if (window.SupabaseService) {
+                try {
+                    await window.SupabaseService.upsertProfile(profileData);
+                    console.log("Supabase Profile Sync: Success");
+                } catch (sbErr) {
+                    console.error("Supabase Profile Sync: Failed", sbErr);
+                }
+            }
 
             // Set session and redirect
             localStorage.setItem(

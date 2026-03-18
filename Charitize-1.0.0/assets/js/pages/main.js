@@ -12,7 +12,11 @@
   spinner();
 
   // Initiate the wowjs
-  new WOW().init();
+  if (typeof WOW !== 'undefined') {
+    new WOW().init();
+  } else {
+    console.warn("WOW library not loaded. Animations may be disabled.");
+  }
 
   // ── Sticky Navbar ──────────────────────────────────────
   var mobileMenuIsOpen = false;
@@ -30,11 +34,17 @@
         $(".nav-bar").addClass("navbar-scrolled");
       }
       
-      // Feature: Hide navbar content on scroll down, keep only hamburger
-      if (scrollingDown && !mobileMenuIsOpen) {
-         $(".nav-bar").addClass("navbar-hidden");
+      // Feature: Hide navbar on scroll down (DESKTOP ONLY)
+      // On mobile, we always keep logo + hamburger visible with the blur effect
+      if ($(window).width() >= 992) {
+        if (scrollingDown && !mobileMenuIsOpen) {
+          $(".nav-bar").addClass("navbar-hidden");
+        } else {
+          $(".nav-bar").removeClass("navbar-hidden");
+        }
       } else {
-         $(".nav-bar").removeClass("navbar-hidden");
+        // Mobile: never hide — always remove navbar-hidden
+        $(".nav-bar").removeClass("navbar-hidden");
       }
 
       if ($(window).width() >= 992) {
@@ -112,10 +122,14 @@
   });
 
   // Facts counter
-  $('[data-toggle="counter-up"]').counterUp({
-    delay: 10,
-    time: 2000,
-  });
+  if ($.fn.counterUp) {
+    $('[data-toggle="counter-up"]').counterUp({
+      delay: 10,
+      time: 2000,
+    });
+  } else {
+    console.warn("counterUp plugin not loaded.");
+  }
 
   // Donation progress
   $(".donation-item .donation-progress").waypoint(

@@ -33,10 +33,7 @@
     <!-- Template Stylesheet -->
     <link href="assets/css/style.css?v=2.1.0" rel="stylesheet">
     <link href="assets/css/innovate-hub.css?v=2.9.0" rel="stylesheet">
-    <link href="assets/css/mobile-nav.css?v=2.9.0" rel="stylesheet">
-    
-    <!-- Mobile Enhancement Styles -->
-    <link href="assets/css/mobile-nav.css" rel="stylesheet">
+    <link href="assets/css/mobile-nav.css?v=11.0.0" rel="stylesheet">
 </head>
 
 <body>
@@ -220,26 +217,21 @@
     <!-- Team End -->
 
     <script type="module">
-        import { db } from './js/firebase-config.js';
-        import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        
         document.addEventListener('DOMContentLoaded', async () => {
             const container = document.getElementById('mentorsContainer');
             
             try {
-                // Fetch mentors from Firestore
-                const q = query(collection(db, "users"), where("role", "==", "mentor"));
-                const querySnapshot = await getDocs(q);
+                // Fetch mentors from Supabase
+                const mentors = await window.SupabaseService.getProfilesByRole('mentor');
                 
-                if (querySnapshot.empty) {
+                if (!mentors || mentors.length === 0) {
                     container.innerHTML = '<div class="col-12 text-center"><h3>No mentors found at the moment.</h3></div>';
                     return;
                 }
                 
                 let html = '';
-                querySnapshot.forEach((doc) => {
-                    const mentor = doc.data();
-                    const avatar = mentor.photoURL || 'img/team-1.jpg'; // Fallback
+                mentors.forEach((mentor) => {
+                    const avatar = mentor.avatar_url || 'img/team-1.jpg'; // Fallback
                     const role = mentor.profession || 'Expert Mentor';
                     const expertise = mentor.expertise || 'Innovation';
                     
@@ -247,8 +239,8 @@
                         <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="0.1s">
                             <div class="team-item d-flex h-100 p-4">
                                 <div class="team-detail pe-4">
-                                    <img class="img-fluid mb-4" src="${avatar}" alt="${mentor.fullName}" onerror="this.src='img/team-1.jpg'">
-                                    <h3>${mentor.fullName}</h3>
+                                    <img class="img-fluid mb-4" src="${avatar}" alt="${mentor.full_name}" onerror="this.src='img/team-1.jpg'">
+                                    <h3>${mentor.full_name}</h3>
                                     <span>${role}</span>
                                     <p class="small text-muted mt-2">${expertise}</p>
                                 </div>
@@ -380,7 +372,7 @@
     <script src="assets/lib/counterup/counterup.min.js"></script>
 
     <!-- Template Javascript -->
-    <script src="assets/js/pages/main.js?v=2.5.0"></script>
+    <script src="assets/js/pages/main.js?v=11.0.0"></script>
 
     <!-- Nuru Assistant -->
     <script src="assets/js/components/nuru-assistant.js?v=2.1.4"></script>

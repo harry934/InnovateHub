@@ -1,8 +1,3 @@
-/**
- * Live Wallpaper Background System
- * Uses Canvas and GSAP for a premium, flowing background effect
- */
-
 export class LiveWallpaper {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
@@ -13,75 +8,131 @@ export class LiveWallpaper {
         this.container.appendChild(this.canvas);
         
         this.particles = [];
-        this.particleCount = 20; // Reverted to subtle density
-        this.resize();
+        this.particleCount = 60; // Balanced density (up from 45)
+        this.isActive = false;
         
+        this.resize();
         window.addEventListener('resize', () => this.resize());
         this.init();
-        this.animate();
     }
 
     resize() {
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
+        this.width = this.container.clientWidth || window.innerWidth;
+        this.height = this.container.clientHeight || window.innerHeight;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
     }
 
+    start() {
+        if (this.isActive) return;
+        this.isActive = true;
+        this.animate();
+    }
+
+    stop() {
+        this.isActive = false;
+    }
+
     init() {
         const colors = [
-            'rgba(26, 94, 79, 0.08)',  // Subtle Brand Green
-            'rgba(243, 168, 19, 0.08)', // Subtle Brand Gold
-            'rgba(26, 94, 79, 0.05)',
-            'rgba(243, 168, 19, 0.05)'
+            '#2C5F5D', // Teal
+            '#F2A81D'  // Yellow
         ];
+        const shapes = ['x', 'plus', 'diamond', 'dot', 'line'];
 
         for (let i = 0; i < this.particleCount; i++) {
             this.particles.push({
                 x: Math.random() * this.width,
                 y: Math.random() * this.height,
-                radius: Math.random() * 300 + 200, // Reverted to larger, softer range
+                size: Math.random() * 10 + 10, // Slightly larger (10-20)
                 color: colors[Math.floor(Math.random() * colors.length)],
-                vx: (Math.random() - 0.5) * 0.4, // Slower, calmer motion
-                vy: (Math.random() - 0.5) * 0.4,
-                phase: Math.random() * Math.PI * 2
+                shape: shapes[Math.floor(Math.random() * shapes.length)],
+                vx: (Math.random() - 0.5) * 0.35,
+                vy: (Math.random() - 0.5) * 0.35,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.015,
+                opacityPhase: Math.random() * Math.PI * 2,
+                opacitySpeed: 0.005 + Math.random() * 0.01
             });
         }
     }
 
+    drawShape(p) {
+        const { x, y, size, color, shape, rotation, opacityPhase } = p;
+        // Moderate visibility opacity (range 0.1 to 0.4)
+        const opacity = 0.2 + (Math.sin(opacityPhase) * 0.2);
+        
+        this.ctx.save();
+        this.ctx.translate(x, y);
+        this.ctx.rotate(rotation);
+        this.ctx.globalAlpha = opacity;
+        this.ctx.strokeStyle = color;
+        this.ctx.fillStyle = color;
+        this.ctx.lineWidth = 1.8; // Slightly thicker lines
+
+        switch (shape) {
+            case 'x':
+                this.ctx.beginPath();
+                this.ctx.moveTo(-size / 2, -size / 2);
+                this.ctx.lineTo(size / 2, size / 2);
+                this.ctx.moveTo(size / 2, -size / 2);
+                this.ctx.lineTo(-size / 2, size / 2);
+                this.ctx.stroke();
+                break;
+            case 'plus':
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, -size / 2);
+                this.ctx.lineTo(0, size / 2);
+                this.ctx.moveTo(-size / 2, 0);
+                this.ctx.lineTo(size / 2, 0);
+                this.ctx.stroke();
+                break;
+            case 'diamond':
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, -size / 2);
+                this.ctx.lineTo(size / 2, 0);
+                this.ctx.lineTo(0, size / 2);
+                this.ctx.lineTo(-size / 2, 0);
+                this.ctx.closePath();
+                this.ctx.stroke();
+                break;
+            case 'dot':
+                this.ctx.beginPath();
+                this.ctx.arc(0, 0, size / 4, 0, Math.PI * 2);
+                this.ctx.fill();
+                break;
+            case 'line':
+                this.ctx.beginPath();
+                this.ctx.moveTo(-size / 2, 0);
+                this.ctx.lineTo(size / 2, 0);
+                this.ctx.stroke();
+                break;
+        }
+        this.ctx.restore();
+    }
+
     animate() {
+        if (!this.isActive) return;
+
         this.ctx.clearRect(0, 0, this.width, this.height);
         
-        // Draw background gradient
-        const bgGradient = this.ctx.createLinearGradient(0, 0, this.width, this.height);
-        bgGradient.addColorStop(0, '#f8fafb');
-        bgGradient.addColorStop(1, '#f1f5f9');
-        this.ctx.fillStyle = bgGradient;
+        // Distinct background for contrast (soft off-white)
+        this.ctx.fillStyle = '#f6f8f9';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
         this.particles.forEach(p => {
             p.x += p.vx;
             p.y += p.vy;
-            p.phase += 0.005;
+            p.rotation += p.rotationSpeed;
+            p.opacityPhase += p.opacitySpeed;
 
-            // Bounce off edges
-            if (p.x < -p.radius) p.x = this.width + p.radius;
-            if (p.x > this.width + p.radius) p.x = -p.radius;
-            if (p.y < -p.radius) p.y = this.height + p.radius;
-            if (p.y > this.height + p.radius) p.y = -p.radius;
+            // Wrap around edges
+            if (p.x < -50) p.x = this.width + 50;
+            if (p.x > this.width + 50) p.x = -50;
+            if (p.y < -50) p.y = this.height + 50;
+            if (p.y > this.height + 50) p.y = -50;
 
-            const currentRadius = p.radius + Math.sin(p.phase) * 50;
-            
-            const gradient = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, currentRadius);
-            gradient.addColorStop(0, p.color);
-            gradient.addColorStop(1, 'transparent');
-            
-            this.ctx.save();
-            this.ctx.beginPath();
-            this.ctx.fillStyle = gradient;
-            this.ctx.arc(p.x, p.y, currentRadius, 0, Math.PI * 2);
-            this.ctx.fill();
-            this.ctx.restore();
+            this.drawShape(p);
         });
 
         requestAnimationFrame(() => this.animate());
@@ -92,7 +143,9 @@ export class LiveWallpaper {
 document.addEventListener('DOMContentLoaded', () => {
     const bg = document.getElementById('liveWallpaperBg');
     if (bg) {
-        window._liveWallpaper = new LiveWallpaper('liveWallpaperBg');
+        const wp = new LiveWallpaper('liveWallpaperBg');
+        wp.start();
+        window._liveWallpaper = wp;
     }
 });
 

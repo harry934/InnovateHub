@@ -28,7 +28,7 @@ html, body {
   height: 100%;
   margin: 0 !important;
   padding: 0 !important;
-  background: var(--brand-light) !important;
+  background: transparent !important; /* Force transparency for live wallpaper */
   font-family: var(--font-main);
 }
 
@@ -52,7 +52,7 @@ html, body {
 
 /* ── CLEAN BACKGROUND AESTHETIC ──────────────────────────── */
 .dashboard-main-content {
-  background: #f8fafb;
+  background: transparent !important; /* Force transparency */
   position: relative;
   z-index: 1;
 }
@@ -204,7 +204,7 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background-color: #f8fafb;
+  background: transparent !important; /* Force transparent */
   z-index: -2;
 }
 
@@ -400,7 +400,7 @@ section,
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  background: #f8fafb;
+  background: transparent !important;
   overflow-x: hidden;
   width: 100vw;
 }
@@ -675,11 +675,19 @@ section,
   color: var(--brand-yellow);
 }
 
+/* ── MODAL STACKING FIX ─────────────────────────────────────── */
+.modal {
+  z-index: 1060 !important;
+}
+.modal-backdrop {
+  z-index: 1050 !important;
+}
+
 /* ── ANIMATED WALLPAPER BACKGROUND ─────────────────────────── */
 #dashboardQuickAccess {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #f8fafb 0%, #fefcf8 50%, #f8fafb 100%);
+  background: transparent !important; /* No solid background */
   border-bottom: 1px solid rgba(26, 94, 79, 0.03);
 }
 
@@ -728,65 +736,213 @@ section,
   z-index: 1;
 }
 
+/* Ensure background wallpaper is visible */
+body.role-innovator, 
+body.role-mentor,
+#dashboard-content {
+  background-color: transparent !important;
+}
+
 /* ── MINIMALIST DASHBOARD NAV CARDS (REIMAGINED v12) ─────────────────────────── */
 #dashboardCardsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
-  padding: 10px 0 30px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 28px;
+  width: 100%;
 }
 
 .dash-nav-card {
   position: relative;
   background: #ffffff;
   border-radius: 20px;
-  padding: 32px;
+  padding: 36px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  min-height: 220px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  min-height: 290px;
+  border: 1px solid rgba(26, 95, 93, 0.12); /* More distinct border */
+  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); /* Stronger shadow */
   overflow: hidden;
   z-index: 10;
 }
 
 .dash-nav-card:hover {
-  transform: translateY(-8px);
-  border-color: rgba(26, 94, 79, 0.2);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+  transform: translateY(-12px);
+  box-shadow: 0 25px 50px rgba(26, 95, 93, 0.12);
+  border-color: rgba(26, 95, 93, 0.3);
 }
 
-.dash-nav-card:active {
-  transform: scale(0.98);
+/* Gradient Overlay on Hover */
+.dash-nav-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(44, 95, 93, 0.03) 0%, rgba(242, 168, 29, 0.03) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 0;
 }
 
-/* Icon Styling - Simplified & Consistent */
+.dash-nav-card:hover::before {
+  opacity: 1;
+}
+
+/* Corner Accent Decoration */
+.dash-nav-card::after {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 60px;
+  height: 60px;
+  background: var(--brand-yellow);
+  opacity: 0.1;
+  border-radius: 50%;
+  transition: all 0.5s ease;
+  transform: translate(20px, -20px);
+  z-index: 0;
+}
+
+.dash-nav-card:hover::after {
+  transform: translate(0, 0);
+  opacity: 0.2;
+}
+
+/* Bottom Solid Line */
+.dash-nav-card-bottom-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 6px;
+  width: 0;
+  background: #2C5F5D; /* Solid Teal */
+  transition: width 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  z-index: 2;
+}
+
+.dash-nav-card:hover .dash-nav-card-bottom-line {
+  width: 100%;
+}
+
+/* Icon Styling */
 .dnc-icon {
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: rgba(26, 94, 79, 0.06);
+  background: rgba(44, 95, 93, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
-  color: var(--brand-green);
-  transition: all 0.3s ease;
+  color: #2C5F5D;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  z-index: 1;
 }
 
 .dash-nav-card:hover .dnc-icon {
-  background: var(--brand-green);
+  background: #F2A81D;
   color: #ffffff;
-  transform: scale(1.1) rotate(-8deg);
+  transform: scale(1.2) rotate(-5deg);
+  box-shadow: 0 8px 20px rgba(242, 168, 29, 0.3);
 }
 
 .dnc-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   stroke: currentColor;
+  transition: all 0.3s ease;
+}
+
+/* Content & Title */
+.dnc-content {
+  position: relative;
+  z-index: 1;
+}
+
+.dnc-title {
+  font-family: var(--font-head);
+  font-size: 1.5rem; /* Larger title */
+  font-weight: 800;
+  color: var(--brand-dark);
+  margin-bottom: 10px;
+  transition: color 0.3s ease;
+}
+
+.dash-nav-card:hover .dnc-title {
+  color: #2C5F5D;
+}
+
+.dnc-desc {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Dynamic Tags */
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card-tag {
+  background: rgba(44, 95, 93, 0.05);
+  color: #2C5F5D;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.dash-nav-card:hover .card-tag {
+  background: #2C5F5D;
+  color: #fff;
+}
+
+.dash-nav-card:hover .card-tag:nth-child(even) {
+  background: #F2A81D;
+  color: #fff;
+}
+
+/* Arrow Button */
+.dnc-arrow {
+  position: absolute;
+  bottom: 32px;
+  right: 32px;
+  width: 40px;
+  height: 40px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  z-index: 1;
+}
+
+.dnc-arrow svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.dash-nav-card:hover .dnc-arrow {
+  background: #F2A81D;
+  color: #fff;
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(242, 168, 29, 0.3);
+}
+
+.dash-nav-card:hover .dnc-arrow svg {
+  transform: scale(1.1);
 }
 
 /* Typography */

@@ -3,9 +3,10 @@
  * Manages authentication state across the entire application
  */
 
-import { auth, db } from './firebase-config.js';
+import { auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+// Supabase is loaded via CDN and configured in supabase-config.js
+
 
 class AuthManager {
     constructor() {
@@ -22,15 +23,21 @@ class AuthManager {
                 if (firebaseUser) {
                     // User is signed in
                     try {
-                        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+                        let profile = null;
+                        if (window.SupabaseService) {
+                            profile = await window.SupabaseService.getProfile(firebaseUser.uid);
+                        }
                         
-                        if (userDoc.exists()) {
+                        if (profile) {
                             this.currentUser = {
                                 uid: firebaseUser.uid,
                                 email: firebaseUser.email,
-                                ...userDoc.data()
+                                role: profile.role || 'innovator',
+                                fullName: profile.full_name,
+                                ...profile
                             };
                         } else {
+                            // Fallback if no profile exists yet
                             this.currentUser = {
                                 uid: firebaseUser.uid,
                                 email: firebaseUser.email,
@@ -42,7 +49,7 @@ class AuthManager {
                         // Store in localStorage for quick access
                         localStorage.setItem('innovateHubUser', JSON.stringify(this.currentUser));
                     } catch (error) {
-                        console.error('Error fetching user data:', error);
+                        console.error('Error fetching user data from Supabase:', error);
                         this.currentUser = {
                             uid: firebaseUser.uid,
                             email: firebaseUser.email,

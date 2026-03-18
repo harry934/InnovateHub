@@ -45,7 +45,7 @@
     <link href="assets/css/innovate-hub.css?v=10.0.0" rel="stylesheet" />
     
     <!-- Mobile Enhancement Styles -->
-    <link href="assets/css/mobile-nav.css?v=10.0.0" rel="stylesheet">
+    <link href="assets/css/mobile-nav.css?v=11.0.0" rel="stylesheet">
 
     <!-- Page-specific styles -->
     <style>
@@ -370,7 +370,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Template Javascript -->
-    <script src="assets/js/pages/main.js?v=10.0.0"></script>
+    <script src="assets/js/pages/main.js?v=11.0.0"></script>
 
     <script src="assets/js/components/shared-ui.js?v=10.0.0"></script>
     <script src="assets/js/utils/ui-utils.js?v=10.0.0"></script>
@@ -425,14 +425,14 @@
 
     <!-- Login Logic -->
     <script type="module">
-      import { auth, googleProvider, db } from "./assets/js/core/firebase-config.js";
+      import { auth, googleProvider } from "./assets/js/core/firebase-config.js";
       import {
         signInWithEmailAndPassword,
         signInWithPopup,
         signOut,
         sendPasswordResetEmail,
       } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-      import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import SupabaseService from "./assets/js/core/supabase-service.js";
 
       // Check for URL parameters to pre-fill email
       window.addEventListener("load", function () {
@@ -454,25 +454,55 @@
 
       async function handleSuccessfulLogin(user) {
         try {
-          // Fetch user data from Firestore
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          
+          // Fetch user profile from Supabase (New Backend)
           let userData = {
             uid: user.uid,
             email: user.email,
             displayName: user.displayName || user.email.split('@')[0],
             role: 'innovator' // default
           };
-          
-          if (userDoc && userDoc.exists()) {
-            userData = { ...userData, ...userDoc.data(), loggedIn: true };
-          } else {
-            userData.loggedIn = true;
+
+          if (window.SupabaseService) {
+              try {
+                  const profile = await window.SupabaseService.getProfile(user.uid);
+                  if (profile) {
+                      userData = { 
+                          ...userData, 
+                          fullName: profile.full_name,
+                          role: profile.role,
+                          status: profile.status,
+                          loggedIn: true 
+                      };
+                      console.log("Supabase Profile Loaded:", userData.role);
+                  } else {
+                      // fallback if no profile exists yet
+                      userData.loggedIn = true;
+                  }
+              } catch (sbErr) {
+                  console.error("Supabase Profile Fetch Failed:", sbErr);
+                  userData.loggedIn = true;
+              }
           }
           
           // Store user data in localStorage
           localStorage.setItem('innovateHubUser', JSON.stringify(userData));
           localStorage.setItem('justLoggedIn', 'true');
+
+          // Sync with Supabase (New Backend)
+          if (window.SupabaseService) {
+              try {
+                  await window.SupabaseService.upsertProfile({
+                      id: user.uid,
+                      email: user.email,
+                      full_name: userData.fullName || user.displayName || user.email.split('@')[0],
+                      role: userData.role || 'innovator',
+                      status: userData.status || 'active'
+                  });
+                  console.log("Supabase Profile Sync: Success");
+              } catch (sbErr) {
+                  console.error("Supabase Profile Sync: Failed", sbErr);
+              }
+          }
           
           // Always redirect to homepage
           return "index.html";

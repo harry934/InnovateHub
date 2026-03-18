@@ -95,6 +95,41 @@ function getInitials(name) {
     return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
+function showConnectionErrorUI(errorTag = "Service Unavailable") {
+    const existing = document.getElementById('connection-error-overlay');
+    if (existing) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'connection-error-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(135deg, #1a5e4f 0%, #0d2a23 100%);
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        padding: 30px;
+        font-family: 'Josefin Sans', sans-serif;
+    `;
+    
+    overlay.innerHTML = `
+        <div style="background: rgba(255,255,255,0.1); padding: 40px; border-radius: 24px; backdrop-filter: blur(10px); max-width: 500px; border: 1px solid rgba(255,168,19,0.2);">
+            <div style="font-size: 5rem; margin-bottom: 2rem;">📡</div>
+            <h2 style="font-weight: 800; margin-bottom: 15px; color: #f3a813;">Connection Issue</h2>
+            <p style="opacity: 0.9; margin-bottom: 30px; font-size: 1.1rem; line-height: 1.6;">We're having trouble reaching our core services. This could be due to a slow network or a configuration mismatch.</p>
+            <button onclick="location.reload()" class="btn shadow-lg" style="background: #f3a813; color: #1a5e4f; font-weight: 800; padding: 15px 40px; border-radius: 50px; border: none; font-size: 1.1rem; transition: transform 0.2s ease;">
+                Try Reconnecting
+            </button>
+            <p style="margin-top: 25px; font-size: 0.85rem; opacity: 0.6;">System Error: ${errorTag}</p>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
 // Expose to window explicitly
 window.showSuccessMessage = showSuccessMessage;
 window.showErrorMessage = showErrorMessage;
@@ -106,5 +141,6 @@ window.generateUniqueId = generateUniqueId;
 window.formatDate = formatDate;
 window.truncateText = truncateText;
 window.getInitials = getInitials;
+window.showConnectionErrorUI = showConnectionErrorUI;
 
 console.log("UI Utilities initialized ✓");

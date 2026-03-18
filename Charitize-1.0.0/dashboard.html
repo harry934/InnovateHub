@@ -28,12 +28,44 @@
     <link href="assets/lib/animate/animate.min.css" rel="stylesheet" />
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="assets/css/auth-ui.css" rel="stylesheet" />
-    <link href="assets/css/style.css?v=12.0.0" rel="stylesheet" />
-    <link href="assets/css/staggered-menu.css?v=12.0.0" rel="stylesheet" />
-    <link href="assets/css/dashboard-rebuild.css?v=12.0.0" rel="stylesheet" />
-    <link href="assets/css/collab-screen.css?v=12.0.0" rel="stylesheet" />
-    <link href="assets/css/innovate-hub.css?v=12.0.0" rel="stylesheet" />
-    <link href="assets/css/nuru-assistant.css?v=12.0.0" rel="stylesheet" />
+    <link href="assets/css/style.css?v=100.0.0" rel="stylesheet" />
+    <link href="assets/css/staggered-menu.css?v=100.0.0" rel="stylesheet" />
+    <link href="assets/css/dashboard-rebuild.css?v=100.0.0" rel="stylesheet" />
+    <link href="assets/css/collab-screen.css?v=100.0.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=100.0.0" rel="stylesheet" />
+    <link href="assets/css/nuru-assistant.css?v=100.0.0" rel="stylesheet" />
+    <style>
+        :root {
+            --brand-teal: #1a5e4f;
+            --brand-orange: #f3a813;
+        }
+        #premium-header-bridge {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .header-contact-info span {
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .dashboard-section h2 {
+            color: var(--brand-teal) !important;
+        }
+        .btn-primary {
+            background-color: var(--brand-teal) !important;
+            border-color: var(--brand-teal) !important;
+        }
+        .btn-secondary, .btn-orange {
+            background-color: var(--brand-orange) !important;
+            border-color: var(--brand-orange) !important;
+            color: #000 !important;
+        }
+        .brand-divider {
+            border-top: 3px solid var(--brand-orange);
+            width: 60px;
+            opacity: 1;
+        }
+    </style>
 
     <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -44,24 +76,35 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/js/core/supabase-config.js"></script>
 
+    <!-- Core Dependencies (jQuery first, then Bootstrap) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- Project Modules -->
-    <script src="assets/js/components/live-wallpaper.js?v=12.0.0" type="module"></script>
-    <script src="assets/js/components/activity-heatmap.js?v=12.0.0" type="module"></script>
-    <script src="assets/js/pages/mentor-discovery.js?v=12.0.0" type="module"></script>
-    <script src="assets/js/pages/dashboard-charts.js?v=12.0.0" type="module"></script>
+    <script src="assets/js/components/live-wallpaper.js?v=100.0.0" type="module"></script>
+    <script src="assets/js/components/activity-heatmap.js?v=100.0.0" type="module"></script>
+    <script src="assets/js/pages/mentor-discovery.js?v=100.0.0" type="module"></script>
+    <script src="assets/js/pages/dashboard-charts.js?v=100.0.0" type="module"></script>
+    <script src="assets/js/pages/collaboration.js?v=100.0.0" type="module"></script>
+    
+    <!-- Supabase Services & Modules -->
+    <script src="assets/js/core/supabase-service.js?v=100.0.0" type="module"></script>
+    <script src="assets/js/modules/session-manager.js?v=100.0.0" type="module"></script>
+    <script src="assets/js/modules/feedback-service.js?v=100.0.0" type="module"></script>
+    <script src="assets/js/modules/report-manager.js?v=100.0.0" type="module"></script>
   </head>
 
   <body>
-    <!-- Minimalist Header Bridge (Staggered Menu will inject the actual header) -->
     <div style="height: 100px"></div>
 
     <!-- Dynamic Live Wallpaper -->
     <div id="liveWallpaperBg" style="position: fixed; inset: 0; z-index: -1; pointer-events: none;"></div>
 
     <!-- Dashboard Content Wrapper (Hidden until onboarding check) -->
-    <div id="dashboard-content" style="display: none; position: relative; z-index: 1;">
+    <div id="dashboard-content" style="display: none; position: relative; z-index: 10;">
         <!-- Dashboard Landing Page -->
         <div
+
           id="dashboardQuickAccess"
           class="py-5"
       style="position: relative; z-index: 2"
@@ -96,63 +139,16 @@
             <p class="text-muted lead mb-0">
               Manage your innovation ecosystem and mentor connections.
             </p>
+          </div>
         </div>
-      </div>
 
-         
-        <!-- Platform Analytics -->
+        <!-- Landing Quick Stats (Injected by role JS) -->
+        <div id="landingStatsRow" class="row g-4 mb-5" style="display: none">
+          <!-- Stats cards injected here -->
+        </div>
+
+        <!-- Platform Analytics - Removed for Cleanup -->
         <div id="analyticsSection" class="row g-4 mb-5" style="display: none">
-          <!-- At a Glance Stats -->
-          <div class="col-lg-4">
-            <div class="dash-nav-card minimalist-stat-card">
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="minimalist-title">At a Glance</h3>
-                <i class="fa fa-chart-line text-muted"></i>
-              </div>
-              <div class="stat-items">
-                <div class="stat-item mb-3 p-3 rounded-3 bg-light border-start border-4 border-success">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <span class="text-muted small d-block">Active Projects</span>
-                      <h4 class="mb-0 fw-bold" id="atGlanceProjects">0</h4>
-                    </div>
-                    <div class="stat-icon-sm bg-white rounded-circle shadow-sm p-2">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                    </div>
-                  </div>
-                </div>
-                <div class="stat-item p-3 rounded-3 bg-light border-start border-4 border-warning">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <span class="text-muted small d-block" id="atGlanceConnectionLabel">Mentor Connections</span>
-                      <h4 class="mb-0 fw-bold" id="atGlanceConnections">0</h4>
-                    </div>
-                    <div class="stat-icon-sm bg-white rounded-circle shadow-sm p-2">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Activity Timeline -->
-          <div class="col-lg-8">
-            <div class="dash-nav-card minimalist-stat-card">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h3 class="minimalist-title">Innovation Pulse</h3>
-                    <p class="text-muted small mb-0">Daily activity across the last 365 days</p>
-                </div>
-                <div class="stat-icon-sm bg-light rounded-circle p-2">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                </div>
-              </div>
-              <div style="flex: 1; position: relative" id="heatmapContainer">
-                <!-- ActivityHeatmap component mounts here -->
-              </div>
-            </div>
-          </div>
         </div>
 
         <div class="dashboard-grid-container" id="dashboardCardsGrid">
@@ -186,32 +182,198 @@
           </button>
         </div>
 
+        <!-- Virtual Sessions Section -->
+        <div id="sessionsSection" class="dashboard-section" style="display: none">
+          <div class="section-header mb-4">
+            <h2 class="display-6 fw-bold" style="color: #1a5e4f">Virtual Sessions</h2>
+            <p class="text-muted">Schedule and join your mentoring video calls</p>
+            <hr class="brand-divider" />
+          </div>
+          <div id="sessionsContainer" class="row g-4">
+            <!-- Sessions injected by session-manager.js -->
+            <div class="col-12 text-center py-5">
+              <div class="spinner-border text-primary"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project Feedback Section -->
+        <div id="feedbackSection" class="dashboard-section" style="display: none">
+          <div class="section-header mb-4">
+            <h2 class="display-6 fw-bold" style="color: #1a5e4f">Project Feedback</h2>
+            <p class="text-muted">Review projects and track feedback ratings</p>
+            <hr class="brand-divider" />
+          </div>
+          <div id="feedbackContainer" class="row g-4">
+            <!-- Feedback injected by feedback-service.js -->
+            <div class="col-12 text-center py-5">
+              <div class="spinner-border text-primary"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Reports Section -->
+        <div id="reportsSection" class="dashboard-section" style="display: none">
+          <div class="section-header mb-4">
+            <h2 class="display-6 fw-bold" style="color: #1a5e4f">Progress Reports</h2>
+            <p class="text-muted">Track milestones, achievements, and challenges</p>
+            <hr class="brand-divider" />
+          </div>
+          <div id="reportsContainer" class="row g-4">
+            <!-- Reports injected by report-manager.js -->
+            <div class="col-12 text-center py-5">
+              <div class="spinner-border text-primary"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Innovator: My Projects (Focus Panel) -->
         <div
           id="projectsSection"
           class="dashboard-section"
           style="display: none"
         >
-          <div class="section-header mb-4">
-            <h2 class="display-6 fw-bold">My Projects</h2>
-            <p class="text-muted">
-              Track and manage your submitted innovation projects
-            </p>
-            <hr class="brand-divider" />
+          <div class="section-header d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="display-6 fw-bold" style="color: #1a5e4f">My Projects</h2>
+              <p class="text-muted">Track and manage your submitted innovation projects</p>
+            </div>
+            <button class="btn btn-primary rounded-pill px-4" onclick="window.showDashboardSection('submit')">
+              <i class="fa fa-plus me-2"></i> Submit New Project
+            </button>
           </div>
           <div id="projectsContainer"></div>
         </div>
 
         <!-- Mentorship: Collaboration Screen (Focus Panel) -->
         <div id="collabSection" class="dashboard-section" style="display: none">
-          <div class="section-header mb-4">
-            <h2 class="display-6 fw-bold">Collaboration Hub</h2>
-            <p class="text-muted">
-              Chat, review documents, and schedule meetings with your mentor/mentee
-            </p>
-            <hr class="brand-divider" />
+          <div id="collabScreenContainer">
+              <div class="collab-layout-premium">
+                  <!-- 1. Sidebar: Project/Mentee List -->
+                  <aside class="collab-sidebar-new">
+                      <div class="sidebar-header-premium">
+                          <h5 id="collabSidebarTitle" class="fw-bold mb-1">My Projects</h5>
+                          <p id="collabSidebarSubtitle" class="small text-muted mb-0">Active mentorship projects</p>
+                      </div>
+                      <div class="sidebar-search-box">
+                          <i class="fa fa-search"></i>
+                          <input type="text" id="collabContactSearch" placeholder="Search projects..." class="form-control">
+                      </div>
+                      <div id="collabContactList" class="contact-list-new">
+                          <!-- Cards injected by collaboration.js -->
+                      </div>
+                  </aside>
+
+                  <!-- 2. Main Workspace: Chat & Guidance -->
+                  <main class="collab-chat-workspace">
+                      <header class="chat-workspace-header">
+                          <div class="d-flex align-items-center justify-content-between w-100">
+                              <div class="d-flex align-items-center gap-3">
+                                  <div class="header-project-icon">
+                                      <i class="fa fa-project-diagram"></i>
+                                  </div>
+                                  <div>
+                                      <h4 id="collabProjectHeaderTitle" class="h5 fw-bold text-white mb-0">Select a Project</h4>
+                                      <p id="collabPartnerName" class="small text-white opacity-75 mb-0">Select a conversation to begin</p>
+                                  </div>
+                              </div>
+                              <div id="collabRoleBadge" class="badge-role-view">Mentor View</div>
+                          </div>
+                      </header>
+
+                      <!-- Project Progress (Innovator Only) -->
+                      <div id="collabProgressContainer" class="collab-progress-banner" style="display:none;">
+                          <div class="d-flex justify-content-between align-items-center mb-2">
+                              <span class="fw-bold text-dark">Project Progress</span>
+                              <span id="collabProgressPercent" class="fw-bold text-orange">0% Complete</span>
+                          </div>
+                          <div class="progress progress-premium">
+                              <div id="collabProgressBar" class="progress-bar bg-orange" role="progressbar" style="width: 0%;"></div>
+                          </div>
+                          <div class="progress-stats-row mt-2">
+                              <span><i class="fa fa-comment-dots text-teal"></i> <span id="collabFeedbackCount">0</span> Feedbacks</span>
+                              <span><i class="fa fa-file-alt text-teal"></i> <span id="collabReportCount">0</span> Reports</span>
+                          </div>
+                      </div>
+
+                      <!-- Pinned Guidance -->
+                      <div id="collabPinnedGuidance" class="pinned-guidance-box">
+                          <div class="d-flex align-items-start gap-3">
+                              <div class="pin-icon-wrapper">
+                                  <i class="fa fa-thumbtack"></i>
+                              </div>
+                              <div class="flex-grow-1">
+                                  <div class="d-flex justify-content-between align-items-center mb-1">
+                                      <h6 class="fw-bold mb-0 text-teal">Pinned Guidance</h6>
+                                      <button id="editPinnedGuidance" class="btn-edit-pin" style="display:none;">Edit</button>
+                                  </div>
+                                  <p id="pinnedGuidanceText" class="mb-0 small text-muted">Remember to include unit tests for all new features and update the API documentation accordingly.</p>
+                              </div>
+                          </div>
+                      </div>
+
+                      <!-- Project Blueprint / Details View -->
+                      <div id="collabProjectDetails" class="project-details-blueprint-view px-4 py-3" style="max-height: 400px; overflow-y: auto;">
+                          <!-- Blueprint cards injected here by JS -->
+                      </div>
+
+                      <!-- Chat Area -->
+                      <div class="chat-messages-container" id="collabChatBox">
+                          <!-- Messages injected here -->
+                          <div class="empty-chat-placeholder">
+                              <i class="fa fa-comments"></i>
+                              <p>Your conversation will appear here</p>
+                          </div>
+                      </div>
+
+                      <!-- Chat Input -->
+                      <div class="chat-input-area-premium">
+                          <form id="collabChatForm" class="chat-input-form-premium">
+                              <button type="button" class="btn-chat-action" onclick="document.getElementById('collabFileUpload').click()">
+                                  <i class="fa fa-paperclip"></i>
+                              </button>
+                              <input type="file" id="collabFileUpload" style="display:none;">
+                              <input type="text" id="collabChatInput" placeholder="Ask your mentor a question..." required autocomplete="off">
+                              <button type="submit" class="btn-chat-send">
+                                  <i class="fa fa-paper-plane"></i>
+                              </button>
+                          </form>
+                      </div>
+                  </main>
+
+                  <!-- 3. Tools Panel -->
+                  <section class="collab-tools-aside">
+                      <header class="tools-aside-header">
+                          <i class="fa fa-chart-line text-teal"></i>
+                          <h5 id="toolsPanelTitle" class="fw-bold mb-0">Mentorship Tools</h5>
+                      </header>
+                      
+                      <div class="tools-tabs-wrapper">
+                          <ul class="nav nav-pills tools-pills" id="collabToolsTabs" role="tablist">
+                              <li class="nav-item flex-grow-1">
+                                  <button class="nav-link active" id="feedback-tab" data-bs-toggle="tab" data-bs-target="#tab-feedback" type="button" role="tab">Feedback</button>
+                              </li>
+                              <li class="nav-item flex-grow-1">
+                                  <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#tab-reports" type="button" role="tab">Reports</button>
+                              </li>
+                          </ul>
+                      </div>
+
+                      <div class="tab-content tools-tab-panes" id="collabToolsContent">
+                          <div class="tab-pane fade show active" id="tab-feedback" role="tabpanel">
+                              <div id="feedbackToolsContainer" class="tools-pane-inner">
+                                  <!-- Content by JS -->
+                              </div>
+                          </div>
+                          <div class="tab-pane fade" id="tab-reports" role="tabpanel">
+                              <div id="reportsToolsContainer" class="tools-pane-inner">
+                                  <!-- Content by JS -->
+                              </div>
+                          </div>
+                      </div>
+                  </section>
+              </div>
           </div>
-          <div id="collabScreenContainer"></div>
         </div>
 
         <!-- Innovator: Submit Project (Focus Panel) -->
@@ -448,7 +610,7 @@
                     "
                   />
                   <label
-                    class="btn btn-primary position-absolute bottom-0 end-0 rounded-circle p-2"
+                    class="btn btn-primary position-absolute bottom-0 end-0 rounded-circle p-2 text-white"
                     for="profilePicInput"
                     style="
                       width: 45px;
@@ -456,6 +618,8 @@
                       display: flex;
                       align-items: center;
                       justify-content: center;
+                      background-color: var(--brand-green);
+                      border: none;
                     "
                   >
                     <i class="fa fa-camera"></i>
@@ -465,6 +629,11 @@
                 <h3 id="profileDisplayNameDisplay" class="fw-bold mb-2">
                   User Name
                 </h3>
+                <div class="mt-2 mb-3" id="mentorPublicPreviewBtn" style="display:none;">
+                    <button class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-bold" onclick="window.dashboard.openPublicProfilePreview()">
+                        <i class="fa fa-eye me-1"></i> Preview Public Profile
+                    </button>
+                </div>
                 <div
                   id="skillsBadgeContainer"
                   class="d-flex flex-wrap justify-content-center gap-2 mt-3"
@@ -584,7 +753,7 @@
                       />
                     </div>
                   </div>
-                  <button type="submit" class="btn btn-primary mt-4 w-100 py-3">
+                  <button type="submit" class="btn btn-success mt-4 w-100 py-3 text-white fw-bold" style="background-color: var(--brand-green); border: none;">
                     Update Profile
                   </button>
                 </form>
@@ -731,40 +900,33 @@
           ></div>
         </div>
       </div>
-    </div>
+    </div> <!-- End of dashboard-content -->
 
-    <!-- Modals -->
-    <div
-      class="modal fade"
-      id="onboardingModal"
-      tabindex="-1"
-      aria-hidden="true"
-      data-bs-backdrop="static"
-      data-bs-keyboard="false"
-    >
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius:24px; overflow:hidden;">
-          <div class="modal-header border-0 text-white" style="background: linear-gradient(135deg, #1a5e4f 0%, #2d8c72 100%); padding: 1.5rem 2rem;">
-            <div class="w-100">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="mb-0 fw-bold" id="onboardingTitle">Complete Your Mentor Profile</h5>
-                <small class="opacity-75" id="onboardingStepCount">Step 1 of 6</small>
-              </div>
-              <div class="progress" style="height: 6px; background: rgba(255,255,255,0.2); border-radius:3px;">
-                <div class="progress-bar bg-warning" id="onboardingProgress" role="progressbar" style="width:0%; border-radius:3px; transition: width 0.4s ease;"></div>
-              </div>
-              <small class="opacity-75 mt-1 d-block">Complete all steps before accessing your mentor dashboard.</small>
+    <!-- Inline Onboarding Container -->
+    <div id="onboarding-content" style="display: none; position: relative; z-index: 10; padding: 40px 20px;">
+        <div class="container" style="max-width: 800px; margin: 0 auto;">
+            <div class="card border-0 shadow-lg" style="border-radius:24px; overflow:hidden;">
+                <div class="card-header border-0 text-white" style="background: linear-gradient(135deg, #1a5e4f 0%, #2d8c72 100%); padding: 1.5rem 2rem;">
+                    <div class="w-100">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0 fw-bold" id="onboardingTitle">Complete Your Mentor Profile</h5>
+                        <small class="opacity-75" id="onboardingStepCount">Step 1 of 6</small>
+                      </div>
+                      <div class="progress" style="height: 6px; background: rgba(255,255,255,0.2); border-radius:3px;">
+                        <div class="progress-bar bg-warning" id="onboardingProgress" role="progressbar" style="width:0%; border-radius:3px; transition: width 0.4s ease;"></div>
+                      </div>
+                      <small class="opacity-75 mt-1 d-block">Complete all steps before accessing your mentor dashboard.</small>
+                    </div>
+                </div>
+                <div class="card-body p-4" style="min-height: 200px;">
+                    <div id="onboardingStepContainer"></div>
+                </div>
+                <div class="card-footer border-0 bg-light d-flex" style="padding: 1.5rem 2rem; border-top: 1px solid rgba(0,0,0,0.05);">
+                    <button class="btn btn-outline-secondary px-4 me-auto" id="prevStepBtn" disabled>← Back</button>
+                    <button class="btn btn-primary px-4 ms-auto" id="nextStepBtn" style="background:#1a5e4f; border-color:#1a5e4f;">Next →</button>
+                </div>
             </div>
-          </div>
-          <div class="modal-body p-4" style="min-height: 200px;">
-            <div id="onboardingStepContainer"></div>
-          </div>
-          <div class="modal-footer border-0 bg-light" style="padding: 1rem 2rem;">
-            <button class="btn btn-outline-secondary px-4" id="prevStepBtn" disabled>← Back</button>
-            <button class="btn btn-primary px-4 ms-auto" id="nextStepBtn" style="background:#1a5e4f; border-color:#1a5e4f;">Next →</button>
-          </div>
         </div>
-      </div>
     </div>
 
     <!-- Rejection Modal -->
@@ -791,32 +953,137 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="assets/js/pages/main.js?v=10.0.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=10.0.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=10.0.0"></script>
-    <script src="assets/js/core/api.js?v=10.0.0"></script>
+    <script src="assets/js/pages/main.js?v=100.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=100.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=100.0.0"></script>
+    <script src="assets/js/core/api.js?v=100.0.0"></script>
     <!-- Feature Scripts -->
-    <script type="module" src="assets/js/pages/mentor-discovery.js?v=10.0.0"></script>
-    <script src="assets/js/components/file-upload.js?v=10.0.0"></script>
-    <script
-      type="module"
-      src="assets/js/pages/innovate-hub.js?v=10.0.0"
-    ></script>
-    <script src="assets/js/components/staggered-menu.js?v=10.0.0"></script>
-    <script src="assets/js/components/nuru-assistant.js?v=10.0.0"></script>
-    <script type="module" src="assets/js/components/collab-screen.js?v=10.0.0"></script>
+    <script type="module" src="assets/js/pages/mentor-discovery.js?v=100.0.0"></script>
+    <script src="assets/js/components/file-upload.js?v=100.0.0"></script>
+    <script type="module" src="assets/js/pages/innovate-hub.js?v=100.0.0"></script>
+    <script src="assets/js/components/staggered-menu.js?v=100.0.0"></script>
+    <script src="assets/js/components/nuru-assistant.js?v=100.0.0"></script>
+    <script type="module" src="assets/js/components/collab-screen.js?v=100.0.0"></script>
+    
+    <!-- Fail-Safe Helper -->
+    <div id="dashboardFailSafe" style="display:none; position:fixed; bottom:20px; right:20px; z-index:10000; animation: slideUp 0.5s ease-out;">
+        <button class="btn btn-warning shadow-lg px-4 py-3 fw-bold rounded-pill text-dark" onclick="forceFixDashboard()" style="border: 2px solid white;">
+            <i class="fa fa-magic me-2"></i> Stuck? Fix Dashboard View
+        </button>
+    </div>
+
+    <script>
+        // Emergency Auto-Unblock Fail-Safe
+        setTimeout(() => {
+            console.log("Running interaction safety check...");
+            const blockers = [
+                document.querySelector('.staggered-menu-panel'),
+                document.getElementById('logo-preloader'),
+                document.querySelector('.modal-backdrop')
+            ];
+            
+            // If any of these are accidentally blocking clicks without an active state
+            const menuWrapper = document.querySelector('.staggered-menu-wrapper');
+            if (menuWrapper && !menuWrapper.hasAttribute('data-open')) {
+                const panel = document.querySelector('.staggered-menu-panel');
+                if (panel) {
+                    panel.style.pointerEvents = 'none';
+                    panel.style.visibility = 'hidden';
+                    panel.style.opacity = '0';
+                    console.log("Force cleared menu panel block.");
+                }
+            }
+        }, 3000);
+    </script>
+
+    <style>
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+
+    <script>
+        function forceFixDashboard() {
+            const dash = document.getElementById('dashboard-content');
+            if(dash) {
+                dash.style.display = 'block';
+                dash.style.visibility = 'visible';
+                dash.style.opacity = '1';
+            }
+            const onboardingContent = document.getElementById('onboarding-content');
+            // Do NOT hide onboarding content if it's currently active and we're just forcing visibility of the generic dashboard elements
+            // if(onboardingContent) onboardingContent.style.display = 'none';
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = 'auto';
+            alert('Dashboard visibility forced. If you still see issues, please refresh.');
+        }
+
+        // Show fail-safe if dashboard doesn't load in 5 seconds
+        setTimeout(() => {
+            const dash = document.getElementById('dashboard-content');
+            const overlay = document.getElementById('pendingApprovalOverlay');
+            const connectionError = document.getElementById('connection-error-overlay');
+            const onboardingContent = document.getElementById('onboarding-content');
+            const isOnboardingVisible = onboardingContent && onboardingContent.style.display === 'block';
+
+            if (!overlay && !connectionError && (!dash || dash.style.display === 'none') && !isOnboardingVisible) {
+                document.getElementById('dashboardFailSafe').style.display = 'block';
+            }
+        }, 5000);
+
+        // Global Error Alert
+        window.onerror = function(msg, url, line) {
+            console.error("Global Error:", msg, "at", url, ":", line);
+            // Only show to user if it seems critical
+            if (msg.includes('Firebase') || msg.includes('Bootstrap') || msg.includes('init')) {
+                // Silently log or simple toast
+            }
+            return false;
+        };
+    </script>
+    
+    <!-- Mentorship Report Modal -->
+    <div class="modal fade" id="collabReportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Submit Progress Report</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="collabReportForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase">Summary of Discussions</label>
+                            <textarea id="reportSummary" class="form-control rounded-4 p-3" rows="4" placeholder="What did you discuss with your mentor?" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase">Action Items & Next Steps</label>
+                            <textarea id="reportNextSteps" class="form-control rounded-4 p-3" rows="3" placeholder="What are your immediate tasks?"></textarea>
+                        </div>
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary py-3 rounded-pill fw-bold">Submit to Mentor & Admin</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
-      import { auth, db } from "./assets/js/core/firebase-config.js";
+      import { auth } from "./assets/js/core/firebase-config.js";
       import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-      import {
-        doc,
-        getDoc,
-      } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
       window.dashboardReady = false;
 
-      // ── Helper: show/hide sections ───────────────────────────
+      // ── GLOBAL NAVIGATION REGISTRY ──────────────────────────
       window.showDashboardSection = function (sectionId) {
+        // If a modal is active (like onboarding), don't force section visibility yet
+        // This prevents the "gray screen" backdrop from being visible without content
+        if (document.body.classList.contains('modal-open') && sectionId === 'home') {
+            console.log("Dashboard: Modal active, skipping section switch to 'home'");
+            return;
+        }
+
         const quickAccess = document.getElementById("dashboardQuickAccess");
         const container = document.getElementById("activeSectionContainer");
         const sections = document.querySelectorAll(".dashboard-section");
@@ -825,7 +1092,9 @@
           if (quickAccess) quickAccess.style.display = "block";
           if (container) container.style.display = "none";
           window.scrollTo({ top: 0, behavior: "smooth" });
-          if (window.gsap) {
+          
+          const gsapTargets = document.querySelectorAll(".article-wrapper");
+          if (window.gsap && gsapTargets.length > 0) {
             gsap.from(".article-wrapper", {
               duration: 0.6,
               y: 30,
@@ -858,21 +1127,18 @@
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
-        // ── Section-specific render hooks ──────────────────────
-        if (sectionId === "mentors" && window.MentorDiscovery) {
-          MentorDiscovery.init();
-        }
-        if (sectionId === "myMentors" && window.renderMyMentors) {
-          renderMyMentors();
-        }
-        if (sectionId === "requests" && window.renderMentorRequests) {
-          renderMentorRequests();
-        }
-        if (sectionId === "collab" && window.CollaborationScreen) {
-          // Note: CollaborationScreen.init() requires a project ID, 
-          // usually passed from the project card click.
-        }
+        // Section-specific render hooks
+        if (sectionId === "mentors" && window.MentorDiscovery) MentorDiscovery.init();
+        if (sectionId === "myMentors" && window.renderMyMentors) renderMyMentors();
+        if (sectionId === "requests" && window.renderMentorRequests) renderMentorRequests();
+        if (sectionId === "sessions" && window.SessionManager) window.SessionManager.loadSessions();
+        if (sectionId === "feedback" && window.FeedbackService) window.FeedbackService.loadFeedback();
+        if (sectionId === "reports" && window.ReportManager) window.ReportManager.loadReports();
+        if (sectionId === "collab" && window.CollaborationHub) window.CollaborationHub.init();
       };
+      
+      // Export gloablly and establish alias. Must be outside function scope.
+      window.showSection = window.showDashboardSection;
 
       // ── Mentor access control: show blocking screen ──────────
       function showMentorPendingScreen() {
@@ -907,30 +1173,84 @@
             </div>
             <div style="margin-top: 2rem;">
                 <button onclick="logout && logout()" style="padding:12px 40px; background:#dc3545; color:#fff; border:none; border-radius:50px; font-weight:700; cursor:pointer; transition: all 0.3s ease; box-shadow: 0 10px 20px rgba(220,53,69,0.2);">Sign Out and Reapply</button>
-            </div>
           </div>`;
       }
 
-      // ── Auth listener ──────────────────────────────────────────
+      // ── Auth listener: Supabase as Single Source of Truth ───────
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
           window.location.replace("login.html");
           return;
         }
 
-        let userData = {};
+        let userData = null;
         let role = "innovator";
+
         try {
-          const snap = await getDoc(doc(db, "users", user.uid));
-          if (snap.exists()) {
-            userData = snap.data();
-            role = userData.role || "innovator";
+          // 1. Primary Attempt: Supabase (Single Source of Truth)
+          if (window.SupabaseService) {
+              try {
+                  const sbProfile = await window.SupabaseService.getProfile(user.uid);
+                  if (sbProfile) {
+                      userData = {
+                          fullName: sbProfile.full_name,
+                          role: sbProfile.role,
+                          email: user.email,
+                          status: sbProfile.status,
+                          profileComplete: true,
+                          isApproved: sbProfile.status === 'approved' || sbProfile.status === 'active',
+                          photoURL: sbProfile.avatar_url
+                      };
+                      role = userData.role;
+                      console.log("Dashboard: Profile loaded from Supabase ✓");
+                  }
+              } catch (sbErr) {
+                  console.warn("Dashboard: Supabase profile fetch failed, trying Firestore migrate...", sbErr);
+              }
           }
+
+          // 2. Legacy Migration Check: Firestore (Only if Supabase has no record)
+          if (!userData) {
+              try {
+                  const snap = await getDoc(doc(db, "users", user.uid));
+                  if (snap.exists()) {
+                      const fireData = snap.data();
+                      console.log("Dashboard: Found legacy Firestore profile. Migrating...");
+                      
+                      // Sync to Supabase for future usage
+                      if (window.SupabaseService) {
+                          const synced = await window.SupabaseService.syncProfile(user.uid, fireData);
+                          userData = {
+                              fullName: synced.full_name,
+                              role: synced.role,
+                              email: user.email,
+                              status: synced.status,
+                              profileComplete: true,
+                              isApproved: synced.status === 'approved' || synced.status === 'active'
+                          };
+                          role = userData.role;
+                      }
+                  }
+              } catch (firestoreErr) {
+                  console.error("Dashboard: Legacy migration failed.", firestoreErr);
+              }
+          }
+
+          // 3. Final Guard
+          if (!userData) {
+              console.error("Dashboard: No profile found for user", user.uid);
+              // If we reach here, the user might need to complete onboarding or there's a serious sync issue
+              throw new Error("User profile not found. Please try logging in again or contact support.");
+          }
+
         } catch (e) {
-          console.warn(
-            "Dashboard: Firestore fetch failed, defaulting to innovator.",
-            e,
-          );
+          console.error("Dashboard: Critical profile load failure.", e);
+          if (window.showConnectionErrorUI) {
+            window.showConnectionErrorUI(e.message || "Database Connection Failed");
+          } else {
+            alert("Profile load error. Please refresh the page.");
+          }
+          return;
         }
 
         if (role === "admin") {
@@ -940,64 +1260,57 @@
 
         // ── Mentor Access Control Guard ──────────────────────────
         if (role === "mentor") {
-          let mentorStatus =
-            userData.mentorStatus || userData.approvalStatus || null;
+          const status = userData.status || userData.mentorStatus || userData.approvalStatus || "";
+          const isApproved = userData.isApproved === true || status === "approved" || status === "active";
 
-          if (mentorStatus === "pending") {
-            showMentorPendingScreen();
+          if (!isApproved) {
+            if (status === "rejected") {
+              showMentorRejectedScreen(userData.rejectionReason || null);
+            } else {
+              showMentorPendingScreen();
+            }
             return;
           }
-          if (mentorStatus === "rejected") {
-            const reason = userData.rejectionReason || null;
-            showMentorRejectedScreen(reason);
-            return;
-          }
-          // If status is 'approved' or null (default — don't block existing approved mentors)
         }
 
         // Init StaggeredMenu
         const siteItems = [
-          { label: "Home Page", link: "index.html" },
-          { label: "About Us", link: "about.html" },
+          { label: "Innovate Hub", link: "index.html" },
           { label: "Contact Us", link: "contact.html" },
         ];
-        const roleItems =
-          role === "mentor"
-            ? [
-                {
-                  label: "My Overview",
-                  link: "javascript:window.showDashboardSection('home')",
-                },
-                {
-                  label: "Mentee Requests",
-                  link: "javascript:window.showDashboardSection('requests')",
-                },
-                {
-                  label: "Active Mentees",
-                  link: "javascript:window.showDashboardSection('mentees')",
-                },
-              ]
-            : [
-                {
-                  label: "Find a Mentor",
-                  link: "javascript:window.showDashboardSection('mentors')",
-                },
-                {
-                  label: "My Mentors",
-                  link: "javascript:window.showDashboardSection('myMentors')",
-                },
-              ];
-        const profileItems = [
+        
+        let navItems = [
           {
-            label: "My Profile",
-            link: "javascript:window.showDashboardSection('profile')",
-          },
+            label: "Dashboard",
+            link: "javascript:window.showDashboardSection('home')",
+          }
+        ];
+
+        if (role === 'innovator') {
+          navItems.push(
+            { label: "Find Mentors", link: "javascript:window.showDashboardSection('mentors')" },
+            { label: "My Mentors", link: "javascript:window.showDashboardSection('myMentors')" }
+          );
+        } else if (role === 'mentor') {
+          navItems.push(
+            { label: "Requests", link: "javascript:window.showDashboardSection('requests')" },
+            { label: "My Mentees", link: "javascript:window.showDashboardSection('myMentors')" }
+          );
+        }
+
+        // Shared features
+        navItems.push(
+          { label: "Collaboration Hub", link: "javascript:window.showDashboardSection('collab')" },
+          { label: "Profile Settings", link: "javascript:window.showDashboardSection('profile')" }
+        );
+
+        const profileItems = [
           { label: "Sign Out", link: "javascript:logout()" },
         ];
 
         if (window.StaggeredMenu) {
           window.StaggeredMenu.init({
-            items: [...siteItems, ...roleItems, ...profileItems],
+            items: [...siteItems, ...navItems, ...profileItems],
             colors: ["#1a5e4f", "#f3a813", "#1a5e4f"],
             accentColor: "#1a5e4f",
             logoUrl: "assets/img/logo.svg",
@@ -1062,8 +1375,8 @@
         // Load role-specific module
         const modulePath =
           role === "mentor"
-            ? "./assets/js/pages/mentor-dashboard.js?v=10.0.0"
-            : "./assets/js/pages/innovator-dashboard.js?v=10.0.0";
+            ? `./assets/js/pages/mentor-dashboard.js?v=100.0.0`
+            : `./assets/js/pages/innovator-dashboard.js?v=100.0.0`;
 
         try {
           const mod = await import(modulePath);
@@ -1074,7 +1387,7 @@
           console.error("Dashboard: Module load error:", err);
           try {
             const fallback =
-              await import("./assets/js/pages/innovator-dashboard.js?v=10.0.0");
+              await import(`./assets/js/pages/innovator-dashboard.js?v=100.0.0`);
             if (fallback && fallback.initDashboard)
               await fallback.initDashboard(user, userData);
           } catch (e2) {
@@ -1084,7 +1397,51 @@
 
         window.dashboardReady = true;
         document.body.classList.add("role-" + role);
-        window.showDashboardSection("home");
+        
+        // Ensure the main container is visible if profile is complete
+        const dashContent = document.getElementById("dashboard-content");
+        if (dashContent && role !== "mentor") {
+            // Innovators always see the dashboard
+            dashContent.style.display = "block";
+            dashContent.style.visibility = "visible";
+        } else if (dashContent && role === "mentor" && userData && userData.profileComplete) {
+            // Mentors see the dashboard only when profile is complete
+            dashContent.style.display = "block";
+            dashContent.style.visibility = "visible";
+        } else if (dashContent && role === "mentor") {
+            // Make sure the background wrapper is active, but the QuickAccess cards are hidden
+            dashContent.style.display = "block";
+            dashContent.style.visibility = "visible";
+            const landingCards = document.getElementById("dashboardQuickAccess");
+            if (landingCards) landingCards.style.display = "none";
+        }
+
+        // Only show home section if we're not potentially showing onboarding
+        // mentor-dashboard.js will manage its own visibility if profile is incomplete
+        if (role !== "mentor" || (userData && userData.profileComplete)) {
+            window.showDashboardSection("home");
+        }
+
+        // Toggle Profile Field Groups based on Role
+        const iSkills = document.getElementById('innovatorSkillsGroup');
+        const iInterests = document.getElementById('innovatorInterestsGroup');
+        const mExpertise = document.getElementById('mentorExpertiseGroup');
+        const mExperience = document.getElementById('mentorExperienceGroup');
+        const mProfession = document.getElementById('mentorProfessionGroup');
+
+        if (role === 'innovator') {
+            if (iSkills) iSkills.style.display = 'block';
+            if (iInterests) iInterests.style.display = 'block';
+            if (mExpertise) mExpertise.style.display = 'none';
+            if (mExperience) mExperience.style.display = 'none';
+            if (mProfession) mProfession.style.display = 'none';
+        } else {
+            if (iSkills) iSkills.style.display = 'none';
+            if (iInterests) iInterests.style.display = 'none';
+            if (mExpertise) mExpertise.style.display = 'block';
+            if (mExperience) mExperience.style.display = 'block';
+            if (mProfession) mProfession.style.display = 'block';
+        }
 
         // Initialize file upload on submit section
         if (window.FileUploadComponent) {
@@ -1131,6 +1488,5 @@
         }
       });
     </script>
-    </div>
   </body>
 </html>

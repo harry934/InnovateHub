@@ -1,9 +1,6 @@
-import { auth, db, storage } from '../core/firebase-config.js';
+import { auth } from '../core/firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import {
-    doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+// Firestore imports removed
 import StatusBadge from "../components/status-badges.js";
 import EmptyStates from "../components/empty-states.js";
 import NotificationSystem from "../components/notification-system.js";
@@ -42,59 +39,28 @@ const CARD_ICONS = {
 
 const dashboardCards = [
     {
-        title: 'Overview',
-        section: 'overview',
-        subtitle: 'Stats & Metrics',
-        gradient: 'linear-gradient(135deg, #1a5e4f 0%, #2d8c72 100%)',
-        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="6" y="6" width="9" height="9" rx="2" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
-          <rect x="17" y="6" width="9" height="9" rx="2" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
-          <rect x="6" y="17" width="9" height="9" rx="2" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
-          <rect x="17" y="17" width="9" height="9" rx="2" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
-        </svg>`
-    },
-    {
-        title: 'Requests',
+        title: 'Mentorship Requests',
         section: 'requests',
-        subtitle: 'New Review',
-        gradient: 'linear-gradient(135deg, #f3a813 0%, #e07b00 100%)',
-        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="8" width="24" height="18" rx="3" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
-          <path d="M4 13h24" stroke="white" stroke-width="1.8"/>
-          <path d="M12 20h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
-        </svg>`
+        subtitle: 'Review incoming requests',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>`,
     },
     {
         title: 'My Mentees',
-        section: 'mentees',
-        subtitle: 'Manage Active',
-        gradient: 'linear-gradient(135deg, #0d7a9e 0%, #0a5a76 100%)',
-        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="11" cy="11" r="5" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
-          <circle cx="21" cy="11" r="5" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
-          <path d="M3 28c0-4.4 3.6-8 8-8" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M29 28c0-4.4-3.6-8-8-8" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>`
+        section: 'myMentors', 
+        subtitle: 'Manage your active mentees',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
     },
     {
-        title: 'Schedule',
-        section: 'schedule',
-        subtitle: 'Time Meetings',
-        gradient: 'linear-gradient(135deg, #5c3d8f 0%, #8b5cf6 100%)',
-        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="11" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
-          <path d="M16 8v8l6 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>`
+        title: 'Collaboration Hub',
+        section: 'collab',
+        subtitle: 'Real-time mentee workspace',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>`,
     },
     {
-        title: 'Account',
+        title: 'Profile Settings',
         section: 'profile',
-        subtitle: 'Profile Settings',
-        gradient: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-        icon: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="11" r="6" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
-          <path d="M4 28c0-6 5.4-10 12-10s12 4 12 10" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>`
+        subtitle: 'Update expertise and bio',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
     }
 ];
 
@@ -141,39 +107,67 @@ function initBackgroundSymbols() {
         container.appendChild(el);
     }
 }
+window.initBackgroundSymbols = () => { console.log("Legacy background symbols disabled in favor of LiveCanvas."); };
 
-function renderQuickAccessCards() {
+function renderQuickAccessCards(userData = null) {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
 
-    container.innerHTML = dashboardCards.map((card, i) => `
+    // Guard: Only render for mentors
+    const userRole = (userData && userData.role) || JSON.parse(localStorage.getItem('innovateHubUser') || '{}').role;
+    if (userRole !== 'mentor') {
+        console.warn("MentorDashboard: Skipping card render for non-mentor. Role found:", userRole);
+        return;
+    }
+
+    container.innerHTML = dashboardCards.map((card, i) => {
+        // Add tags based on section
+        let tags = [];
+        if (card.section === 'collaboration') tags = ['Active', 'Mentees'];
+        else if (card.section === 'sessions') tags = ['Video', 'Link'];
+        else if (card.section === 'feedback') tags = ['Star', 'Review'];
+        else if (card.section === 'reports') tags = ['Milestone', 'Track'];
+
+        return `
         <article
             class="dash-nav-card"
-            style="background:${card.gradient}; animation-delay:${i * 0.08}s"
-            onclick="window.showDashboardSection('${card.section}')"
+            style="animation-delay:${i * 0.1}s"
+            onclick="window.handleCardClick('${card.section}')"
             tabindex="0"
             role="button"
         >
-            <div class="dnc-shine"></div>
-            <div class="dnc-icon" style="border-color:rgba(255,255,255,0.25)">
+            <div class="dnc-icon">
                 ${card.icon}
             </div>
-            <div class="dnc-body">
+            <div class="dnc-content">
                 <h3 class="dnc-title">${card.title}</h3>
-                <p class="dnc-sub">${card.subtitle}</p>
+                <p class="dnc-desc">${card.subtitle}</p>
+                <div class="card-tags">
+                    ${tags.map(t => `<span class="card-tag">• ${t}</span>`).join('')}
+                </div>
             </div>
             <div class="dnc-arrow">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
             </div>
+            <div class="dash-nav-card-bottom-line"></div>
         </article>
-    `).join('');
+    `; }).join('');
 
-    // Subtle animated particles still enabled via CSS
-    const symbolContainer = document.getElementById('backgroundSymbols');
-    if (symbolContainer) symbolContainer.innerHTML = '';
+    window.handleCardClick = function(section) {
+        console.log("Mentor Dashboard: Navigation to", section);
+        window.showDashboardSection(section);
+        if (section === 'collab') {
+            if (window.CollaborationHub) window.CollaborationHub.init();
+        } else if (section === 'requests') {
+            // Fixed typo: was fetchMentorshipRequests
+            if (window.dashboard && typeof window.dashboard.loadRequests === 'function') {
+                window.dashboard.loadRequests();
+            }
+        }
+    };
 }
 
 
@@ -181,7 +175,7 @@ class MentorDashboard {
   constructor() {
     this.currentUser = null;
     this.onboardingStep = 1;
-    this.totalSteps = 5;
+    this.totalSteps = 6; // Increased from 5
     this.onboardingData = {};
   }
 
@@ -189,42 +183,154 @@ class MentorDashboard {
     console.log("Mentor Dashboard: Initializing with provided data...");
     this.currentUser = user;
     
+    // Attempt Supabase sync but don't let it block the whole dashboard if it fails
     try {
-        await this.checkProfileCompletion(userData);
-        await this.initializeUI();
+        if (window.SupabaseService) {
+            // Fetch first to avoid overwriting existing completion status with false
+            const existingProfile = await window.SupabaseService.getProfile(user.uid);
+            const isComplete = existingProfile?.profile_complete || userData?.profileComplete || userData?.profile_complete || false;
+            
+            await window.SupabaseService.upsertProfile({
+                id: user.uid,
+                full_name: userData?.fullName || user.displayName || user.email.split('@')[0],
+                email: user.email,
+                role: 'mentor',
+                status: existingProfile?.status || userData?.status || 'active',
+                profile_complete: isComplete,
+                avatar_url: userData?.photoUrl || userData?.photoURL || user.photoURL || ''
+            });
+        }
+    } catch (sbErr) { console.warn("Mentor Dashboard: Supabase profile sync skipped:", sbErr); }
+
+    try {
+        const isReady = await this.checkProfileCompletion(userData);
+        if (!isReady) {
+            console.log("Mentor Dashboard: Profile not ready (pending or onboarding), stopping further init.");
+            return;
+        }
+
+            await this.initializeUI(userData);
         this.updateProfileCompleteness(userData);
         this.loadDashboardData();
     } catch (err) {
         console.error("Error initializing mentor dashboard:", err);
+        // Fallback: try to initialize UI anyway if we have some data
+        if (userData) {
+            await this.initializeUI();
+            this.loadDashboardData();
+        }
     }
   }
 
   async checkProfileCompletion(providedData = null) {
     try {
-      let userData = providedData;
-      if (!userData) {
-          const userDoc = await getDoc(doc(db, "users", this.currentUser.uid));
-          if (userDoc.exists()) userData = userDoc.data();
-      }
+      // Fetch latest from Supabase
+      const sbProfile = await window.SupabaseService.getProfile(this.currentUser.uid);
+      let userData = sbProfile || providedData;
 
       if (userData) {
-        if (!userData.profileComplete) {
-          this.showOnboardingModal();
-        } else {
-          document.getElementById("dashboard-content").style.display = "block";
+        // 1. Check Approval Status
+        const status = userData.status || userData.mentorStatus || userData.approvalStatus || "";
+        const isActuallyApproved = userData.isApproved === true || status === "approved" || status === "active";
+
+        if (status === 'rejected') {
+            console.log("MentorDashboard: Account rejected.");
+            return false;
         }
 
-        // Update User Identity in Sidebar
-        this.updateUserIdentity(
-          userData.fullName || this.currentUser.displayName || this.currentUser.email.split('@')[0],
-        );
+        if (!isActuallyApproved) {
+            console.log("MentorDashboard: Approval pending or unknown status:", status);
+            this.showPendingApprovalUI();
+            return false;
+        }
+
+    console.log("Mentor Dashboard: Checking profile completion...");
         
-        // Populate Profile Forms with existing data
-        this.populateProfileForms(userData);
-      }
-    } catch (error) {
-      console.error("Error checking profile:", error);
+    let isComplete = providedData.profileComplete === true || providedData.profile_complete === true;
+    
+    // If Firestore says incomplete, double check Supabase
+    if (!isComplete && window.SupabaseService) {
+        try {
+            const sbProfile = await window.SupabaseService.getProfile(this.currentUser.uid);
+            if (sbProfile && sbProfile.profile_complete === true) {
+                console.log("Mentor Dashboard: Profile completion verified via Supabase ✓");
+                isComplete = true;
+            }
+        } catch (e) {
+            console.warn("Mentor Dashboard: Supabase completion check failed", e);
+        }
     }
+
+    const onboardingContainer = document.getElementById('onboarding-content');
+    const dashContent = document.getElementById('dashboard-content');
+    const landingCards = document.getElementById("dashboardQuickAccess");
+    const activeSectionContainer = document.getElementById("activeSectionContainer");
+
+    if (!isComplete) {
+        console.warn("Mentor Dashboard: Profile incomplete. Launching onboarding wizard.");
+        document.body.style.background = 'linear-gradient(135deg, #edf7f4 0%, #fdf6e9 100%)';
+        if (landingCards) {
+            landingCards.style.display = "none";
+            landingCards.style.visibility = "hidden";
+        }
+        if (activeSectionContainer) {
+            activeSectionContainer.style.display = "none";
+        }
+        if (onboardingContainer) {
+            onboardingContainer.style.setProperty('display', 'block', 'important');
+            onboardingContainer.style.visibility = 'visible';
+            onboardingContainer.style.opacity = '1';
+            onboardingContainer.style.zIndex = '1000';
+        }
+        if (dashContent) dashContent.style.display = 'none';
+        
+        // Wait for internal scripts to settle before initializing wizard
+        setTimeout(() => {
+            this.showOnboardingInline();
+        }, 150); // Original delay was 150ms, keeping it.
+        return false;
+    } else {
+        console.log("Mentor Dashboard: Profile verified complete. Access granted.");
+        if (onboardingContainer) onboardingContainer.style.display = 'none';
+        if (dashContent) {
+            dashContent.style.display = 'block';
+            dashContent.style.visibility = 'visible';
+            dashContent.style.opacity = '1';
+        }
+        if (landingCards) {
+            landingCards.style.display = "block";
+            landingCards.style.visibility = "visible";
+        }
+        document.body.style.overflow = 'auto';
+        document.body.style.background = '';
+
+        const realName = providedData.full_name || providedData.fullName || this.currentUser.displayName || this.currentUser.email.split('@')[0];
+        const realAvatar = providedData.avatar_url || providedData.photoUrl || this.currentUser.photoURL || '';
+
+        this.updateUserIdentity(realName, realAvatar);
+        this.populateProfileForms(providedData);
+        this.syncProfileHeaderUI(providedData);
+        return true;
+      }
+    }
+    } catch (err) {
+      console.error("Error in checkProfileCompletion:", err);
+      return false;
+    }
+  }
+
+  syncProfileHeaderUI(data) {
+    const realName = data.full_name || data.fullName || 'Mentor';
+    const realAvatar = data.avatar_url || data.photoUrl || '';
+    
+    // Sync with profile header card (The one with USIU placeholder)
+    const profileHeaderName = document.querySelector('.profile-header-premium h2');
+    const profileHeaderOrg = document.querySelector('.profile-header-premium p');
+    if (profileHeaderName) profileHeaderName.textContent = realName;
+    if (profileHeaderOrg) profileHeaderOrg.textContent = data.profession || data.expertise?.join(', ') || 'Professional Mentor';
+
+    const profilePreview = document.getElementById('profilePreview');
+    if (profilePreview && realAvatar) profilePreview.src = realAvatar;
   }
 
   updateProfileCompleteness(userData) {
@@ -233,17 +339,17 @@ class MentorDashboard {
     document.getElementById("mentorCompleteness").style.display = "block";
     
     let filledFields = 0;
-    const totalFields = 5;
+    const data = userData;
+    if (data.full_name || data.fullName) filledFields++;
+    if (data.bio) filledFields++;
+    if (data.profession) filledFields++;
+    if ((data.expertise && data.expertise.length > 0)) filledFields++;
+    if (data.availability || data.meetingLink) filledFields++;
+    if (data.experience) filledFields++;
+    if (data.communication_preference || data.communicationPreference) filledFields++;
+    if (data.avatar_url || data.photoUrl) filledFields++; 
     
-    if (userData.fullName) filledFields++;
-    if (userData.bio) filledFields++;
-    if (userData.profession) filledFields++;
-    if (userData.expertise && userData.expertise.length > 0) filledFields++;
-    if (userData.availability || userData.meetingLink) filledFields++;
-    if (userData.experience) filledFields++; // Added experience
-    if (userData.communicationPreference) filledFields++; // Added communication preference
-    
-    const totalFieldsCount = 7;
+    const totalFieldsCount = 8; 
     const percentage = Math.round((filledFields / totalFieldsCount) * 100);
     
     const fill = document.getElementById("completenessFill");
@@ -252,19 +358,18 @@ class MentorDashboard {
     if (fill) fill.style.width = percentage + "%";
     if (text) text.textContent = percentage + "%";
     
-    // Update profileComplete status in DB if reached 100%
-    if (percentage === 100 && !userData.profileComplete) {
-        updateDoc(doc(db, "users", this.currentUser.uid), { profileComplete: true });
+    if (percentage === 100 && !data.profileComplete && !data.profile_complete) {
+        window.SupabaseService.upsertProfile({ id: this.currentUser.uid, profile_complete: true });
     }
   }
 
-  updateUserIdentity(name) {
+  updateUserIdentity(name, avatar) {
     const el = document.getElementById("userDisplayName");
     if (el) el.textContent = name;
     
     // Refresh Profile Circle Initials
     if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
-        window.StaggeredMenu.updateInitials(name);
+        window.StaggeredMenu.updateInitials(name, avatar);
     }
   }
   
@@ -287,15 +392,18 @@ class MentorDashboard {
   // ONBOARDING WIZARD
   // ==========================================
 
-  showOnboardingModal() {
-    const modal = new bootstrap.Modal(
-      document.getElementById("onboardingModal"),
-      {
-        backdrop: "static",
-        keyboard: false,
-      },
-    );
-    modal.show();
+  showOnboardingInline() {
+    const onboardingEl = document.getElementById("onboarding-content");
+    if (!onboardingEl) {
+        console.error("MentorDashboard: onboarding-content element not found!");
+        return;
+    }
+
+    onboardingEl.style.display = "block";
+    onboardingEl.style.zIndex = "100"; // Top of the stack on the dashboard
+    
+    // Removed window.StaggeredMenu.hide() to keep the navbar accessible during onboarding
+    
     this.renderOnboardingStep();
 
     // Bind Next/Back buttons - Check if listeners already added
@@ -325,23 +433,54 @@ class MentorDashboard {
 
     switch (this.onboardingStep) {
       case 1:
-        title.textContent = "Step 1: Areas of Expertise";
+        title.textContent = "Step 1: Profile Photo";
+        html = `
+                    <div class="mb-3">
+                        <label class="form-label">Professional Profile Photo</label>
+                        <p class="text-muted small">A professional photo helps innovators build trust with you.</p>
+                        <div id="photoUploadContainer" class="p-3 border rounded-3 bg-light text-center">
+                            <!-- FileUploadComponent will be mounted here -->
+                        </div>
+                    </div>
+                `;
+        // We'll initialize the component after mounting HTML
+        setTimeout(() => {
+            window._mentorPhotoUpload = new FileUploadComponent("photoUploadContainer", {
+                maxFiles: 1,
+                maxSizeMB: 2,
+                acceptedTypes: ['jpg', 'jpeg', 'png'],
+                onFilesChanged: (meta) => {
+                    this.onboardingData.photoMeta = meta[0];
+                }
+            });
+        }, 0);
+        break;
+      case 2:
+        title.textContent = "Step 2: Areas of Expertise";
         html = `
                     <div class="mb-3">
                         <label class="form-label">Select your areas of expertise (Multi-select)</label>
-                        <div class="d-flex flex-wrap gap-2">
+                        <div class="expertise-grid">
                             ${this.renderCheckbox("expertise", "Technology")}
                             ${this.renderCheckbox("expertise", "Healthcare")}
                             ${this.renderCheckbox("expertise", "Education")}
                             ${this.renderCheckbox("expertise", "Environment")}
                             ${this.renderCheckbox("expertise", "Business")}
                             ${this.renderCheckbox("expertise", "Marketing")}
+                            ${this.renderCheckbox("expertise", "Design")}
                         </div>
                     </div>
+                    <style>
+                        .expertise-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                            gap: 10px;
+                        }
+                    </style>
                 `;
         break;
-      case 2:
-        title.textContent = "Step 2: Experience Level";
+      case 3:
+        title.textContent = "Step 3: Experience Level";
         html = `
                     <div class="mb-3">
                         <label class="form-label">Years of Experience</label>
@@ -354,8 +493,8 @@ class MentorDashboard {
                     </div>
                 `;
         break;
-      case 3:
-        title.textContent = "Step 3: Mentoring Style";
+      case 4:
+        title.textContent = "Step 4: Mentoring Style";
         html = `
                     <div class="mb-3">
                         <label class="form-label">How do you prefer to mentor?</label>
@@ -374,8 +513,8 @@ class MentorDashboard {
                     </div>
                 `;
         break;
-      case 4:
-        title.textContent = "Step 4: Availability";
+      case 5:
+        title.textContent = "Step 5: Availability";
         html = `
                     <div class="mb-3">
                         <label class="form-label">Weekly Availability</label>
@@ -387,12 +526,12 @@ class MentorDashboard {
                     </div>
                 `;
         break;
-      case 5:
-        title.textContent = "Step 5: Industries of Interest";
+      case 6:
+        title.textContent = "Step 6: Industries of Interest";
         html = `
                     <div class="mb-3">
                         <label class="form-label">Industries you are interested in mentoring</label>
-                        <div class="d-flex flex-wrap gap-2">
+                        <div class="expertise-grid">
                             ${this.renderCheckbox("industries", "FinTech")}
                             ${this.renderCheckbox("industries", "HealthTech")}
                             ${this.renderCheckbox("industries", "EdTech")}
@@ -418,17 +557,19 @@ class MentorDashboard {
   saveStepData() {
     // Capture data from current step
     if (this.onboardingStep === 1) {
-      this.onboardingData.expertise = this.getMultiSelectValues("expertise");
+        // Photo handled by component - data already in this.onboardingData.photoMeta
     } else if (this.onboardingStep === 2) {
+      this.onboardingData.expertise = this.getMultiSelectValues("expertise");
+    } else if (this.onboardingStep === 3) {
       this.onboardingData.experience =
         document.getElementById("experienceSelect").value;
-    } else if (this.onboardingStep === 3) {
+    } else if (this.onboardingStep === 4) {
       const el = document.querySelector('input[name="style"]:checked');
       if (el) this.onboardingData.style = el.value;
-    } else if (this.onboardingStep === 4) {
+    } else if (this.onboardingStep === 5) {
       this.onboardingData.availability =
         document.getElementById("availabilitySelect").value;
-    } else if (this.onboardingStep === 5) {
+    } else if (this.onboardingStep === 6) {
       this.onboardingData.industries = this.getMultiSelectValues("industries");
     }
   }
@@ -473,19 +614,58 @@ class MentorDashboard {
     try {
       const btn = document.getElementById("nextStepBtn");
       btn.innerHTML =
-        '<span class="spinner-border spinner-border-sm"></span> Saving...';
+        '<span class="spinner-border spinner-border-sm"></span> Finalizing Profile...';
       btn.disabled = true;
 
-      await updateDoc(doc(db, "users", this.currentUser.uid), {
-        ...this.onboardingData,
-        profileComplete: true,
-        updatedAt: serverTimestamp(),
-      });
+      let photoUrl = null;
+
+      // 1. Upload Photo to Supabase if provided
+      if (window._mentorPhotoUpload && window._mentorPhotoUpload.files.length > 0) {
+          try {
+              const fileObj = window._mentorPhotoUpload.files[0].file;
+              const fileName = `${this.currentUser.uid}_${Date.now()}.${fileObj.name.split('.').pop()}`;
+              
+              const { data, error } = await window.supabase.storage
+                  .from('profiles')
+                  .upload(`mentors/${fileName}`, fileObj);
+              
+              if (error) {
+                  console.warn("Notice: Could not upload photo. Is the 'profiles' bucket created in Supabase?", error);
+              } else {
+                  // Get Public URL
+                  const { data: publicUrlData } = window.supabase.storage
+                      .from('profiles')
+                      .getPublicUrl(`mentors/${fileName}`);
+                  
+                  photoUrl = publicUrlData.publicUrl;
+              }
+          } catch (e) {
+              console.warn("File upload threw an exception:", e);
+          }
+      }
+
+      // 2. Primary Sync: Supabase Profile
+      if (window.SupabaseService) {
+          await window.SupabaseService.upsertProfile({
+            id: this.currentUser.uid,
+            status: "active",
+            profile_complete: true,
+            avatar_url: photoUrl || this.currentUser.photoURL || "",
+            expertise: this.onboardingData.expertise?.join(', '),
+            experience: this.onboardingData.experience,
+            mentoring_style: this.onboardingData.style,
+            availability: this.onboardingData.availability,
+            industries_of_interest: this.onboardingData.industries?.join(', ')
+          });
+          console.log("Mentor Dashboard: Supabase Onboarding Synced ✓");
+      }
+
+      // 3. Secondary Sync: Firestore (Background) - Removed
 
       location.reload(); // Reload to clear modal and show dashboard
     } catch (error) {
       console.error("Onboarding failed:", error);
-      alert("Failed to save profile. Please try again.");
+      alert("Failed to save profile: " + error.message);
       document.getElementById("nextStepBtn").innerHTML = "Finish";
       document.getElementById("nextStepBtn").disabled = false;
     }
@@ -495,13 +675,16 @@ class MentorDashboard {
   // DASHBOARD CORE
   // ==========================================
 
-  async initializeUI() {
+  async initializeUI(userData) {
     if (this.uiInitialized) return;
     this.uiInitialized = true;
 
+    if (userData) this.populateProfileForms(userData);
+
     // Navigation Logic handled in dashboard.html
     // We just need to make sure renderQuickAccessCards is called
-    renderQuickAccessCards();
+    renderQuickAccessCards(userData);
+    this.renderLandingStats();
 
     // Initialize CardNav for Mentor
     const navItems = [
@@ -546,7 +729,7 @@ class MentorDashboard {
     */
 
     // Render Quick Access Cards
-    renderQuickAccessCards();
+    renderQuickAccessCards(userData);
     
     // Attach Event Listeners for Forms
     const scheduleForm = document.getElementById('scheduleForm');
@@ -555,15 +738,105 @@ class MentorDashboard {
     const profileForm = document.getElementById('profileForm');
     if(profileForm) profileForm.addEventListener('submit', (e) => this.handleProfileUpdate(e));
     
+    // Show Preview Button for Mentors
+    const previewBtn = document.getElementById('mentorPublicPreviewBtn');
+    if(previewBtn) previewBtn.style.display = 'block';
+
     // Toggle handling
     const toggle = document.getElementById('availabilityToggle');
     if(toggle) {
         toggle.addEventListener('change', (e) => {
-            document.getElementById('availabilityText').textContent = e.target.checked ? 'Available for new mentees' : 'Not available';
-            updateDoc(doc(db, "users", this.currentUser.uid), { 
-                isAvailable: e.target.checked 
-            });
+            const statusText = document.getElementById('availabilityText');
+            if(statusText) statusText.textContent = e.target.checked ? 'Available for new mentees' : 'Not available';
+            if (window.SupabaseService) {
+                window.SupabaseService.upsertProfile({ id: this.currentUser.uid, is_available: e.target.checked });
+            }
         });
+    }
+
+    // Profile Picture Upload Handling
+    const profilePicInput = document.getElementById('profilePicInput');
+    if (profilePicInput) {
+        profilePicInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const preview = document.getElementById('profilePreview');
+            if (preview) {
+                preview.src = URL.createObjectURL(file);
+                preview.style.opacity = '0.5';
+            }
+
+            try {
+                const publicUrl = await window.SupabaseService.uploadAvatar(this.currentUser.uid, file);
+                
+                // Update Firestore - Removed
+
+                // Sync Navbar
+                this.updateUserIdentity(this.currentUser.displayName || this.currentUser.email.split('@')[0], publicUrl);
+                
+                alert('Profile picture updated successfully!');
+            } catch (err) {
+                console.error("Profile pic upload failed:", err);
+                alert('Failed to update profile picture. Ensure your Supabase Storage has a "public" bucket.');
+            } finally {
+                if (preview) preview.style.opacity = '1';
+            }
+        });
+    }
+  }
+
+  async renderLandingStats() {
+    const statsContainer = document.getElementById('landingStatsRow');
+    if (!statsContainer) return;
+    statsContainer.style.display = 'flex';
+    statsContainer.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border text-primary spinner-border-sm"></div></div>';
+
+    try {
+        // 1. Fetch Mentorships from Supabase
+        const mentorships = await window.SupabaseService.getMentorships(this.currentUser.uid, 'mentor');
+        const activeMentees = mentorships ? mentorships.filter(m => m.status === 'accepted').length : 0;
+        const pendingRequests = mentorships ? mentorships.filter(m => m.status === 'pending_mentor').length : 0;
+
+        // 2. Fetch Sessions
+        let sessionCount = 0;
+        try {
+            if (mentorships && window.SupabaseService.getSessions) {
+                for (const m of mentorships) {
+                    if (m.status !== 'accepted') continue;
+                    const sess = await window.SupabaseService.getSessions(m.id);
+                    sessionCount += sess ? sess.filter(s => {
+                        const sDate = s.session_date || s.date;
+                        return sDate && new Date(sDate) > new Date();
+                    }).length : 0;
+                }
+            }
+        } catch (sessErr) { console.warn("Mentor Dashboard: Session fetch failed", sessErr); }
+
+        const stats = [
+            { label: 'Active Mentees', value: activeMentees, icon: 'fa-user-graduate', color: '#1a5e4f' },
+            { label: 'Pending Requests', value: pendingRequests, icon: 'fa-hourglass-half', color: '#f3a813' },
+            { label: 'Upcoming Sessions', value: sessionCount, icon: 'fa-calendar-alt', color: '#1a5e4f' }
+        ];
+
+        statsContainer.innerHTML = stats.map(s => `
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: ${s.color}20; color: ${s.color}">
+                            <i class="fa ${s.icon} fa-lg"></i>
+                        </div>
+                        <div>
+                            <div class="h3 fw-bold mb-0" style="color: #121331">${s.value}</div>
+                            <div class="text-muted small fw-bold text-uppercase">${s.label}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error("Error rendering landing stats:", error);
+        statsContainer.innerHTML = ''; 
     }
   }
 
@@ -581,31 +854,46 @@ class MentorDashboard {
     }
 
     await Promise.all([
-      this.loadStats(),
-      this.loadRequests(),
-      this.loadMentees(),
-      this.loadNotifications()
+      // Only load modular requirements
+      this.initFeatureModules()
     ]);
+    
+    // Ensure we are on the Home section with cards visible
+    if (window.showDashboardSection) {
+        window.showDashboardSection('home');
+    }
+  }
+
+  async initFeatureModules() {
+    if (window.SessionManager) window.SessionManager.init(this.currentUser.uid, 'mentor');
+    if (window.FeedbackService) window.FeedbackService.init(this.currentUser.uid, 'mentor');
+    if (window.ReportManager) window.ReportManager.init(this.currentUser.uid, 'mentor');
+  }
+
+  async initializeOverview() {
+    // Ensure Overview is the default landing section for mentors
+    if (window.showDashboardSection) {
+        window.showDashboardSection('overview');
+    }
   }
 
   async loadStats() {
     try {
-      const q = query(
-        collection(db, "mentorshipRequests"),
-        where("mentorId", "==", this.currentUser.uid),
-      );
-      const snapshot = await getDocs(q);
+      let pending = 0;
+      let accepted = 0;
 
-      const pending = snapshot.docs.filter(
-        (doc) => doc.data().status === "pending",
-      ).length;
-      const accepted = snapshot.docs.filter(
-        (doc) => doc.data().status === "accepted",
-      ).length;
+      // 1. Fetch from Supabase (Single Source of Truth)
+      if (window.SupabaseService) {
+          const mentorships = await window.SupabaseService.getMentorships(this.currentUser.uid, 'mentor');
+          if (mentorships) {
+              pending = mentorships.filter(m => m.status === 'pending' || m.status === 'pending_mentor').length;
+              accepted = mentorships.filter(m => m.status === 'accepted').length;
+              console.log("Mentor Dashboard: Stats loaded from Supabase ✓");
+          }
+      }
 
       const totalMenteesEl = document.getElementById("totalMentees");
       const pendingRequestsEl = document.getElementById("pendingRequests");
-      const completedProjectsEl = document.getElementById("completedProjects"); // Placeholder
       const requestCountEl = document.getElementById("requestCount");
 
       if (totalMenteesEl) totalMenteesEl.textContent = accepted;
@@ -614,7 +902,6 @@ class MentorDashboard {
         requestCountEl.textContent = pending;
         requestCountEl.style.display = pending > 0 ? "inline-block" : "none";
       }
-      if (completedProjectsEl) completedProjectsEl.textContent = 0; // To be implemented with project status check
     } catch (error) {
       console.error("Error loading stats:", error);
     }
@@ -627,78 +914,68 @@ class MentorDashboard {
     container.innerHTML = EmptyStates.templates.loadingState();
 
     try {
-      const q = query(
-        collection(db, "mentorshipRequests"),
-        where("mentorId", "==", this.currentUser.uid),
-        where("status", "==", "pending"),
-      );
-      const snapshot = await getDocs(q);
+      let requests = [];
 
-      if (snapshot.empty) {
+      // 1. Try Supabase First
+      if (window.SupabaseService) {
+          const sbRequests = await window.SupabaseService.getMentorships(this.currentUser.uid, 'mentor');
+          if (sbRequests && sbRequests.length > 0) {
+              const pendingOnly = sbRequests.filter(m => m.status === 'pending' || m.status === 'pending_mentor');
+              requests = pendingOnly.map(r => ({
+                  id: r.id,
+                  innovatorId: r.innovator_id,
+                  projectId: r.project_id,
+                  status: r.status,
+                  createdAt: r.created_at,
+                  innovatorData: r.innovator, // Use the alias defined in SupabaseService
+                  projectData: r.project      // Use the alias defined in SupabaseService
+              }));
+              console.log("Mentor Dashboard: Requests loaded from Supabase");
+          }
+      }
+
+      // Removed Firestore fallback to ensure Supabase is the single source of truth
+
+      if (requests.length === 0) {
         container.innerHTML = EmptyStates.templates.noRequests();
         return;
       }
 
       container.innerHTML = "";
 
-      for (const docSnap of snapshot.docs) {
-        const requestId = docSnap.id;
-        const requestData = docSnap.data();
-        const request = { id: requestId, ...requestData };
-
+      for (const request of requests) {
         try {
-            const invId = request.innovatorId;
-            const projId = request.projectId;
+            let innovatorName = request.innovatorData?.full_name || request.innovatorData?.fullName || "Unknown Innovator";
+            let projectTitle = request.projectData?.title || "General Mentorship";
+            let category = request.projectData?.target_area || "General";
+            let dateStr = request.createdAt ? (typeof request.createdAt === 'string' ? new Date(request.createdAt).toLocaleDateString() : request.createdAt.toDate().toLocaleDateString()) : "Recently";
+            let avatarUrl = request.innovatorData?.avatar_url || "";
 
-            let innovatorName = "Unknown Innovator";
-            let projectTitle = "General Mentorship (No Project Specified)";
-            let category = "General";
-            let dateStr = request.createdAt?.toDate().toLocaleDateString() || "Recently";
-
-            const fetchPromises = [];
-            
-            // Fetch Innovator
-            if (invId && typeof invId === 'string') {
-                fetchPromises.push(getDoc(doc(db, "users", invId)));
-            } else {
-                fetchPromises.push(Promise.resolve({ exists: () => false }));
-            }
-
-            // Fetch Project
-            if (projId && typeof projId === 'string') {
-                fetchPromises.push(getDoc(doc(db, "projects", projId)));
-            } else {
-                fetchPromises.push(Promise.resolve({ exists: () => false }));
-            }
-
-            const [innovatorDoc, projectDoc] = await Promise.all(fetchPromises);
-
-            if (innovatorDoc.exists()) {
-              innovatorName = innovatorDoc.data().fullName || "Innovator";
-            }
-            
-            if (projectDoc.exists()) {
-              const pData = projectDoc.data();
-              projectTitle = pData.title || "Untitled Project";
-              category = pData.categories?.[0] || "General";
-            }
+            // Firestore fallback removed
 
             container.innerHTML += `
                     <div class="dashboard-card mb-3">
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
                             <div>
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <h5 class="mb-0">${innovatorName}</h5>
-                                    <span class="badge bg-light text-dark border">${category}</span>
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <div class="rounded-circle overflow-hidden bg-light" style="width: 40px; height: 40px; border: 1px solid #eee;">
+                                        ${avatarUrl ? 
+                                            `<img src="${avatarUrl}" class="w-100 h-100 object-fit-cover" alt="Avatar">` : 
+                                            `<div class="w-100 h-100 d-flex align-items-center justify-content-center text-success fw-bold">${innovatorName.charAt(0)}</div>`}
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0">${innovatorName}</h5>
+                                        <span class="badge bg-light text-dark border">${category}</span>
+                                    </div>
                                 </div>
                                 <p class="mb-1"><strong>Project:</strong> ${projectTitle}</p>
                                 <p class="text-muted small mb-0">Requested: ${dateStr}</p>
                             </div>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-success btn-sm" onclick="window.dashboard.handleRequest('${requestId}', 'accepted')">
+                                <button class="btn btn-success btn-sm" onclick="window.dashboard.handleRequest('${request.id}', 'accepted')">
                                     <i class="fa fa-check me-1"></i> Accept
                                 </button>
-                                <button class="btn btn-danger btn-sm" onclick="window.dashboard.handleRequest('${requestId}', 'rejected')">
+                                <button class="btn btn-danger btn-sm" onclick="window.dashboard.handleRequest('${request.id}', 'rejected')">
                                     <i class="fa fa-times me-1"></i> Reject
                                 </button>
                             </div>
@@ -706,7 +983,7 @@ class MentorDashboard {
                     </div>
                 `;
         } catch (err) {
-            console.error("Error loading details for request " + requestId, err);
+            console.error("Error rendering request " + request.id, err);
         }
       }
     } catch (error) {
@@ -723,24 +1000,45 @@ class MentorDashboard {
           return;
       }
 
+      if (status === "accepted") {
+        // Count current mentees via Supabase
+        const mentorships = await window.SupabaseService.getMentorships(this.currentUser.uid, 'mentor');
+        const acceptedCount = mentorships.filter(m => m.status === 'accepted').length;
+        
+        if (acceptedCount >= 2) {
+          alert("You are already at your maximum capacity (2 mentees). Please reject or finish other mentorships first.");
+          return;
+        }
+      }
+
       if (
         !confirm(
-          `Are you sure you want to accept this request?`,
+          `Are you sure you want to ${status} this request?`,
         )
       )
         return;
 
-      await updateDoc(doc(db, "mentorshipRequests", requestId), {
-        status: status,
-        updatedAt: serverTimestamp(),
-      });
-      
-      // If accepted, could send a notification to innovator here
+      // 1. Supabase Update (Primary)
+      if (window.SupabaseService) {
+          await window.SupabaseService.updateMentorshipStatus(requestId, status);
+          console.log("Mentor Dashboard: Mentorship status updated in Supabase ✓");
+          
+          // Background sync to Firestore for legacy compatibility (Silent failure) - Removed
+      }
       
       alert(`Request ${status}!`);
       this.loadStats();
       this.loadRequests();
-      if (status === "accepted") this.loadMentees();
+      if (status === "accepted") {
+          this.loadMentees();
+          // Optional: Open Collaboration Hub automatically after a success message
+          setTimeout(() => {
+              if (window.CollaborationHub) {
+                  window.showDashboardSection('collab');
+                  window.CollaborationHub.init(requestId);
+              }
+          }, 1500);
+      }
     } catch (error) {
       console.error("Error updating request:", error);
       alert("Failed to update request");
@@ -754,17 +1052,29 @@ class MentorDashboard {
     container.innerHTML = EmptyStates.templates.loadingState();
 
     try {
-      // Use single-field query to avoid index issues
-      const q = query(
-        collection(db, "mentorshipRequests"),
-        where("mentorId", "==", this.currentUser.uid)
-      );
-      const snapshot = await getDocs(q);
-      
-      // Filter by status in JS
-      const acceptedRequests = snapshot.docs.filter(d => d.data().status === 'accepted');
+      let mentees = [];
 
-      if (acceptedRequests.length === 0) {
+      // 1. Try Supabase First
+      if (window.SupabaseService) {
+          const sbMentorships = await window.SupabaseService.getMentorships(this.currentUser.uid, 'mentor');
+          if (sbMentorships && sbMentorships.length > 0) {
+              const acceptedOnly = sbMentorships.filter(m => m.status === 'accepted');
+              mentees = acceptedOnly.map(m => ({
+                  id: m.id,
+                  innovatorId: m.innovator_id,
+                  projectId: m.project_id,
+                  status: m.status,
+                  createdAt: m.created_at,
+                  innovatorData: m.innovator, // Use the alias defined in SupabaseService
+                  projectData: m.project      // Use the alias defined in SupabaseService
+              }));
+              console.log("Mentor Dashboard: Mentees loaded from Supabase");
+          }
+      }
+
+      // Removed Firestore fallback to ensure Supabase is the single source of truth
+
+      if (mentees.length === 0) {
         container.innerHTML = `<div class="text-center py-5"><p class="text-muted">No mentees yet.</p></div>`;
         return;
       }
@@ -772,72 +1082,49 @@ class MentorDashboard {
       container.innerHTML = '<div class="row g-4"></div>';
       const row = container.querySelector(".row");
 
-      for (const docSnap of acceptedRequests) {
-        const requestId = docSnap.id;
-        const requestData = docSnap.data();
-        const request = { id: requestId, ...requestData };
-
+      for (const mentee of mentees) {
         try {
-            const invId = request.innovatorId;
-            const projId = request.projectId;
+            let innovator = mentee.innovatorData || { fullName: "Unknown Innovator", full_name: "Unknown Innovator" };
+            let project = mentee.projectData || { 
+                title: "General Mentorship", 
+                problem_statement: "Direct mentorship request.", 
+                target_area: "General", 
+                status: "active" 
+            };
+            // Firestore fallbacks removed to ensure pure Supabase usage
 
-            let innovator = { fullName: "Unknown Innovator" };
-            let project = { title: "General Mentorship", problemStatement: "Direct mentorship request without specific project attachment.", categories: ["General"], status: "active" };
-            let hasProject = false;
-
-            const fetchPromises = [];
-            
-            // Fetch Innovator
-            if (invId && typeof invId === 'string') {
-                fetchPromises.push(getDoc(doc(db, "users", invId)));
-            } else {
-                fetchPromises.push(Promise.resolve({ exists: () => false }));
-            }
-
-            // Fetch Project
-            if (projId && typeof projId === 'string') {
-                fetchPromises.push(getDoc(doc(db, "projects", projId)));
-            } else {
-                fetchPromises.push(Promise.resolve({ exists: () => false }));
-            }
-
-            const [innovatorDoc, projectDoc] = await Promise.all(fetchPromises);
-
-            if (innovatorDoc.exists()) {
-                innovator = { ...innovatorDoc.data(), id: innovatorDoc.id };
-            }
-            
-            if (projectDoc.exists()) {
-                project = { id: projectDoc.id, ...projectDoc.data() };
-                hasProject = true;
-            }
-
-            const onclickAttr = hasProject ? `window.dashboard.viewMenteeProject('${project.id}')` : `alert('This mentee joined via direct request without a specific project.')`;
+            const innovName = innovator.fullName || innovator.full_name || "Innovator";
+            const innovAvatar = innovator.photoURL || innovator.avatar_url || "";
+            const projTitle = project.title || "Untitled Project";
+            const projProb = project.problemStatement || project.problem_statement || "No description";
+            const projCat = (project.categories && project.categories[0]) || project.target_area || "General";
 
             row.innerHTML += `
                     <div class="col-md-6 col-lg-4">
-                        <div class="dashboard-card h-100 cursor-pointer hover-card" onclick="${onclickAttr}">
+                        <div class="dashboard-card h-100 cursor-pointer hover-card" onclick="window.CollaborationHub.init('${mentee.id}')">
                             <div class="d-flex align-items-center mb-3">
-                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
-                                    ${(innovator.fullName || "U").charAt(0)}
+                                <div class="me-3 d-flex align-items-center justify-content-center overflow-hidden bg-primary-soft" style="width: 50px; height: 50px; border-radius: 12px;">
+                                    ${innovAvatar ? 
+                                        `<img src="${innovAvatar}" class="w-100 h-100 object-fit-cover" alt="${innovName}">` : 
+                                        `<span class="text-primary fw-bold">${innovName.charAt(0)}</span>`}
                                 </div>
                                 <div>
-                                    <h5 class="mb-0">${innovator.fullName || "Innovator"}</h5>
+                                    <h5 class="mb-0">${innovName}</h5>
                                     <small class="text-muted">Innovator</small>
                                 </div>
                             </div>
                             <hr class="my-2">
-                            <h6 class="text-primary mb-2">${project.title}</h6>
-                            <p class="text-muted small mb-2 line-clamp-2">${project.problemStatement || "No description"}</p>
+                            <h6 class="text-primary mb-2">${projTitle}</h6>
+                            <p class="text-muted small mb-2 line-clamp-2">${projProb}</p>
                             
                             <div class="row g-2 mb-3">
                                 <div class="col-6">
                                     <div class="small fw-bold text-dark">Category</div>
-                                    <span class="badge bg-light text-dark border">${project.categories?.[0] || "General"}</span>
+                                    <span class="badge bg-light text-dark border">${projCat}</span>
                                 </div>
                                 <div class="col-6">
                                     <div class="small fw-bold text-dark">Comm. Method</div>
-                                    <div class="small text-muted">${innovator.communicationPreference || 'Any'}</div>
+                                    <div class="small text-muted">${innovator.communicationPreference || innovator.communication_preference || 'Any'}</div>
                                 </div>
                                 <div class="col-6">
                                     <div class="small fw-bold text-dark">Status</div>
@@ -845,18 +1132,23 @@ class MentorDashboard {
                                 </div>
                                 <div class="col-6">
                                     <div class="small fw-bold text-dark">Next Meeting</div>
-                                    <div class="small text-muted">${request.nextMeetingDate || 'Not scheduled'}</div>
+                                    <div class="small text-muted">${mentee.nextMeetingDate || mentee.next_meeting_date || 'Not scheduled'}</div>
                                 </div>
                             </div>
-
-                            <button class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="event.stopPropagation(); window.dashboard.openRejectionModal('${requestId}')">
-                                <i class="fa fa-times-circle me-1"></i>Request to Stop Mentorship
-                            </button>
+ 
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-sm btn-primary rounded-pill mb-1">
+                                    Open Collaboration Hub
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="event.stopPropagation(); window.dashboard.openRejectionModal('${mentee.id}')">
+                                    <i class="fa fa-times-circle me-1"></i>Request to Stop
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
         } catch (err) {
-            console.error("Error loading mentee details for " + requestId, err);
+            console.error("Error rendering mentee details for " + mentee.id, err);
         }
       }
     } catch (error) {
@@ -872,27 +1164,27 @@ class MentorDashboard {
       if(!container) return;
       
       try {
-          const q = query(
-              collection(db, "notifications"),
-              where("userId", "==", this.currentUser.uid),
-               // orderBy('createdAt', 'desc') // Needs index
-          );
-          const snapshot = await getDocs(q);
+          // Notifications should also be migrated to Supabase. 
+          // For now, if Supabase has a 'notifications' table, we use it.
+          // Otherwise, we keep a minimal placeholder to avoid crashes.
+          const { data: notifications, error } = await window.supabase
+              .from('notifications')
+              .select('*')
+              .eq('user_id', this.currentUser.uid)
+              .order('created_at', { ascending: false });
           
-          if(snapshot.empty) {
+          if (error || !notifications || notifications.length === 0) {
                container.innerHTML = `<div class="text-center py-5"><i class="fa fa-bell-slash fa-3x text-light mb-3"></i><p class="text-muted">No notifications yet</p></div>`;
                return;
           }
           
           container.innerHTML = '';
-          const docs = snapshot.docs.map(d => d.data()).sort((a,b) => b.createdAt - a.createdAt);
-          
-          docs.forEach(notif => {
+          notifications.forEach(notif => {
               container.innerHTML += `
                 <div class="list-group-item">
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="mb-1">${notif.message}</h6>
-                        <small class="text-muted">${notif.createdAt?.toDate().toLocaleDateString()}</small>
+                        <small class="text-muted">${new Date(notif.created_at).toLocaleDateString()}</small>
                     </div>
                 </div>
               `;
@@ -903,154 +1195,7 @@ class MentorDashboard {
       }
   }
 
-  async viewMenteeProject(projectId) {
-    try {
-      const projectDoc = await getDoc(doc(db, "projects", projectId));
-      if (!projectDoc.exists()) return;
 
-      const project = projectDoc.data();
-
-      // Check if project is approved (requirement)
-      if (project.status !== "approved") {
-        alert(
-          "This project is awaiting admin approval. Full details will be available once approved.",
-        );
-        return;
-      }
-
-      window.showSection("feedback");
-      this.loadProjectForFeedback(projectId, project);
-    } catch (error) {
-      console.error("Error viewing project:", error);
-    }
-  }
-
-  loadProjectForFeedback(projectId, project) {
-    const container = document.getElementById("feedbackContainer");
-    if (!container) return;
-
-    container.innerHTML = `
-            <div class="mb-4">
-                <button class="btn btn-outline-secondary btn-sm mb-3" onclick="window.showSection('mentees')">
-                    <i class="fa fa-arrow-left me-2"></i>Back to Mentees
-                </button>
-                <h3>${project.title}</h3>
-                <p class="text-muted">By Innovator</p>
-            </div>
-            
-            <div class="row">
-                <div class="col-lg-8">
-                    <!-- Project Sections for Commenting -->
-                    ${this.renderProjectSection("Problem Statement", project.problemStatement, projectId, "problemStatement")}
-                    ${this.renderProjectSection("Objectives", project.objectives, projectId, "objectives")}
-                    ${this.renderProjectSection("Proposed Solution", project.proposedSolution, projectId, "proposedSolution")}
-                    ${this.renderProjectSection("Expected Impact", project.expectedImpact, projectId, "expectedImpact")}
-                </div>
-                <div class="col-lg-4">
-                    <div class="dashboard-card bg-light">
-                         <h5>Feedback History</h5>
-                         <div id="projectFeedbackHistory">
-                            <p class="text-muted small">Select a section to view or add comments.</p>
-                         </div>
-                    </div>
-                </div>
-            </div>
-        `;
-  }
-
-  renderProjectSection(title, content, projectId, fieldName) {
-    return `
-            <div class="dashboard-card mb-4 position-relative group-comment-section">
-                <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-3" 
-                        onclick="window.dashboard.openCommentBox('${projectId}', '${fieldName}')">
-                    <i class="fa fa-comment text-primary"></i>
-                </button>
-                <h5 class="text-primary">${title}</h5>
-                <p>${content || "No content provided."}</p>
-            </div>
-        `;
-  }
-
-  openCommentBox(projectId, fieldName) {
-    const historyContainer = document.getElementById("projectFeedbackHistory");
-    historyContainer.innerHTML = `
-            <h6>Comments for: ${fieldName}</h6>
-            <div id="commentsList" class="mb-3" style="max-height: 300px; overflow-y: auto;">
-                <div class="spinner-border spinner-border-sm text-primary"></div> Loading comments...
-            </div>
-            <form onsubmit="window.dashboard.submitComment(event, '${projectId}', '${fieldName}')">
-                <div class="mb-2">
-                    <textarea class="form-control" name="comment" rows="3" placeholder="Write your feedback..." required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary btn-sm">Send Feedback</button>
-            </form>
-        `;
-
-    this.loadComments(projectId, fieldName);
-  }
-
-  async loadComments(projectId, fieldName) {
-    try {
-      const q = query(
-        collection(db, `projects/${projectId}/feedback`),
-        where("field", "==", fieldName),
-        // orderBy('createdAt', 'asc') // Requires index
-      );
-      const snapshot = await getDocs(q);
-      const list = document.getElementById("commentsList");
-
-      if (snapshot.empty) {
-        list.innerHTML = '<p class="text-muted small">No comments yet.</p>';
-        return;
-      }
-
-      list.innerHTML = "";
-      // Sort in memory for now to avoid index creation delay
-      const docs = snapshot.docs.map(d => d.data()).sort((a,b) => a.createdAt - b.createdAt);
-      
-      docs.forEach((data) => {
-        const isMe = data.authorId === this.currentUser.uid;
-        list.innerHTML += `
-                    <div class="mb-2 p-2 rounded ${isMe ? "bg-primary-soft ms-4" : "bg-light me-4"}">
-                        <small class="fw-bold d-block">${data.authorName}</small>
-                        <p class="mb-0 small">${data.content}</p>
-                        <small class="text-muted" style="font-size: 0.7rem;">${data.createdAt?.toDate().toLocaleDateString()}</small>
-                    </div>
-                `;
-      });
-    } catch (error) {
-      console.error("Error loading comments:", error);
-      document.getElementById("commentsList").innerHTML =
-        '<p class="text-danger small">Error loading comments</p>';
-    }
-  }
-
-  async submitComment(e, projectId, fieldName) {
-    e.preventDefault();
-    const content = e.target.comment.value;
-    const btn = e.target.querySelector("button");
-    btn.disabled = true;
-
-    try {
-      await addDoc(collection(db, `projects/${projectId}/feedback`), {
-        projectId,
-        field: fieldName,
-        content,
-        authorId: this.currentUser.uid,
-        authorName: this.currentUser.displayName || "Mentor",
-        role: "mentor",
-        createdAt: serverTimestamp(),
-      });
-
-      e.target.reset();
-      this.loadComments(projectId, fieldName); // Reload to show new comment
-    } catch (error) {
-      console.error("Error sending comment:", error);
-      alert("Failed to send comment");
-    } finally {
-      btn.disabled = false;
-    }
-  }
   
   async handleScheduleUpdate(e) {
       e.preventDefault();
@@ -1062,11 +1207,18 @@ class MentorDashboard {
           const availability = document.getElementById('weeklyAvailability').value;
           const meetingLink = document.getElementById('meetingLink').value;
           
-          await updateDoc(doc(db, "users", this.currentUser.uid), {
-             availability,
-             meetingLink,
-             updatedAt: serverTimestamp()
-          });
+          // 1. Primary Sync: Supabase
+          if (window.SupabaseService) {
+              await window.SupabaseService.upsertProfile({
+                  id: this.currentUser.uid,
+                  availability: availability,
+                  meeting_link: meetingLink,
+                  updated_at: new Date()
+              });
+              console.log("Mentor Dashboard: Supabase Schedule Updated ✓");
+          }
+          
+          // 2. Secondary/Legacy Sync: Firestore (Silent) - Removed
           
           alert('Schedule updated successfully!');
       } catch (err) {
@@ -1087,25 +1239,51 @@ class MentorDashboard {
       try {
           const form = e.target;
           const availabilityToggle = document.getElementById('availabilityToggle').checked;
+          const expertise = form.expertise.value.split(',').map(s => s.trim());
           
           const profileData = {
               fullName: form.fullName.value,
               profession: form.profession.value,
-              expertise: form.expertise.value.split(',').map(s => s.trim()),
+              expertise: expertise,
               bio: form.bio.value,
               isAvailable: availabilityToggle, // Sync toggle here too
               updatedAt: serverTimestamp()
           };
           
-          await updateDoc(doc(db, "users", this.currentUser.uid), profileData);
+          // 1. Primary Sync: Supabase
+          if (window.SupabaseService) {
+              await window.SupabaseService.upsertProfile({
+                  id: this.currentUser.uid,
+                  full_name: profileData.fullName,
+                  profession: profileData.profession,
+                  expertise: expertise.join(', '),
+                  bio: profileData.bio,
+                  is_available: profileData.isAvailable,
+                  updated_at: new Date()
+              });
+              console.log("Mentor Dashboard: Supabase Profile Updated ✓");
+          }
+          
+          // 2. Secondary Sync: Firestore (Silent) - Removed
+
           alert('Profile updated successfully!');
-          this.updateUserIdentity(profileData.fullName);
+          // Sync with navbar
+          const avatarUrl = document.getElementById('profilePreview')?.src || "";
+          this.updateUserIdentity(profileData.fullName, avatarUrl);
       } catch (err) {
            console.error("Profile update error:", err);
           alert("Failed to update profile.");
         } finally {
             btn.disabled = false;
             btn.innerHTML = 'Update Profile';
+        }
+    }
+
+    openPublicProfilePreview() {
+        if (window.MentorDiscovery && window.MentorDiscovery.openProfile) {
+            window.MentorDiscovery.openProfile(this.currentUser.uid);
+        } else {
+            console.error("MentorDiscovery module not found for preview");
         }
     }
 
@@ -1137,26 +1315,15 @@ class MentorDashboard {
         try {
             const requestId = this.currentRejectionRequestId;
             
-            // 1. Update mentorship request status to pending_admin_rejection
-            const { updateDoc, doc, db, serverTimestamp, addDoc, collection } = await import('../core/firebase-config.js');
-            
-            await updateDoc(doc(db, "mentorshipRequests", requestId), {
-                status: "pending_admin_rejection",
-                rejectionReason: reason,
-                rejectionRequestedAt: serverTimestamp()
-            });
+            // 1. Update Supabase (Primary)
+            if (window.SupabaseService) {
+                await window.SupabaseService.updateMentorshipStatus(requestId, "pending_admin_rejection", {
+                    rejection_reason: reason,
+                    rejection_requested_at: new Date().toISOString()
+                });
+            }
 
-            // 2. Create notification for admin
-            await addDoc(collection(db, "notifications"), {
-                userId: "admin", // Special ID for universal admin notifications
-                type: "mentorship_rejection_request",
-                requestId: requestId,
-                mentorId: this.currentUser.uid,
-                message: `Mentor ${this.currentUser.fullName || 'someone'} requested to stop a mentorship session.`,
-                reason: reason,
-                status: "unread",
-                createdAt: serverTimestamp()
-            });
+            // 2. Legacy Sync: Firestore & Notification (Background) - Removed
 
             modalInstance.hide();
             alert('Your rejection request has been submitted for admin approval.');
@@ -1174,6 +1341,51 @@ class MentorDashboard {
             confirmBtn.innerHTML = 'Submit Rejection Request';
         }
     }
+
+    showPendingApprovalUI() {
+        // Hide dashboard content
+        const dashContent = document.getElementById("dashboard-content");
+        const landingCards = document.getElementById("dashboardQuickAccess");
+        if (dashContent) dashContent.style.display = "none";
+        if (landingCards) landingCards.style.display = "none";
+
+        // Show a premium "Awaiting Approval" message
+        const welcomeContainer = document.querySelector('body');
+        const pendingOverlay = document.createElement('div');
+        pendingOverlay.id = "pendingApprovalOverlay";
+        pendingOverlay.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        `;
+        
+        pendingOverlay.innerHTML = `
+            <div class="card border-0 shadow-lg p-5 rounded-4" style="max-width: 500px; background: white;">
+                <div class="mb-4">
+                    <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-3" style="color: #1a5e4f;">Account Pending Approval</h2>
+                <p class="text-muted mb-4">Welcome to Innovate Hub! Your application is currently being reviewed by our Admin team. You'll receive full access to the dashboard once approved.</p>
+                <div class="d-grid">
+                    <button class="btn btn-outline-secondary py-3 rounded-pill fw-bold" onclick="logout()">Sign Out</button>
+                </div>
+                <div class="mt-4 small text-muted">
+                    Usually takes 24-48 hours. Thank you for your patience!
+                </div>
+            </div>
+        `;
+        
+        welcomeContainer.appendChild(pendingOverlay);
+    }
 }
 
 // Export init function for dashboard.html
@@ -1185,6 +1397,28 @@ export async function initDashboard(user, userData) {
     if (window.DashboardCharts) {
         window.DashboardCharts.init('mentor', user.uid);
     }
+
+    // Initialize New Feature Modules
+    if (window.SessionManager) window.SessionManager.init(user.uid, 'mentor');
+    if (window.FeedbackService) window.FeedbackService.init(user.uid, 'mentor');
+    if (window.ReportManager) window.ReportManager.init(user.uid, 'mentor');
+
+    // Render Landing Stats
+    if (window.dashboard && window.dashboard.renderLandingStats) {
+        await window.dashboard.renderLandingStats();
+    }
+
+    // Render Quick Access Cards
+    if (typeof renderQuickAccessCards === 'function') {
+        renderQuickAccessCards(userData);
+    }
+
+    // Expose My Mentees loader (using same ID as innovator for dashboard-switch symmetry)
+    window.renderMyMentors = () => {
+        if (window.dashboard && window.dashboard.loadMentees) {
+            window.dashboard.loadMentees();
+        }
+    };
 }
 
 // Initial instance for window access
