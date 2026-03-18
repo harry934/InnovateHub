@@ -636,6 +636,46 @@ const SupabaseService = {
         } catch (error) { return null; }
     },
 
+    // ─── Chat Messaging ───────────────────────────────────────
+    async sendMessage(message) {
+        try {
+            const { data, error } = await window.supabase
+                .from('chat_messages')
+                .insert([message])
+                .select();
+            if (error) throw error;
+            return data[0];
+        } catch (error) {
+            return this.handleSupabaseError(error, 'sendMessage');
+        }
+    },
+
+    async getMessages(mentorshipId) {
+        try {
+            const { data, error } = await window.supabase
+                .from('chat_messages')
+                .select('*')
+                .eq('mentorship_id', mentorshipId)
+                .order('created_at', { ascending: true });
+            if (error) throw error;
+            return data;
+        } catch (error) { return []; }
+    },
+
+    subscribeToMessages(mentorshipId, callback) {
+        return window.supabase
+            .channel(`public:chat_messages:mentorship_id=eq.${mentorshipId}`)
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'chat_messages', 
+                filter: `mentorship_id=eq.${mentorshipId}` 
+            }, payload => {
+                callback(payload.new);
+            })
+            .subscribe();
+    },
+
     // â”€â”€â”€ Error Handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     handleSupabaseError(error, context) {
         console.error(`Supabase Error [${context}]:`, error.message || error);

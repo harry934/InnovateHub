@@ -58,7 +58,12 @@
     margin-bottom: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid transparent;
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+.project-card-new .avatar-circle-sm {
+    width: 36px;
+    height: 36px;
 }
 
 .project-card-new:hover {
@@ -85,6 +90,7 @@
     flex-direction: column;
     background: #fff;
     border-right: 1px solid rgba(0,0,0,0.05);
+    min-width: 0;
 }
 
 .chat-workspace-header {
@@ -107,12 +113,21 @@
 .badge-role-view {
     background: rgba(255,255,255,0.2);
     border: 1px solid rgba(255,255,255,0.3);
-    padding: 6px 16px;
+    padding: 6px 14px;
     border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: 0.7rem;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    opacity: 0.9;
+}
+
+.header-meta-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
 }
 
 .collab-progress-banner {
@@ -188,26 +203,30 @@
     flex-direction: column;
 }
 
-.chat-avatar-sm {
-    width: 36px;
-    height: 36px;
+.avatar-circle-sm {
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.chat-avatar-sm-placeholder {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--brand-teal);
-    color: white;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 700;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: var(--brand-teal);
+    color: white;
+    flex-shrink: 0;
+}
+
+.avatar-circle-sm img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.partner-avatar-circles {
+    display: flex;
+    align-items: center;
 }
 
 .message-header {
@@ -439,23 +458,35 @@
 }
 
 .tools-pills {
-    background: #f1f5f9;
-    padding: 4px;
-    border-radius: 12px;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.tools-pills .nav-item {
+    text-align: center;
 }
 
 .tools-pills .nav-link {
-    border-radius: 10px;
-    font-size: 0.85rem;
+    border-radius: 0;
+    font-size: 0.9rem;
     font-weight: 700;
-    color: #64748b;
-    padding: 10px 12px;
+    color: #94a3b8;
+    padding: 14px 12px;
+    background: transparent !important;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.tools-pills .nav-link:hover {
+    color: var(--brand-teal);
 }
 
 .tools-pills .nav-link.active {
-    background: #fff;
-    color: var(--brand-teal);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    color: var(--brand-teal) !important;
+    border-bottom: 3px solid var(--brand-teal) !important;
+    box-shadow: none;
 }
 
 .tools-pane-inner {
@@ -533,6 +564,8 @@
     background: #f8fafc;
     padding: 12px 16px;
     border-radius: 12px;
+    word-break: break-word;
+    white-space: pre-wrap;
 }
 
 .feedback-pin-container {

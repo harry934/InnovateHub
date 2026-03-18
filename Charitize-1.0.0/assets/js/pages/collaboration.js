@@ -195,19 +195,16 @@ class CollaborationHub {
 
             return `
                 <div class="project-card-new ${isActive ? 'active' : ''}" onclick="window.CollaborationHub.switchSession('${m.id}')">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem;">${m.projectTitle}</h6>
-                        <span class="card-status-pill ${statusColor}">${statusLabel}</span>
-                    </div>
-                    <p class="small text-muted mb-2">
-                        ${this.isInnovator ? `Mentor: ${partner.full_name || 'Assigned Mentor'}` : `Innovator: ${partner.full_name || 'Assigned Mentee'}`}
-                    </p>
-                    <div class="d-flex align-items-center justify-content-between mt-3 px-1">
-                        <span class="small text-muted" style="font-size: 0.75rem;">
-                            <i class="far fa-clock me-1"></i> ${m.created_at ? this.getRelativeTime(m.created_at) : 'Active now'}
-                        </span>
-                        <div class="partner-avatar-circles">
-                            ${avatarHtml}
+                    <div class="d-flex flex-column">
+                        <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">${m.projectTitle}</h6>
+                        <small class="text-muted mb-3" style="font-size: 0.8rem;">
+                            ${this.isInnovator ? `Mentor: ${partner.full_name || 'Assigned Mentor'}` : `Innovator: ${partner.full_name || 'Assigned Mentee'}`}
+                        </small>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="card-status-pill ${statusColor}">${statusLabel}</span>
+                            <span class="small text-muted" style="font-size: 0.75rem;">
+                                <i class="far fa-clock me-1"></i> ${m.created_at ? this.getRelativeTime(m.created_at) : 'Active now'}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -331,8 +328,12 @@ class CollaborationHub {
         const roleBadgeEl = document.getElementById('collabRoleBadge');
 
         if (projectTitleEl) projectTitleEl.textContent = m.projectTitle || 'General Mentorship';
-        if (partnerNameEl) partnerNameEl.textContent = partner.full_name;
-        if (roleBadgeEl) roleBadgeEl.textContent = this.isInnovator ? 'Innovator View' : 'Mentor View';
+        if (partnerNameEl) {
+            partnerNameEl.textContent = (this.isInnovator ? 'MENTOR: ' : 'INNOVATOR: ') + (partner.full_name || 'Partner');
+        }
+        if (roleBadgeEl) {
+            roleBadgeEl.textContent = this.isInnovator ? 'Innovator View' : 'Mentor View';
+        }
 
         // 2. Progress Banner (Show for innovators or if mentor wants to see status)
         const progressContainer = document.getElementById('collabProgressContainer');
@@ -354,6 +355,7 @@ class CollaborationHub {
         
         if (editBtn) {
             editBtn.style.display = this.isInnovator ? 'none' : 'block';
+            editBtn.onclick = () => this.promptGuidance();
         }
 
         // 4. Meeting UI (Keep simple for now)
@@ -429,9 +431,7 @@ class CollaborationHub {
             }
         }
 
-        if (this._activeTab === 'feedback') {
-            this.renderFeedbackTab(container);
-        } else {
+        if (this._activeTab === 'reports') {
             this.renderReportsTab(container);
         }
     }
@@ -529,7 +529,16 @@ class CollaborationHub {
                     </div>
                 `).join('');
             } else {
-                html += `<div class="text-center py-4 text-muted small">No progress reports found.</div>`;
+                const menteeName = (this.isInnovator ? "you" : (this._partnerData?.full_name || "your Mentee")).split(' ')[0];
+                html += `
+                    <div class="empty-state-card d-flex flex-column align-items-center justify-content-center text-center py-5 h-100">
+                        <div class="empty-icon-circle rounded-circle d-flex align-items-center justify-content-center mb-4" style="width:72px; height:72px; background-color:#ccfbf1; color:#0d9488;">
+                            <i class="fa fa-chart-line fa-2x"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2 text-dark" style="font-size: 0.95rem;">Reports from ${menteeName} will appear here</h6>
+                        <p class="text-muted small mb-0">0 reports submitted this month</p>
+                    </div>
+                `;
             }
         } catch (err) {
             html += `<div class="text-center py-4 text-danger small">Error loading reports.</div>`;
@@ -656,21 +665,36 @@ class CollaborationHub {
         const avatarUrl = isMe ? (JSON.parse(localStorage.getItem('innovateHubUser') || '{}').avatar_url) : partner.avatar_url;
         
         const msgGroup = document.createElement('div');
-        msgGroup.className = `message-group ${isMe ? 'sent' : 'received'}`;
+        msgGroup.className = `message-group ${isMe ? 'sent d-flex justify-content-end gap-2' : 'received d-flex justify-content-start gap-2'} mb-3`;
         
         const avatarHtml = avatarUrl 
-            ? `<img src="${avatarUrl}" class="chat-avatar-sm" alt="${senderName}">`
-            : `<div class="chat-avatar-sm-placeholder">${(senderName || 'U').charAt(0)}</div>`;
+            ? `<img src="${avatarUrl}" class="chat-avatar-sm rounded-circle" style="width:36px; height:36px; object-fit:cover;" alt="${senderName}">`
+            : `<div class="chat-avatar-sm-placeholder rounded-circle bg-light d-flex align-items-center justify-content-center fw-bold text-secondary" style="width:36px; height:36px;">${(senderName || 'U').charAt(0)}</div>`;
+
+        // Nested Attachment rendering
+        let attachmentHtml = '';
+        if (msg.file_url) {
+             const fileName = msg.file_name || 'Attachment';
+             const isPdf = fileName.toLowerCase().endsWith('.pdf');
+             attachmentHtml = `
+                 <div class="chat-attachment-pill d-inline-flex align-items-center bg-white border rounded pe-3 ps-2 py-2 mt-2" style="cursor:pointer;" onclick="window.open('${msg.file_url}', '_blank')">
+                     <i class="fa fa-paperclip text-muted me-2"></i>
+                     <span class="attachment-name small text-dark me-2 text-truncate" style="max-width: 150px;">${fileName}</span>
+                     ${isPdf ? '<span class="attachment-type text-muted" style="font-size:0.6rem;">(PDF)</span>' : ''}
+                 </div>
+             `;
+        }
 
         msgGroup.innerHTML = `
             ${!isMe ? avatarHtml : ''}
-            <div class="message-content-wrapper">
-                <div class="message-header">
-                    <span class="sender-name">${senderName}</span>
-                    <span class="message-time">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            <div class="message-content-wrapper d-flex flex-column ${isMe ? 'align-items-end' : 'align-items-start'}">
+                <div class="message-header d-flex align-items-center gap-2 mb-1">
+                    <span class="sender-name text-dark fw-bold" style="font-size:0.8rem;">${senderName}</span>
+                    <span class="message-time text-muted" style="font-size:0.7rem;">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                 </div>
-                <div class="bubble-premium">
-                    ${msg.text || msg.message_text || msg.content || ''}
+                <div class="bubble-premium text-dark p-3" style="border-radius:18px; max-width:85%; background-color: ${isMe ? '#FFF7ED' : '#F0FDFA'};">
+                    <span style="font-size: 0.95rem;">${msg.text || msg.message_text || msg.content || ''}</span>
+                    ${attachmentHtml}
                 </div>
             </div>
             ${isMe ? avatarHtml : ''}
@@ -738,25 +762,86 @@ class CollaborationHub {
     }
 
     async promptFeedback(fieldId, fieldTitle) {
-        const comment = prompt(`Mentor Review for ${fieldTitle}:\n\nPlease provide your professional feedback...`);
-        if (!comment) return;
+        // Use Bootstrap Modal instead of native prompt
+        document.getElementById('feedbackModalTitle').innerText = fieldTitle;
+        document.getElementById('feedbackModalFieldId').value = fieldId;
+        const inputEl = document.getElementById('feedbackModalInput');
+        inputEl.value = '';
+        
+        const modalEl = document.getElementById('collabFeedbackModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
 
-        const uid = getCurrentAuthUser()?.uid;
-        try {
-            const feedback = await window.SupabaseService.submitSectionFeedback({
-                mentorship_id: this.activeMentorshipId,
-                project_id: this.projectData.id,
-                mentor_id: uid,
-                field_id: fieldId,
-                comment: comment,
-                stars: 5 // Default for section reviews
-            });
+        const submitBtn = document.getElementById('btnSubmitFeedbackModal');
+        
+        // Remove old event listeners by cloning if necessary, or assign direct onclick
+        submitBtn.onclick = async () => {
+            const comment = inputEl.value.trim();
+            if(!comment) { alert("Please enter your review content."); return; }
 
-            // Refresh project details to show the new pin
-            this.renderProjectDetails();
-        } catch (err) {
-            alert("Failed to submit feedback. Check database permissions.");
-        }
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Submitting...';
+
+            const uid = getCurrentAuthUser()?.uid;
+            try {
+                await window.SupabaseService.submitSectionFeedback({
+                    mentorship_id: this.activeMentorshipId,
+                    project_id: this.projectData.id,
+                    mentor_id: uid,
+                    field_id: fieldId,
+                    comment: comment,
+                    stars: 5 
+                });
+                
+                modal.hide();
+                this.renderProjectDetails();
+            } catch (err) {
+                alert("Failed to submit feedback. Check database permissions.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Submit Review';
+            }
+        };
+    }
+
+    async promptGuidance() {
+        if (this.isInnovator) return;
+        
+        const currentGuidance = this.mentorshipData.pinned_guidance || "";
+        const inputEl = document.getElementById('guidanceModalInput');
+        inputEl.value = currentGuidance;
+        
+        const modalEl = document.getElementById('collabGuidanceModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+        const submitBtn = document.getElementById('btnSubmitGuidanceModal');
+        submitBtn.onclick = async () => {
+            const newGuidance = inputEl.value.trim();
+            if(!newGuidance) return;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                // Assuming we update the mentorship record with pinned guidance
+                const { error } = await window.supabase
+                    .from('mentorships')
+                    .update({ pinned_guidance: newGuidance })
+                    .eq('id', this.activeMentorshipId);
+                    
+                if (error) throw error;
+                
+                this.mentorshipData.pinned_guidance = newGuidance;
+                document.getElementById('pinnedGuidanceText').textContent = newGuidance;
+                modal.hide();
+            } catch (err) {
+                alert("Failed to update guidance.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Save Guidance';
+            }
+        };
     }
 
     async toggleReports(enabled) {
