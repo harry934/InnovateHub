@@ -1,5 +1,4 @@
-import { db } from '../core/firebase-config.js';
-import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+// Firestore imports removed
 import { ActivityTracker } from '../utils/activity-tracker.js';
 
 /**
@@ -29,22 +28,21 @@ class DashboardCharts {
 
     async initInnovatorStats(userId, tracker) {
         try {
-            // 1. Fetch Projects Count
-            const projectsSnap = await getDocs(query(collection(db, 'projects'), where('innovatorId', '==', userId)));
-            const elProj = document.getElementById('atGlanceProjects');
-            if (elProj) elProj.textContent = projectsSnap.size;
+            if (window.SupabaseService) {
+                // 1. Fetch Projects Count
+                const projects = await window.SupabaseService.getProjectsByInnovator(userId);
+                const elProj = document.getElementById('atGlanceProjects');
+                if (elProj) elProj.textContent = projects.length;
 
-            // 2. Fetch Mentor Connections (Accepted Requests)
-            const connectionsSnap = await getDocs(query(
-                collection(db, 'mentorshipRequests'), 
-                where('innovatorId', '==', userId),
-                where('status', '==', 'accepted')
-            ));
-            const elConn = document.getElementById('atGlanceConnections');
-            if (elConn) elConn.textContent = connectionsSnap.size;
-            
-            const elLabel = document.getElementById('atGlanceConnectionLabel');
-            if (elLabel) elLabel.textContent = 'Mentor Connections';
+                // 2. Fetch Mentor Connections (Accepted Requests)
+                const connections = await window.SupabaseService.getMentorships(userId, 'innovator');
+                const acceptedCount = connections.filter(m => m.status === 'accepted').length;
+                const elConn = document.getElementById('atGlanceConnections');
+                if (elConn) elConn.textContent = acceptedCount;
+                
+                const elLabel = document.getElementById('atGlanceConnectionLabel');
+                if (elLabel) elLabel.textContent = 'Mentor Connections';
+            }
 
             // 3. Fetch Real Activity Data
             const activityData = await tracker.getActivityLastYear();
@@ -56,30 +54,22 @@ class DashboardCharts {
 
     async initMentorStats(userId, tracker) {
         try {
-            // 1. Fetch Mentees Count (Accepted Requests)
-            const menteesSnap = await getDocs(query(
-                collection(db, 'mentorshipRequests'), 
-                where('mentorId', '==', userId),
-                where('status', '==', 'accepted')
-            ));
-            const elProj = document.getElementById('atGlanceProjects');
-            if (elProj) elProj.textContent = menteesSnap.size;
-            
-            const elLabel1 = document.getElementById('atGlanceConnectionLabel');
-            if (elLabel1) elLabel1.textContent = 'Active Mentees';
+            if (window.SupabaseService) {
+                const mentorships = await window.SupabaseService.getMentorships(userId, 'mentor');
+                
+                // 1. Active Mentees
+                const activeCount = mentorships.filter(m => m.status === 'accepted').length;
+                const elProj = document.getElementById('atGlanceProjects');
+                if (elProj) elProj.textContent = activeCount;
 
-            // 2. Fetch Pending Requests
-            const pendingSnap = await getDocs(query(
-                collection(db, 'mentorshipRequests'), 
-                where('mentorId', '==', userId),
-                where('status', '==', 'pending')
-            ));
-            
-            const elConn = document.getElementById('atGlanceConnections');
-            if (elConn) elConn.textContent = pendingSnap.size;
-            
-            const elLabel2 = document.getElementById('atGlanceConnectionLabel');
-            if (elLabel2) elLabel2.textContent = 'Pending Requests';
+                const elLabel1 = document.getElementById('atGlanceConnectionLabel');
+                if (elLabel1) elLabel1.textContent = 'Active Mentees';
+
+                // 2. Pending Requests
+                const pendingCount = mentorships.filter(m => m.status === 'pending').length;
+                const elConn = document.getElementById('atGlanceConnections');
+                if (elConn) elConn.textContent = pendingCount;
+            }
 
             // 3. Fetch Real Activity Data
             const activityData = await tracker.getActivityLastYear();

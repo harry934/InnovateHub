@@ -398,7 +398,8 @@
 
     <!-- Dynamic Events Logic -->
     <script type="module">
-        import { db } from './js/firebase-config.js';
+        // Firestore logic disabled until Supabase migration for events
+        /*
         import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const container = document.getElementById('eventsContainer');
@@ -434,6 +435,11 @@
                 new WOW().init();
             }
         });
+        */
+        const container = document.getElementById('eventsContainer');
+        if (container) {
+            container.innerHTML = '<div class="col-12 text-center py-5"><p class="text-muted">Stay tuned for upcoming innovation events!</p></div>';
+        }
     </script>
 </body>
 

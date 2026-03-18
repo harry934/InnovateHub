@@ -1,6 +1,5 @@
 // Auto-extracted from innovator-dashboard.html
-import { auth, db } from '../core/firebase-config.js';
-import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { auth } from '../core/firebase-config.js';
 import NotificationSystem from '../components/notification-system.js';
 import StructuredProjectCard from '../components/project-card-structured.js';
 import MentorProfileCard from '../components/mentor-profile-card.js';
@@ -48,32 +47,26 @@ const dashboardCards = [
     {
         title: 'My Projects',
         section: 'projects',
-        subtitle: 'Manage and scale your projects',
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`,
-    },
-    {
-        title: 'Submit a Project',
-        section: 'submit',
-        subtitle: 'Submit your next big idea',
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-5c1.62-2.2 5-3 5-3"></path><path d="M12 15v5s3.03-.55 5-2c2.2-1.62 3-5 3-5"></path></svg>`,
+        subtitle: 'Manage your innovation projects',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="14" rx="2"/><path d="M16 4h2a2 2 0 0 1 2 2v1"/><path d="M8 4H6a2 2 0 0 0-2 2v1"/><path d="M12 4h.01"/></svg>`,
     },
     {
         title: 'Find Mentors',
         section: 'mentors',
-        subtitle: 'Access the USIU-A Global Mentor Network',
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>`,
+        subtitle: 'Connect with experts',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
     },
     {
-        title: 'My Mentors',
-        section: 'myMentors',
-        subtitle: 'Collaborate with your advisors',
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
+        title: 'Collaboration Hub',
+        section: 'collab',
+        subtitle: 'Real-time mentorship chat',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>`,
     },
     {
-        title: 'Account Settings',
+        title: 'Profile Settings',
         section: 'profile',
-        subtitle: 'System and account controls',
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+        subtitle: 'Update your details',
+        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
     }
 ];
 
@@ -87,20 +80,26 @@ function renderQuickAccessCards() {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
 
+    // Guard: Only render for innovators
+    const user = JSON.parse(localStorage.getItem('innovateHubUser') || '{}');
+    if (user.role !== 'innovator') {
+        console.warn("InnovatorDashboard: Skipping card render for non-innovator.");
+        return;
+    }
+
     container.innerHTML = dashboardCards.map((card, i) => {
         // Add tags based on section
         let tags = [];
-        if (card.section === 'projects') tags = ['Lab', 'Active'];
-        else if (card.section === 'submit') tags = ['Launch', 'New'];
-        else if (card.section === 'mentors') tags = ['Connect', 'Pro'];
-        else if (card.section === 'myMentors') tags = ['Board', 'Me'];
-        else if (card.section === 'profile') tags = ['Admin', 'Account'];
+        if (card.section === 'collaboration') tags = ['Chat', 'Mentor'];
+        else if (card.section === 'sessions') tags = ['Book', 'Sync'];
+        else if (card.section === 'feedback') tags = ['Rating', 'Advice'];
+        else if (card.section === 'reports') tags = ['Progress', 'Status'];
 
         return `
         <article
             class="dash-nav-card"
             style="animation-delay:${i * 0.1}s"
-            onclick="window.showDashboardSection('${card.section}')"
+            onclick="window.handleCardClick('${card.section}')"
             tabindex="0"
             role="button"
         >
@@ -125,6 +124,62 @@ function renderQuickAccessCards() {
     `; }).join('');
 }
 
+async function renderLandingStats() {
+    const statsContainer = document.getElementById('landingStatsRow');
+    if (!statsContainer) return;
+    statsContainer.style.display = 'flex';
+    statsContainer.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border text-primary spinner-border-sm"></div></div>';
+
+    try {
+        // 1. Fetch Projects from Supabase
+        const projects = window.SupabaseService ? await window.SupabaseService.getProjects({ innovator_id: currentUser.uid }) : [];
+        const projectsCount = projects ? projects.length : 0;
+
+        // 2. Fetch Mentorships and Sessions from Supabase
+        const mentorships = window.SupabaseService ? await window.SupabaseService.getMentorships(currentUser.uid, 'innovator') : [];
+        const activeMentorships = mentorships ? mentorships.filter(m => m.status === 'accepted').length : 0;
+        
+        let sessionCount = 0;
+        try {
+            if (mentorships && window.SupabaseService.getSessions) {
+                for (const m of mentorships) {
+                    if (m.status !== 'accepted') continue;
+                    const sess = await window.SupabaseService.getSessions(m.id);
+                    sessionCount += sess ? sess.filter(s => {
+                        const sDate = s.session_date || s.date;
+                        return sDate && new Date(sDate) > new Date();
+                    }).length : 0;
+                }
+            }
+        } catch (sessErr) { console.warn("Innovator Dashboard: Session fetch failed", sessErr); }
+
+        const stats = [
+            { label: 'Innovation Projects', value: projectsCount, icon: 'fa-rocket', color: '#1a5e4f' },
+            { label: 'Active Mentees', value: activeMentorships, icon: 'fa-user-tie', color: '#f3a813' },
+            { label: 'Upcoming Sessions', value: sessionCount, icon: 'fa-calendar-check', color: '#1a5e4f' }
+        ];
+
+        statsContainer.innerHTML = stats.map(s => `
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: ${s.color}20; color: ${s.color}">
+                            <i class="fa ${s.icon} fa-lg"></i>
+                        </div>
+                        <div>
+                            <div class="h3 fw-bold mb-0" style="color: #121331">${s.value}</div>
+                            <div class="text-muted small fw-bold text-uppercase">${s.label}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error("Error rendering landing stats:", error);
+        statsContainer.innerHTML = ''; // Fail silently or show minimal
+    }
+}
+
 
         let currentUser = null;
         let autoSave = null;
@@ -132,20 +187,51 @@ function renderQuickAccessCards() {
         // Export init function for dashboard.html
         export async function initDashboard(user, userData) {
             console.log("Innovator Dashboard: Initializing with provided data...");
-            currentUser = user;
-            
-            // Render cards immediately
-            renderQuickAccessCards();
-            
-            // Initialize Dashboard Charts
-            if (window.DashboardCharts) {
-                window.DashboardCharts.init('innovator', user.uid);
-            }
-            
-            // Expose renderMyMentors to window for dashboard.html hook
-            window.renderMyMentors = renderMyMentors;
+            currentUser = user; 
             
             try {
+                // Supabase Sync: Upsert profile to Supabase FIRST
+                await window.SupabaseService.upsertProfile({
+                    id: user.uid,
+                    full_name: userData?.fullName || user.displayName || user.email.split('@')[0],
+                    email: user.email,
+                    role: 'innovator',
+                    avatar_url: userData?.photoURL || user.photoURL || ''
+                });
+
+                // Initialize Dashboard Charts
+                if (window.DashboardCharts) {
+                    window.DashboardCharts.init('innovator', user.uid);
+                }
+
+                // Render Landing Stats
+                renderLandingStats();
+                
+                // Expose loadProjects to window for dashboard.html hook
+                window.loadProjects = loadProjects;
+                
+                // Expose renderMyMentors to window for dashboard.html hook
+                window.renderMyMentors = renderMyMentors;
+
+                // Initialize New Feature Modules
+                if (window.SessionManager) window.SessionManager.init(user.uid, 'innovator');
+                if (window.FeedbackService) window.FeedbackService.init(user.uid, 'innovator');
+                if (window.ReportManager) window.ReportManager.init(user.uid, 'innovator');
+                
+                // Render cards after components init
+                renderQuickAccessCards();
+
+                // Unified Card Click Handler
+                window.handleCardClick = function(section) {
+                    console.log("Innovator Dashboard: Navigation to", section);
+                    window.showDashboardSection(section);
+                    if (section === 'collab') {
+                        if (window.CollaborationHub) window.CollaborationHub.init();
+                    } else if (section === 'projects') {
+                        loadProjects();
+                    }
+                };
+
                 const isReady = await initializeDashboard(userData);
                 if (!isReady) {
                     console.log("Innovator Dashboard: Gating active, stopping init.");
@@ -170,49 +256,39 @@ function renderQuickAccessCards() {
             const profileDisplayNameDisplay = document.getElementById('profileDisplayNameDisplay');
             const profilePreview = document.getElementById('profilePreview');
 
-            // Default display name
-            const initialName = currentUser.displayName || currentUser.email.split('@')[0];
-            
-            // If userData isn't provided, fetch it (fallback)
-            let data = userData;
-            if (!data) {
-                try {
-                    const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-                    if (userDoc.exists()) data = userDoc.data();
-                } catch (err) {
-                    console.error("Error fetching user doc in fallback:", err);
+            // Fetch latest profile from Supabase
+            let sbProfile = null;
+            try {
+                if (window.SupabaseService) {
+                    sbProfile = await window.SupabaseService.getProfile(currentUser.uid);
                 }
+            } catch (sbErr) {
+                console.warn("Innovator Dashboard: Supabase profile fetch skipped/failed:", sbErr);
             }
 
+            const realName = sbProfile?.full_name || currentUser.displayName || (userData?.fullName) || currentUser.email.split('@')[0];
+            const realAvatar = sbProfile?.avatar_url || currentUser.photoURL || '';
 
             // Sync UI with data
-            const realName = (data && data.fullName) || initialName;
             if (userDisplayName) userDisplayName.textContent = realName;
             if (profileDisplayNameDisplay) profileDisplayNameDisplay.textContent = realName;
 
-            // Refresh Profile Circle Initials
+            // Refresh Profile Circle Initials (and now images too)
             if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
-                console.log(`Innovator Dashboard: Updating initials with name "${realName}"`);
-                window.StaggeredMenu.updateInitials(realName);
+                window.StaggeredMenu.updateInitials(realName, realAvatar);
             }
 
-            if (data) {
-                if (document.getElementById('profileName')) document.getElementById('profileName').value = data.fullName || '';
-                if (document.getElementById('profileBio')) document.getElementById('profileBio').value = data.bio || '';
-                if (document.getElementById('profileInstitution')) document.getElementById('profileInstitution').value = data.institution || '';
-                if (document.getElementById('profileSkills')) document.getElementById('profileSkills').value = (data.skills || []).join(', ');
-                if (document.getElementById('profileInterests')) document.getElementById('profileInterests').value = (data.interests || []).join(', ');
-                
-                if (data.photoURL && profilePreview) {
-                    profilePreview.src = data.photoURL;
-                }
-
-                // Render skills badges
-                const skillsContainer = document.getElementById('skillsBadgeContainer');
-                if (skillsContainer && data.skills) {
-                    skillsContainer.innerHTML = data.skills.map(s => `<span class="badge bg-primary-soft text-primary p-2">${s}</span>`).join('');
-                }
+            populateProfileForms(sbProfile || userData);
+            
+            if (realAvatar && profilePreview) {
+                profilePreview.src = realAvatar;
             }
+
+            // Sync with profile header card (The one with USIU placeholder)
+            const profileHeaderName = document.querySelector('.profile-header-premium h2');
+            const profileHeaderOrg = document.querySelector('.profile-header-premium p');
+            if (profileHeaderName) profileHeaderName.textContent = realName;
+            if (profileHeaderOrg) profileHeaderOrg.textContent = sbProfile?.organization || 'Independent Innovator';
 
             if (document.getElementById('profileEmail')) document.getElementById('profileEmail').value = currentUser.email;
 
@@ -225,13 +301,17 @@ function renderQuickAccessCards() {
                 console.warn("Notification system init failed:", err);
             }
             
-            // Load projects
+            // Load relevant data
             await loadProjects();
+
+            // Ensure we are on Home section to show cards
+            if(window.showDashboardSection) window.showDashboardSection('home');
             
             // Mentors are loaded automatically by dashboard.html's showDashboardSection("mentors")
             // which calls MentorDiscovery.init() instead.
 
-            // Initialize CardNav
+            /* CardNav removed in favor of standard landing cards */
+            /*
             const navItems = [
                 { 
                     label: 'Projects', 
@@ -261,6 +341,7 @@ function renderQuickAccessCards() {
                     ] 
                 }
             ];
+            */
 
             /* CardNav removed in favor of standard navbar + landing cards */
 
@@ -281,43 +362,29 @@ function renderQuickAccessCards() {
             const profileForm = document.getElementById('profileForm');
             if (profileForm) profileForm.addEventListener('submit', handleProfileUpdate);
             
-            // Filter Pills Handling & Search Input is handled exclusively by mentor-discovery.js
-
-            // Profile Picture Upload Handling
+            // Profile Picture Upload Handling via Supabase
             const profilePicInput = document.getElementById('profilePicInput');
             if (profilePicInput) {
                 profilePicInput.addEventListener('change', async (e) => {
                     const file = e.target.files[0];
                     if (!file) return;
                     
-                    const reader = new FileReader();
-                    reader.onload = (re) => {
-                        const preview = document.getElementById('profilePreview');
-                        if (preview) preview.src = re.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                    
                     const preview = document.getElementById('profilePreview');
-                    if (preview) preview.style.opacity = '0.5';
+                    if (preview) {
+                        preview.src = URL.createObjectURL(file);
+                        preview.style.opacity = '0.5';
+                    }
 
                     try {
-                        const { ref, uploadBytes, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js");
-                        const storageRef = ref(storage, `profiles/${currentUser.uid}/${file.name}`);
-                        const uploadResult = await uploadBytes(storageRef, file);
-                        const photoURL = await getDownloadURL(uploadResult.ref);
-                        
-                        const { updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-                        await updateProfile(currentUser, { photoURL });
-                        
-                        await updateDoc(doc(db, "users", currentUser.uid), { 
-                            photoURL, 
-                            updatedAt: serverTimestamp() 
-                        });
-                        
+                        const publicUrl = await window.SupabaseService.uploadAvatar(currentUser.uid, file);
                         alert('Profile picture updated!');
+                        // Refresh all profile circles
+                        if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
+                            window.StaggeredMenu.updateInitials(realName, publicUrl);
+                        }
                     } catch (err) {
                         console.error("Profile pic upload failed:", err);
-                        alert('Failed to update profile picture.');
+                        alert('Failed to update profile picture. Ensure your Supabase Storage has a "public" bucket.');
                     } finally {
                         if (preview) preview.style.opacity = '1';
                     }
@@ -332,17 +399,25 @@ function renderQuickAccessCards() {
             container.innerHTML = EmptyStates.templates.loadingState();
             
             try {
-                const q = query(collection(db, 'projects'), where('innovatorId', '==', currentUser.uid));
-                const snapshot = await getDocs(q);
+                let projects = [];
+                // 1. Try Supabase First
+                if (window.SupabaseService) {
+                    const sbProjects = await window.SupabaseService.getProjects({ innovator_id: currentUser.uid });
+                    if (sbProjects && sbProjects.length > 0) {
+                        projects = sbProjects;
+                        console.log("Innovator Dashboard: Loaded projects from Supabase");
+                    }
+                }
+
+                // Removed Firestore fallback to ensure Supabase is the single source of truth
                 
-                if (snapshot.empty) {
+                if (projects.length === 0) {
                     container.innerHTML = EmptyStates.templates.noProjects();
                     return;
                 }
                 
                 container.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const project = { id: doc.id, ...doc.data() };
+                projects.forEach(project => {
                     container.innerHTML += StructuredProjectCard.render(project, {
                         showActions: true,
                         isExpanded: false
@@ -360,44 +435,74 @@ function renderQuickAccessCards() {
             container.innerHTML = EmptyStates.templates.loadingState();
 
             try {
-                const q = query(collection(db, 'mentorshipRequests'), where('innovatorId', '==', currentUser.uid));
-                const snapshot = await getDocs(q);
+                let requests = [];
+                // 1. Try Supabase First
+                if (window.SupabaseService) {
+                    try {
+                        const sbMentorships = await window.SupabaseService.getMentorships(currentUser.uid, 'innovator');
+                        if (sbMentorships && sbMentorships.length > 0) {
+                            requests = sbMentorships.map(m => ({
+                                id: m.id,
+                                mentorId: m.mentor_id,
+                                status: m.status,
+                                createdAt: m.created_at,
+                                mentorData: m.mentor // Use the alias defined in SupabaseService
+                            }));
+                            console.log("Innovator Dashboard: Loaded mentors from Supabase");
+                        }
+                    } catch (sbErr) {
+                        console.error("Innovator Dashboard: Supabase mentors fetch failed", sbErr);
+                    }
+                }
 
-                if (snapshot.empty) {
-                    container.innerHTML = `<div class="text-center py-5"><p class="text-muted">You haven't requested any mentorship yet.</p><button class="btn btn-primary" onclick="window.showDashboardSection('mentors')">Find Mentors</button></div>`;
+                // Removed Firestore fallback to ensure Supabase is the single source of truth
+
+                if (requests.length === 0) {
+                    container.innerHTML = `<div class="text-center py-5">
+                        <div style="font-size:3rem;margin-bottom:16px;">🤝</div>
+                        <h5 style="font-family:var(--font-head);color:var(--brand-green);">No mentors yet</h5>
+                        <p style="color:#aaa;">Start by browsing available mentors and sending a request.</p>
+                        <button class="btn btn-primary rounded-pill px-4" onclick="window.showDashboardSection('mentors')">Find Mentors</button>
+                    </div>`;
                     return;
                 }
 
                 container.innerHTML = '<div class="row g-4"></div>';
                 const row = container.querySelector('.row');
 
-                for (const docSnap of snapshot.docs) {
-                    const request = { id: docSnap.id, ...docSnap.data() };
-                    const mentorDoc = await getDoc(doc(db, "users", request.mentorId));
-                    if (!mentorDoc.exists()) continue;
-
-                    const mentor = mentorDoc.data();
-                    const statusClass = request.status === 'accepted' ? 'success' : (request.status === 'pending' ? 'warning' : 'danger');
+                for (const request of requests) {
+                    const mentor = request.mentorData || {};
+                    const mentorName = mentor.fullName || mentor.full_name || 'Mentor';
+                    const mentorAvatar = mentor.photoURL || mentor.avatar_url || '';
+                    const mentorExpertise = mentor.expertise || 'Expert';
+                    
+                    const statusClass = request.status === 'accepted' ? 'success' : (request.status === 'pending' || request.status === 'pending_admin' ? 'warning' : 'danger');
 
                     row.innerHTML += `
-                        <div class="col-md-6">
-                            <div class="dash-nav-card" style="background:white; border:1px solid #eee; cursor:default; box-shadow:none; padding:20px;">
+                        <div class="col-md-6 mb-4">
+                            <div class="dashboard-card h-100 cursor-pointer hover-card" onclick="window.CollaborationHub ? window.CollaborationHub.init('${request.id}') : window.showDashboardSection('collab')">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="me-3 d-flex align-items-center justify-content-center overflow-hidden bg-primary-soft" style="width: 50px; height: 50px; border-radius: 12px;">
-                                        ${mentor.photoURL || mentor.photoUrl ? 
-                                            `<img src="${mentor.photoURL || mentor.photoUrl}" class="w-100 h-100 object-fit-cover" alt="${mentor.fullName}">` : 
-                                            `<span class="text-primary fw-bold">${(mentor.fullName || 'M').charAt(0)}</span>`}
+                                        ${mentorAvatar ? 
+                                            `<img src="${mentorAvatar}" class="w-100 h-100 object-fit-cover" alt="${mentorName}">` : 
+                                            `<span class="text-primary fw-bold">${mentorName.charAt(0)}</span>`}
                                     </div>
                                     <div style="flex:1">
-                                        <h5 class="mb-0" style="color:var(--brand-green)">${mentor.fullName || 'Mentor'}</h5>
-                                        <small class="text-muted">${mentor.expertise || 'Expert'}</small>
+                                        <h5 class="mb-0" style="color:var(--brand-green)">${mentorName}</h5>
+                                        <small class="text-muted">${mentorExpertise}</small>
                                     </div>
                                     <span class="badge bg-${statusClass}-soft text-${statusClass}">${request.status.toUpperCase()}</span>
                                 </div>
-                                <div class="p-2 rounded bg-light mb-3" style="font-size:0.85rem;">
-                                    <strong>Contact:</strong> ${mentor.communicationPreference || 'Not set'}
+                                <div class="mb-3">
+                                    <i class="fa fa-envelope-o me-2 text-muted"></i>
+                                    <span class="small text-muted">${mentor.email || ''}</span>
                                 </div>
-                                ${request.status === 'accepted' ? `<button class="btn btn-sm btn-outline-primary w-100" onclick="window.location.href='mailto:${mentor.email}'"><i class="fa fa-envelope me-1"></i> Send Email</button>` : ''}
+                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <span class="badge bg-light text-dark border">Project Feedback Active</span>
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        Open Collaboration
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -474,7 +579,18 @@ function renderQuickAccessCards() {
             };
 
             try {
-                await updateDoc(doc(db, "users", currentUser.uid), profileData);
+                // 1. Primary Sync: Supabase
+                if (window.SupabaseService) {
+                    await window.SupabaseService.upsertProfile({
+                        id: currentUser.uid,
+                        full_name: profileData.fullName,
+                        bio: profileData.bio,
+                        institution: profileData.institution,
+                        expertise: skills.join(', '), 
+                        updated_at: new Date()
+                    });
+                    console.log("Innovator Dashboard: Supabase Profile Updated ✓");
+                }
                 
                 // Update local storage if needed (optional, but keep consistent)
                 const storedUser = JSON.parse(localStorage.getItem('innovateHubUser') || '{}');
@@ -482,7 +598,21 @@ function renderQuickAccessCards() {
                 localStorage.setItem('innovateHubUser', JSON.stringify(storedUser));
 
                 alert('Profile updated!');
-                await initializeDashboard();
+                
+                // Sync with navbar
+                const avatarUrl = document.getElementById('profilePreview')?.src || "";
+                if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
+                    window.StaggeredMenu.updateInitials(profileData.fullName, avatarUrl);
+                }
+
+                const userDisplayName = document.getElementById('userDisplayName');
+                const profileDisplayNameDisplay = document.getElementById('profileDisplayNameDisplay');
+                if (userDisplayName) userDisplayName.textContent = profileData.fullName;
+                if (profileDisplayNameDisplay) profileDisplayNameDisplay.textContent = profileData.fullName;
+
+                const profileHeaderName = document.querySelector('.profile-header-premium h2');
+                if (profileHeaderName) profileHeaderName.textContent = profileData.fullName;
+
             } catch (error) {
                 console.error('Error updating profile:', error);
                 alert('Failed to update profile.');
@@ -492,16 +622,22 @@ function renderQuickAccessCards() {
         }
 
         window.confirmDeleteProject = async function(projectId) {
-            if (!confirm('Are you sure you want to delete this project? This will also remove any uploaded documents from MongoDB and cannot be undone.')) {
+            if (!confirm('Are you sure you want to delete this project? This will also remove any uploaded documents from Supabase and cannot be undone.')) {
                 return;
             }
 
             try {
-                // 1. Delete from Firebase Firestore
-                const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-                await deleteDoc(doc(db, "projects", projectId));
+                // 1. Primary Sync: Supabase
+                if (window.supabase) {
+                    const { error } = await window.supabase
+                        .from('projects')
+                        .delete()
+                        .eq('id', projectId);
+                    if (error) console.error("Supabase Project Delete Error:", error);
+                    else console.log("Innovator Dashboard: Supabase Project Deleted ✓");
+                }
 
-                // 2. Delete from MongoDB via API
+                // 2. Delete from MongoDB via API (Legacy System)
                 if (window.api && window.api.deleteProject) {
                     await window.api.deleteProject(projectId);
                 }
@@ -522,24 +658,25 @@ function renderQuickAccessCards() {
             };
         }
         
-        window.requestMentorship = async function(mentorId) {
+        window.requestMentorship = async (mentorId, mentorName) => {
+            console.log(`Innovator Dashboard: Requesting mentorship from ${mentorName} (${mentorId})...`);
+            
             try {
-                // Fetch projects to select from
-                const q = query(collection(db, 'projects'), where('innovatorId', '==', currentUser.uid));
-                const snapshot = await getDocs(q);
+                // Determine which project to link
+                let projectId = null;
+                const projects = await window.SupabaseService.getProjects({ innovator_id: currentUser.uid });
                 
-                if (snapshot.empty) {
-                    alert('Please submit a project first before requesting mentorship. Go to "Submit Project" section.');
-                    if (typeof showSection === 'function') showSection('submit-project');
-                    return;
-                }
-                
-                let projectId = snapshot.docs[0].id;
-                
-                // If multiple projects, ask which one
-                if (snapshot.size > 1) {
-                    const projects = snapshot.docs.map(d => ({id: d.id, title: d.data().title}));
-                    const projectList = projects.map((p, i) => `${i+1}. ${p.title}`).join('\n');
+                if (!projects || projects.length === 0) {
+                    const createNew = confirm("You don't have any projects yet. Would you like to create one first to link it to this mentorship?");
+                    if (createNew) {
+                        window.showDashboardSection('submit');
+                        return;
+                    }
+                    // Proceed with null project if they insist (General Mentorship)
+                } else if (projects.length === 1) {
+                    projectId = projects[0].id;
+                } else {
+                    const projectList = projects.map((p, i) => `${i + 1}. ${p.title}`).join('\n');
                     const choice = prompt(`Which project is this mentorship for?\n\n${projectList}\n\nEnter number (default 1):`, '1');
                     
                     if (choice === null) return; // User cancelled
@@ -550,25 +687,45 @@ function renderQuickAccessCards() {
                     }
                 }
 
-                if (typeof MentorshipService !== 'undefined' && MentorshipService.sendRequest) {
-                    await MentorshipService.sendRequest(mentorId, projectId);
-                } else {
-                    // Fallback for direct addDoc if service missing
-                    await addDoc(collection(db, 'mentorshipRequests'), {
-                        innovatorId: currentUser.uid,
-                        mentorId: mentorId,
-                        projectId: projectId,
-                        status: 'pending_admin',
-                        createdAt: serverTimestamp()
+                if (window.SupabaseService && window.SupabaseService.createMentorship) {
+                    await window.SupabaseService.createMentorship({
+                        innovator_id: currentUser.uid,
+                        mentor_id: mentorId,
+                        project_id: projectId,
+                        status: 'pending'
                     });
+                    console.log("Innovator Dashboard: Mentorship request sent via Supabase ✓");
+                } else {
+                    throw new Error("Supabase Mentorship Service unavailable.");
                 }
                 
-                alert('Mentorship request sent successfully!');
+                alert(`Mentorship request sent to ${mentorName} successfully!`);
+                if (window.renderMyMentors) window.renderMyMentors();
             } catch (error) {
                 console.error('Error sending request:', error);
                 alert('Failed to send request: ' + error.message);
             }
         };
+
+        function populateProfileForms(data) {
+            if (!data) return;
+            console.log("Innovator Dashboard: Populating profile forms...");
+            
+            // Basic Info
+            if (document.getElementById('profileName')) document.getElementById('profileName').value = data.fullName || data.full_name || '';
+            if (document.getElementById('profileBio')) document.getElementById('profileBio').value = data.bio || '';
+            if (document.getElementById('profileInstitution')) document.getElementById('profileInstitution').value = data.institution || data.organization || '';
+            
+            // Innovator Specific
+            if (document.getElementById('profileSkills')) {
+                const skills = Array.isArray(data.skills) ? data.skills.join(', ') : (data.skills || '');
+                document.getElementById('profileSkills').value = skills;
+            }
+            if (document.getElementById('profileInterests')) {
+                const interests = Array.isArray(data.interests) ? data.interests.join(', ') : (data.interests || '');
+                document.getElementById('profileInterests').value = interests;
+            }
+        }
 
         function showPendingApprovalUI() {
             // Hide dashboard content

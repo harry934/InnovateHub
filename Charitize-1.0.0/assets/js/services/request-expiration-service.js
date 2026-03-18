@@ -3,21 +3,6 @@
  * Handles automatic expiration of mentorship requests
  */
 
-import { auth, db } from '../core/firebase-config.js';
-import { 
-    collection, 
-    addDoc, 
-    query, 
-    where, 
-    getDocs, 
-    orderBy, 
-    limit,
-    Timestamp,
-    updateDoc, // Kept as it's used in expireRequest
-    doc // Kept as it's used in expireRequest
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { NotificationService } from '../pages/innovate-hub.js';
-
 export class RequestExpirationService {
     static EXPIRATION_DAYS = 7; // Configurable expiration period
 
@@ -27,27 +12,26 @@ export class RequestExpirationService {
      */
     static async checkExpiredRequests() {
         try {
+            if (!window.SupabaseService) return;
+
             const expirationDate = new Date();
             expirationDate.setDate(expirationDate.getDate() - this.EXPIRATION_DAYS);
 
-            // Query pending requests older than expiration date
-            const requestsQuery = query(
-                collection(db, 'mentorshipRequests'),
-                where('status', '==', 'pending'),
-                where('createdAt', '<', Timestamp.fromDate(expirationDate))
+            // Fetch pending requests from Supabase
+            const allRequests = await window.SupabaseService.getMentorships();
+            const pendingRequests = allRequests.filter(r => 
+                r.status === 'pending' && 
+                new Date(r.created_at) < expirationDate
             );
-
-            const snapshot = await getDocs(requestsQuery);
             
-            const expirationPromises = snapshot.docs.map(async (docSnap) => {
-                const requestData = docSnap.data();
-                await this.expireRequest(docSnap.id, requestData);
+            const expirationPromises = pendingRequests.map(async (r) => {
+                await this.expireRequest(r.id, r);
             });
 
             await Promise.all(expirationPromises);
 
-            if (snapshot.docs.length > 0) {
-                console.log(`Expired ${snapshot.docs.length} old mentorship requests`);
+            if (pendingRequests.length > 0) {
+                console.log(`Expired ${pendingRequests.length} old mentorship requests`);
             }
 
         } catch (error) {
@@ -60,28 +44,35 @@ export class RequestExpirationService {
      */
     static async expireRequest(requestId, requestData) {
         try {
-            // Update request status
-            await updateDoc(doc(db, 'mentorshipRequests', requestId), {
-                status: 'expired',
-                expiredAt: Timestamp.now()
+            if (!window.SupabaseService) return;
+
+            // Update request status in Supabase
+            await window.SupabaseService.updateMentorshipStatus(requestId, 'expired', {
+                expired_at: new Date().toISOString()
             });
 
             // Notify the requester (innovator)
-            if (requestData.innovatorId) {
-                await NotificationService.send(
-                    requestData.innovatorId,
-                    'Your mentorship request has expired due to no response. You can send a new request.',
-                    'warning'
-                );
+            if (requestData.innovator_id || requestData.innovatorId) {
+                const targetId = requestData.innovator_id || requestData.innovatorId;
+                if (window.NotificationSystem) {
+                    await window.NotificationSystem.send(
+                        targetId,
+                        'Your mentorship request has expired due to no response. You can send a new request.',
+                        'warning'
+                    );
+                }
             }
 
             // Optionally notify the mentor
-            if (requestData.mentorId) {
-                await NotificationService.send(
-                    requestData.mentorId,
-                    'A mentorship request has expired.',
-                    'info'
-                );
+            if (requestData.mentor_id || requestData.mentorId) {
+                const targetId = requestData.mentor_id || requestData.mentorId;
+                if (window.NotificationSystem) {
+                    await window.NotificationSystem.send(
+                        targetId,
+                        'A mentorship request has expired.',
+                        'info'
+                    );
+                }
             }
 
         } catch (error) {
@@ -95,7 +86,7 @@ export class RequestExpirationService {
     static getDaysUntilExpiration(createdAt) {
         if (!createdAt) return 0;
 
-        const createdDate = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
+        const createdDate = new Date(createdAt);
         const expirationDate = new Date(createdDate);
         expirationDate.setDate(expirationDate.getDate() + this.EXPIRATION_DAYS);
 

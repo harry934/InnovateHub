@@ -833,7 +833,6 @@
     <script type="module">
       import {
         auth,
-        db,
         googleProvider,
       } from "./assets/js/core/firebase-config.js";
       import {
@@ -842,11 +841,7 @@
         signInWithPhoneNumber,
         RecaptchaVerifier,
       } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-      import {
-        doc,
-        setDoc,
-        getDoc,
-      } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import SupabaseService from "./assets/js/core/supabase-service.js";
 
       let currentStep = 1;
       let confirmationResult = null;
@@ -954,24 +949,27 @@
           );
           return;
         }
-        try {
-          const result = await signInWithPopup(auth, googleProvider);
-          const user = result.user;
+          try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
 
-          // Fetch profile - if exists, it's a login attempt on signup page
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            await auth.signOut();
-            window.showErrorMessage(
-              "Email already exists. Please proceed to login.",
-            );
-          } else {
+            // Check if profile exists in Supabase
+            if (window.SupabaseService) {
+                const profile = await window.SupabaseService.getProfile(user.uid);
+                if (profile) {
+                    await auth.signOut();
+                    window.showErrorMessage(
+                      "Email already exists. Please proceed to login.",
+                    );
+                    return;
+                }
+            }
+            
             // Pre-fill Step 2
             document.getElementById("email").value = user.email || "";
             document.getElementById("fullName").value = user.displayName || "";
             window.nextStep(1);
-          }
-        } catch (error) {
+          } catch (error) {
           console.error("Google Sign-In Error:", error);
           window.showErrorMessage(
             "Google authentication failed: " + error.message,
@@ -1078,28 +1076,33 @@
             // Determine status
             const status = role === "mentor" ? "pending" : "active";
 
-            // Save to Firestore (Frontend Legacy)
+            // Profile data for Supabase
             const profileData = {
-              uid: user.uid,
+              id: user.uid,
               email: email,
-              fullName: fullName,
+              full_name: fullName,
               role: role,
               phone: phone,
-              status: status,
-              profileComplete: false,
-              createdAt: new Date().toISOString(),
+              status: status
             };
 
             if (role === "innovator") {
-              if (area) profileData.area = area;
-              if (project) profileData.project = project;
+              // Innovator specific fields can be added here if needed
             } else if (role === "mentor") {
               profileData.organization = organization;
               profileData.expertise = expertise;
               profileData.motivation = motivation;
             }
 
-            await setDoc(doc(db, "users", user.uid), profileData);
+            // Sync with Supabase (Single Source of Truth)
+            if (window.SupabaseService) {
+                try {
+                    await window.SupabaseService.upsertProfile(profileData);
+                    console.log("Supabase Profile Sync: Success");
+                } catch (sbErr) {
+                    console.error("Supabase Profile Sync: Failed", sbErr);
+                }
+            }
 
             // Set session and redirect
             localStorage.setItem(

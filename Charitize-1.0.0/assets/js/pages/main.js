@@ -122,10 +122,14 @@
   });
 
   // Facts counter
-  $('[data-toggle="counter-up"]').counterUp({
-    delay: 10,
-    time: 2000,
-  });
+  if ($.fn.counterUp) {
+    $('[data-toggle="counter-up"]').counterUp({
+      delay: 10,
+      time: 2000,
+    });
+  } else {
+    console.warn("counterUp plugin not loaded.");
+  }
 
   // Donation progress
   $(".donation-item .donation-progress").waypoint(

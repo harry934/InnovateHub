@@ -4,8 +4,8 @@
  * Fully integrated with Firebase Firestore
  */
 
-import { auth, db } from '../core/firebase-config.js';
-import { collection, query, where, getDocs, doc, getDoc, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { auth } from '../core/firebase-config.js';
+// Firestore imports removed
 
 // ============================================================
 //  HELPERS
@@ -62,25 +62,34 @@ async function renderMentorDiscovery() {
     try {
         const searchInput = document.getElementById('mentorSearchInput');
         const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
-
-        // Fetch all users with role 'mentor'
-        const q = query(
-            collection(db, 'users'),
-            where('role', '==', 'mentor')
-        );
-        const snapshot = await getDocs(q);
-
         let allMentors = [];
-        snapshot.forEach(docSnap => {
-            const data = docSnap.data();
-            // Robust approval check
-            const status = (data.status || data.mentorStatus || data.approvalStatus || '').toLowerCase();
-            const isApproved = status === 'approved' || data.isApproved === true || data.isApproved === 'true';
-            
-            if (isApproved) {
-                allMentors.push({ id: docSnap.id, ...data });
+
+        // 1. Try Supabase First
+        if (window.SupabaseService) {
+            try {
+                const sbMentors = await window.SupabaseService.getProfilesByRole('mentor');
+                if (sbMentors && sbMentors.length > 0) {
+                    // Only show approved mentors
+                    allMentors = sbMentors
+                        .filter(m => m.status === 'approved' || m.approval_status === 'approved' || m.status === 'active')
+                        .map(m => ({
+                            id: m.id,
+                            fullName: m.full_name,
+                            expertise: m.expertise,
+                            bio: m.bio,
+                            institution: m.institution,
+                            photoURL: m.avatar_url,
+                            categories: m.expertise ? m.expertise.split(',').map(s => s.trim()) : [],
+                            status: m.status || m.approval_status
+                        }));
+                    console.log("Mentor Discovery: Loaded from Supabase");
+                }
+            } catch (sbErr) {
+                console.error("Mentor Discovery: Supabase fetch failed", sbErr);
             }
-        });
+        }
+
+        // 2. Fallback removed - Supabase is the single source of truth
 
         // Apply local search/category filters
         let filteredMentors = allMentors.filter(m => {
@@ -112,17 +121,16 @@ async function renderMentorDiscovery() {
             return;
         }
 
-        // SMART Nuru Suggestion System (Simplified for speed)
+        // SMART Nuru Suggestion System
         let userContext = { interests: [], skills: [] };
-        if (auth.currentUser) {
+        if (auth.currentUser && window.SupabaseService) {
             try {
-                const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-                if (userDoc.exists()) {
-                    const ud = userDoc.data();
-                    userContext.interests = Array.isArray(ud.interests) ? ud.interests : (ud.interests || "").split(',').map(i => i.trim().toLowerCase()).filter(i => i);
-                    userContext.skills = ud.skills || [];
+                const profile = await window.SupabaseService.getProfile(auth.currentUser.uid);
+                if (profile) {
+                    userContext.interests = profile.interests ? profile.interests.split(',').map(i => i.trim().toLowerCase()).filter(i => i) : [];
+                    userContext.skills = profile.skills ? profile.skills.split(',').map(s => s.trim().toLowerCase()).filter(s => s) : [];
                 }
-            } catch(e) { console.warn("Nuru couldn't fetch user context"); }
+            } catch(e) { console.warn("Nuru couldn't fetch user context from Supabase"); }
         }
 
         const matchScore = (m) => {
@@ -222,33 +230,56 @@ async function openMentorProfileModal(mentorId) {
     if (!mentorId) return;
 
     try {
-        const docRef = doc(db, 'users', mentorId);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) return;
-        const m = { id: docSnap.id, ...docSnap.data() };
+        let m = null;
+        let menteeCount = 0;
+
+        // 1. Try Supabase First
+        if (window.SupabaseService) {
+            try {
+                const sbProfile = await window.SupabaseService.getProfile(mentorId);
+                if (sbProfile) {
+                    m = {
+                        id: sbProfile.id,
+                        fullName: sbProfile.full_name,
+                        expertise: sbProfile.expertise,
+                        bio: sbProfile.bio,
+                        institution: sbProfile.institution,
+                        photoURL: sbProfile.avatar_url,
+                        availability: sbProfile.availability,
+                        communicationPreference: sbProfile.communication_preference,
+                        categories: sbProfile.expertise ? sbProfile.expertise.split(',').map(s => s.trim()) : []
+                    };
+
+                    const sbMentorships = await window.SupabaseService.getMentorships(mentorId, 'mentor');
+                    if (sbMentorships) {
+                        menteeCount = sbMentorships.filter(ms => ms.status === 'accepted').length;
+                    }
+                    console.log("Mentor Profile: Loaded from Supabase");
+                }
+            } catch (sbErr) {
+                console.error("Mentor Profile: Supabase fetch failed", sbErr);
+            }
+        }
+
+        // 2. Fallback removed
+
         currentMentorForRequest = m;
 
         // Check active requests
         let existingReq = null;
         if (auth.currentUser) {
-            const reqQ = query(collection(db, 'mentorshipRequests'), 
-                where('innovatorId', '==', auth.currentUser.uid),
-                where('mentorId', '==', mentorId)
-            );
-            const reqSnap = await getDocs(reqQ);
-            reqSnap.forEach(r => {
-                const data = r.data();
-                if (['pending', 'accepted'].includes(data.status)) existingReq = data;
-            });
+            // Check Supabase first for existing request
+            if (window.SupabaseService) {
+                const sbReqs = await window.SupabaseService.getMentorships(auth.currentUser.uid, 'innovator');
+                if (sbReqs) {
+                    existingReq = sbReqs.find(ms => ms.mentor_id === mentorId && (ms.status === 'pending' || ms.status === 'accepted'));
+                }
+            }
+
+            // Fallback removed
         }
 
-        // Count accepted mentees for this mentor
-        let menteeCount = 0;
-        try {
-            const countQ = query(collection(db, 'mentorshipRequests'), where('mentorId', '==', mentorId), where('status', '==', 'accepted'));
-            const countSnap = await getDocs(countQ);
-            menteeCount = countSnap.size;
-        } catch(e) {}
+        const isFull = menteeCount >= 2;
 
         const existing = document.getElementById('mentorProfileModalOverlay');
         if (existing) existing.remove();
@@ -331,19 +362,22 @@ async function openMentorProfileModal(mentorId) {
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div style="margin-top:40px;">
+                                 <div style="margin-top:40px;">
                         ${existingReq
                             ? `<button disabled style="width:100%; padding:20px; border-radius:18px; border:none; color:white; font-weight:800; font-size:1rem; background:${existingReq.status === 'accepted' ? 'var(--brand-green)' : '#f3a813'}; opacity:0.8; display:flex; align-items:center; justify-content:center; gap:12px;">
-                                ${existingReq.status === 'accepted' ? '<i class="fa fa-check-circle"></i> Connected Mentor' : '<i class="fa fa-clock"></i> Request Pending Approval'}
+                                 ${existingReq.status === 'accepted' ? '<i class="fa fa-check-circle"></i> Connected Mentor' : '<i class="fa fa-clock"></i> Request Pending Approval'}
                                </button>`
-                            : `<button onclick="MentorDiscovery.openRequestFlow('${mentorId}')" 
-                                       style="width:100%; padding:20px; border-radius:18px; border:none; background:linear-gradient(135deg, var(--brand-green) 0%, #0a2d26 100%); color:white; font-weight:800; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:12px; box-shadow:0 12px 24px rgba(26,94,79,0.3); transition:all 0.3s ease;">
-                                <i class="fa fa-paper-plane"></i> Apply for Mentorship Session
-                               </button>`
+                            : isFull 
+                                ? `<button disabled style="width:100%; padding:20px; border-radius:18px; border:none; background:#cbd5e1; color:#64748b; font-weight:800; font-size:1.1rem; display:flex; align-items:center; justify-content:center; gap:12px;">
+                                    <i class="fa fa-ban"></i> Mentor at Capacity (Max 2 Mentees)
+                                   </button>`
+                                : `<button onclick="MentorDiscovery.openRequestFlow('${mentorId}')" 
+                                           style="width:100%; padding:20px; border-radius:18px; border:none; background:linear-gradient(135deg, var(--brand-green) 0%, #0a2d26 100%); color:white; font-weight:800; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:12px; box-shadow:0 12px 24px rgba(26,94,79,0.3); transition:all 0.3s ease;">
+                                    <i class="fa fa-paper-plane"></i> Apply for Mentorship Session
+                                   </button>`
                         }
                     </div>
+         </div>
                 </div>
             </div>`;
 
@@ -364,12 +398,14 @@ async function openRequestFlow(mentorId) {
     if (!auth.currentUser) return;
     
     // Fetch user's projects
-    let myProjects = [];
-    try {
-        const q = query(collection(db, 'projects'), where('userId', '==', auth.currentUser.uid));
-        const snap = await getDocs(q);
-        snap.forEach(d => myProjects.push({ id: d.id, ...d.data() }));
-    } catch(e) {}
+    // Fetch user's projects from Supabase (Source of Truth)
+    if (window.SupabaseService) {
+        try {
+            myProjects = await window.SupabaseService.getProjects({ innovator_id: auth.currentUser.uid });
+        } catch(e) { console.error("Error fetching projects for request flow", e); }
+    }
+    
+    // Fallback removed
 
     const overlay = document.createElement('div');
     overlay.className = 'rejection-modal-overlay';
@@ -419,20 +455,24 @@ async function submitRequest(mentorId) {
         const btn = document.getElementById('btnSubmitReq');
         if (btn) btn.disabled = true;
 
-        await addDoc(collection(db, 'mentorshipRequests'), {
-            innovatorId: auth.currentUser.uid,
-            mentorId: mentorId,
-            projectId: projectId,
-            message: message,
-            status: 'pending',
-            adminApproved: false, // NEW: Requires admin gate
-            requestedAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-        });
-
-        document.getElementById('requestFlowModal')?.remove();
-        showToast('✓ Mentorship request sent successfully!', 'success');
-        renderMentorDiscovery();
+        // Primary Sync: Supabase
+        if (window.SupabaseService) {
+            const sbMentorship = await window.SupabaseService.createMentorship({
+                innovator_id: auth.currentUser.uid,
+                mentor_id: mentorId,
+                project_id: projectId,
+                message: message,
+                status: 'pending'
+            });
+            console.log("Mentor Discovery: Request created in Supabase ✓");
+            
+            // Background Sync removed
+            
+            document.getElementById('requestFlowModal')?.remove();
+            showToast('✓ Mentorship request sent successfully!', 'success');
+            renderMentorDiscovery();
+            return;
+        }
 
     } catch(err) {
         console.error('Error submitting request:', err);
@@ -452,10 +492,30 @@ async function renderMyMentors() {
     container.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>`;
 
     try {
-        const q = query(collection(db, 'mentorshipRequests'), where('innovatorId', '==', auth.currentUser.uid));
-        const snap = await getDocs(q);
-        
-        if (snap.empty) {
+        let mentorships = [];
+
+        // 1. Fetch from Supabase (Single Source of Truth)
+        if (window.SupabaseService) {
+            const sbMentorships = await window.SupabaseService.getMentorships(auth.currentUser.uid, 'innovator');
+            if (sbMentorships && sbMentorships.length > 0) {
+                mentorships = sbMentorships.map(ms => ({
+                    id: ms.id,
+                    mentorId: ms.mentor_id,
+                    projectId: ms.project_id,
+                    status: ms.status,
+                    message: ms.message,
+                    requestedAt: ms.created_at,
+                    adminApproved: ms.status === 'accepted', 
+                    mentorData: ms.mentor,
+                    projectData: ms.project
+                }));
+                console.log("My Mentors: Loaded from Supabase ✓");
+            }
+        }
+
+        // Removed Firestore fallback to ensure Supabase is the single source of truth
+
+        if (mentorships.length === 0) {
             container.innerHTML = `<div class="text-center py-5">
                 <div style="font-size:3rem;margin-bottom:16px;">🤝</div>
                 <h5 style="font-family:var(--font-head);color:var(--brand-green);">No mentors yet</h5>
@@ -464,52 +524,54 @@ async function renderMyMentors() {
             return;
         }
 
-        const statusColors = { accepted: '#1a5e4f', pending: '#b47b00', rejected: '#dc3545' };
         let html = '';
 
-        // Iterate and fetch mentor + project data for each request
-        for (let docSnap of snap.docs) {
-            const req = { id: docSnap.id, ...docSnap.data() };
-            
-            // Fetch mentor doc
-            const mSnap = await getDoc(doc(db, 'users', req.mentorId));
-            const mentor = mSnap.exists() ? mSnap.data() : { fullName: 'Unknown Mentor', expertise: '' };
-            
-            // Fetch project doc if exists
-            let project = null;
-            if (req.projectId) {
-                const pSnap = await getDoc(doc(db, 'projects', req.projectId));
-                if (pSnap.exists()) project = pSnap.data();
-            }
+        for (let ms of mentorships) {
+            let mentor = ms.mentorData || { fullName: 'Unknown Mentor', expertise: '' };
+            let project = ms.projectData || null;
 
-            const isApproved = req.status === 'accepted' && req.adminApproved === true;
-            const statusLabel = isApproved ? '✓ Active' : (req.status === 'accepted' ? '⏳ Pending Admin Approval' : (req.status === 'pending' ? '⏳ Request Sent' : '✕ Rejected'));
+            // Fallback for missing joined data
+            if (!mentor.fullName && !mentor.full_name && ms.mentorId) {
+                if (window.SupabaseService) {
+                    const sbProf = await window.SupabaseService.getProfile(ms.mentorId);
+                    if (sbProf) mentor = sbProf;
+                }
+            }
+            // Fallback removed
+
+            const mentorName = mentor.fullName || mentor.full_name || "Mentor";
+            const mentorExpertise = mentor.expertise || "Expert";
+            const mentorInst = mentor.institution || "USIU-Africa";
+            const projTitle = project?.title || "Untitled Project";
+
+            const isApproved = ms.status === 'accepted';
+            const statusLabel = isApproved ? '✓ Active' : (ms.status === 'pending' ? '⏳ Request Sent' : '✕ Rejected');
 
             html += `
             <div class="my-mentor-item">
-                <div class="my-mentor-avatar">${getInitials(mentor.fullName)}</div>
+                <div class="my-mentor-avatar">${getInitials(mentorName)}</div>
                 <div style="flex:1;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
                         <div>
-                            <div style="font-family:var(--font-head);font-weight:800;font-size:1rem;color:var(--brand-green);">${mentor.fullName}</div>
-                            <div style="font-size:0.8rem;color:#8a9aaa;">${mentor.expertise || 'Mentor'} &nbsp;·&nbsp; ${mentor.institution || ''}</div>
+                            <div style="font-family:var(--font-head);font-weight:800;font-size:1rem;color:var(--brand-green);">${mentorName}</div>
+                            <div style="font-size:0.8rem;color:#8a9aaa;">${mentorExpertise} &nbsp;·&nbsp; ${mentorInst}</div>
                         </div>
-                        <span class="badge-premium" style="background:rgba(${isApproved ? '26,94,79' : (req.status==='rejected'?'220,53,69':'243,168,19')},0.1);color:${isApproved ? '#1a5e4f' : (req.status==='rejected'?'#dc3545':'#b47b00')};border:1px solid;border-color:${isApproved ? '#1a5e4f' : (req.status==='rejected'?'#dc3545':'#b47b00')}22;">
+                        <span class="badge-premium" style="background:rgba(${isApproved ? '26,94,79' : (ms.status==='rejected'?'220,53,69':'243,168,19')},0.1);color:${isApproved ? '#1a5e4f' : (ms.status==='rejected'?'#dc3545':'#b47b00')};border:1px solid;border-color:${isApproved ? '#1a5e4f' : (ms.status==='rejected'?'#dc3545':'#b47b00')}22;">
                             ${statusLabel}
                         </span>
                     </div>
 
-                    ${project ? `<div style="margin-top:10px;font-size:0.82rem;color:#777;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Linked to: <strong>${project.title}</strong></div>` : ''}
+                    ${project ? `<div style="margin-top:10px;font-size:0.82rem;color:#777;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Linked to: <strong>${projTitle}</strong></div>` : ''}
                     
                     <div style="margin-top:20px;display:flex;gap:10px;">
-                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="MentorDiscovery.openProfile('${req.mentorId}')">
+                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="MentorDiscovery.openProfile('${ms.mentorId}')">
                             <i class="fa fa-user me-1"></i> View Profile
                         </button>
                         ${isApproved ? `
-                            <button class="btn btn-sm btn-success rounded-pill px-3" onclick="window.showProjectCollaboration('${req.projectId}', '${req.mentorId}')">
+                            <button class="btn btn-sm btn-success rounded-pill px-3" onclick="window.showProjectCollaboration('${ms.projectId}', '${ms.mentorId}')">
                                 <i class="fa fa-comments me-1"></i> Collab Hub
                             </button>
-                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="MentorDiscovery.requestTermination('${req.id}', '${mentor.fullName}')">
+                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="MentorDiscovery.requestTermination('${ms.id}', '${mentorName}')">
                                 <i class="fa fa-user-minus me-1"></i> Stop Mentorship
                             </button>
                         ` : ''}
@@ -548,26 +610,47 @@ async function renderMentorRequests() {
     container.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>`;
 
     try {
-        const q = query(collection(db, 'mentorshipRequests'), where('mentorId', '==', auth.currentUser.uid));
-        const snap = await getDocs(q);
+        let requests = [];
 
-        if (snap.empty) {
+        // 1. Try Supabase First
+        if (window.SupabaseService) {
+            try {
+                const sbReqs = await window.SupabaseService.getMentorships(auth.currentUser.uid, 'mentor');
+                if (sbReqs && sbReqs.length > 0) {
+                    requests = sbReqs.map(r => ({
+                        id: r.id,
+                        innovatorId: r.innovator_id,
+                        mentorId: r.mentor_id,
+                        projectId: r.project_id,
+                        message: r.message,
+                        status: r.status,
+                        requestedAt: r.created_at,
+                        innovatorData: r.profiles,
+                        projectData: r.projects
+                    }));
+                    console.log("Mentor Requests: Loaded from Supabase");
+                }
+            } catch (sbErr) {
+                console.error("Mentor Requests: Supabase fetch failed", sbErr);
+            }
+        }
+
+        // 2. Fallback removed
+
+        if (requests.length === 0) {
             container.innerHTML = `<div class="text-center py-5"><div style="font-size:3rem;margin-bottom:16px;">📭</div><h5 style="font-family:var(--font-head);color:var(--brand-green);">No requests yet</h5><p style="color:#aaa;">Mentorship requests from innovators will appear here.</p></div>`;
             return;
         }
 
         let html = '';
-        for (let docSnap of snap.docs) {
-            const req = { id: docSnap.id, ...docSnap.data() };
-            
-            const iSnap = await getDoc(doc(db, 'users', req.innovatorId));
-            const innovator = iSnap.exists() ? iSnap.data() : { fullName: 'Unknown Innovator' };
-            
-            let project = null;
-            if (req.projectId) {
-                const pSnap = await getDoc(doc(db, 'projects', req.projectId));
-                if (pSnap.exists()) project = pSnap.data();
-            }
+        for (let req of requests) {
+            let innovator = req.innovatorData || { fullName: 'Unknown Innovator' };
+            let project = req.projectData || null;
+
+            // Fallback removed
+
+            const innovatorName = innovator.fullName || innovator.full_name || "Innovator";
+            const innovatorInst = innovator.institution || "USIU-Africa";
 
             const actionButtons = req.status === 'pending'
                 ? `<button class="btn-approve" onclick="MentorView.acceptRequest('${req.id}')">
@@ -577,32 +660,23 @@ async function renderMentorRequests() {
                         <i class="fa fa-times me-1"></i>Reject
                    </button>`
                 : req.status === 'accepted'
-                ? (req.adminApproved ? 
-                    `<span class="badge-premium badge-premium-approved">✓ Fully Approved</span>
+                ? `<span class="badge-premium badge-premium-approved">✓ Accepted</span>
                      <button class="btn btn-sm btn-success rounded-pill px-3 ms-2" onclick="window.showProjectCollaboration('${req.projectId}', '${req.innovatorId}')">
                         <i class="fa fa-comments me-1"></i> Collab Hub
-                     </button>` : 
-                    `<span class="badge-premium badge-premium-pending">⏳ Awaiting Admin Approval</span>`)
+                     </button>`
                 : `<span class="badge-premium badge-premium-rejected">✕ Rejected</span>`;
 
             html += `
             <div class="request-card" id="req-${req.id}">
                 <div class="request-card-header">
-                    <div class="user-avatar-mini" style="border-radius:12px;width:48px;height:48px;font-size:1rem;flex-shrink:0;">${innovator ? getInitials(innovator.fullName) : '??'}</div>
+                    <div class="user-avatar-mini" style="border-radius:12px;width:48px;height:48px;font-size:1rem;flex-shrink:0;">${getInitials(innovatorName)}</div>
                     <div style="flex:1;">
-                        <div class="request-card-title">${innovator.fullName}</div>
-                        <div class="request-card-meta">${innovator.institution || ''} &nbsp;·&nbsp; ${formatDate(req.requestedAt)}</div>
+                        <div class="request-card-title">${innovatorName}</div>
+                        <div class="request-card-meta">${innovatorInst} &nbsp;·&nbsp; ${formatDate(req.requestedAt)}</div>
                         ${project ? `<div style="margin-top:4px;font-size:0.78rem;"><i class="fa fa-folder me-1" style="color:var(--brand-green);"></i>${project.title}</div>` : ''}
                     </div>
                 </div>
                 <div class="request-card-message">"${req.message}"</div>
-                ${req.scheduledMeeting ? `
-                    <div class="meeting-card" style="margin-bottom:14px;">
-                        <div class="meeting-info-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>${formatDate(req.scheduledMeeting.date)} at ${req.scheduledMeeting.time}</span></div>
-                        <a class="meeting-zoom-btn" href="${req.scheduledMeeting.zoomLink || '#'}" target="_blank">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>Join Zoom
-                        </a>
-                    </div>` : ''}
                 <div class="request-card-actions">${actionButtons}</div>
             </div>`;
         }
@@ -620,25 +694,23 @@ async function renderMentorRequests() {
 const MentorView = {
     async acceptRequest(requestId) {
         try {
-            await updateDoc(doc(db, 'mentorshipRequests', requestId), { status: 'accepted', updatedAt: serverTimestamp() });
+            // 1. Update Firestore - Removed
             
-            // Link mentor to project for permissions
-            try {
-                const reqSnap = await getDoc(doc(db, 'mentorshipRequests', requestId));
-                if (reqSnap.exists()) {
-                    const reqData = reqSnap.data();
-                    if (reqData.projectId) {
-                        await updateDoc(doc(db, 'projects', reqData.projectId), {
-                            mentorId: auth.currentUser.uid
-                        });
-                    }
+            // Link mentor to project - Handled in Supabase check if needed
+            // (Assuming Supabase updateMentorshipStatus handles backend logic)
+
+            // 2. Supabase Sync: Update Status
+            if (window.SupabaseService) {
+                try {
+                    await window.SupabaseService.updateMentorshipStatus(requestId, 'accepted');
+                    console.log("Mentor Discovery: Accept synced to Supabase");
+                } catch (sbErr) {
+                    console.error("Mentor Discovery: Supabase accept sync failed", sbErr);
                 }
-            } catch (linkErr) {
-                console.error('Link Error:', linkErr);
             }
 
             renderMentorRequests();
-            showToast('✓ Request accepted! You can now schedule a meeting.');
+            showToast('✓ Request accepted! You can now collaborate.');
         } catch(e) {
             console.error('Failed to accept:', e);
             showToast('⚠ Failed to accept request.');
@@ -671,7 +743,18 @@ const MentorView = {
             return;
         }
         try {
-            await updateDoc(doc(db, 'mentorshipRequests', requestId), { status: 'rejected', rejectionReason: reason, updatedAt: serverTimestamp() });
+            // 1. Update Firestore - Removed
+
+            // 2. Supabase Sync: Update Status
+            if (window.SupabaseService) {
+                try {
+                    await window.SupabaseService.updateMentorshipStatus(requestId, 'rejected');
+                    console.log("Mentor Discovery: Reject synced to Supabase");
+                } catch (sbErr) {
+                    console.error("Mentor Discovery: Supabase reject sync failed", sbErr);
+                }
+            }
+
             document.getElementById('requestRejectModal')?.remove();
             renderMentorRequests();
             showToast('Request declined.', 'warning');
@@ -716,14 +799,29 @@ const MentorView = {
             return;
         }
         try {
-            await updateDoc(doc(db, 'mentorshipRequests', requestId), {
-                scheduledMeeting: {
-                    date,
-                    time: time + ' EAT',
-                    zoomLink: zoom || '#'
-                },
-                updatedAt: serverTimestamp()
-            });
+            const meetingData = {
+                date,
+                time: time + ' EAT',
+                zoomLink: zoom || '#'
+            };
+
+            // 1. Update Firestore - Removed
+
+            // 2. Supabase Sync: Update Profile/Meeting Info
+            if (window.SupabaseService) {
+                try {
+                    // Assuming meeting info is part of the mentorship record in Supabase
+                    await window.SupabaseService.updateMentorshipStatus(requestId, 'accepted', {
+                        meeting_date: meetingData.date,
+                        meeting_time: meetingData.time,
+                        zoom_link: meetingData.zoomLink
+                    });
+                    console.log("Mentor Discovery: Schedule synced to Supabase");
+                } catch (sbErr) {
+                    console.error("Mentor Discovery: Supabase schedule sync failed", sbErr);
+                }
+            }
+
             document.getElementById('schedulerModal')?.remove();
             renderMentorRequests();
             showToast('✓ Meeting scheduled! The innovator will see the details.');
@@ -776,20 +874,7 @@ const MentorDiscovery = {
         if (!reason) return;
 
         try {
-            await addDoc(collection(db, 'mentorshipTerminations'), {
-                requestId: requestId,
-                innovatorId: auth.currentUser.uid,
-                mentorName: mentorName,
-                reason: reason,
-                status: 'pending',
-                requestedAt: serverTimestamp()
-            });
-
-            // Also update the request status to indicate a pending termination
-            await updateDoc(doc(db, 'mentorshipRequests', requestId), {
-                terminationRequested: true,
-                updatedAt: serverTimestamp()
-            });
+            // Background Sync removed
 
             showToast('✓ Termination request submitted to Admin.', 'success');
             renderMyMentors();

@@ -1,10 +1,7 @@
 /**
  * Auto-Save Manager
- * Automatically saves form data to Firestore drafts collection
+ * Automatically saves form data to localStorage drafts
  */
-
-import { db } from '../core/firebase-config.js';
-import { doc, setDoc, getDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 export class AutoSaveManager {
     constructor(formId, userId, draftType = 'project') {
@@ -16,6 +13,7 @@ export class AutoSaveManager {
         this.lastSaveTime = null;
         this.isDirty = false;
         this.saveIntervalMs = 15000; // 15 seconds
+        this.storageKey = `draft_${this.userId}_${this.draftType}`;
     }
 
     /**
@@ -131,7 +129,7 @@ export class AutoSaveManager {
     }
 
     /**
-     * Save draft to Firestore
+     * Save draft to localStorage
      */
     async saveDraft() {
         if (!this.form || !this.userId) return;
@@ -144,12 +142,11 @@ export class AutoSaveManager {
 
             // Convert FormData to object
             for (let [key, value] of formData.entries()) {
-                // Skip file inputs for now (handle separately if needed)
                 if (value instanceof File) continue;
                 draftData[key] = value;
             }
 
-            // Also capture input values directly (for fields not in FormData)
+            // Capture input values directly
             const inputs = this.form.querySelectorAll('input, textarea, select');
             inputs.forEach(input => {
                 if (input.type !== 'file' && input.id) {
@@ -157,54 +154,40 @@ export class AutoSaveManager {
                 }
             });
 
-            // Save to Firestore
-            const draftRef = doc(db, 'projectDrafts', this.userId);
-            await setDoc(draftRef, {
+            // Save to localStorage
+            const payload = {
                 ...draftData,
                 draftType: this.draftType,
-                updatedAt: serverTimestamp()
-            });
+                updatedAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem(this.storageKey, JSON.stringify(payload));
 
             this.isDirty = false;
             this.lastSaveTime = new Date();
             this.showSaveIndicator('saved');
 
         } catch (error) {
-            console.error('Error saving draft:', error);
+            console.error('Error saving draft locally:', error);
         }
     }
 
     /**
-     * Load draft from Firestore
+     * Load draft from localStorage
      */
     async loadDraft() {
         if (!this.userId) return;
 
         try {
-            const draftRef = doc(db, 'projectDrafts', this.userId);
-            const draftSnap = await getDoc(draftRef);
+            const draftJson = localStorage.getItem(this.storageKey);
+            if (!draftJson) return;
 
-            if (draftSnap.exists()) {
-                const draftData = draftSnap.data();
-                
-                // Show restore prompt (Disabled per user request for a cleaner experience)
-                /*
-                const shouldRestore = confirm(
-                    'We found a saved draft from your last session. Would you like to restore it?'
-                );
-
-                if (shouldRestore) {
-                    this.restoreDraft(draftData);
-                } else {
-                    // Delete the draft if user doesn't want it
-                    await this.clearDraft();
-                }
-                */
-               // Default behavior: just clear it to avoid stale data issues described by user
-               await this.clearDraft();
-            }
+            const draftData = JSON.parse(draftJson);
+            // Auto-restore without prompt for seamless UX as per earlier revision logic
+            this.restoreDraft(draftData);
+            
         } catch (error) {
-            console.error('Error loading draft:', error);
+            console.error('Error loading draft locally:', error);
         }
     }
 
@@ -214,7 +197,6 @@ export class AutoSaveManager {
     restoreDraft(draftData) {
         if (!this.form) return;
 
-        // Populate form fields
         Object.keys(draftData).forEach(key => {
             if (key === 'draftType' || key === 'updatedAt') return;
 
@@ -224,24 +206,17 @@ export class AutoSaveManager {
             }
         });
 
-        // Show notification
         if (window.showSuccessMessage) {
-            window.showSuccessMessage('Draft restored successfully!');
+            window.showSuccessMessage('Draft restored from local session.');
         }
     }
 
     /**
-     * Clear draft from Firestore
+     * Clear draft from localStorage
      */
     async clearDraft() {
         if (!this.userId) return;
-
-        try {
-            const draftRef = doc(db, 'projectDrafts', this.userId);
-            await deleteDoc(draftRef);
-        } catch (error) {
-            console.error('Error clearing draft:', error);
-        }
+        localStorage.removeItem(this.storageKey);
     }
 
     /**

@@ -1,9 +1,6 @@
-import { auth, db, storage } from '../core/firebase-config.js';
+import { auth } from '../core/firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { 
-    doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+// Firestore imports removed
 
 // 1. UI INITIALIZATION HANDLED BY shared-ui.js
 // (Splash screen, preloader, and navbar toggles are now in shared-ui.js)
@@ -16,19 +13,47 @@ import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/fireba
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
-            // 1. Fetch user profile from Firestore to get role and other metadata
-            const userDoc = await getDoc(doc(db, "users", user.uid));
+            // 1. Fetch user profile from Supabase to get role and other metadata
             let profileData = {};
             
-            if (userDoc.exists()) {
-                profileData = userDoc.data();
-            } else {
-                console.warn("No Firestore profile found for user:", user.uid);
-                // Default role for new users if not found (shouldn't happen with correct signup)
+            if (window.SupabaseService) {
+                try {
+                    const sbProfile = await window.SupabaseService.getProfile(user.uid);
+                    if (sbProfile) {
+                        profileData = {
+                            role: sbProfile.role,
+                            fullName: sbProfile.full_name || sbProfile.fullName,
+                            status: sbProfile.status
+                        };
+                    }
+                } catch (e) {
+                    console.warn("Supabase profile fetch failed", e);
+                }
+            }
+            
+            if (!profileData.role) {
+                console.warn("No profile found for user:", user.uid);
                 profileData = { role: 'innovator', fullName: user.displayName || user.email };
             }
 
-            // 2. Prepare complete session data
+            // 2. Sync with Supabase
+            if (window.SupabaseService) {
+                try {
+                    await window.SupabaseService.upsertProfile({
+                        id: user.uid,
+                        email: user.email,
+                        full_name: profileData.fullName || profileData.full_name || user.displayName || user.email.split('@')[0],
+                        role: profileData.role || 'innovator',
+                        status: profileData.status || 'active',
+                        updated_at: new Date().toISOString()
+                    });
+                    console.log("Supabase Auth Sync: Profile unified ✓");
+                } catch (sbErr) {
+                    console.error("Supabase Auth Sync: Failed", sbErr);
+                }
+            }
+
+            // 3. Prepare complete session data
             const sessionData = { 
                 uid: user.uid, 
                 email: user.email, 
@@ -38,12 +63,12 @@ onAuthStateChanged(auth, async (user) => {
                 ...profileData // Merge Firestore data (role, fullName, etc.)
             };
 
-            // 3. Save and move on (UI update handled by dashboards/landing)
+            // 4. Save and Update UI
             window.saveToLocalStorage("innovateHubUser", sessionData);
             if (typeof window.updateNavbarUI === 'function') window.updateNavbarUI(sessionData);
             if (typeof window.updateUIForRole === 'function') window.updateUIForRole(sessionData);
         } catch (error) {
-            console.error("Error fetching user profile:", error);
+            console.error("Error in auth listener:", error);
             const basicSession = { uid: user.uid, email: user.email, loggedIn: true };
             window.saveToLocalStorage("innovateHubUser", basicSession);
         }
@@ -91,81 +116,146 @@ window.logout = window.firebaseLogout;
 
 export const ProjectService = {
     submitProject: async (formData, file) => {
-        // 1. Create Firestore Doc Shell
-        const projectRef = await addDoc(collection(db, "projects"), {
-            ...formData,
-            status: 'pending',
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-        });
+        let projectData = {
+            innovator_id: auth.currentUser.uid,
+            title: formData.title,
+            problem_statement: formData.problemStatement,
+            proposed_solution: formData.proposedSolution,
+            objectives: formData.objectives,
+            expected_impact: formData.expectedImpact,
+            target_area: formData.targetArea || (formData.categories && formData.categories[0]) || 'General',
+            status: 'pending'
+        };
 
-        if (file) {
+        // 1. Primary Sync: Supabase
+        if (window.SupabaseService) {
             try {
-                // Generate a unique file path
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${projectRef.id}-${Date.now()}.${fileExt}`;
-                const filePath = `documents/${auth.currentUser.uid}/${fileName}`;
-
-                // 2. Upload to Supabase Storage
-                const { data, error } = await window.supabase.storage
-                    .from('project-documents')
-                    .upload(filePath, file);
-
-                if (error) throw error;
-
-                // 3. Get Public URL
-                const { data: { publicUrl } } = window.supabase.storage
-                    .from('project-documents')
-                    .getPublicUrl(filePath);
-
-                // 4. Update Firestore with Supabase metadata
-                await updateDoc(doc(db, "projects", projectRef.id), {
-                    fileUrl: publicUrl,
-                    fileName: file.name,
-                    fileStorageType: 'supabase',
-                    supabasePath: filePath,
-                    updatedAt: serverTimestamp()
-                });
-
-            } catch (err) {
-                console.error("Supabase Upload Failed:", err);
-                
-                // ATOMIC ROLLBACK: Delete the Firestore project if upload fails
-                try {
-                    const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-                    await deleteDoc(doc(db, "projects", projectRef.id));
-                } catch (rollbackErr) {
-                    console.error("Rollback failed:", rollbackErr);
+                // Ensure Supabase client is initialized (shared from window)
+                if (!window.supabase) {
+                    throw new Error("Supabase client not initialized. Please check your configuration.");
                 }
+
+                const sbProject = await window.SupabaseService.createProject(projectData);
+                console.log("Supabase Project Created ✓", sbProject.id);
                 
-                throw new Error(`Failed to upload project document: ${err.message || 'Unknown storage error'}. Project submission rolled back.`);
+                if (file) {
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${sbProject.id}-${Date.now()}.${fileExt}`;
+                    const filePath = `documents/${auth.currentUser.uid}/${fileName}`;
+
+                    // Check if bucket exists/is accessible by trying upload
+                    const { error: uploadError } = await window.supabase.storage
+                        .from('public-assets')
+                        .upload(filePath, file);
+
+                    if (!uploadError) {
+                        const { data: { publicUrl } } = window.supabase.storage
+                            .from('public-assets')
+                            .getPublicUrl(filePath);
+
+                        await window.supabase
+                            .from('projects')
+                            .update({ file_url: publicUrl, file_name: file.name })
+                            .eq('id', sbProject.id);
+                        console.log("Project Document Uploaded ✓");
+                    } else {
+                        console.error("Supabase Storage Error:", uploadError.message);
+                        // Still return project ID, maybe show warning
+                    }
+                }
+                return { id: sbProject.id };
+            } catch (err) {
+                console.error("Supabase Project Submission Failed:", err);
+                throw err;
             }
         }
-        return projectRef;
+        throw new Error("Supabase service not available. Sync might still be in progress.");
     }
 };
 
 export const MentorshipService = {
     sendRequest: async (mentorId, projectId) => {
-        return await addDoc(collection(db, "mentorshipRequests"), {
-            mentorId,
-            projectId,
-            innovatorId: auth.currentUser.uid,
-            status: 'pending',
-            createdAt: serverTimestamp()
-        });
+        const mentorshipData = {
+            innovator_id: auth.currentUser.uid,
+            mentor_id: mentorId,
+            project_id: projectId,
+            status: 'pending'
+        };
+
+        // Primary Sync: Supabase
+        if (window.SupabaseService) {
+            try {
+                const sbMentorship = await window.SupabaseService.createMentorship(mentorshipData);
+                console.log("Supabase Mentorship Request Created ✓");
+                return { id: sbMentorship.id };
+            } catch (err) {
+                console.error("Supabase Mentorship Creation Failed:", err);
+                throw err;
+            }
+        }
+        throw new Error("Supabase service not available.");
     }
 };
 
 export const NotificationService = {
     send: async (userId, message, type = 'info') => {
-        return await addDoc(collection(db, "notifications"), {
-            userId,
-            message,
-            type,
-            read: false,
-            createdAt: serverTimestamp()
-        });
+        // 1. Primary Sync: Supabase
+        if (window.SupabaseService) {
+            await window.SupabaseService.createNotification({
+                user_id: userId,
+                message: message,
+                type: type,
+                is_read: false
+            });
+            console.log("Supabase Notification Created ✓");
+        }
+
+        // 2. Secondary Sync: Firestore (Background) - Removed
+    }
+};
+
+export const MilestoneService = {
+    report: async (projectId, milestoneTitle, content) => {
+        const reportData = {
+            project_id: projectId,
+            milestone_title: milestoneTitle,
+            content,
+            reported_by: auth.currentUser.uid
+        };
+
+        // 1. Primary Sync: Supabase
+        let sbReport;
+        if (window.SupabaseService) {
+            sbReport = await window.SupabaseService.createMilestoneReport(reportData);
+        }
+
+        const reportId = sbReport ? sbReport.id : `legacy-${Date.now()}`;
+
+        // 2. Secondary Sync: Firestore (Background) - Removed
+
+        return { id: reportId };
+    }
+};
+
+export const CollaborationService = {
+    addComment: async (projectId, content) => {
+        const commentData = {
+            project_id: projectId,
+            content,
+            author_id: auth.currentUser.uid
+        };
+
+        // 1. Primary Sync: Supabase
+        let sbComment;
+        if (window.SupabaseService) {
+            sbComment = await window.SupabaseService.createCollaborationComment(commentData);
+        }
+
+        const commentId = sbComment ? sbComment.id : `legacy-${Date.now()}`;
+
+        // 2. Secondary Sync: Firestore (Background) - Removed
+
+        return { id: commentId };
     }
 };
 
@@ -173,6 +263,8 @@ export const NotificationService = {
 window.ProjectService = ProjectService;
 window.MentorshipService = MentorshipService;
 window.NotificationService = NotificationService;
+window.MilestoneService = MilestoneService;
+window.CollaborationService = CollaborationService;
 
 // Log initialization message
 console.log(

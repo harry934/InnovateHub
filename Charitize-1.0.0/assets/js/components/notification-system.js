@@ -3,9 +3,6 @@
  * Global notification bell with dropdown panel and real-time updates
  */
 
-import { db } from '../core/firebase-config.js';
-import { collection, query, where, onSnapshot, orderBy, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
 export class NotificationSystem {
     constructor(userId) {
         this.userId = userId;
@@ -13,7 +10,7 @@ export class NotificationSystem {
         this.unreadCount = 0;
         this.bellElement = null;
         this.dropdownElement = null;
-        this.unsubscribe = null;
+        this.subscription = null;
     }
 
     /**
@@ -162,33 +159,35 @@ export class NotificationSystem {
     /**
      * Start listening for notifications
      */
-    startListening() {
+    async startListening() {
         if (!this.userId) {
             console.error('User ID required for notifications');
             return;
         }
 
-        const notificationsQuery = query(
-            collection(db, 'notifications'),
-            where('userId', '==', this.userId)
-        );
-
-        this.unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
-            let fetchedNotifications = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
-            // Sort client-side to avoid Firestore index requirement natively
-            fetchedNotifications.sort((a, b) => {
-                const timeA = a.createdAt && typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : 0;
-                const timeB = b.createdAt && typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : 0;
-                return timeB - timeA;
-            });
-
-            this.notifications = fetchedNotifications;
+        if (window.SupabaseService) {
+            // Initial load
+            const initialNotifs = await window.SupabaseService.getNotifications(this.userId);
+            this.notifications = initialNotifs || [];
             this.updateUI();
-        });
+
+            // Subscribe to real-time changes
+            this.subscription = window.SupabaseService.subscribeToNotifications(this.userId, (payload) => {
+                console.log("Realtime Notification:", payload);
+                this.refreshNotifications();
+            });
+        }
+    }
+
+    /**
+     * Refresh notifications from database
+     */
+    async refreshNotifications() {
+        if (window.SupabaseService && this.userId) {
+            const notifs = await window.SupabaseService.getNotifications(this.userId);
+            this.notifications = notifs || [];
+            this.updateUI();
+        }
     }
 
     /**
@@ -238,7 +237,7 @@ export class NotificationSystem {
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <h6 class="mb-1 ${notif.read ? 'fw-normal' : 'fw-bold'}">${notif.message}</h6>
-                        <small class="text-muted"><i class="fa fa-clock me-1"></i>${this.formatTimestamp(notif.createdAt?.toDate ? notif.createdAt.toDate() : new Date())}</small>
+                        <small class="text-muted"><i class="fa fa-clock me-1"></i>${this.formatTimestamp(notif.created_at ? new Date(notif.created_at) : new Date())}</small>
                     </div>
                     ${!notif.read ? '<span class="badge bg-success rounded-pill">New</span>' : ''}
                 </div>
@@ -332,14 +331,14 @@ export class NotificationSystem {
         };
 
         const color = typeColors[notif.type] || '#6c757d';
-        const timestamp = notif.createdAt?.toDate ? 
-            this.formatTimestamp(notif.createdAt.toDate()) : 
+        const timestamp = notif.created_at ? 
+            this.formatTimestamp(new Date(notif.created_at)) : 
             'Just now';
 
         return `
             <div class="notification-item" 
                  data-notif-id="${notif.id}"
-                 data-action-url="${notif.actionUrl || ''}"
+                 data-action-url="${notif.action_url || notif.actionUrl || ''}"
                  style="
                      padding: 1rem;
                      border-bottom: 1px solid #e9ecef;
@@ -392,9 +391,15 @@ export class NotificationSystem {
      */
     async markAsRead(notifId) {
         try {
-            await updateDoc(doc(db, 'notifications', notifId), {
-                read: true
-            });
+            if (window.SupabaseService) {
+                await window.SupabaseService.markNotificationAsRead(notifId);
+                // Update local state for immediate feedback
+                const notif = this.notifications.find(n => n.id === notifId);
+                if (notif) {
+                    notif.read = true;
+                    this.updateUI();
+                }
+            }
         } catch (error) {
             console.error('Error marking notification as read:', error);
         }
@@ -411,17 +416,15 @@ export class NotificationSystem {
         if (!userId || !message) return;
         
         try {
-            const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-            const { db } = await import('../core/firebase-config.js');
-            
-            await addDoc(collection(db, 'notifications'), {
-                userId,
-                message,
-                type,
-                actionUrl,
-                read: false,
-                createdAt: serverTimestamp()
-            });
+            if (window.SupabaseService) {
+                await window.SupabaseService.createNotification({
+                    user_id: userId,
+                    message,
+                    type,
+                    action_url: actionUrl,
+                    read: false
+                });
+            }
         } catch (error) {
             console.error('Error sending notification:', error);
         }
@@ -431,8 +434,9 @@ export class NotificationSystem {
      * Clean up listeners
      */
     destroy() {
-        if (this.unsubscribe) {
-            this.unsubscribe();
+        if (this.subscription) {
+            // Supabase Realtime uses .unsubscribe()
+            this.subscription.unsubscribe();
         }
     }
 }

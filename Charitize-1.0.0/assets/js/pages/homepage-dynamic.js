@@ -1,25 +1,24 @@
-import { db } from '../core/firebase-config.js';
-import { collection, getDocs, query, where, limit, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+// Firestore imports removed
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Fetch and Animate Stats
     try {
-        const [usersSnap, projectsSnap] = await Promise.all([
-            getDocs(collection(db, 'users')),
-            getDocs(collection(db, 'projects'))
-        ]);
-        
-        const users = usersSnap.docs.map(d => d.data());
-        const projects = projectsSnap.docs.map(d => d.data());
-        
-        // Mentors: Approved users with role 'mentor'
-        const mentorsCount = users.filter(u => u.role === 'mentor' && u.status !== 'rejected').length;
-        // Projects: Approved projects (or just total for now)
-        const projectsCount = projects.length;
-        // Students: Innovators
-        const studentsCount = users.filter(u => u.role === 'innovator').length;
-        // Awards: A static impressive metric or featured projects
-        const awardsCount = Math.floor(projects.length * 0.1) + 40; // Simulated dynamically
+        let mentorsCount = 0, projectsCount = 0, studentsCount = 0, awardsCount = 0;
+
+        // Try Supabase first
+        if (window.SupabaseService) {
+            const [profiles, projects] = await Promise.all([
+                window.SupabaseService.getAllProfiles(),
+                window.SupabaseService.getProjects()
+            ]);
+
+            if (profiles && profiles.length > 0) {
+                mentorsCount = profiles.filter(u => u.role === 'mentor' && u.status !== 'rejected').length;
+                studentsCount = profiles.filter(u => u.role === 'innovator').length;
+                projectsCount = projects ? projects.length : 0;
+                awardsCount = Math.floor(projectsCount * 0.1) + 40;
+            }
+        }
         
         animateValue("stat-mentors", 0, mentorsCount || 0, 2000);
         animateValue("stat-awards", 0, awardsCount, 2000);
@@ -34,17 +33,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const eventsContainer = document.getElementById('dynamicEventsGrid');
         if (!eventsContainer) return;
+
+        let events = [];
+
+        // Try Supabase first
+        if (window.SupabaseService) {
+            events = await window.SupabaseService.getEvents();
+            events = events.map(ev => ({
+                title: ev.title,
+                description: ev.description,
+                imageLink: ev.image_url || 'assets/img/event-placeholder.jpg',
+                date: ev.event_date,
+                time: ev.event_time,
+                location: ev.location
+            })).slice(0, 3);
+        }
         
-        const eventsQuery = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(3));
-        const eventsSnap = await getDocs(eventsQuery);
-        
-        if (eventsSnap.empty) {
+        if (events.length === 0) {
             eventsContainer.innerHTML = '<div class="col-12 text-center p-5"><p class="text-muted">No upcoming events scheduled at the moment.</p></div>';
             return;
         }
         
-        const eventsHTML = eventsSnap.docs.map((docSnap, index) => {
-            const ev = docSnap.data();
+        const eventsHTML = events.map((ev, index) => {
             const delay = (index + 1) * 0.2;
             return `
                 <div class="col-md-6 col-lg-4 wow fadeIn" data-wow-delay="${delay}s">
@@ -56,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <img style="width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.4s ease;"
                                  onmouseenter="this.style.transform='scale(1.04)';"
                                  onmouseleave="this.style.transform='scale(1)';"
-                                 src="${ev.imageLink}" alt="${ev.title}">
+                                 src="${ev.imageLink || ev.image_url}" alt="${ev.title}">
                             <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(15,23,42,0.35) 0%, transparent 60%);"></div>
                         </div>
                         <div style="padding:1.4rem 1.5rem;">
@@ -67,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <span style="flex-shrink:0; width:30px; height:30px; border-radius:8px; background:#f0fdf4; display:flex; align-items:center; justify-content:center;">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a5e4f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                                     </span>
-                                    <span style="font-size:0.85rem; color:#334155; font-weight:500;">${ev.date} &bull; ${ev.time}</span>
+                                    <span style="font-size:0.85rem; color:#334155; font-weight:500;">${ev.date || ev.event_date} &bull; ${ev.time || ev.event_time}</span>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:0.6rem;">
                                     <span style="flex-shrink:0; width:30px; height:30px; border-radius:8px; background:#f0fdf4; display:flex; align-items:center; justify-content:center;">
