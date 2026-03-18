@@ -1,11 +1,13 @@
-/**
- * Innovator Dashboard — Mentor Discovery & Mentorship Flow
- * Version: 2.0.0
- * Fully integrated with Firebase Firestore
- */
+// Supabase Auth — auth state via window.supabase session or localStorage fallback
 
-import { auth } from '../core/firebase-config.js';
-// Firestore imports removed
+// Helper: get current Supabase user (sync-safe via localStorage)
+function getCurrentAuthUser() {
+    const stored = localStorage.getItem('innovateHubUser');
+    if (stored) {
+        try { return JSON.parse(stored); } catch(e) {}
+    }
+    return null;
+}
 
 // ============================================================
 //  HELPERS
@@ -123,9 +125,10 @@ async function renderMentorDiscovery() {
 
         // SMART Nuru Suggestion System
         let userContext = { interests: [], skills: [] };
-        if (auth.currentUser && window.SupabaseService) {
+        const user = getCurrentAuthUser();
+        if (user && window.SupabaseService) {
             try {
-                const profile = await window.SupabaseService.getProfile(auth.currentUser.uid);
+                const profile = await window.SupabaseService.getProfile(user.uid);
                 if (profile) {
                     userContext.interests = profile.interests ? profile.interests.split(',').map(i => i.trim().toLowerCase()).filter(i => i) : [];
                     userContext.skills = profile.skills ? profile.skills.split(',').map(s => s.trim().toLowerCase()).filter(s => s) : [];
@@ -267,10 +270,11 @@ async function openMentorProfileModal(mentorId) {
 
         // Check active requests
         let existingReq = null;
-        if (auth.currentUser) {
+        const user = getCurrentAuthUser();
+        if (user) {
             // Check Supabase first for existing request
             if (window.SupabaseService) {
-                const sbReqs = await window.SupabaseService.getMentorships(auth.currentUser.uid, 'innovator');
+                const sbReqs = await window.SupabaseService.getMentorships(user.uid, 'innovator');
                 if (sbReqs) {
                     existingReq = sbReqs.find(ms => ms.mentor_id === mentorId && (ms.status === 'pending' || ms.status === 'accepted'));
                 }
@@ -395,52 +399,52 @@ async function openRequestFlow(mentorId) {
     if (!currentMentorForRequest) return;
     document.getElementById('mentorProfileModalOverlay')?.remove();
 
-    if (!auth.currentUser) return;
+    const user = getCurrentAuthUser();
+    if (!user) return;
     
     // Fetch user's projects
     // Fetch user's projects from Supabase (Source of Truth)
     if (window.SupabaseService) {
         try {
-            myProjects = await window.SupabaseService.getProjects({ innovator_id: auth.currentUser.uid });
+            const myProjects = await window.SupabaseService.getProjects({ innovator_id: user.uid });
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'rejection-modal-overlay';
+            overlay.id = 'requestFlowModal';
+            overlay.innerHTML = `
+                <div class="rejection-modal-box" style="max-width:520px;">
+                    <h4 style="color:var(--brand-green); display: flex; align-items: center; gap: 10px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="me-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        Request Mentorship
+                    </h4>
+                    <p>You are requesting mentorship from <strong>${currentMentorForRequest.fullName}</strong>. Choose a project and write a brief introduction.</p>
+        
+                    ${myProjects.length > 0 ? `
+                    <label style="font-size:0.82rem;font-weight:700;color:#8a9aaa;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Link a Project</label>
+                    <select id="requestProjectSelect" style="width:100%;border:1.5px solid #e0e0e0;border-radius:12px;padding:12px 14px;font-size:0.9rem;margin-bottom:14px;outline:none;">
+                        <option value="">— Select a project (optional) —</option>
+                        ${myProjects.map(p => `<option value="${p.id}">${p.title}</option>`).join('')}
+                    </select>` : ''}
+        
+                    <label style="font-size:0.82rem;font-weight:700;color:#8a9aaa;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Your Message</label>
+                    <textarea id="requestMessage" rows="4" placeholder="Introduce yourself and explain what kind of guidance you're looking for..."></textarea>
+        
+                    <div class="rejection-modal-actions">
+                        <button class="btn-approve" style="background:#6c757d;" onclick="document.getElementById('requestFlowModal').remove()">Cancel</button>
+                        <button class="btn-approve" onclick="MentorDiscovery.submitRequest('${mentorId}')" id="btnSubmitReq">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>Send Request
+                        </button>
+                    </div>
+                </div>`;
+        
+            document.body.appendChild(overlay);
         } catch(e) { console.error("Error fetching projects for request flow", e); }
     }
-    
-    // Fallback removed
-
-    const overlay = document.createElement('div');
-    overlay.className = 'rejection-modal-overlay';
-    overlay.id = 'requestFlowModal';
-    overlay.innerHTML = `
-        <div class="rejection-modal-box" style="max-width:520px;">
-            <h4 style="color:var(--brand-green); display: flex; align-items: center; gap: 10px;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="me-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                Request Mentorship
-            </h4>
-            <p>You are requesting mentorship from <strong>${currentMentorForRequest.fullName}</strong>. Choose a project and write a brief introduction.</p>
-
-            ${myProjects.length > 0 ? `
-            <label style="font-size:0.82rem;font-weight:700;color:#8a9aaa;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Link a Project</label>
-            <select id="requestProjectSelect" style="width:100%;border:1.5px solid #e0e0e0;border-radius:12px;padding:12px 14px;font-size:0.9rem;margin-bottom:14px;outline:none;">
-                <option value="">— Select a project (optional) —</option>
-                ${myProjects.map(p => `<option value="${p.id}">${p.title}</option>`).join('')}
-            </select>` : ''}
-
-            <label style="font-size:0.82rem;font-weight:700;color:#8a9aaa;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Your Message</label>
-            <textarea id="requestMessage" rows="4" placeholder="Introduce yourself and explain what kind of guidance you're looking for..."></textarea>
-
-            <div class="rejection-modal-actions">
-                <button class="btn-approve" style="background:#6c757d;" onclick="document.getElementById('requestFlowModal').remove()">Cancel</button>
-                <button class="btn-approve" onclick="MentorDiscovery.submitRequest('${mentorId}')" id="btnSubmitReq">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-2"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>Send Request
-                </button>
-            </div>
-        </div>`;
-
-    document.body.appendChild(overlay);
 }
 
 async function submitRequest(mentorId) {
-    if (!auth.currentUser) return;
+    const user = getCurrentAuthUser();
+    if (!user) return;
     
     const projectId = (document.getElementById('requestProjectSelect') || {}).value || null;
     const messageField = document.getElementById('requestMessage');
@@ -458,7 +462,7 @@ async function submitRequest(mentorId) {
         // Primary Sync: Supabase
         if (window.SupabaseService) {
             const sbMentorship = await window.SupabaseService.createMentorship({
-                innovator_id: auth.currentUser.uid,
+                innovator_id: user.uid,
                 mentor_id: mentorId,
                 project_id: projectId,
                 message: message,
@@ -487,7 +491,8 @@ async function submitRequest(mentorId) {
 // ============================================================
 async function renderMyMentors() {
     const container = document.getElementById('myMentorsContainer');
-    if (!container || !auth.currentUser) return;
+    const user = getCurrentAuthUser();
+    if (!container || !user) return;
 
     container.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>`;
 
@@ -496,7 +501,7 @@ async function renderMyMentors() {
 
         // 1. Fetch from Supabase (Single Source of Truth)
         if (window.SupabaseService) {
-            const sbMentorships = await window.SupabaseService.getMentorships(auth.currentUser.uid, 'innovator');
+            const sbMentorships = await window.SupabaseService.getMentorships(user.uid, 'innovator');
             if (sbMentorships && sbMentorships.length > 0) {
                 mentorships = sbMentorships.map(ms => ({
                     id: ms.id,
@@ -605,7 +610,8 @@ function showToast(message, type = 'success') {
 // ============================================================
 async function renderMentorRequests() {
     const container = document.getElementById('requestsContainer');
-    if (!container || !auth.currentUser) return;
+    const user = getCurrentAuthUser();
+    if (!container || !user) return;
 
     container.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>`;
 
@@ -615,7 +621,7 @@ async function renderMentorRequests() {
         // 1. Try Supabase First
         if (window.SupabaseService) {
             try {
-                const sbReqs = await window.SupabaseService.getMentorships(auth.currentUser.uid, 'mentor');
+                const sbReqs = await window.SupabaseService.getMentorships(user.uid, 'mentor');
                 if (sbReqs && sbReqs.length > 0) {
                     requests = sbReqs.map(r => ({
                         id: r.id,

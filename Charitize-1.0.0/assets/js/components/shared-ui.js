@@ -70,7 +70,9 @@
     const navDashboardBtn = document.getElementById("navDashboardBtn");
     const logoutLink = document.querySelector(".logout-link");
 
-    if (user && user.loggedIn === true) {
+    const isLoggedIn = user && (user.uid || user.id);
+
+    if (isLoggedIn) {
       document.body.classList.add("user-logged-in");
       if (guestButtons) guestButtons.classList.add("d-none");
       if (navDashboardBtn) navDashboardBtn.classList.remove("d-none");
@@ -80,8 +82,8 @@
       if (guestButtons) guestButtons.classList.remove("d-none");
       if (navDashboardBtn) navDashboardBtn.classList.add("d-none");
       if (logoutLink) logoutLink.classList.add("d-none");
-      // Clear potentially stale localStorage if no loggedIn flag
-      if (!user || user.loggedIn !== true) {
+      // Clear potentially stale localStorage only if no user object exists
+      if (!user) {
         localStorage.removeItem("innovateHubUser");
       }
     }

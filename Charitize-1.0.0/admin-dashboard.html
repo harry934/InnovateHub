@@ -128,9 +128,9 @@
                     <p class="text-muted">All innovators and mentors on the platform</p>
                 </div>
                 <div class="filter-group d-flex gap-2 mb-4">
-                    <button class="filter-btn active" onclick="setRoleFilter('all')">All Members</button>
-                    <button class="filter-btn" onclick="setRoleFilter('innovator')">Innovators</button>
-                    <button class="filter-btn" onclick="setRoleFilter('mentor')">Mentors</button>
+                    <button class="filter-btn active" onclick="adminDashboard.setRoleFilter('all')">All Members</button>
+                    <button class="filter-btn" onclick="adminDashboard.setRoleFilter('innovator')">Innovators</button>
+                    <button class="filter-btn" onclick="adminDashboard.setRoleFilter('mentor')">Mentors</button>
                 </div>
                 <!-- Card Grid Container -->
                 <div class="row" id="usersCardGrid">
@@ -263,133 +263,6 @@
                 </div>
             </div>
 
-            <!-- My Projects Section (kept for legacy compatibility) -->
-            <div id="projectsSection" class="dashboard-section" style="display:none;">
-                <div class="dashboard-header mb-4">
-                    <h2>My Projects</h2>
-                    <p class="text-muted">Track and manage your innovation projects</p>
-                </div>
-                <div id="projectsContainer"></div>
-            </div>
-
-            <!-- Submit Project Section -->
-            <div id="submitSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>Submit New Project</h2>
-                    <p class="text-muted">Share your innovative idea with us</p>
-                </div>
-
-                <div class="dashboard-card">
-                    <form id="projectForm">
-                        <div class="mb-3">
-                            <label class="form-label">Project Title</label>
-                            <input type="text" class="form-control" name="title" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label d-block">Project Categories (Select any that apply)</label>
-                            <div class="d-flex flex-wrap gap-3 p-3 border" style="background: #f8f9fa;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="technology" id="catTech">
-                                    <label class="form-check-label" for="catTech">Technology</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="healthcare" id="catHealth">
-                                    <label class="form-check-label" for="catHealth">Healthcare</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="education" id="catEdu">
-                                    <label class="form-check-label" for="catEdu">Education</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="environment" id="catEnv">
-                                    <label class="form-check-label" for="catEnv">Environment</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="social" id="catSocial">
-                                    <label class="form-check-label" for="catSocial">Social Impact</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="agriculture" id="catAgri">
-                                    <label class="form-check-label" for="catAgri">AgriTech</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="robotics" id="catRobo">
-                                    <label class="form-check-label" for="catRobo">Robotics</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Problem Statement</label>
-                            <textarea class="form-control" name="problemStatement" rows="3" required></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Objectives</label>
-                            <textarea class="form-control" name="objectives" rows="3" required></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Proposed Solution</label>
-                            <textarea class="form-control" name="proposedSolution" rows="4" required></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Expected Impact</label>
-                            <textarea class="form-control" name="expectedImpact" rows="3" required></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Supporting Document (Optional)</label>
-                            <input type="file" class="form-control" name="document" accept=".pdf,.doc,.docx">
-                        </div>
-
-                        <button type="submit" class="btn btn-custom-signup">Submit Project</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Find Mentors Section -->
-            <div id="mentorsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>Find Mentors</h2>
-                    <p class="text-muted">Connect with experienced mentors</p>
-                </div>
-
-                <div class="filter-panel mb-4 p-3 bg-white shadow-sm">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Filter by Categories</label>
-                            <div id="mentorCategoryCheckboxes" class="d-flex flex-wrap gap-2">
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="technology">Technology</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="healthcare">Healthcare</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="education">Education</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="environment">Environment</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="agriculture">AgriTech</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Search Mentors</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa fa-search"></i></span>
-                                <input type="text" class="form-control" id="mentorSearchInput" placeholder="Search by name, expertise or institution">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="mentorsContainer" class="row g-4"></div>
-            </div>
-
-            <!-- My Mentors Section -->
-            <div id="myMentorsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>My Mentors</h2>
-                    <p class="text-muted">Your assigned mentors and requests</p>
-                </div>
-                <div id="myMentorsContainer"></div>
-            </div>
 
             <!-- Admin Settings Section -->
             <div id="profileSection" class="dashboard-section" style="display: none;">

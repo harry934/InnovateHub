@@ -1,5 +1,14 @@
-import { auth } from '../core/firebase-config.js';
-// Firestore imports removed
+// Supabase Auth — auth state via window.supabase session or localStorage fallback
+
+// Helper: get current Supabase user (sync-safe via localStorage)
+function getCurrentAuthUser() {
+    // Try Supabase session synchronously via localStorage cache
+    const stored = localStorage.getItem('innovateHubUser');
+    if (stored) {
+        try { return JSON.parse(stored); } catch(e) {}
+    }
+    return null;
+}
 
 /**
  * CollaborationHub
@@ -23,10 +32,17 @@ class CollaborationHub {
         console.log("CollaborationHub: Initializing...");
         
         try {
-            // Defensive check for auth and service
-            if (!auth.currentUser) {
-                console.warn("CollaborationHub: No user authenticated yet. Retrying in 500ms...");
-                setTimeout(() => this.init(mentorshipId), 500);
+            // Use Supabase session / localStorage instead of Firebase auth
+            const currentAuthUser = getCurrentAuthUser();
+            if (!currentAuthUser || !currentAuthUser.uid) {
+                console.warn("CollaborationHub: No user authenticated yet. Waiting for AuthManager...");
+                // Check if AuthManager is initialized
+                if (window.AuthManager && window.AuthManager._initialized) {
+                    console.error("CollaborationHub: AuthManager is initialized but no user found. Redirecting...");
+                    window.location.href = 'login.html';
+                    return;
+                }
+                setTimeout(() => this.init(mentorshipId), 1000);
                 return;
             }
 
@@ -67,8 +83,9 @@ class CollaborationHub {
     }
 
     async loadAllMentorships() {
-        if (!auth.currentUser) return;
-        const uid = auth.currentUser.uid;
+        const currentAuthUser = getCurrentAuthUser();
+        if (!currentAuthUser) return;
+        const uid = currentAuthUser.uid;
         const role = this.isInnovator ? 'innovator' : 'mentor';
         
         console.log(`CollaborationHub: Loading data for ${role} ${uid}...`);
@@ -435,11 +452,12 @@ class CollaborationHub {
         const comment = input.value.trim();
         if (!comment) return;
 
+        const uid = getCurrentAuthUser()?.uid;
         try {
             await window.SupabaseService.submitFeedback({
                 mentorship_id: this.activeMentorshipId,
                 project_id: this.mentorshipData.project_id,
-                mentor_id: auth.currentUser.uid,
+                mentor_id: uid,
                 comment: comment,
                 stars: 5
             });
@@ -461,11 +479,12 @@ class CollaborationHub {
             return;
         }
 
+        const uid = getCurrentAuthUser()?.uid;
         try {
             await window.SupabaseService.submitProgressReport({
                 mentorship_id: this.activeMentorshipId,
                 project_id: this.mentorshipData.project_id,
-                innovator_id: auth.currentUser.uid,
+                innovator_id: uid,
                 title: title,
                 summary: summary,
                 status: 'submitted'
@@ -506,10 +525,11 @@ class CollaborationHub {
             const text = input.value.trim();
             if (!text) return;
 
+            const uid = getCurrentAuthUser()?.uid;
             try {
                 await window.SupabaseService.sendMessage({
                     mentorship_id: this.activeMentorshipId,
-                    sender_id: auth.currentUser.uid,
+                    sender_id: uid,
                     message_text: text
                 });
                 input.value = '';
@@ -536,7 +556,8 @@ class CollaborationHub {
 
     appendMessage(msg) {
         const chatBox = document.getElementById('collabChatBox');
-        const isMe = msg.sender_id === auth.currentUser.uid;
+        const uid = getCurrentAuthUser()?.uid;
+        const isMe = msg.sender_id === uid;
         const senderName = isMe ? 'You' : (this._partnerData?.full_name || 'Partner');
         
         const msgGroup = document.createElement('div');
@@ -612,11 +633,12 @@ class CollaborationHub {
         const comment = prompt(`Mentor Review for ${fieldTitle}:\n\nPlease provide your professional feedback...`);
         if (!comment) return;
 
+        const uid = getCurrentAuthUser()?.uid;
         try {
             const feedback = await window.SupabaseService.submitSectionFeedback({
                 mentorship_id: this.activeMentorshipId,
                 project_id: this.projectData.id,
-                mentor_id: auth.currentUser.uid,
+                mentor_id: uid,
                 field_id: fieldId,
                 comment: comment,
                 stars: 5 // Default for section reviews

@@ -1,9 +1,11 @@
-/**
- * Shared Collaboration Screen component
- * High-end interface for Innovators and Mentors to interact
- */
-
-import { auth } from '../core/firebase-config.js';
+// Supabase Auth integration — session via localStorage/Supabase
+function getCurrentAuthUser() {
+    const stored = localStorage.getItem('innovateHubUser');
+    if (stored) {
+        try { return JSON.parse(stored); } catch(e) {}
+    }
+    return null;
+}
 
 console.log("Collab Screen Module Loading...");
 
@@ -41,7 +43,14 @@ class CollaborationScreen {
                 throw new Error("SupabaseService not found. Please refresh.");
             }
 
-            const myId = auth.currentUser.uid;
+            const user = getCurrentAuthUser();
+            const myId = user?.uid;
+            
+            if (!myId) {
+                console.warn("Collab Screen: No user found. Redirecting...");
+                window.location.href = 'login.html';
+                return;
+            }
             
             // 1. Fetch Mentorship Context (Enriched with project and profiles)
             const mentorship = await window.SupabaseService.getMentorshipByProject(projectId, myId);
@@ -374,11 +383,9 @@ class CollaborationScreen {
             if (window.SupabaseService) {
                 await window.SupabaseService.submitProgressReport({
                     mentorship_id: this.currentMentorshipId,
-                    title: title,
-                    content: content,
                     file_url: fileUrl,
                     file_name: file ? file.name : '',
-                    author_id: auth.currentUser.uid
+                    author_id: getCurrentAuthUser()?.uid
                 });
             }
 
@@ -443,10 +450,11 @@ class CollaborationScreen {
 
         // 1. Initial Load from Supabase
         if (window.SupabaseService) {
+            const user = getCurrentAuthUser();
             const messages = await window.SupabaseService.getMessages(this.currentMentorshipId);
             chatContainer.innerHTML = '';
             messages.forEach(msg => {
-                const isMe = msg.author_id === auth.currentUser.uid;
+                const isMe = msg.author_id === user?.uid;
                 chatContainer.innerHTML += `
                     <div class="msg ${isMe ? 'sent' : 'received'}">
                         ${msg.content}
@@ -457,7 +465,8 @@ class CollaborationScreen {
 
             // 2. Real-time Subscription
             this.chatSubscription = window.SupabaseService.subscribeToMessages(this.currentMentorshipId, (newMsg) => {
-                const isMe = newMsg.author_id === auth.currentUser.uid;
+                const user = getCurrentAuthUser();
+                const isMe = newMsg.author_id === user?.uid;
                 chatContainer.innerHTML += `
                     <div class="msg ${isMe ? 'sent' : 'received'}">
                         ${newMsg.content}
@@ -478,7 +487,7 @@ class CollaborationScreen {
                 await window.SupabaseService.sendMessage({
                     mentorship_id: this.currentMentorshipId,
                     content: text,
-                    author_id: auth.currentUser.uid
+                    author_id: getCurrentAuthUser()?.uid
                 });
             }
             input.value = '';
@@ -502,8 +511,9 @@ class CollaborationScreen {
                 
                 const comments = await window.SupabaseService.getSectionFeedback(this.currentMentorshipId, f);
                 el.innerHTML = '';
+                const user = getCurrentAuthUser();
                 comments.forEach(data => {
-                    const isMe = data.author_id === auth.currentUser.uid;
+                    const isMe = data.author_id === user?.uid;
                     el.innerHTML += `
                         <div class="comment-bubble ${isMe ? 'my-comment' : 'partner-comment'}">
                             <div class="d-flex justify-content-between align-items-start mb-1">
@@ -519,9 +529,10 @@ class CollaborationScreen {
             // 2. Real-time Subscription
             this.feedbackSubscription = window.SupabaseService.subscribeToProjectFeedback(this.currentProjectId, (payload) => {
                 const data = payload.new;
+                const user = getCurrentAuthUser();
                 const el = document.getElementById(`comments-${data.field_id}`);
                 if (el) {
-                    const isMe = data.author_id === auth.currentUser.uid;
+                    const isMe = data.author_id === user?.uid;
                     el.innerHTML += `
                         <div class="comment-bubble ${isMe ? 'my-comment' : 'partner-comment'}">
                             <div class="d-flex justify-content-between align-items-start mb-1">
@@ -554,13 +565,14 @@ class CollaborationScreen {
             const modal = bootstrap.Modal.getInstance(modalEl);
             
             if (window.SupabaseService) {
+                const user = getCurrentAuthUser();
                 await window.SupabaseService.submitSectionFeedback({
                     mentorship_id: this.currentMentorshipId,
                     project_id: this.currentProjectId,
                     field_id: field,
                     content: text,
-                    author_id: auth.currentUser.uid,
-                    author_name: auth.currentUser.displayName || (this.currentPartner.isMentor ? "Mentor" : "Innovator")
+                    author_id: user?.uid,
+                    author_name: user?.displayName || (this.currentPartner.isMentor ? "Mentor" : "Innovator")
                 });
             }
 

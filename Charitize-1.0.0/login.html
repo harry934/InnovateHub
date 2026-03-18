@@ -423,173 +423,148 @@
     })();
     </script>
 
-    <!-- Login Logic -->
+    <!-- Login Logic — Supabase Auth -->
     <script type="module">
-      import { auth, googleProvider } from "./assets/js/core/firebase-config.js";
-      import {
-        signInWithEmailAndPassword,
-        signInWithPopup,
-        signOut,
-        sendPasswordResetEmail,
-      } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
       import SupabaseService from "./assets/js/core/supabase-service.js";
 
-      // Check for URL parameters to pre-fill email
+      // Pre-fill admin email via URL param
       window.addEventListener("load", function () {
         const urlParams = new URLSearchParams(window.location.search);
-        const role = urlParams.get("role");
-        if (role === "admin") {
-          document.getElementById("email").value = "admin@innovatehub.com";
+        if (urlParams.get("role") === "admin") {
+          document.getElementById("email").value = "techeagle254@gmail.com";
         }
+
+        // Handle OAuth callback — Supabase sets session in URL hash after Google redirect
+        window.supabase.auth.onAuthStateChange(async (event, session) => {
+          if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+            await handleSuccessfulLogin(session);
+          }
+        });
       });
 
-      // Global error/success handlers
-      window.showErrorMessage = function(msg) {
-          alert('Error: ' + msg); 
-      };
-      
-      window.showSuccessMessage = function(msg) {
-          console.log('Success: ' + msg);
+      window.showErrorMessage = function (msg) {
+        const existing = document.getElementById('loginErrorMsg');
+        if (existing) existing.remove();
+        const div = document.createElement('div');
+        div.id = 'loginErrorMsg';
+        div.className = 'alert alert-danger mt-2 py-2 small';
+        div.textContent = msg;
+        document.querySelector('.form').appendChild(div);
       };
 
-      async function handleSuccessfulLogin(user) {
+      window.showSuccessMessage = function (msg) {
+        console.log('Login success:', msg);
+      };
+
+      async function handleSuccessfulLogin(session) {
+        const supabaseUser = session.user;
         try {
-          // Fetch user profile from Supabase (New Backend)
           let userData = {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName || user.email.split('@')[0],
-            role: 'innovator' // default
+            uid: supabaseUser.id,
+            id: supabaseUser.id,
+            email: supabaseUser.email,
+            displayName: supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0],
+            role: supabaseUser.user_metadata?.role || null
           };
 
+          // Fetch full profile from profiles table
           if (window.SupabaseService) {
-              try {
-                  const profile = await window.SupabaseService.getProfile(user.uid);
-                  if (profile) {
-                      userData = { 
-                          ...userData, 
-                          fullName: profile.full_name,
-                          role: profile.role,
-                          status: profile.status,
-                          loggedIn: true 
-                      };
-                      console.log("Supabase Profile Loaded:", userData.role);
-                  } else {
-                      // fallback if no profile exists yet
-                      userData.loggedIn = true;
-                  }
-              } catch (sbErr) {
-                  console.error("Supabase Profile Fetch Failed:", sbErr);
-                  userData.loggedIn = true;
+            try {
+              const profile = await window.SupabaseService.getProfile(supabaseUser.id);
+              if (profile) {
+                userData = {
+                  ...userData,
+                  fullName: profile.full_name,
+                  role: profile.role,
+                  status: profile.status,
+                  loggedIn: true,
+                  ...profile
+                };
               }
+            } catch (sbErr) {
+              console.error("Profile fetch error:", sbErr);
+            }
           }
-          
-          // Store user data in localStorage
+
           localStorage.setItem('innovateHubUser', JSON.stringify(userData));
           localStorage.setItem('justLoggedIn', 'true');
 
-          // Sync with Supabase (New Backend)
-          if (window.SupabaseService) {
-              try {
-                  await window.SupabaseService.upsertProfile({
-                      id: user.uid,
-                      email: user.email,
-                      full_name: userData.fullName || user.displayName || user.email.split('@')[0],
-                      role: userData.role || 'innovator',
-                      status: userData.status || 'active'
-                  });
-                  console.log("Supabase Profile Sync: Success");
-              } catch (sbErr) {
-                  console.error("Supabase Profile Sync: Failed", sbErr);
-              }
-          }
-          
-          // Always redirect to homepage
-          return "index.html";
+          // Redirect to homepage (dashboard-router on index.html handles role-based routing)
+          window.location.href = "index.html";
         } catch (err) {
-          console.error("Error in handleSuccessfulLogin:", err);
-          // Still redirect to homepage even on error
+          console.error("handleSuccessfulLogin error:", err);
           localStorage.setItem('justLoggedIn', 'true');
-          return "index.html";
+          window.location.href = "index.html";
         }
       }
 
-      window.handleGoogleLogin = async function () {
-        if (window.location.protocol === "file:") {
-          showErrorMessage("Google login requires a web server.");
-          return;
-        }
-
-        try {
-          const result = await signInWithPopup(auth, googleProvider);
-          const user = result.user;
-          
-          showSuccessMessage("Login successful! Redirecting to homepage...");
-          const redirectUrl = await handleSuccessfulLogin(user);
-          console.log("Google Login Success, redirecting to:", redirectUrl);
-          setTimeout(() => (window.location.href = redirectUrl), 1000);
-        } catch (error) {
-          console.error("Google Login Error:", error);
-          showErrorMessage("Google authentication failed: " + error.message);
-        }
-      };
-
+      // Email/Password Login
       window.handleLogin = async function (event) {
         event.preventDefault();
-
-        const email = document.getElementById("email").value.toLowerCase();
+        const email = document.getElementById("email").value.toLowerCase().trim();
         const password = document.getElementById("password").value;
 
         if (!email || !password) {
-          showErrorMessage("Please enter both email and password");
+          showErrorMessage("Please enter both email and password.");
           return;
         }
 
         const btn = document.querySelector(".button-submit");
         const originalText = btn.innerHTML;
-        btn.innerHTML =
-          '<i class="fa fa-spinner fa-spin me-2"></i> Verifying...';
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Verifying...';
         btn.disabled = true;
 
         try {
-          const userCredential = await signInWithEmailAndPassword(
-            auth,
-            email,
-            password,
-          );
-          const user = userCredential.user;
-          
-          showSuccessMessage("Login successful! Redirecting to homepage...");
-          const redirectUrl = await handleSuccessfulLogin(user);
-          console.log("Email Login Success, redirecting to:", redirectUrl);
-          setTimeout(() => (window.location.href = redirectUrl), 1000);
+          const { data, error } = await window.supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+
+          await handleSuccessfulLogin(data.session);
         } catch (error) {
           console.error("Login error:", error);
           let message = "Incorrect email or password.";
-          if (error.code === "auth/user-not-found")
-            message = "No account found with this email.";
-          if (error.code === "auth/wrong-password")
-            message = "Incorrect password.";
-
+          if (error.message?.includes('Invalid login credentials')) message = "Incorrect email or password.";
+          if (error.message?.includes('Email not confirmed')) message = "Please confirm your email first.";
           showErrorMessage(message);
           btn.innerHTML = originalText;
           btn.disabled = false;
         }
       };
 
+      // Google OAuth Login (redirect-based)
+      window.handleGoogleLogin = async function () {
+        if (window.location.protocol === "file:") {
+          showErrorMessage("Google login requires a web server (not file://).");
+          return;
+        }
+        try {
+          const { error } = await window.supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: window.location.origin + '/index.html'
+            }
+          });
+          if (error) throw error;
+          // Supabase redirects the browser — no further code runs here
+        } catch (error) {
+          console.error("Google Login Error:", error);
+          showErrorMessage("Google authentication failed: " + error.message);
+        }
+      };
+
+      // Password Reset
       window.handleForgotPassword = async function () {
-        const email = document.getElementById("email").value;
+        const email = document.getElementById("email").value.trim();
         if (!email) {
           showErrorMessage("Please enter your email address first.");
           return;
         }
-
         if (confirm(`Send password reset link to ${email}?`)) {
           try {
-            await sendPasswordResetEmail(auth, email);
-            showSuccessMessage(
-              "Password reset email sent! Please check your inbox.",
-            );
+            const { error } = await window.supabase.auth.resetPasswordForEmail(email, {
+              redirectTo: window.location.origin + '/login.html'
+            });
+            if (error) throw error;
+            alert("Password reset email sent! Please check your inbox.");
           } catch (error) {
             console.error("Password reset error:", error);
             showErrorMessage("Failed to send reset email: " + error.message);

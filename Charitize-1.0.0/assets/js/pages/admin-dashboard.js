@@ -1,37 +1,65 @@
-import { auth } from '../core/firebase-config.js';
-// Firestore imports removed
+// Supabase Auth — no Firebase dependency
 
 class AdminDashboard {
     constructor() {
         this.currentUser = null;
         this.eventsLoaded = false;
         this.heatmapData = {};
+        this.currentRoleFilter = 'all';
         this.init();
     }
 
     async init() {
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
+        // Use Supabase session instead of Firebase onAuthStateChanged
+        let supabaseUser = null;
+        if (window.supabase) {
+            const { data: { session } } = await window.supabase.auth.getSession();
+            supabaseUser = session?.user || null;
+        }
+
+        if (!supabaseUser) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Role Guard: Verify admin status in Supabase
+        if (window.SupabaseService) {
+            try {
+                const profile = await window.SupabaseService.getProfile(supabaseUser.id);
+                if (!profile || profile.role !== 'admin') {
+                    console.error("AdminDashboard: Unauthorized access attempt by role:", profile?.role);
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+            } catch (err) {
+                console.error("AdminDashboard: Role verification failed:", err);
+                window.location.href = 'dashboard.html';
                 return;
             }
-            this.currentUser = user;
-            
-            // Basic UI Setup
-            this.updateUserDisplay();
-            this.setupNotifications();
-            
-            // Initial Data Load
-            await this.loadStats();
-            await this.loadProjectReviews();
-            await this.renderActivityHeatmap();
-            
-            // Make instance globally available for onclick handlers
-            window.adminDashboard = this;
-            window.AdminPanel = this; // Backward compatibility for legacy handlers
-            
-            this.setupEventListeners();
-        });
+        }
+
+        // Wrap user to match expected shape
+        this.currentUser = {
+            uid: supabaseUser.id,
+            id: supabaseUser.id,
+            email: supabaseUser.email,
+            displayName: supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0]
+        };
+
+        // Basic UI Setup
+        this.updateUserDisplay();
+        this.setupNotifications();
+
+        // Initial Data Load
+        await this.loadStats();
+        await this.loadProjectReviews();
+        await this.renderActivityHeatmap();
+
+        // Make instance globally available for onclick handlers
+        window.adminDashboard = this;
+        window.AdminPanel = this;
+
+        this.setupEventListeners();
     }
 
     setupEventListeners() {
@@ -237,6 +265,22 @@ class AdminDashboard {
         }
     }
 
+    setRoleFilter(role) {
+        console.log("Admin Dashboard: Setting role filter to", role);
+        this.currentRoleFilter = role;
+        
+        // Update UI buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.getAttribute('onclick')?.includes(`'${role}'`)) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        this.loadUsers();
+    }
+
     // ============================================================
     //  PROJECT MANAGEMENT
     // ============================================================
@@ -307,25 +351,55 @@ class AdminDashboard {
         container.innerHTML = '<div class="text-center p-5 w-100"><span class="spinner-border"></span></div>';
         try {
             if (!window.SupabaseService) return;
-            const profiles = await window.SupabaseService.getAllProfiles();
+            const filter = this.currentRoleFilter === 'all' ? null : this.currentRoleFilter;
+            const profiles = await window.SupabaseService.getAllProfiles(filter);
             let users = (profiles || []).filter(u => u.role !== 'admin');
+
+            console.group("Admin Dashboard: User Data Log");
+            console.log("Current Filter:", this.currentRoleFilter);
+            console.log("Total Profiles Fetched:", profiles?.length || 0);
+            console.log("Innovators:", users.filter(u => u.role === 'innovator').length);
+            console.log("Mentors:", users.filter(u => u.role === 'mentor').length);
+            console.groupEnd();
+
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-5 w-100">
+                        <div class="mb-3"><i class="fa fa-users-slash display-4 text-muted"></i></div>
+                        <h4 class="text-muted">No users found for this filter.</h4>
+                        <p class="text-muted small">Try switching to 'All Members' or check if users have synced from Firebase.</p>
+                    </div>`;
+                return;
+            }
 
             container.innerHTML = users.map(u => `
                 <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="premium-user-card p-4" style="background:#fff; border-radius:20px; box-shadow:0 8px 30px rgba(0,0,0,0.05);">
+                    <div class="premium-user-card p-4 h-100" style="background:#fff; border-radius:20px; box-shadow:0 8px 30px rgba(0,0,0,0.05); display:flex; flex-direction:column;">
                         <div class="d-flex align-items-center gap-3 mb-3">
-                            <div style="width:50px; height:50px; background:#f1f5f9; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#1a5e4f;">${(u.fullName || u.email).substring(0, 2).toUpperCase()}</div>
-                            <div>
-                                <h6 class="mb-0 fw-bold">${u.fullName || 'User'}</h6>
-                                <p class="mb-0 small text-muted">${u.role}</p>
+                            <div style="width:50px; height:50px; background:#f1f5f9; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#1a5e4f; flex-shrink:0;">
+                                ${(u.full_name || u.fullName || u.email || 'U').substring(0, 2).toUpperCase()}
+                            </div>
+                            <div style="min-width:0;">
+                                <h6 class="mb-0 fw-bold text-truncate">${u.full_name || u.fullName || 'ID: ' + u.id.substring(0, 8)}</h6>
+                                <p class="mb-0 small text-muted text-uppercase fw-bold" style="font-size:0.65rem;">${u.role}</p>
                             </div>
                         </div>
-                        <div class="small text-muted mb-3"><i class="fa fa-envelope me-2"></i>${u.email}</div>
-                        <button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="adminDashboard.deleteUser('${u.id}')">Block Account</button>
+                        <div class="small text-muted mb-3 text-truncate"><i class="fa fa-envelope me-2"></i>${u.email || 'No email provided'}</div>
+                        <div class="mb-3 small">
+                            <span class="badge ${u.status === 'approved' || u.status === 'active' ? 'bg-success' : 'bg-warning'} text-white">
+                                ${u.status || 'pending'}
+                            </span>
+                        </div>
+                        <div class="mt-auto">
+                            <button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="adminDashboard.deleteUser('${u.id}')">Block Account</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
-        } catch(e) {}
+        } catch(e) {
+            console.error("Error loading users:", e);
+            container.innerHTML = '<div class="alert alert-danger">Error loading users. Please check the console for details.</div>';
+        }
     }
 
     async deleteUser(id) {

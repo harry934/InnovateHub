@@ -1,5 +1,6 @@
 // Auto-extracted from innovator-dashboard.html
-import { auth } from '../core/firebase-config.js';
+// Supabase Auth — user data provided by dashboard.html via initDashboard()
+
 import NotificationSystem from '../components/notification-system.js';
 import StructuredProjectCard from '../components/project-card-structured.js';
 import MentorProfileCard from '../components/mentor-profile-card.js';
@@ -190,12 +191,12 @@ async function renderLandingStats() {
             currentUser = user; 
             
             try {
-                // Supabase Sync: Upsert profile to Supabase FIRST
+                // Supabase Sync: Upsert profile to Supabase (Maintain existing role)
                 await window.SupabaseService.upsertProfile({
                     id: user.uid,
                     full_name: userData?.fullName || user.displayName || user.email.split('@')[0],
                     email: user.email,
-                    role: 'innovator',
+                    // role removed to prevent overwrites
                     avatar_url: userData?.photoURL || user.photoURL || ''
                 });
 
@@ -384,7 +385,7 @@ async function renderLandingStats() {
                         }
                     } catch (err) {
                         console.error("Profile pic upload failed:", err);
-                        alert('Failed to update profile picture. Ensure your Supabase Storage has a "public" bucket.');
+                        alert('Failed to update profile picture. Ensure your Supabase Storage has a "public-assets" bucket and it is set to public.');
                     } finally {
                         if (preview) preview.style.opacity = '1';
                     }

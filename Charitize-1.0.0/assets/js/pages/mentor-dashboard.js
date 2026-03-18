@@ -1,5 +1,5 @@
-import { auth } from '../core/firebase-config.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// Supabase Auth — user data provided by dashboard.html via initDashboard()
+
 // Firestore imports removed
 import StatusBadge from "../components/status-badges.js";
 import EmptyStates from "../components/empty-states.js";
@@ -194,7 +194,7 @@ class MentorDashboard {
                 id: user.uid,
                 full_name: userData?.fullName || user.displayName || user.email.split('@')[0],
                 email: user.email,
-                role: 'mentor',
+                // role removed to prevent overwrites
                 status: existingProfile?.status || userData?.status || 'active',
                 profile_complete: isComplete,
                 avatar_url: userData?.photoUrl || userData?.photoURL || user.photoURL || ''
@@ -646,7 +646,7 @@ class MentorDashboard {
 
       // 2. Primary Sync: Supabase Profile
       if (window.SupabaseService) {
-          await window.SupabaseService.upsertProfile({
+          const profileData = {
             id: this.currentUser.uid,
             status: "active",
             profile_complete: true,
@@ -654,9 +654,13 @@ class MentorDashboard {
             expertise: this.onboardingData.expertise?.join(', '),
             experience: this.onboardingData.experience,
             mentoring_style: this.onboardingData.style,
-            availability: this.onboardingData.availability,
             industries_of_interest: this.onboardingData.industries?.join(', ')
-          });
+          };
+
+          // Only include availability if we are sure it won't crash (legacy check or let SQL fix handle it)
+          if (this.onboardingData.availability) profileData.availability = this.onboardingData.availability;
+
+          await window.SupabaseService.upsertProfile(profileData);
           console.log("Mentor Dashboard: Supabase Onboarding Synced ✓");
       }
 
@@ -778,7 +782,7 @@ class MentorDashboard {
                 alert('Profile picture updated successfully!');
             } catch (err) {
                 console.error("Profile pic upload failed:", err);
-                alert('Failed to update profile picture. Ensure your Supabase Storage has a "public" bucket.');
+                alert('Failed to update profile picture. Ensure your Supabase Storage has a "public-assets" bucket and it is set to public.');
             } finally {
                 if (preview) preview.style.opacity = '1';
             }
@@ -1421,5 +1425,6 @@ export async function initDashboard(user, userData) {
     };
 }
 
-// Initial instance for window access
+
+// Initial instance for window access (legacy)
 window.dashboard = window.dashboard || new MentorDashboard();

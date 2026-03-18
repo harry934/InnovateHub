@@ -1,142 +1,159 @@
 /**
- * Global Authentication Manager
- * Manages authentication state across the entire application
+ * Global Authentication Manager (Supabase Auth)
+ * Manages authentication state using Supabase as the sole identity provider.
+ * Firebase Auth has been fully removed.
  */
-
-import { auth } from './firebase-config.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-// Supabase is loaded via CDN and configured in supabase-config.js
-
 
 class AuthManager {
     constructor() {
         this.currentUser = null;
         this.authCallbacks = [];
+        this._initialized = false;
     }
 
     /**
-     * Initialize auth manager and set up listener
+     * Initialize auth manager and set up Supabase session listener.
+     * Waits for window.supabase to be ready.
      */
     async init() {
-        return new Promise((resolve) => {
-            onAuthStateChanged(auth, async (firebaseUser) => {
-                if (firebaseUser) {
-                    // User is signed in
-                    try {
-                        let profile = null;
-                        if (window.SupabaseService) {
-                            profile = await window.SupabaseService.getProfile(firebaseUser.uid);
-                        }
-                        
-                        if (profile) {
-                            this.currentUser = {
-                                uid: firebaseUser.uid,
-                                email: firebaseUser.email,
-                                role: profile.role || 'innovator',
-                                fullName: profile.full_name,
-                                ...profile
-                            };
-                        } else {
-                            // Fallback if no profile exists yet
-                            this.currentUser = {
-                                uid: firebaseUser.uid,
-                                email: firebaseUser.email,
-                                displayName: firebaseUser.displayName || firebaseUser.email.split('@')[0],
-                                role: 'innovator' // Default role
-                            };
-                        }
+        // Ensure supabase client is available
+        if (!window.supabase) {
+            console.warn('AuthManager: window.supabase not ready, retrying...');
+            await new Promise(r => setTimeout(r, 300));
+        }
 
-                        // Store in localStorage for quick access
-                        localStorage.setItem('innovateHubUser', JSON.stringify(this.currentUser));
-                    } catch (error) {
-                        console.error('Error fetching user data from Supabase:', error);
-                        this.currentUser = {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName || firebaseUser.email.split('@')[0],
-                            role: 'innovator'
-                        };
-                    }
-                } else {
-                    // User is signed out
-                    this.currentUser = null;
-                    localStorage.removeItem('innovateHubUser');
-                }
+        if (!window.supabase) {
+            console.error('AuthManager: Supabase client unavailable.');
+            return null;
+        }
 
-                // Notify all callbacks
-                this.authCallbacks.forEach(callback => callback(this.currentUser));
-                resolve(this.currentUser);
-            });
+        // Try to restore session from existing Supabase session
+        const { data: { session } } = await window.supabase.auth.getSession();
+        if (session) {
+            await this._setUserFromSession(session);
+        } else {
+            this.currentUser = null;
+            // Only remove if we haven't just performed a local signup/login that might be pending confirmation
+            if (!localStorage.getItem('justLoggedIn')) {
+                localStorage.removeItem('innovateHubUser');
+            }
+        }
+
+        // Listen for future auth state changes (login, logout, token refresh)
+        window.supabase.auth.onAuthStateChange(async (event, session) => {
+            if (session) {
+                await this._setUserFromSession(session);
+            } else {
+                this.currentUser = null;
+                localStorage.removeItem('innovateHubUser');
+            }
+            this.authCallbacks.forEach(cb => cb(this.currentUser));
         });
+
+        this._initialized = true;
+        return this.currentUser;
     }
 
     /**
-     * Get current user
+     * Hydrate currentUser from a Supabase session + profiles table.
+     */
+    async _setUserFromSession(session) {
+        const supabaseUser = session.user;
+        try {
+            let profile = null;
+            if (window.SupabaseService) {
+                profile = await window.SupabaseService.getProfile(supabaseUser.id);
+            }
+
+            if (profile) {
+                this.currentUser = {
+                    uid: supabaseUser.id,
+                    id: supabaseUser.id,
+                    email: supabaseUser.email,
+                    role: profile.role || 'innovator',
+                    fullName: profile.full_name,
+                    displayName: profile.full_name || supabaseUser.email.split('@')[0],
+                    loggedIn: true, // Legacy compatibility
+                    ...profile
+                };
+            } else {
+                // Fallback: user exists in auth but has no profile row yet
+                this.currentUser = {
+                    uid: supabaseUser.id,
+                    id: supabaseUser.id,
+                    email: supabaseUser.email,
+                    displayName: supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0],
+                    role: supabaseUser.user_metadata?.role || 'innovator'
+                };
+            }
+
+            localStorage.setItem('innovateHubUser', JSON.stringify(this.currentUser));
+        } catch (error) {
+            console.error('AuthManager: Error fetching Supabase profile:', error);
+            this.currentUser = {
+                uid: supabaseUser.id,
+                id: supabaseUser.id,
+                email: supabaseUser.email,
+                displayName: supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0],
+                role: 'innovator'
+            };
+            localStorage.setItem('innovateHubUser', JSON.stringify(this.currentUser));
+        }
+    }
+
+    /**
+     * Get current user — tries memory first, then localStorage.
      */
     getCurrentUser() {
-        // Try localStorage first for immediate access
         if (!this.currentUser) {
             const stored = localStorage.getItem('innovateHubUser');
             if (stored) {
                 try {
                     this.currentUser = JSON.parse(stored);
                 } catch (e) {
-                    console.error('Error parsing stored user:', e);
+                    console.error('AuthManager: Error parsing stored user:', e);
                 }
             }
         }
         return this.currentUser;
     }
 
-    /**
-     * Check if user is logged in
-     */
     isLoggedIn() {
         return this.getCurrentUser() !== null;
     }
 
-    /**
-     * Get user role
-     */
     getUserRole() {
         const user = this.getCurrentUser();
         return user ? user.role : null;
     }
 
-    /**
-     * Get user display name
-     */
     getUserName() {
         const user = this.getCurrentUser();
-        return user ? (user.displayName || user.fullName || user.email.split('@')[0]) : null;
+        return user ? (user.displayName || user.fullName || user.full_name || (user.email && user.email.split('@')[0])) : null;
     }
 
     /**
-     * Logout user
+     * Sign out the user from Supabase and clear local state.
      */
     async logout() {
         try {
-            await signOut(auth);
+            if (window.supabase) {
+                await window.supabase.auth.signOut();
+            }
             this.currentUser = null;
             localStorage.removeItem('innovateHubUser');
             localStorage.removeItem('justLoggedIn');
             return true;
         } catch (error) {
-            console.error('Logout error:', error);
+            console.error('AuthManager: Logout error:', error);
             return false;
         }
     }
 
-    /**
-     * Register callback for auth state changes
-     */
     onAuthChange(callback) {
         this.authCallbacks.push(callback);
     }
 
-    /**
-     * Require authentication (redirect to login if not authenticated)
-     */
     requireAuth(redirectUrl = 'login.html') {
         if (!this.isLoggedIn()) {
             window.location.href = redirectUrl;
@@ -145,9 +162,6 @@ class AuthManager {
         return true;
     }
 
-    /**
-     * Require specific role
-     */
     requireRole(requiredRole, redirectUrl = 'index.html') {
         const userRole = this.getUserRole();
         if (userRole !== requiredRole) {
@@ -158,11 +172,7 @@ class AuthManager {
     }
 }
 
-// Create singleton instance
+// Singleton
 const authManager = new AuthManager();
-
-// Export for use in other modules
 export default authManager;
-
-// Also expose globally for non-module scripts
 window.AuthManager = authManager;
