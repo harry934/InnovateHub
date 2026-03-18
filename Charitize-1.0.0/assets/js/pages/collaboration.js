@@ -1,911 +1,638 @@
-// Supabase Auth — auth state via window.supabase session or localStorage fallback
-
-// Helper: get current Supabase user (sync-safe via localStorage)
-function getCurrentAuthUser() {
-    // 1. Try singleton manager first (Best source of truth)
-    if (window.AuthManager && window.AuthManager.currentUser) {
-        return window.AuthManager.currentUser;
-    }
-    // 2. Fallback to localStorage if AuthManager is not yet loaded
-    const stored = localStorage.getItem('innovateHubUser');
-    if (stored) {
-        try { return JSON.parse(stored); } catch(e) {}
-    }
-    return null;
-}
-
 /**
- * CollaborationHub
- * Handles the shared mentorship workspace logic with a modern sidebar layout
+ * CollaborationHub - Final Design Merger
+ * Integrates user-provided high-fidelity UI with Supabase real-time backend.
  */
+
 class CollaborationHub {
     constructor() {
         this.activeMentorshipId = null;
         this.mentorshipData = null;
         this.projectData = null;
         this.unsubscribeChat = null;
-        this.milestones = [];
-        this.allMentorships = [];
+        this.allSessions = [];
         this.isInnovator = false;
-        this._partnerData = null;
-        this._meetingLink = null;
-        this._activeTab = 'feedback';
     }
 
-    async init(mentorshipId) {
-        console.log("CollaborationHub: Initializing...");
+    async init(mentorshipId = null) {
+        console.log("CollaborationHub: Initializing Final Design Merger...");
         
         try {
-            // Use Supabase session / localStorage instead of Firebase auth
-            const currentAuthUser = getCurrentAuthUser();
-            if (!currentAuthUser || !currentAuthUser.uid) {
-                console.warn("CollaborationHub: No user authenticated yet. Waiting for AuthManager...");
-                // Don't redirect here, let dashboard.html handle auth guard
+            const user = this.getCurrentUser();
+            if (!user) {
+                console.warn("CollaborationHub: Auth not ready, waiting...");
                 setTimeout(() => this.init(mentorshipId), 1000);
                 return;
             }
 
-            if (!window.SupabaseService) {
-                console.error("CollaborationHub: SupabaseService not found.");
-                return;
-            }
-
-            const user = currentAuthUser;
             this.isInnovator = user.role === 'innovator';
-            console.log(`CollaborationHub: User identity confirmed as ${this.isInnovator ? 'Innovator' : 'Mentor'}`);
+            this.setupInitialVisibility();
 
-            // Set role-based labels
-            const roleBadge = document.getElementById('collabRoleBadge');
-            if (roleBadge) {
-                roleBadge.textContent = this.isInnovator ? 'Innovator View' : 'Mentor View';
-                roleBadge.className = 'badge-role-view ' + (this.isInnovator ? 'bg-innovator' : 'bg-mentor');
+            // Load all mentorship sessions
+            await this.loadMentorships();
+
+            // Default selection
+            let targetId = mentorshipId;
+            if (!targetId && this.allSessions.length > 0) {
+                targetId = this.allSessions[0].id;
             }
 
-            const sidebarTitle = document.getElementById('collabSidebarTitle');
-            if (sidebarTitle) sidebarTitle.textContent = this.isInnovator ? 'My Projects' : 'My Mentees';
-            
-            const toolsTitle = document.getElementById('toolsPanelTitle');
-            if (toolsTitle) toolsTitle.textContent = this.isInnovator ? 'Growth & Progress' : 'Mentorship Tools';
-
-            // 1. Fetch all accepted mentorships
-            await this.loadAllMentorships();
-
-            // 2. Set active mentorship
-            let activeId = mentorshipId;
-            if (!activeId && this.allMentorships.length > 0) {
-                activeId = this.allMentorships[0].id;
-            }
-
-            if (activeId) {
-                const session = this.allMentorships.find(m => m.id === activeId || m.project_id === activeId || m.id === `project_${activeId}`);
-                if (session) activeId = session.id;
-                await this.switchSession(activeId);
-            } else { // If no id is provided or found, render empty state
+            if (targetId) {
+                await this.switchSession(targetId);
+            } else {
                 this.renderEmptyState();
             }
+
+            this.setupStaticListeners();
+            this.setupTabListeners();
         } catch (error) {
-            console.error("CollaborationHub Initialization Error:", error);
+            console.error("CollaborationHub Init Error:", error);
         }
     }
 
-    async loadAllMentorships() {
-        const currentAuthUser = getCurrentAuthUser();
-        if (!currentAuthUser) return;
-        const uid = currentAuthUser.uid;
+    getCurrentUser() {
+        if (window.AuthManager && window.AuthManager.currentUser) return window.AuthManager.currentUser;
+        const stored = localStorage.getItem('innovateHubUser');
+        return stored ? JSON.parse(stored) : null;
+    }
+
+    setupInitialVisibility() {
+        // Show correct view based on role
+        const mentorView = document.getElementById('mentorView');
+        const innovatorView = document.getElementById('innovatorView');
+        const collabSection = document.getElementById('collabSection');
+
+        if (collabSection) collabSection.style.display = 'block';
+        if (mentorView) mentorView.style.display = !this.isInnovator ? 'flex' : 'none';
+        if (innovatorView) innovatorView.style.display = this.isInnovator ? 'flex' : 'none';
+
+        // Ensure global back button is visible
+        const backBtn = document.getElementById('collabBackButtonContainer');
+        if (backBtn) {
+            backBtn.style.display = 'block';
+            backBtn.style.padding = '10px 20px';
+        }
+    }
+
+    async loadMentorships() {
+        const user = this.getCurrentUser();
         const role = this.isInnovator ? 'innovator' : 'mentor';
         
-        console.log(`CollaborationHub: Loading data for ${role} ${uid}...`);
-        
-        try {
-            // 1. Fetch data from Supabase
-            const [projects, mentorships] = await Promise.all([
-                this.isInnovator ? window.SupabaseService.getProjects({ innovator_id: uid }) : [],
-                window.SupabaseService.getMentorships(uid, role)
-            ]);
-
-            this.allMentorships = [];
-
-            if (this.isInnovator) {
-                // If innovator, we want ALL projects, and then link mentorships to them
-                this.allMentorships = await Promise.all((projects || []).map(async p => {
-                    // Find an accepted mentorship for this project
-                    const m = (mentorships || []).find(ms => ms.project_id === p.id && ms.status === 'accepted');
-                    
-                    let partner = m ? (m.mentor || m.profiles) : null;
-
-                    // Manual fallback for partner if join failed but mentorship exists
-                    if (m && !partner && m.mentor_id) {
-                        console.log(`CollaborationHub: Manual fetch for mentor ${m.mentor_id}`);
-                        partner = await window.SupabaseService.getProfile(m.mentor_id);
-                    }
-
-                    return {
-                        id: m ? m.id : `project_${p.id}`,
-                        project_id: p.id,
-                        project: p,
-                        partner: partner,
-                        projectTitle: p.title || 'Untitled Project',
-                        status: m ? m.status : 'unassigned',
-                        pinned_guidance: m ? m.pinned_guidance : "No mentor assigned yet.",
-                        isPlaceholder: !m,
-                        created_at: m ? m.created_at : p.created_at
-                    };
-                }));
-            } else {
-                // If mentor, we only care about existing mentorships (Mentees)
-                this.allMentorships = await Promise.all((mentorships || []).map(async m => {
-                    let partner = m.innovator || m.profiles;
-                    let project = m.project;
-
-                    // Manual fallback for partner
-                    if (!partner && m.innovator_id) {
-                        console.log(`CollaborationHub: Manual fetch for innovator ${m.innovator_id}`);
-                        partner = await window.SupabaseService.getProfile(m.innovator_id);
-                    }
-
-                    // Manual fallback for project
-                    if (!project && m.project_id) {
-                        console.log(`CollaborationHub: Manual fetch for project ${m.project_id}`);
-                        const pData = await window.SupabaseService.getProjects({ id: m.project_id });
-                        project = (pData && pData.length > 0) ? pData[0] : null;
-                    }
-
-                    return {
-                        id: m.id,
-                        project_id: m.project_id,
-                        project: project || { title: 'General Mentorship' },
-                        partner: partner,
-                        projectTitle: project?.title || m.project_title || 'General Mentorship',
-                        status: m.status,
-                        pinned_guidance: m.pinned_guidance,
-                        created_at: m.created_at
-                    };
-                }));
-            }
-
-            console.log(`CollaborationHub: Found ${this.allMentorships.length} total entries.`, this.allMentorships);
-            this.renderSidebar();
-            this.updateMentorSelector();
-        } catch (err) {
-            console.error("CollaborationHub: Error loading data", err);
+        if (window.SupabaseService) {
+            const data = await window.SupabaseService.getMentorships(user.uid, role);
+            this.allSessions = data || [];
+            this.renderProjectSidebar();
         }
     }
 
-    renderSidebar() {
-        const container = document.getElementById('collabContactList');
+    renderProjectSidebar() {
+        const listId = this.isInnovator ? 'innovatorProjectList' : 'mentorProjectList';
+        const container = document.getElementById(listId);
+
         if (!container) return;
 
-        if (this.allMentorships.length === 0) {
-            container.innerHTML = '<div class="p-4 text-center text-muted small">No active mentorships found.</div>';
+        if (this.allSessions.length === 0) {
+            container.innerHTML = '<div class="empty-state"><p>No active projects found.</p></div>';
             return;
         }
 
-        container.innerHTML = this.allMentorships.map(m => {
-            const partner = m.partner || { full_name: 'Partner' };
-            const isActive = m.id === this.activeMentorshipId;
-            const statusLabel = m.id === 'demo_session' ? 'DEMO' : (m.status || 'Active').toUpperCase();
+        container.innerHTML = '';
+        this.allSessions.forEach(session => {
+            const partner = this.isInnovator ? session.mentor : session.innovator;
+            const project = session.project || { title: 'Untitled Project' };
+            const isActive = session.id === this.activeMentorshipId;
             
-            // Status colors
-            const statusColor = m.status === 'accepted' ? 'bg-success' : 'bg-warning text-dark';
+            // Format status for user's badge
+            let status = 'Active';
+            if (session.status === 'pending_feedback') status = 'Feedback Pending';
+            
+            const lastActive = session.updated_at ? this.formatTimeAgo(session.updated_at) : 'Active';
 
-            // Avatar logic
-            const avatarHtml = partner.avatar_url 
-                ? `<img src="${partner.avatar_url}" class="avatar-circle-sm" alt="${partner.full_name}">`
-                : `<div class="avatar-circle-sm bg-teal text-white">${(partner.full_name || 'U').charAt(0)}</div>`;
-
-            return `
-                <div class="project-card-new ${isActive ? 'active' : ''}" onclick="window.CollaborationHub.switchSession('${m.id}')">
-                    <div class="d-flex flex-column">
-                        <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">${m.projectTitle}</h6>
-                        <small class="text-muted mb-3" style="font-size: 0.8rem;">
-                            ${this.isInnovator ? `Mentor: ${partner.full_name || 'Assigned Mentor'}` : `Innovator: ${partner.full_name || 'Assigned Mentee'}`}
-                        </small>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <span class="card-status-pill ${statusColor}">${statusLabel}</span>
-                            <span class="small text-muted" style="font-size: 0.75rem;">
-                                <i class="far fa-clock me-1"></i> ${m.created_at ? this.getRelativeTime(m.created_at) : 'Active now'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        // Search logic
-        const searchInput = document.getElementById('collabContactSearch');
-        if (searchInput) {
-            searchInput.oninput = (e) => {
-                const term = e.target.value.toLowerCase();
-                const cards = container.querySelectorAll('.project-card-new');
-                cards.forEach((card, idx) => {
-                    const m = this.allMentorships[idx];
-                    const match = (m.projectTitle || '').toLowerCase().includes(term) || 
-                                  (m.partner?.full_name || '').toLowerCase().includes(term);
-                    card.style.display = match ? 'block' : 'none';
-                });
+            const cardData = {
+                id: session.id,
+                name: project.title,
+                innovatorName: partner?.full_name || 'Anonymous',
+                mentorName: partner?.full_name || 'Anonymous',
+                status: status,
+                lastActivity: lastActive,
+                isActive: isActive
             };
-        }
-        
-        this.updateMentorSelector();
+
+            const card = this.createProjectCard(cardData);
+            container.appendChild(card);
+        });
     }
 
-    updateMentorSelector() {
-        const selectorContainer = document.getElementById('collabMentorSelectorContainer');
-        const selector = document.getElementById('collabMentorSelector');
+    createProjectCard(project) {
+        const card = document.createElement('div');
+        card.className = `project-card ${project.isActive ? 'active' : ''}`;
+        card.setAttribute('data-project-id', project.id);
         
-        if (!selector || !selectorContainer) return;
-
-        // Only show selector for innovators who have multiple mentors
-        if (this.isInnovator && this.allMentorships.length > 0) {
-            selectorContainer.style.display = 'block';
-            
-            // Clear and populate
-            selector.innerHTML = '<option value="">Switch Mentorship...</option>';
-            this.allMentorships.forEach(m => {
-                const partnerName = m.partner?.full_name || 'Assigned Mentor';
-                const isSelected = m.id === this.activeMentorshipId;
-                const option = document.createElement('option');
-                option.value = m.id;
-                option.textContent = `${m.projectTitle} (with ${partnerName})`;
-                if (isSelected) option.selected = true;
-                selector.appendChild(option);
-            });
-        } else {
-            selectorContainer.style.display = 'none';
-        }
+        const label = this.isInnovator ? 'Mentor' : 'Innovator';
+        const partnerName = this.isInnovator ? project.mentorName : project.innovatorName;
+        
+        card.innerHTML = `
+            <h3>${project.name}</h3>
+            <p class="partner-label">${label}: <strong>${partnerName}</strong></p>
+            <div class="project-meta">
+                <span class="badge badge-${project.status.toLowerCase().replace(' ', '-')}">${project.status}</span>
+                <span class="project-time">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    ${project.lastActivity}
+                </span>
+            </div>
+        `;
+        
+        card.onclick = () => this.switchSession(project.id);
+        return card;
     }
 
-    getRelativeTime(date) {
+    formatTimeAgo(dateStr) {
         const now = new Date();
-        const past = new Date(date);
-        if (isNaN(past.getTime())) return 'Active';
+        const past = new Date(dateStr);
         const diffInMs = now - past;
-        const diffInMins = Math.floor(diffInMs / 60000);
-        
+        const diffInMins = Math.floor(diffInMs / (1000 * 60));
         if (diffInMins < 1) return 'Just now';
-        if (diffInMins < 60) return `${diffInMins} min ago`;
-        
+        if (diffInMins < 60) return `${diffInMins}m ago`;
         const diffInHours = Math.floor(diffInMins / 60);
-        if (diffInHours < 24) return `${diffInHours} hours ago`;
-        
-        return past.toLocaleDateString();
+        if (diffInHours < 24) return `${diffInHours}h ago`;
+        return `${Math.floor(diffInHours / 24)}d ago`;
     }
 
     async switchSession(mentorshipId) {
-        console.log(`CollaborationHub: Switching to session ${mentorshipId}`);
+        if (this.activeMentorshipId === mentorshipId) return;
+        
+        // Cleanup existing subscription
         if (this.unsubscribeChat) {
             if (typeof this.unsubscribeChat === 'function') this.unsubscribeChat();
             else if (this.unsubscribeChat.unsubscribe) this.unsubscribeChat.unsubscribe();
         }
+
         this.activeMentorshipId = mentorshipId;
+        this.mentorshipData = this.allSessions.find(s => s.id === mentorshipId);
         
-        // Update sidebar UI
-        document.querySelectorAll('.project-card-new').forEach((card, idx) => {
-            if (this.allMentorships[idx] && this.allMentorships[idx].id === mentorshipId) card.classList.add('active');
-            else card.classList.remove('active');
-        });
-
-        // Update selector UI
-        const selector = document.getElementById('collabMentorSelector');
-        if (selector) selector.value = mentorshipId;
-
-        if (mentorshipId === 'demo_session') {
-            this.renderEmptyState();
-            return;
+        if (this.mentorshipData) {
+            this.projectData = this.mentorshipData.project;
+            this.renderProjectSidebar(); 
+            this.updateUI();
+            await this.loadMessages();
+            this.setupRealtimeChat();
+            this.loadStats();
         }
-
-        const mentorship = this.allMentorships.find(m => m.id === mentorshipId);
-        if (mentorship) {
-            this.mentorshipData = mentorship;
-            this._partnerData = mentorship.partner;
-            // Ensure projectData is populated for the blueprint view
-            this.projectData = mentorship.project || mentorship.projects || { title: mentorship.projectTitle };
-            
-            // Refresh full mentorship data to get latest reports_enabled status
-            try {
-                const refreshed = await window.SupabaseService.getMentorships(mentorshipId);
-                if (refreshed && refreshed.length > 0) {
-                    this.mentorshipData.reports_enabled = refreshed[0].reports_enabled;
-                }
-            } catch (e) {
-                console.warn("Failed to refresh mentorship reports_enabled status", e);
-            }
-        }
-
-        this.updateUI();
-        this.startChatListener();
-        this.renderToolsPanel();
-        this.renderProjectDetails();
     }
 
     updateUI() {
-        const m = this.mentorshipData;
-        const partner = this._partnerData || { full_name: 'Partner' };
+        const prefix = this.isInnovator ? 'innovator' : 'mentor';
+        const partner = this.isInnovator ? this.mentorshipData.mentor : this.mentorshipData.innovator;
         
-        // 1. Header Details
-        const projectTitleEl = document.getElementById('collabProjectHeaderTitle');
-        const partnerNameEl = document.getElementById('collabPartnerName');
-        const roleBadgeEl = document.getElementById('collabRoleBadge');
+        const titleEl = document.getElementById(`${prefix}ProjectName`);
+        const subTitleEl = document.getElementById(this.isInnovator ? 'innovatorMentor' : 'mentorInnovator');
+        const pinnedEl = document.getElementById(`${prefix}PinnedGuidance`);
 
-        if (projectTitleEl) projectTitleEl.textContent = m.projectTitle || 'General Mentorship';
-        if (partnerNameEl) {
-            partnerNameEl.textContent = (this.isInnovator ? 'MENTOR: ' : 'INNOVATOR: ') + (partner.full_name || 'Partner');
-        }
-        if (roleBadgeEl) {
-            roleBadgeEl.textContent = this.isInnovator ? 'Innovator View' : 'Mentor View';
-        }
+        if (titleEl) titleEl.textContent = this.projectData?.title || 'Collaboration Hub';
+        if (subTitleEl) subTitleEl.textContent = `${this.isInnovator ? 'Mentor' : 'Mentoring'}: ${partner?.full_name || 'Partner'}`;
+        if (pinnedEl) pinnedEl.textContent = this.mentorshipData?.pinned_guidance || 'No specific guidance pinned yet.';
 
-        // 2. Progress Banner (Show for innovators or if mentor wants to see status)
-        const progressContainer = document.getElementById('collabProgressContainer');
-        if (progressContainer) {
-            progressContainer.style.display = this.isInnovator ? 'block' : 'none';
-            if (this.isInnovator) {
-                this.updateProgressUI();
+        if (this.isInnovator) {
+            this.updateProgressUI();
+            this.loadFeedbacks();
+        }
+    }
+
+    updateProgressUI() {
+        const bar = document.getElementById('projectProgressBar');
+        const text = document.getElementById('projectProgressText');
+        if (!bar || !text) return;
+
+        const progress = this.mentorshipData?.progress || 0;
+        bar.style.width = `${progress}%`;
+        text.textContent = `${progress}% Complete`;
+    }
+
+    async loadMessages() {
+        const prefix = this.isInnovator ? 'innovator' : 'mentor';
+        const container = document.getElementById(`${prefix}ChatMessages`);
+        if (!container) return;
+        
+        container.innerHTML = '<div class="empty-state text-center py-5"><div class="spinner-border text-teal opacity-25"></div></div>';
+        
+        try {
+            const messages = await window.SupabaseService.getMessages(this.activeMentorshipId);
+            container.innerHTML = '';
+            if (messages && messages.length > 0) {
+                messages.forEach(m => this.appendMessage(m));
+            } else {
+                container.innerHTML = '<div class="empty-state"><p>Start the conversation!</p></div>';
             }
-        }
-
-        // 3. Pinned Guidance
-        const guidanceBox = document.getElementById('collabPinnedGuidance');
-        const guidanceText = document.getElementById('pinnedGuidanceText');
-        const editBtn = document.getElementById('editPinnedGuidance');
-
-        if (guidanceText) {
-            guidanceText.textContent = m.pinned_guidance || (this.isInnovator ? "No guidance pinned by mentor yet." : "Pin important notes or next steps here for the innovator.");
-        }
-        
-        if (editBtn) {
-            editBtn.style.display = this.isInnovator ? 'none' : 'block';
-            editBtn.onclick = () => this.promptGuidance();
-        }
-
-        // 4. Meeting UI (Keep simple for now)
-        this.updateMeetingUI();
-    }
-
-    async updateProgressUI() {
-        // Calculate progress based on number of progress reports
-        const reports = await window.SupabaseService.getProgressReports(this.activeMentorshipId);
-        const feedbacks = await window.SupabaseService.getProjectFeedback(this.mentorshipData?.project_id);
-        
-        const reportCount = reports ? reports.length : 0;
-        const feedbackCount = feedbacks ? feedbacks.length : 0;
-        const percent = Math.min(reportCount * 20, 100); // 20% per report example
-        
-        const bar = document.getElementById('collabProgressBar');
-        const percentText = document.getElementById('collabProgressPercent');
-        const feedbackText = document.getElementById('collabFeedbackCount');
-        const reportText = document.getElementById('collabReportCount');
-        
-        if (bar) bar.style.width = `${percent}%`;
-        if (percentText) percentText.textContent = `${percent}% Complete`;
-        if (feedbackText) feedbackText.textContent = feedbackCount;
-        if (reportText) reportText.textContent = reportCount;
-    }
-
-    async updatePinnedGuidance() {
-        if (this.isInnovator) return;
-        
-        const current = this.mentorshipData.pinned_guidance || "";
-        const next = prompt("Edit Pinned Guidance for Mentee:", current);
-        
-        if (next !== null && next !== current) {
-            try {
-                await window.SupabaseService.updatePinnedGuidance(this.activeMentorshipId, next);
-                this.mentorshipData.pinned_guidance = next;
-                this.updateUI();
-            } catch (err) {
-                alert("Failed to update guidance. Check permissions.");
-            }
+        } catch (e) {
+            console.error("Chat Load Error:", e);
+            container.innerHTML = '<div class="p-4 text-center text-danger">Error loading history.</div>';
         }
     }
 
-    async renderToolsPanel() {
-        const container = document.getElementById(this._activeTab === 'feedback' ? 'tab-feedback' : 'tab-reports');
-        const otherContainer = document.getElementById(this._activeTab === 'feedback' ? 'tab-reports' : 'tab-feedback');
+    setupRealtimeChat() {
+        if (window.SupabaseService && this.activeMentorshipId) {
+            this.unsubscribeChat = window.SupabaseService.subscribeToMessages(this.activeMentorshipId, (payload) => {
+                this.appendMessage(payload);
+            });
+        }
+    }
+
+    appendMessage(msg) {
+        const prefix = this.isInnovator ? 'innovator' : 'mentor';
+        const container = document.getElementById(`${prefix}ChatMessages`);
         if (!container) return;
 
-        if (otherContainer) otherContainer.innerHTML = ''; // Clear other tab
+        const user = this.getCurrentUser();
+        const senderId = msg.sender_id || msg.author_id;
+        const isMe = senderId === user.uid;
         
-        // Add Mentor Control Toggle for reports
-        if (!this.isInnovator && this.activeMentorshipId !== 'demo_session') {
-            const controlsHtml = `
-                <div class="insight-card-premium mb-3 bg-light border-0">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="fw-bold mb-0" style="font-size: 0.85rem;">Allow Reports</h6>
-                            <p class="extra-small text-muted mb-0">Let innovator submit progress updates</p>
-                        </div>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="allowReportsToggle" 
-                                ${this.mentorshipData.reports_enabled ? 'checked' : ''} 
-                                onchange="window.CollaborationHub.toggleReports(this.checked)">
-                        </div>
-                    </div>
-                </div>
-            `;
-            // Prepend to the panel
-            const panelHeader = document.querySelector('.tools-panel-header');
-            if (panelHeader && !document.getElementById('allowReportsToggle')) {
-                // Instead of prepending to panelHeader which might be shared, 
-                // we'll add it above the tabs in the sidebar tools view if possible
-            }
+        // Determine role for styling
+        // If I am innovator and sent it -> innovator message
+        // If I am innovator and someone else sent it -> mentor message
+        // If I am mentor and sent it -> mentor message
+        // If I am mentor and someone else sent it -> innovator message
+        let senderRole = 'innovator';
+        if (this.isInnovator) {
+            senderRole = isMe ? 'innovator' : 'mentor';
+        } else {
+            senderRole = isMe ? 'mentor' : 'innovator';
         }
 
-        if (this._activeTab === 'reports') {
-            this.renderReportsTab(container);
-        }
+        const msgData = {
+            sender: senderRole,
+            senderName: isMe ? 'You' : (senderRole === 'mentor' ? 'Mentor' : 'Innovator'),
+            content: msg.message_text || msg.content || '',
+            timestamp: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            attachments: msg.file_url ? [{ name: 'Document', type: 'PDF' }] : [] // Placeholder
+        };
+
+        const messageEl = this.createMessage(msgData);
+        container.appendChild(messageEl);
+        container.scrollTop = container.scrollHeight;
     }
 
-    switchToolsTab(tabId) {
-        this._activeTab = tabId;
-        document.querySelectorAll('#collabToolsTabs .nav-link').forEach(link => {
-            if (link.dataset.tab === tabId) link.classList.add('active');
-            else link.classList.remove('active');
-        });
-        this.renderToolsPanel();
-    }
-
-    async renderFeedbackTab(container) {
-        let html = '';
+    createMessage(message) {
+        const container = document.createElement('div');
+        container.className = `message-container ${message.sender === 'innovator' ? 'innovator-message' : 'mentor-message'}`;
         
-        // Form for mentors
-        if (!this.isInnovator && this.activeMentorshipId !== 'demo_session') {
-            html += `
-                <div class="insight-card-premium mb-4">
-                    <h6 class="fw-bold mb-3"><i class="fas fa-plus-circle me-2 text-primary"></i>Give New Feedback</h6>
-                    <textarea id="mentorFeedbackInput" class="form-control mb-3" rows="3" placeholder="Write your professional feedback..."></textarea>
-                    <button class="btn btn-primary w-100 rounded-pill" onclick="window.CollaborationHub.submitGeneralFeedback()">
-                        Post Feedback
-                    </button>
+        const avatarClass = message.sender === 'mentor' ? 'mentor-avatar' : 'innovator-avatar';
+        const initials = message.senderName === 'You' ? 'ME' : (message.sender === 'mentor' ? 'MT' : 'IN');
+        
+        let attachmentsHTML = '';
+        if (message.attachments && message.attachments.length > 0) {
+            attachmentsHTML = `
+                <div class="message-attachments">
+                    ${message.attachments.map(att => `
+                        <div class="attachment-item">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                            </svg>
+                            <span>${att.name}</span>
+                        </div>
+                    `).join('')}
                 </div>
             `;
         }
-
-        // List of feedbacks
-        try {
-            const feedbacks = await window.SupabaseService.getProjectFeedback(this.mentorshipData.project_id);
-            if (feedbacks && feedbacks.length > 0) {
-                html += feedbacks.map(f => `
-                    <div class="insight-card-premium">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-light text-dark border">${new Date(f.created_at).toLocaleDateString()}</span>
-                            <div class="text-warning small">
-                                ${'<i class="fas fa-star"></i>'.repeat(f.stars || 5)}
-                            </div>
-                        </div>
-                        <p class="small text-dark mb-0">${f.comment}</p>
-                    </div>
-                `).join('');
-            } else {
-                html += `<div class="text-center py-4 text-muted small">No feedback records yet.</div>`;
-            }
-        } catch (err) {
-            html += `<div class="text-center py-4 text-danger small">Error loading feedback.</div>`;
-        }
         
-        container.innerHTML = `<div class="tools-pane-inner">${html}</div>`;
+        container.innerHTML = `
+            <div class="message-avatar ${avatarClass}">${initials}</div>
+            <div class="message-content">
+                <div class="message-header">
+                    <span class="message-sender">${message.senderName}</span>
+                    <span class="message-time">${message.timestamp}</span>
+                </div>
+                <div class="message-bubble">
+                    <p class="message-text">${message.content}</p>
+                    ${attachmentsHTML}
+                </div>
+            </div>
+        `;
+        
+        return container;
     }
 
-    async renderReportsTab(container) {
-        let html = '';
-        
-        // Form for innovators - gated by reports_enabled
-        if (this.isInnovator && this.activeMentorshipId !== 'demo_session') {
-            if (this.mentorshipData.reports_enabled) {
-                html += `
-                    <div class="insight-card-premium mb-4">
-                        <h6 class="fw-bold mb-2"><i class="fas fa-file-upload me-2 text-orange"></i>Submit Progress</h6>
-                        <p class="text-muted extra-small mb-3">Keep your mentor updated on your latest milestones.</p>
-                        <input type="text" id="reportTitleInput" class="form-control mb-2" placeholder="Report Title (e.g., Week 2 Sync)">
-                        <textarea id="reportSummaryInput" class="form-control mb-3" rows="3" placeholder="What have you achieved?"></textarea>
-                        <button class="btn btn-orange w-100 text-white rounded-pill" onclick="window.CollaborationHub.submitReport()">
-                            Submit Report
-                        </button>
-                    </div>
-                `;
-            } else {
-                html += `
-                    <div class="insight-card-premium mb-4 bg-light text-center border-dashed">
-                        <div class="py-3">
-                            <i class="fas fa-lock text-muted mb-2"></i>
-                            <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">Reports Locked</h6>
-                            <p class="extra-small text-muted mb-0">Your mentor hasn't enabled progress reporting yet.</p>
-                        </div>
-                    </div>
-                `;
-            }
-        }
+    async sendMessage(role) {
+        const inputId = `${role}MessageInput`;
+        const input = document.getElementById(inputId);
+        if (!input || !input.value.trim()) return;
 
-        // List of reports
+        const text = input.value.trim();
+        const user = this.getCurrentUser();
+
         try {
-            const reports = await window.SupabaseService.getProgressReports(this.activeMentorshipId);
-            if (reports && reports.length > 0) {
-                html += reports.map(r => `
-                    <div class="insight-card-premium">
-                        <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">${r.title || 'Progress Update'}</h6>
-                        <span class="badge bg-light text-muted border mb-2" style="font-size: 0.65rem;">${new Date(r.created_at).toLocaleDateString()}</span>
-                        <p class="small text-muted mb-0">${r.summary}</p>
-                        ${r.next_steps ? `<div class="mt-2 pt-2 border-top extra-small text-dark"><strong>Next:</strong> ${r.next_steps}</div>` : ''}
-                    </div>
-                `).join('');
-            } else {
-                const menteeName = (this.isInnovator ? "you" : (this._partnerData?.full_name || "your Mentee")).split(' ')[0];
-                html += `
-                    <div class="empty-state-card d-flex flex-column align-items-center justify-content-center text-center py-5 h-100">
-                        <div class="empty-icon-circle rounded-circle d-flex align-items-center justify-content-center mb-4" style="width:72px; height:72px; background-color:#ccfbf1; color:#0d9488;">
-                            <i class="fa fa-chart-line fa-2x"></i>
-                        </div>
-                        <h6 class="fw-bold mb-2 text-dark" style="font-size: 0.95rem;">Reports from ${menteeName} will appear here</h6>
-                        <p class="text-muted small mb-0">0 reports submitted this month</p>
-                    </div>
-                `;
-            }
-        } catch (err) {
-            html += `<div class="text-center py-4 text-danger small">Error loading reports.</div>`;
-        }
-
-        container.innerHTML = `<div class="tools-pane-inner">${html}</div>`;
-    }
-
-    async submitGeneralFeedback() {
-        const input = document.getElementById('mentorFeedbackInput');
-        const comment = input.value.trim();
-        if (!comment) return;
-
-        const uid = getCurrentAuthUser()?.uid;
-        try {
-            await window.SupabaseService.submitFeedback({
+            await window.SupabaseService.sendMessage({
                 mentorship_id: this.activeMentorshipId,
-                project_id: this.mentorshipData.project_id,
-                mentor_id: uid,
-                comment: comment,
-                stars: 5
+                sender_id: user.id || user.uid,
+                text: text
             });
             input.value = '';
-            this.renderFeedbackTab(document.getElementById('tab-feedback'));
-        } catch (err) {
-            alert("Failed to post feedback.");
+            this.scrollToBottom(role);
+        } catch (e) {
+            console.error("Send Error:", e);
+            alert("Failed to send message. Please try again.");
+        }
+    }
+
+    async loadStats() {
+        if (!this.activeMentorshipId) return;
+        try {
+            const feedbacks = await window.SupabaseService.getProjectFeedback(this.projectData?.id);
+            const reports = await window.SupabaseService.getProgressReports(this.activeMentorshipId);
+            
+            const fCount = document.getElementById('feedbackCount');
+            const rCount = document.getElementById('reportCount');
+            
+            if (fCount) fCount.textContent = feedbacks?.length || 0;
+            if (rCount) rCount.textContent = reports?.length || 0;
+        } catch (e) { console.warn("Stats load failed"); }
+    }
+
+    async loadFeedbacks() {
+        const listId = this.isInnovator ? 'innovatorFeedbackList' : 'mentorFeedbackList';
+        const container = document.getElementById(listId);
+        if (!container) return;
+
+        try {
+            const feedbacks = await window.SupabaseService.getProjectFeedback(this.projectData?.id);
+            if (!feedbacks || feedbacks.length === 0) {
+                container.innerHTML = '<div class="empty-state text-center py-4"><p class="small text-muted">No feedback yet.</p></div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            feedbacks.forEach(f => {
+                const data = {
+                    category: f.category || 'Feedback',
+                    rating: f.rating ? f.rating.toLowerCase().replace(' ', '-') : 'positive',
+                    content: f.content,
+                    timestamp: new Date(f.created_at).toLocaleDateString()
+                };
+                container.appendChild(this.createFeedbackCard(data));
+            });
+        } catch (e) { console.error("Feedback Load Error:", e); }
+    }
+
+    createFeedbackCard(feedback) {
+        const card = document.createElement('div');
+        card.className = 'feedback-card';
+        
+        const ratingText = {
+            'positive': 'Strong',
+            'strong': 'Strong',
+            'needs-work': 'Needs Work',
+            'suggestion': 'Suggestion'
+        };
+        
+        const ratingClass = {
+            'positive': 'badge-positive',
+            'strong': 'badge-positive',
+            'needs-work': 'badge-needs-work',
+            'suggestion': 'badge-suggestion'
+        };
+        
+        card.innerHTML = `
+            <div class="feedback-header">
+                <div class="feedback-category">
+                    <div class="category-icon">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m15 14 5-5-5-5"></path>
+                            <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"></path>
+                        </svg>
+                    </div>
+                    <span class="category-name">${feedback.category}</span>
+                </div>
+                <span class="badge ${ratingClass[feedback.rating] || 'badge-primary'}">${ratingText[feedback.rating] || feedback.rating}</span>
+            </div>
+            <p class="feedback-text">${feedback.content}</p>
+            <p class="feedback-time">${feedback.timestamp}</p>
+        `;
+        
+        return card;
+    }
+
+    async submitFeedback() {
+        const category = document.getElementById('feedbackCategory').value;
+        const rating = document.getElementById('feedbackRating').value;
+        const content = document.getElementById('feedbackText').value.trim();
+
+        if (!content) return alert("Please enter feedback content.");
+
+        try {
+            const user = this.getCurrentUser();
+            await window.SupabaseService.submitFeedback({
+                mentorship_id: this.activeMentorshipId,
+                project_id: this.projectData.id,
+                mentor_id: user.id || user.uid,
+                field_id: category,
+                comment: content,
+                stars: rating === 'positive' ? 5 : (rating === 'needs-work' ? 3 : 4)
+            });
+            alert("Feedback submitted successfully!");
+            document.getElementById('feedbackText').value = '';
+            this.loadFeedbacks();
+            this.loadStats();
+        } catch (e) { 
+            console.error("Feedback error:", e);
+            alert("Failed to submit feedback."); 
         }
     }
 
     async submitReport() {
-        const titleInput = document.getElementById('reportTitleInput');
-        const summaryInput = document.getElementById('reportSummaryInput');
-        const title = titleInput.value.trim();
-        const summary = summaryInput.value.trim();
+        const title = document.getElementById('reportTitle').value.trim();
+        const details = document.getElementById('reportDetails').value.trim();
 
-        if (!title || !summary) {
-            alert("Please provide a title and summary.");
-            return;
-        }
+        if (!title || !details) return alert("Please fill in all report fields.");
 
-        const uid = getCurrentAuthUser()?.uid;
         try {
+            const user = this.getCurrentUser();
             await window.SupabaseService.submitProgressReport({
                 mentorship_id: this.activeMentorshipId,
-                project_id: this.mentorshipData.project_id,
-                innovator_id: uid,
-                title: title,
-                summary: summary,
+                project_id: this.projectData.id,
+                innovator_id: user.id || user.uid,
+                title,
+                summary: details,
                 status: 'submitted'
             });
-            titleInput.value = '';
-            summaryInput.value = '';
-            this.renderReportsTab(document.getElementById('tab-reports'));
-            this.updateProgressUI();
-        } catch (err) {
-            alert("Failed to submit report.");
+            alert("Report submitted successfully!");
+            document.getElementById('reportTitle').value = '';
+            document.getElementById('reportDetails').value = '';
+            this.loadStats();
+            
+            // Reload reports if active
+            this.loadReports();
+        } catch (e) { 
+            console.error("Report Error:", e);
+            alert("Failed to submit report."); 
         }
     }
 
-    async startChatListener() {
-        const chatForm = document.getElementById('collabChatForm');
-        if (!chatForm) return;
-
-        if (this.activeMentorshipId === 'demo_session') {
-            return;
-        }
+    async loadReports() {
+        const prefix = this.isInnovator ? 'innovator' : 'mentor';
+        const listEl = document.getElementById(`${prefix}ReportsList`);
+        if (!listEl) return;
 
         try {
-            const messages = await window.SupabaseService.getMessages(this.activeMentorshipId);
-            this.renderMessages(messages || []);
-        } catch (err) { console.warn("Supabase Chat Load Error", err); }
-
-        if (this.unsubscribeChat) {
-            if (typeof this.unsubscribeChat === 'function') this.unsubscribeChat();
-            else if (this.unsubscribeChat.unsubscribe) this.unsubscribeChat.unsubscribe();
-        }
-        this.unsubscribeChat = window.SupabaseService.subscribeToMessages(this.activeMentorshipId, (newMsg) => {
-            this.appendMessage(newMsg);
-        });
-
-        chatForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const input = chatForm.querySelector('input');
-            const text = input.value.trim();
-            if (!text) return;
-
-            const uid = getCurrentAuthUser()?.uid;
-            try {
-                await window.SupabaseService.sendMessage({
-                    mentorship_id: this.activeMentorshipId,
-                    sender_id: uid,
-                    message_text: text
-                });
-                input.value = '';
-            } catch (err) {
-                alert("Message failed to send.");
+            const reports = await window.SupabaseService.getProgressReports(this.activeMentorshipId);
+            if (!reports || reports.length === 0) {
+                listEl.innerHTML = '<div class="empty-state text-center py-4"><p class="small text-muted">No reports yet.</p></div>';
+                return;
             }
-        };
+
+            listEl.innerHTML = '';
+            reports.forEach(r => {
+                const data = {
+                    title: r.title || 'Weekly Update',
+                    content: r.content,
+                    status: r.status || 'submitted',
+                    timestamp: new Date(r.created_at).toLocaleDateString(),
+                    attachments: r.file_url ? [{ name: 'Project Attachment' }] : []
+                };
+                listEl.appendChild(this.createReportCard(data));
+            });
+        } catch (e) { console.error("Reports Load Error:", e); }
     }
 
-    renderMessages(messages) {
-        const chatBox = document.getElementById('collabChatBox');
-        chatBox.innerHTML = '';
-        if (messages.length === 0) {
-            chatBox.innerHTML = `
-                <div class="empty-chat-placeholder">
-                    <i class="far fa-comments"></i>
-                    <p>No messages here yet.<br>Start the conversation!</p>
+    createReportCard(report) {
+        const card = document.createElement('div');
+        card.className = 'report-card';
+        
+        const statusClass = report.status === 'reviewed' ? 'badge-positive' : 'badge-submitted';
+        const statusText = report.status === 'reviewed' ? 'Reviewed' : 'Submitted';
+        
+        let attachmentsHTML = '';
+        if (report.attachments && report.attachments.length > 0) {
+            attachmentsHTML = `
+                <div class="report-attachments">
+                    ${report.attachments.map(att => `
+                        <div class="report-attachment">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                            </svg>
+                            <span>${att.name}</span>
+                        </div>
+                    `).join('')}
                 </div>
             `;
-            return;
         }
-        messages.forEach(msg => this.appendMessage(msg));
-    }
-
-    appendMessage(msg) {
-        const chatBox = document.getElementById('collabChatBox');
-        if (!chatBox) return;
-        const uid = getCurrentAuthUser()?.uid;
-        const isMe = msg.sender_id === uid;
-        const partner = this._partnerData || { full_name: 'Partner' };
         
-        const senderName = isMe ? 'You' : partner.full_name;
-        const avatarUrl = isMe ? (JSON.parse(localStorage.getItem('innovateHubUser') || '{}').avatar_url) : partner.avatar_url;
-        
-        const msgGroup = document.createElement('div');
-        msgGroup.className = `message-group ${isMe ? 'sent d-flex justify-content-end gap-2' : 'received d-flex justify-content-start gap-2'} mb-3`;
-        
-        const avatarHtml = avatarUrl 
-            ? `<img src="${avatarUrl}" class="chat-avatar-sm rounded-circle" style="width:36px; height:36px; object-fit:cover;" alt="${senderName}">`
-            : `<div class="chat-avatar-sm-placeholder rounded-circle bg-light d-flex align-items-center justify-content-center fw-bold text-secondary" style="width:36px; height:36px;">${(senderName || 'U').charAt(0)}</div>`;
-
-        // Nested Attachment rendering
-        let attachmentHtml = '';
-        if (msg.file_url) {
-             const fileName = msg.file_name || 'Attachment';
-             const isPdf = fileName.toLowerCase().endsWith('.pdf');
-             attachmentHtml = `
-                 <div class="chat-attachment-pill d-inline-flex align-items-center bg-white border rounded pe-3 ps-2 py-2 mt-2" style="cursor:pointer;" onclick="window.open('${msg.file_url}', '_blank')">
-                     <i class="fa fa-paperclip text-muted me-2"></i>
-                     <span class="attachment-name small text-dark me-2 text-truncate" style="max-width: 150px;">${fileName}</span>
-                     ${isPdf ? '<span class="attachment-type text-muted" style="font-size:0.6rem;">(PDF)</span>' : ''}
-                 </div>
-             `;
-        }
-
-        msgGroup.innerHTML = `
-            ${!isMe ? avatarHtml : ''}
-            <div class="message-content-wrapper d-flex flex-column ${isMe ? 'align-items-end' : 'align-items-start'}">
-                <div class="message-header d-flex align-items-center gap-2 mb-1">
-                    <span class="sender-name text-dark fw-bold" style="font-size:0.8rem;">${senderName}</span>
-                    <span class="message-time text-muted" style="font-size:0.7rem;">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+        card.innerHTML = `
+            <div class="report-header">
+                <div class="report-category">
+                    <div class="report-icon">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                    </div>
+                    <span class="report-title">${report.title}</span>
                 </div>
-                <div class="bubble-premium text-dark p-3" style="border-radius:18px; max-width:85%; background-color: ${isMe ? '#FFF7ED' : '#F0FDFA'};">
-                    <span style="font-size: 0.95rem;">${msg.text || msg.message_text || msg.content || ''}</span>
-                    ${attachmentHtml}
-                </div>
+                <span class="badge ${statusClass}">${statusText}</span>
             </div>
-            ${isMe ? avatarHtml : ''}
+            <p class="report-text">${report.content}</p>
+            ${attachmentsHTML}
+            <p class="report-time">${report.timestamp}</p>
         `;
         
-        chatBox.appendChild(msgGroup);
-        chatBox.scrollTop = chatBox.scrollHeight;
+        return card;
     }
 
-    async renderProjectDetails() {
-        const container = document.getElementById('collabProjectDetails');
-        if (!container) return;
+    async editPinnedMessage(role) {
+        const current = this.mentorshipData?.pinned_guidance || "";
+        const next = prompt("Edit Pinned Guidance:", current);
+        if (next !== null && next !== current) {
+            try {
+                await window.SupabaseService.updateMentorshipStatus(this.activeMentorshipId, 'active', { pinned_guidance: next });
+                this.mentorshipData.pinned_guidance = next;
+                document.getElementById(`${role}PinnedGuidance`).textContent = next;
+            } catch (e) { console.error("Update failed:", e); }
+        }
+    }
 
-        // Strict mapping for blueprint sections
-        const sections = [
-            { id: 'problem_statement', title: 'Problem Statement', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3a2.5 2.5 0 0 1 2.5-2.5H20v22H6.5a2.5 2.5 0 0 1-2.5-2.5z"/></svg>' },
-            { id: 'objectives', title: 'Strategic Objectives', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>' },
-            { id: 'proposed_solution', title: 'Proposed Solution', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
-            { id: 'expected_impact', title: 'Expected Impact', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' }
-        ];
+    // UI Toggle Methods
+    toggleSidebar(id) {
+        const sidebar = document.getElementById(id);
+        const overlayId = this.isInnovator ? 'innovatorOverlay' : 'mentorOverlay';
+        const overlay = document.getElementById(overlayId);
+        
+        if (sidebar) sidebar.classList.toggle('active');
+        if (overlay) overlay.classList.toggle('active');
+    }
 
-        let html = '';
-        if (!this.projectData || (!this.projectData.problem_statement && !this.projectData.title)) {
-             html = '<div class="text-center p-5 text-muted">No project blueprints found for this mentorship.</div>';
-        } else {
-            for (const s of sections) {
-                // Fetch feedback for this section
-                let feedbackHtml = '';
-                if (this.activeMentorshipId) {
-                    try {
-                        const feedbacks = await window.SupabaseService.getSectionFeedback(this.activeMentorshipId, s.id);
-                        feedbackHtml = feedbacks.map(f => `
-                            <div class="feedback-bubble-premium">
-                                <div class="feedback-meta">MENTOR FEEDBACK • ${new Date(f.created_at).toLocaleDateString()}</div>
-                                <div class="feedback-text">${f.comment}</div>
-                            </div>
-                        `).join('');
-                    } catch (err) { console.warn("Feedback load failed", err); }
+    closeAllSidebars(role) {
+        const leftId = `${role}LeftSidebar`;
+        const rightId = `${role}RightSidebar`;
+        const overlayId = `${role}Overlay`;
+
+        document.getElementById(leftId)?.classList.remove('active');
+        document.getElementById(rightId)?.classList.remove('active');
+        document.getElementById(overlayId)?.classList.remove('active');
+    }
+
+    setupTabListeners() {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        tabButtons.forEach(button => {
+            button.onclick = () => {
+                const tabName = button.getAttribute('data-tab');
+                const tabsContainer = button.closest('.tabs');
+                
+                // Active button
+                button.parentElement.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Active content
+                tabsContainer.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                const targetContent = document.getElementById(tabName);
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                    // Load reports if switched to reports tab
+                    if (tabName.includes('reports')) this.loadReports();
                 }
-
-                html += `
-                    <div class="blueprint-card" id="section-${s.id}">
-                        <div class="blueprint-header">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-success">${s.icon}</span>
-                                <span class="blueprint-title">${s.title}</span>
-                            </div>
-                            ${!this.isInnovator ? `
-                                <button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="window.CollaborationHub.promptFeedback('${s.id}', '${s.title}')">
-                                    + Add Review
-                                </button>
-                            ` : ''}
-                        </div>
-                        <div class="blueprint-content">
-                            ${this.projectData[s.id] || (this.projectData[s.id.replace('_', '')]) || 'This section is currently empty.'}
-                        </div>
-                        <div class="feedback-pin-container" id="feedback-list-${s.id}">
-                            ${feedbackHtml}
-                        </div>
-                    </div>
-                `;
-            }
-        }
-        container.innerHTML = html;
+            };
+        });
     }
 
-    async promptFeedback(fieldId, fieldTitle) {
-        // Use Bootstrap Modal instead of native prompt
-        document.getElementById('feedbackModalTitle').innerText = fieldTitle;
-        document.getElementById('feedbackModalFieldId').value = fieldId;
-        const inputEl = document.getElementById('feedbackModalInput');
-        inputEl.value = '';
-        
-        const modalEl = document.getElementById('collabFeedbackModal');
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
+    setupStaticListeners() {
+        // Send buttons
+        const mentorSend = document.getElementById('mentorSendBtn');
+        const innovatorSend = document.getElementById('innovatorSendBtn');
+        const mentorInput = document.getElementById('mentorMessageInput');
+        const innovatorInput = document.getElementById('innovatorMessageInput');
 
-        const submitBtn = document.getElementById('btnSubmitFeedbackModal');
-        
-        // Remove old event listeners by cloning if necessary, or assign direct onclick
-        submitBtn.onclick = async () => {
-            const comment = inputEl.value.trim();
-            if(!comment) { alert("Please enter your review content."); return; }
+        if (mentorSend) mentorSend.onclick = () => this.sendMessage('mentor');
+        if (innovatorSend) innovatorSend.onclick = () => this.sendMessage('innovator');
 
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Submitting...';
+        if (mentorInput) mentorInput.onkeypress = (e) => { if(e.key === 'Enter') this.sendMessage('mentor'); };
+        if (innovatorInput) innovatorInput.onkeypress = (e) => { if(e.key === 'Enter') this.sendMessage('innovator'); };
 
-            const uid = getCurrentAuthUser()?.uid;
-            try {
-                await window.SupabaseService.submitSectionFeedback({
-                    mentorship_id: this.activeMentorshipId,
-                    project_id: this.projectData.id,
-                    mentor_id: uid,
-                    field_id: fieldId,
-                    comment: comment,
-                    stars: 5 
-                });
-                
-                modal.hide();
-                this.renderProjectDetails();
-            } catch (err) {
-                alert("Failed to submit feedback. Check database permissions.");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'Submit Review';
-            }
-        };
-    }
+        // Feedback/Report buttons
+        const fbBtn = document.getElementById('submitFeedbackBtn');
+        const repBtn = document.getElementById('submitReportBtn');
 
-    async promptGuidance() {
-        if (this.isInnovator) return;
-        
-        const currentGuidance = this.mentorshipData.pinned_guidance || "";
-        const inputEl = document.getElementById('guidanceModalInput');
-        inputEl.value = currentGuidance;
-        
-        const modalEl = document.getElementById('collabGuidanceModal');
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
-
-        const submitBtn = document.getElementById('btnSubmitGuidanceModal');
-        submitBtn.onclick = async () => {
-            const newGuidance = inputEl.value.trim();
-            if(!newGuidance) return;
-
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
-
-            try {
-                // Assuming we update the mentorship record with pinned guidance
-                const { error } = await window.supabase
-                    .from('mentorships')
-                    .update({ pinned_guidance: newGuidance })
-                    .eq('id', this.activeMentorshipId);
-                    
-                if (error) throw error;
-                
-                this.mentorshipData.pinned_guidance = newGuidance;
-                document.getElementById('pinnedGuidanceText').textContent = newGuidance;
-                modal.hide();
-            } catch (err) {
-                alert("Failed to update guidance.");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'Save Guidance';
-            }
-        };
-    }
-
-    async toggleReports(enabled) {
-        if (this.isInnovator) return;
-        try {
-            await window.SupabaseService.updateMentorshipReportsStatus(this.activeMentorshipId, enabled);
-            this.mentorshipData.reports_enabled = enabled;
-            // No need to full refresh, just update internal state
-            console.log(`CollaborationHub: Reports ${enabled ? 'enabled' : 'disabled'} for session ${this.activeMentorshipId}`);
-        } catch (err) {
-            alert("Failed to update report status.");
-            // Revert checkbox
-            const toggle = document.getElementById('allowReportsToggle');
-            if (toggle) toggle.checked = !enabled;
-        }
-    }
-
-    async loadMilestones() {
-        // Milestone logic can be added here if needed for the hub view
+        if (fbBtn) fbBtn.onclick = () => this.submitFeedback();
+        if (repBtn) repBtn.onclick = () => this.submitReport();
     }
 
     renderEmptyState() {
-        const workspace = document.querySelector('.collab-chat-workspace');
-        if (workspace) {
-            workspace.innerHTML = `
-                <div class="h-100 d-flex flex-column align-items-center justify-content-center text-center p-5">
-                    <div class="bg-light rounded-circle p-4 mb-4">
-                        <i class="fas fa-project-diagram fa-3x text-muted"></i>
-                    </div>
-                    <h4 class="fw-bold" style="color:var(--brand-teal)">Collaborative Workspace</h4>
-                    <p class="text-muted">Select a project or mentorship session from the sidebar to begin your journey.</p>
+        const prefix = this.isInnovator ? 'innovator' : 'mentor';
+        const container = document.getElementById(`${prefix}ChatMessages`);
+        if (container) {
+            container.innerHTML = `
+                <div class="empty-state text-center py-5">
+                    <p class="text-muted">Select a mentorship session from the left sidebar to start collaborating.</p>
                 </div>
             `;
-        }
-    }
-
-    updateMeetingUI() {
-        // Meeting UI placeholder
-        // Feedback listener
-        if (this.projectData && this.projectData.id) {
-            this.unsubscribeFeedback = window.SupabaseService.subscribeToProjectFeedback(this.projectData.id, payload => {
-                console.log("Real-time Feedback:", payload);
-                if (this.activeTab === 'feedback') this.renderFeedbackTab();
-                else this.renderProjectDetails();
-            });
-        }
-
-        // Reports listener
-        if (this.activeMentorshipId) {
-            this.unsubscribeReports = window.SupabaseService.subscribeToProgressReports(this.activeMentorshipId, payload => {
-                console.log("Real-time Report:", payload);
-                if (this.activeTab === 'reports') this.renderReportsTab();
-            });
         }
     }
 }
 
-// Global instance
+// Global scope attachment
 window.CollaborationHub = new CollaborationHub();
-// Bind switch functions to window for onclick handlers
-window.switchSession = (id) => window.CollaborationHub.switchSession(id);
-window.switchToolsTab = (tab) => window.CollaborationHub.switchToolsTab(tab);
-window.updatePinnedGuidance = () => window.CollaborationHub.updatePinnedGuidance();
-window.submitGeneralFeedback = () => window.CollaborationHub.submitGeneralFeedback();
-window.submitReport = () => window.CollaborationHub.submitReport();
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.CollaborationHub.init();
+});
 
 export default window.CollaborationHub;

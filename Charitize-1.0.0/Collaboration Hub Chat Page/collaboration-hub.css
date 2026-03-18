@@ -15,15 +15,11 @@ body {
 .collaboration-hub {
     display: flex;
     height: 100vh;
-    background: #f8fafc;
-}
-
-.mentor-view {
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    background: linear-gradient(135deg, #f0fdfa 0%, #cffafe 100%);
 }
 
 .innovator-view {
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
 }
 
 /* Sidebar Styles */
@@ -75,23 +71,23 @@ body {
     overflow-y: auto;
 }
 
-/* Brand Backgrounds */
+/* Gradient Backgrounds */
 .gradient-teal {
-    background: linear-gradient(to right, #1a5e4f, #14463a);
+    background: linear-gradient(to right, #0d9488, #0891b2);
 }
 
 .gradient-orange {
-    background: linear-gradient(to right, #f59e0b, #d97706);
+    background: linear-gradient(to right, #f97316, #f59e0b);
 }
 
 .gradient-teal-bg {
-    background-color: #dcfce7;
-    color: #1a5e4f;
+    background-color: #ccfbf1;
+    color: #0f766e;
 }
 
 .gradient-orange-bg {
-    background-color: #fef3c7;
-    color: #92400e;
+    background-color: #fed7aa;
+    color: #c2410c;
 }
 
 /* Project List */
@@ -127,14 +123,11 @@ body {
     margin-bottom: 0.5rem;
 }
 
-.project-card .partner-label {
-    font-size: 0.813rem;
-    color: #4b5563;
+.project-card .innovator-name,
+.project-card .mentor-name {
+    font-size: 0.875rem;
+    color: #6b7280;
     margin-bottom: 0.75rem;
-}
-
-.project-card .partner-label strong {
-    color: #1f2937;
 }
 
 .project-meta {
@@ -163,15 +156,15 @@ body {
 }
 
 .badge-active {
-    background: rgba(26, 94, 79, 0.1);
-    color: #1a5e4f;
+    background: rgba(34, 197, 94, 0.1);
+    color: #15803d;
     border-color: #bbf7d0;
 }
 
 .badge-pending {
-    background: rgba(245, 158, 11, 0.1);
-    color: #92400e;
-    border-color: #fde68a;
+    background: rgba(234, 179, 8, 0.1);
+    color: #a16207;
+    border-color: #fde047;
 }
 
 .badge-submitted {
@@ -262,8 +255,8 @@ body {
 
 /* Progress Section */
 .progress-section {
-    background: #fef3c7;
-    border-bottom: 1px solid #fde68a;
+    background: #fed7aa;
+    border-bottom: 1px solid #fdba74;
     padding: 1rem;
 }
 
@@ -294,7 +287,7 @@ body {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(to right, #f59e0b, #d97706);
+    background: linear-gradient(to right, #f97316, #f59e0b);
     transition: width 0.3s ease;
 }
 
@@ -322,13 +315,13 @@ body {
 }
 
 .pinned-teal {
-    background: #dcfce7;
-    border-bottom-color: #bbf7d0;
+    background: #ccfbf1;
+    border-bottom-color: #99f6e4;
 }
 
 .pinned-orange {
-    background: #fefce8;
-    border-bottom-color: #fef08a;
+    background: #fef3c7;
+    border-bottom-color: #fde68a;
 }
 
 .pinned-content {
@@ -397,11 +390,11 @@ body {
 }
 
 .message-avatar.mentor-avatar {
-    background: #1a5e4f;
+    background: #0d9488;
 }
 
 .message-avatar.innovator-avatar {
-    background: #f59e0b;
+    background: #f97316;
 }
 
 .message-content {
@@ -499,13 +492,13 @@ body {
 }
 
 .message-input:focus {
-    border-color: #1a5e4f;
-    box-shadow: 0 0 0 3px rgba(26, 94, 79, 0.1);
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
 }
 
 .innovator-view .message-input:focus {
-    border-color: #f59e0b;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
 }
 
 /* Buttons */
@@ -525,21 +518,19 @@ body {
 }
 
 .btn-primary.gradient-teal {
-    background: linear-gradient(to right, #1a5e4f, #14463a);
-    color: white !important;
+    background: linear-gradient(to right, #0d9488, #0891b2);
 }
 
 .btn-primary.gradient-teal:hover {
-    background: linear-gradient(to right, #14463a, #0e3229);
+    background: linear-gradient(to right, #0f766e, #0e7490);
 }
 
 .btn-primary.gradient-orange {
-    background: linear-gradient(to right, #f59e0b, #d97706);
-    color: white !important;
+    background: linear-gradient(to right, #f97316, #f59e0b);
 }
 
 .btn-primary.gradient-orange:hover {
-    background: linear-gradient(to right, #d97706, #b45309);
+    background: linear-gradient(to right, #ea580c, #d97706);
 }
 
 .btn-outline {
@@ -649,14 +640,14 @@ body {
 }
 
 .tabs-teal .tab-btn.active {
-    color: #1a5e4f;
-    border-bottom-color: #1a5e4f;
+    color: #0d9488;
+    border-bottom-color: #0d9488;
     background: white;
 }
 
 .tabs-orange .tab-btn.active {
-    color: #f59e0b;
-    border-bottom-color: #f59e0b;
+    color: #f97316;
+    border-bottom-color: #f97316;
     background: white;
 }
 
@@ -732,13 +723,13 @@ body {
 }
 
 .form-control:focus {
-    border-color: #1a5e4f;
-    box-shadow: 0 0 0 3px rgba(26, 94, 79, 0.1);
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
 }
 
 .innovator-view .form-control:focus {
-    border-color: #f59e0b;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
 }
 
 textarea.form-control {

@@ -29,12 +29,12 @@
     <link href="assets/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet" />
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="assets/css/auth-ui.css" rel="stylesheet" />
-    <link href="assets/css/style.css?v=101.0.1" rel="stylesheet" />
-    <link href="assets/css/staggered-menu.css?v=101.0.1" rel="stylesheet" />
-    <link href="assets/css/dashboard-rebuild.css?v=101.0.1" rel="stylesheet" />
-    <link href="assets/css/collab-screen.css?v=101.0.1" rel="stylesheet" />
-    <link href="assets/css/innovate-hub.css?v=101.0.1" rel="stylesheet" />
-    <link href="assets/css/nuru-assistant.css?v=101.0.1" rel="stylesheet" />
+    <link href="assets/css/style.css?v=101.0.2" rel="stylesheet" />
+    <link href="assets/css/staggered-menu.css?v=101.0.2" rel="stylesheet" />
+    <link href="assets/css/dashboard-rebuild.css?v=101.0.2" rel="stylesheet" />
+    <link href="assets/css/collab-screen.css?v=101.0.2" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=101.0.2" rel="stylesheet" />
+    <link href="assets/css/nuru-assistant.css?v=101.0.2" rel="stylesheet" />
     <style>
         :root {
             --brand-teal: #1a5e4f;
@@ -88,17 +88,17 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Project Modules -->
-    <script src="assets/js/components/live-wallpaper.js?v=101.0.1" type="module"></script>
-    <script src="assets/js/components/activity-heatmap.js?v=101.0.1" type="module"></script>
-    <script src="assets/js/pages/mentor-discovery.js?v=101.0.1" type="module"></script>
-    <script src="assets/js/pages/dashboard-charts.js?v=101.0.1" type="module"></script>
-    <script src="assets/js/pages/collaboration.js?v=101.0.1" type="module"></script>
+    <script src="assets/js/components/live-wallpaper.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/components/activity-heatmap.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/pages/mentor-discovery.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/pages/dashboard-charts.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/pages/collaboration.js?v=102.0.0" type="module"></script>
     
     <!-- Supabase Services & Modules -->
-    <script src="assets/js/core/supabase-service.js?v=101.0.1" type="module"></script>
-    <script src="assets/js/modules/session-manager.js?v=101.0.1" type="module"></script>
-    <script src="assets/js/modules/feedback-service.js?v=101.0.1" type="module"></script>
-    <script src="assets/js/modules/report-manager.js?v=101.0.1" type="module"></script>
+    <script src="assets/js/core/supabase-service.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/modules/session-manager.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/modules/feedback-service.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/modules/report-manager.js?v=102.0.0" type="module"></script>
   </head>
 
   <body>
@@ -167,24 +167,12 @@
     <!-- Container for dynamic sections -->
     <div id="activeSectionContainer" style="display: none">
       <div class="container py-5">
-        <div class="mb-5">
+        <div id="collabBackButtonContainer" class="mb-5">
           <button
             class="btn btn-outline-secondary px-4 d-flex align-items-center gap-2"
             onclick="showDashboardSection('home')"
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
             Back to Dashboard
           </button>
         </div>
@@ -251,146 +239,368 @@
           </div>
           <div id="projectsContainer"></div>
         </div>
+      </div> <!-- End of .container -->
 
-        <!-- Mentorship: Collaboration Screen (Focus Panel) -->
-        <div id="collabSection" class="dashboard-section" style="display: none">
-          <div id="collabScreenContainer">
-              <div class="collab-layout-premium">
-                  <!-- 1. Sidebar: Project/Mentee List -->
-                  <aside class="collab-sidebar-new">
-                      <div class="sidebar-header-premium">
-                          <h5 id="collabSidebarTitle" class="fw-bold mb-1">My Projects</h5>
-                          <p id="collabSidebarSubtitle" class="small text-muted mb-0">Active mentorship projects</p>
-                      </div>
-                      <div class="sidebar-search-box">
-                          <i class="fa fa-search"></i>
-                          <input type="text" id="collabContactSearch" placeholder="Search projects..." class="form-control">
-                      </div>
-                      <div id="collabContactList" class="contact-list-new">
-                          <!-- Cards injected by collaboration.js -->
-                      </div>
-                  </aside>
+      <!-- Part 2: Full-Width Collaboration Hub (Independent of .container) -->
+      <div id="collabSection" class="dashboard-section" style="display: none">
+        <!-- Mentor View -->
+        <div class="collaboration-hub mentor-view" id="mentorView" style="display: none;">
+            <!-- Left Sidebar - Projects -->
+            <aside class="sidebar left-sidebar" id="mentorLeftSidebar">
+                <div class="sidebar-header gradient-teal">
+                    <div class="sidebar-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="8" r="7"></circle>
+                            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                        </svg>
+                        <h2 id="mentorSidebarTitle">My Mentees</h2>
+                    </div>
+                    <p>Active mentorship projects</p>
+                </div>
+                <div class="sidebar-content">
+                    <div class="project-list" id="mentorProjectList"></div>
+                </div>
+            </aside>
 
-                  <!-- 2. Main Workspace: Chat & Guidance -->
-                  <main class="collab-chat-workspace">
-                      <header class="chat-workspace-header">
-                          <div class="d-flex align-items-center justify-content-between w-100">
-                              <div class="d-flex align-items-center gap-3">
-                                  <!-- Hamburger menu requested from Figma -->
-                                  <div class="header-hamburger me-2 text-white" style="cursor: pointer;" onclick="document.querySelector('.collab-sidebar-new').classList.toggle('show')">
-                                      <i class="fas fa-bars fs-5"></i>
-                                  </div>
-                                  <div class="header-project-icon">
-                                      <i class="fa fa-project-diagram"></i>
-                                  </div>
-                                  <div>
-                                      <h4 id="collabProjectHeaderTitle" class="mb-0 fw-bold text-white text-uppercase" style="letter-spacing:1px; font-size: 1.1rem; line-height: 1.2;">Project Title</h4>
-                                  <small id="collabPartnerName" class="text-white-50 fw-bold" style="font-size: 0.8rem;">Partner Name</small>
-                              </div>
-                          </div>
-                          
-                          <div class="header-meta-group">
-                              <div id="collabMentorSelectorContainer" style="display: none; width: 180px;">
-                                  <select id="collabMentorSelector" class="form-select form-select-sm rounded-pill border-0 shadow-sm bg-white" style="font-size: 0.75rem; padding: 4px 12px;" onchange="window.switchSession(this.value)">
-                                      <option value="">Switch Project...</option>
-                                  </select>
-                              </div>
-                              <div id="collabRoleBadge" class="badge-role-view">Loading Role...</div>
-                          </div>
-                      </div>
-                      </header>
+            <!-- Center Panel - Chat -->
+            <main class="center-panel">
+                <!-- Chat Header -->
+                <div class="chat-header gradient-teal">
+                    <button class="icon-btn menu-toggle" onclick="window.CollaborationHub.toggleSidebar('mentorLeftSidebar')">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="chat-header-info">
+                        <div class="project-title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <circle cx="12" cy="12" r="6"></circle>
+                                <circle cx="12" cy="12" r="2"></circle>
+                            </svg>
+                            <h2 id="mentorProjectName">Loading Project...</h2>
+                        </div>
+                        <p id="mentorInnovator">Loading Mentee...</p>
+                    </div>
+                    <span class="badge badge-mentor">Mentor View</span>
+                    <button class="icon-btn menu-toggle right-toggle" onclick="window.CollaborationHub.toggleSidebar('mentorRightSidebar')">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
 
-                      <!-- Project Progress (Innovator Only) -->
-                      <div id="collabProgressContainer" class="collab-progress-banner" style="display:none;">
-                          <div class="d-flex justify-content-between align-items-center mb-2">
-                              <span class="fw-bold text-dark">Project Progress</span>
-                              <span id="collabProgressPercent" class="fw-bold text-orange">0% Complete</span>
-                          </div>
-                          <div class="progress progress-premium">
-                              <div id="collabProgressBar" class="progress-bar bg-orange" role="progressbar" style="width: 0%;"></div>
-                          </div>
-                          <div class="progress-stats-row mt-2">
-                              <span><i class="fa fa-comment-dots text-teal"></i> <span id="collabFeedbackCount">0</span> Feedbacks</span>
-                              <span><i class="fa fa-file-alt text-teal"></i> <span id="collabReportCount">0</span> Reports</span>
-                          </div>
-                      </div>
+                <!-- Pinned Message -->
+                <div class="pinned-message pinned-teal">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="17" x2="12" y2="22"></line>
+                        <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                    </svg>
+                    <div class="pinned-content">
+                        <p class="pinned-label">Pinned Guidance</p>
+                        <p class="pinned-text" id="mentorPinnedGuidance">No guidance pinned yet.</p>
+                    </div>
+                    <button class="btn-small btn-ghost" onclick="window.CollaborationHub.editPinnedMessage('mentor')">Edit</button>
+                </div>
 
-                      <!-- Pinned Guidance -->
-                      <div id="collabPinnedGuidance" class="pinned-guidance-box">
-                          <div class="d-flex align-items-start gap-3">
-                              <div class="pin-icon-wrapper">
-                                  <i class="fa fa-thumbtack"></i>
-                              </div>
-                              <div class="flex-grow-1">
-                                  <div class="d-flex justify-content-between align-items-center mb-1">
-                                      <h6 class="fw-bold mb-0 text-teal">Pinned Guidance</h6>
-                                      <button id="editPinnedGuidance" class="btn-edit-pin" style="display:none;">Edit</button>
-                                  </div>
-                                  <p id="pinnedGuidanceText" class="mb-0 small text-muted">Remember to include unit tests for all new features and update the API documentation accordingly.</p>
-                              </div>
-                          </div>
-                      </div>
-                      <!-- Chat Area -->
-                      <div class="chat-messages-container" id="collabChatBox">
-                          <!-- Messages injected here -->
-                          <div class="empty-chat-placeholder">
-                              <i class="fa fa-comments"></i>
-                              <p>Your conversation will appear here</p>
-                          </div>
-                      </div>
+                <!-- Chat Messages -->
+                <div class="chat-messages" id="mentorChatMessages"></div>
 
-                      <!-- Chat Input -->
-                      <div class="chat-input-area-premium">
-                          <form id="collabChatForm" class="chat-input-form-premium">
-                              <button type="button" class="btn-chat-action" onclick="document.getElementById('collabFileUpload').click()">
-                                  <i class="fa fa-paperclip"></i>
-                              </button>
-                              <input type="file" id="collabFileUpload" style="display:none;">
-                              <input type="text" id="collabChatInput" placeholder="Ask your mentor a question..." required autocomplete="off">
-                              <button type="submit" class="btn-chat-send">
-                                  <i class="fa fa-paper-plane"></i>
-                              </button>
-                          </form>
-                      </div>
-                  </main>
+                <!-- Message Input -->
+                <div class="message-input-container">
+                    <button class="icon-btn attach-btn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                        </svg>
+                    </button>
+                    <input type="text" class="message-input" placeholder="Send message..." id="mentorMessageInput">
+                    <button class="btn btn-primary gradient-teal" id="mentorSendBtn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        <span class="btn-text">Send</span>
+                    </button>
+                </div>
+            </main>
 
-                  <!-- 3. Tools Panel -->
-                  <section class="collab-tools-aside">
-                      <header class="tools-aside-header">
-                          <i class="fa fa-chart-line text-teal"></i>
-                          <h5 id="toolsPanelTitle" class="fw-bold mb-0">Mentorship Tools</h5>
-                      </header>
-                      
-                      <div class="tools-tabs-wrapper">
-                          <ul class="nav nav-pills tools-pills d-flex" id="collabToolsTabs" role="tablist">
-                              <li class="nav-item flex-fill">
-                                  <button class="nav-link active w-100" id="details-tab" data-bs-toggle="tab" data-bs-target="#tab-details" type="button" role="tab">Mentorship Details</button>
-                              </li>
-                              <li class="nav-item flex-fill">
-                                  <button class="nav-link w-100" id="reports-tab" data-bs-toggle="tab" data-bs-target="#tab-reports" type="button" role="tab">Reports</button>
-                              </li>
-                          </ul>
-                      </div>
+            <!-- Right Sidebar - Feedback Tools -->
+            <aside class="sidebar right-sidebar" id="mentorRightSidebar">
+                <div class="sidebar-header gradient-teal">
+                    <div class="sidebar-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        <h3>Mentorship Tools</h3>
+                    </div>
+                </div>
 
-                      <div class="tab-content tools-tab-panes" id="collabToolsContent">
-                          <div class="tab-pane fade show active" id="tab-details" role="tabpanel">
-                              <div id="collabProjectDetails" class="project-details-blueprint-view tools-pane-inner" style="max-height: calc(100vh - 350px); overflow-y: auto;">
-                                  <!-- Blueprint cards injected here by JS -->
-                              </div>
-                          </div>
-                          <div class="tab-pane fade" id="tab-reports" role="tabpanel">
-                              <div id="reportsToolsContainer" class="tools-pane-inner">
-                                  <!-- Content by JS -->
-                              </div>
-                          </div>
-                      </div>
-                      <div id="mentorReportControls" class="px-3" style="display:none;">
-                          <!-- Toggle injected here for mentors -->
-                      </div>
-                  </section>
-              </div>
-          </div>
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab-list tabs-teal">
+                        <button class="tab-btn active" data-tab="mentor-give-feedback">Give Feedback</button>
+                        <button class="tab-btn" data-tab="mentor-view-reports">View Reports</button>
+                    </div>
+
+                    <!-- Give Feedback Tab -->
+                    <div class="tab-content active" id="mentor-give-feedback">
+                        <div class="tab-inner">
+                            <div class="feedback-form card card-teal">
+                                <h4 class="form-title">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <circle cx="12" cy="12" r="6"></circle>
+                                        <circle cx="12" cy="12" r="2"></circle>
+                                    </svg>
+                                    Provide Structured Feedback
+                                </h4>
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <select class="form-control" id="feedbackCategory">
+                                        <option>Project Concept</option>
+                                        <option>Technical Implementation</option>
+                                        <option>Market Viability</option>
+                                        <option>Recommendations</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Rating</label>
+                                    <select class="form-control" id="feedbackRating">
+                                        <option value="positive">Strong</option>
+                                        <option value="needs-work">Needs Work</option>
+                                        <option value="suggestion">Suggestion</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Feedback</label>
+                                    <textarea class="form-control" rows="5" id="feedbackText" placeholder="Share your expert insights..."></textarea>
+                                </div>
+                                <button class="btn btn-primary gradient-teal w-full" id="submitFeedbackBtn">Submit Feedback</button>
+                            </div>
+
+                            <div class="feedback-list">
+                                <h4>Previous Feedback</h4>
+                                <div id="mentorFeedbackList"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- View Reports Tab -->
+                    <div class="tab-content" id="mentor-view-reports">
+                        <div class="tab-inner">
+                            <div id="mentorReportsList">
+                                <!-- Reports will load here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Mobile Overlay -->
+            <div class="overlay" id="mentorOverlay" onclick="window.CollaborationHub.closeAllSidebars('mentor')"></div>
         </div>
+
+        <!-- Innovator View -->
+        <div class="collaboration-hub innovator-view" id="innovatorView" style="display: none;">
+            <!-- Left Sidebar - Projects -->
+            <aside class="sidebar left-sidebar" id="innovatorLeftSidebar">
+                <div class="sidebar-header gradient-orange">
+                    <div class="sidebar-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+                            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+                            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+                            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+                        </svg>
+                        <h2 id="innovatorSidebarTitle">My Projects</h2>
+                    </div>
+                    <p>Projects under mentorship</p>
+                </div>
+                <div class="sidebar-content">
+                    <div class="project-list" id="innovatorProjectList"></div>
+                </div>
+            </aside>
+
+            <!-- Center Panel - Chat -->
+            <main class="center-panel">
+                <!-- Chat Header -->
+                <div class="chat-header gradient-orange">
+                    <button class="icon-btn menu-toggle" onclick="window.CollaborationHub.toggleSidebar('innovatorLeftSidebar')">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="chat-header-info">
+                        <div class="project-title">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m15 14 5-5-5-5"></path>
+                                <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"></path>
+                            </svg>
+                            <h2 id="innovatorProjectName">Loading Project...</h2>
+                        </div>
+                        <p id="innovatorMentor">Loading Mentor...</p>
+                    </div>
+                    <span class="badge badge-innovator">Innovator View</span>
+                    <button class="icon-btn menu-toggle right-toggle" onclick="window.CollaborationHub.toggleSidebar('innovatorRightSidebar')">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Progress Indicator -->
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <span class="progress-label">Project Progress</span>
+                        <span class="progress-percentage" id="projectProgressText">0% Complete</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="projectProgressBar" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-stats">
+                        <span class="stat-item">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            <span id="feedbackCount">0</span> Feedbacks
+                        </span>
+                        <span class="stat-item">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span id="reportCount">0</span> Reports
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Pinned Message -->
+                <div class="pinned-message pinned-orange">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="17" x2="12" y2="22"></line>
+                        <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                    </svg>
+                    <div class="pinned-content">
+                        <p class="pinned-label">Mentor's Guidance</p>
+                        <p class="pinned-text" id="innovatorPinnedGuidance">No guidance pinned yet.</p>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div class="chat-messages" id="innovatorChatMessages"></div>
+
+                <!-- Message Input -->
+                <div class="message-input-container">
+                    <button class="icon-btn attach-btn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                        </svg>
+                    </button>
+                    <input type="text" class="message-input" placeholder="Ask your mentor..." id="innovatorMessageInput">
+                    <button class="btn btn-primary gradient-orange" id="innovatorSendBtn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        <span class="btn-text">Send</span>
+                    </button>
+                </div>
+            </main>
+
+            <!-- Right Sidebar - Feedback & Reports -->
+            <aside class="sidebar right-sidebar" id="innovatorRightSidebar">
+                <div class="sidebar-header gradient-orange">
+                    <div class="sidebar-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+                            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+                        </svg>
+                        <h3>Growth & Progress</h3>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab-list tabs-orange">
+                        <button class="tab-btn active" data-tab="innovator-feedback">Mentor Feedback</button>
+                        <button class="tab-btn" data-tab="innovator-reports">My Reports</button>
+                    </div>
+
+                    <!-- Feedback Tab -->
+                    <div class="tab-content active" id="innovator-feedback">
+                        <div class="tab-inner">
+                            <div class="info-card card card-orange">
+                                <div class="info-card-icon gradient-orange-bg">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="m15 14 5-5-5-5"></path>
+                                        <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4>Mentorship Insights</h4>
+                                    <p>Review your mentor's feedback to improve your project</p>
+                                </div>
+                            </div>
+                            <div id="innovatorFeedbackList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Reports Tab -->
+                    <div class="tab-content" id="innovator-reports">
+                        <div class="tab-inner">
+                            <div class="report-form card card-orange">
+                                <h4 class="form-title">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                    </svg>
+                                    Submit Progress Report
+                                </h4>
+                                <div class="form-group">
+                                    <label>Report Title</label>
+                                    <input type="text" class="form-control" id="reportTitle" placeholder="e.g., Week 4 Progress Update">
+                                </div>
+                                <div class="form-group">
+                                    <label>Details</label>
+                                    <textarea class="form-control" rows="4" id="reportDetails" placeholder="Describe your progress..."></textarea>
+                                </div>
+                                <button class="btn btn-outline w-full mb-3">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                                    </svg>
+                                    Attach Files
+                                </button>
+                                <button class="btn btn-primary gradient-orange w-full" id="submitReportBtn">Submit Report</button>
+                            </div>
+
+                            <div class="report-list">
+                                <h4>Previous Reports</h4>
+                                <div id="innovatorReportsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Mobile Overlay -->
+            <div class="overlay" id="innovatorOverlay" onclick="window.CollaborationHub.closeAllSidebars('innovator')"></div>
+        </div>
+      </div>
 
         <!-- Innovator: Submit Project (Focus Panel) -->
         <div id="submitSection" class="dashboard-section" style="display: none">
@@ -969,17 +1179,16 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="assets/js/pages/main.js?v=101.0.1"></script>
-    <script src="assets/js/utils/ui-utils.js?v=101.0.1"></script>
-    <script src="assets/js/components/shared-ui.js?v=101.0.1"></script>
-    <script src="assets/js/core/api.js?v=101.0.1"></script>
+    <script src="assets/js/pages/main.js?v=102.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=102.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=102.0.0"></script>
+    <script src="assets/js/core/api.js?v=102.0.0"></script>
     <!-- Feature Scripts -->
-    <script type="module" src="assets/js/pages/mentor-discovery.js?v=101.0.1"></script>
-    <script src="assets/js/components/file-upload.js?v=101.0.1"></script>
-    <script type="module" src="assets/js/pages/innovate-hub.js?v=101.0.1"></script>
-    <script src="assets/js/components/staggered-menu.js?v=101.0.1"></script>
-    <script src="assets/js/components/nuru-assistant.js?v=101.0.1"></script>
-    <script type="module" src="assets/js/components/collab-screen.js?v=101.0.1"></script>
+    <script type="module" src="assets/js/pages/mentor-discovery.js?v=102.0.0"></script>
+    <script src="assets/js/components/file-upload.js?v=102.0.0"></script>
+    <script type="module" src="assets/js/pages/innovate-hub.js?v=102.0.0"></script>
+    <script src="assets/js/components/staggered-menu.js?v=102.0.0"></script>
+    <script src="assets/js/components/nuru-assistant.js?v=102.0.0"></script>
     
     <!-- Fail-Safe Helper -->
     <div id="dashboardFailSafe" style="display:none; position:fixed; bottom:20px; right:20px; z-index:10000; animation: slideUp 0.5s ease-out;">
@@ -1152,6 +1361,13 @@
             document.getElementById(sectionId);
           if (target) {
             target.style.display = "block";
+            
+            // Toggle Hub-specific UI constraints
+            const backBtnContainer = document.getElementById('collabBackButtonContainer');
+            if (backBtnContainer) {
+                backBtnContainer.style.display = (sectionId === 'collab') ? 'none' : 'block';
+            }
+
             if (window.gsap) {
               gsap.from(target, {
                 duration: 0.6,
@@ -1529,46 +1745,6 @@
       });
     </script>
     <!-- Collaboration Hub Modals -->
-    <!-- Feedback Modal -->
-    <div class="modal fade" id="collabFeedbackModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-          <div class="modal-header bg-light border-0">
-            <h5 class="modal-title fw-bold" style="color: #1a5e4f">Mentor Review: <span id="feedbackModalTitle" class="text-secondary"></span></h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body p-4">
-            <p class="text-muted small mb-3">Please provide your professional feedback and guidance for this section.</p>
-            <textarea id="feedbackModalInput" class="form-control" rows="5" placeholder="Your review..."></textarea>
-            <input type="hidden" id="feedbackModalFieldId">
-          </div>
-          <div class="modal-footer border-0 pb-4 pe-4">
-            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary rounded-pill px-4" id="btnSubmitFeedbackModal">Submit Review</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pinned Guidance Modal -->
-    <div class="modal fade" id="collabGuidanceModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-          <div class="modal-header bg-light border-0">
-            <h5 class="modal-title fw-bold" style="color: #1a5e4f">Edit Pinned Guidance</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body p-4">
-            <p class="text-muted small mb-3">Set a persistent message or goal for your innovator to focus on.</p>
-            <textarea id="guidanceModalInput" class="form-control" rows="4" placeholder="Important next steps..."></textarea>
-          </div>
-          <div class="modal-footer border-0 pb-4 pe-4">
-            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary rounded-pill px-4" id="btnSubmitGuidanceModal">Save Guidance</button>
-          </div>
-        </div>
-      </div>
-    </div>
 
   </body>
 </html>
