@@ -7,20 +7,22 @@
 --
 -- Tables use gen_random_uuid() for better compatibility.
 
--- 1. CLEAN SLATE
+-- 1. CLEAN SLATE (ALMOST)
+-- WARNING: THE LINES BELOW ARE COMMENTED FOR SAFETY. 
+-- ONLY UNCOMMENT IF YOU WANT TO WIPE ALL YOUR DATA AND START FROM ZERO.
 SET search_path TO public;
-DROP TABLE IF EXISTS mentorship_sessions CASCADE;
-DROP TABLE IF EXISTS chat_messages CASCADE;
-DROP TABLE IF EXISTS progress_reports CASCADE;
-DROP TABLE IF EXISTS section_feedback CASCADE;
-DROP TABLE IF EXISTS collaboration_comments CASCADE;
-DROP TABLE IF EXISTS milestone_reports CASCADE;
-DROP TABLE IF EXISTS notifications CASCADE;
-DROP TABLE IF EXISTS mentorships CASCADE;
-DROP TABLE IF EXISTS projects CASCADE;
-DROP TABLE IF EXISTS events CASCADE;
-DROP TABLE IF EXISTS user_activity CASCADE;
-DROP TABLE IF EXISTS profiles CASCADE;
+-- DROP TABLE IF EXISTS mentorship_sessions CASCADE;
+-- DROP TABLE IF EXISTS chat_messages CASCADE;
+-- DROP TABLE IF EXISTS progress_reports CASCADE;
+-- DROP TABLE IF EXISTS section_feedback CASCADE;
+-- DROP TABLE IF EXISTS collaboration_comments CASCADE;
+-- DROP TABLE IF EXISTS milestone_reports CASCADE;
+-- DROP TABLE IF EXISTS notifications CASCADE;
+-- DROP TABLE IF EXISTS mentorships CASCADE;
+-- DROP TABLE IF EXISTS projects CASCADE;
+-- DROP TABLE IF EXISTS events CASCADE;
+-- DROP TABLE IF EXISTS user_activity CASCADE;
+-- DROP TABLE IF EXISTS profiles CASCADE;
 
 -- 2. ENABLE EXTENSIONS
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -28,7 +30,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- 3. BUILD TABLES
 -- Profiles
-CREATE TABLE profiles (
+CREATE TABLE IF NOT EXISTS profiles (
     id TEXT PRIMARY KEY, -- Firebase User UID
     email TEXT,
     full_name TEXT,
@@ -39,16 +41,35 @@ CREATE TABLE profiles (
     expertise TEXT,
     bio TEXT,
     avatar_url TEXT,
+    banner_url TEXT,
+    linkedin_url TEXT,
+    website_url TEXT,
     organization TEXT,
     motivation TEXT,
     occupation TEXT,
+    experience TEXT,
+    mentoring_style TEXT,
+    industries_of_interest TEXT,
+    availability TEXT,
+    communication_preference TEXT,
     profile_complete BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Ensure all columns exist for existing tables
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS banner_url TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS linkedin_url TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS website_url TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS experience TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS mentoring_style TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS industries_of_interest TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS availability TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS communication_preference TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS profile_complete BOOLEAN DEFAULT FALSE;
+
 -- Projects
-CREATE TABLE projects (
+CREATE TABLE IF NOT EXISTS projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     innovator_id TEXT NOT NULL,
     title TEXT NOT NULL,
@@ -58,20 +79,28 @@ CREATE TABLE projects (
     expected_impact TEXT,
     target_area TEXT,
     status TEXT DEFAULT 'pending',
+    file_url TEXT,
+    file_name TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT fk_project_innovator FOREIGN KEY (innovator_id) REFERENCES profiles(id) ON DELETE CASCADE
 );
 
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS file_url TEXT;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS file_name TEXT;
+
 -- Mentorships
-CREATE TABLE mentorships (
+CREATE TABLE IF NOT EXISTS mentorships (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     innovator_id TEXT NOT NULL,
     mentor_id TEXT NOT NULL,
     project_id UUID,
+    message TEXT,
     status TEXT DEFAULT 'pending',
     admin_approved BOOLEAN DEFAULT FALSE,
     pinned_guidance TEXT,
+    rejection_reason TEXT,
+    rejection_requested_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT fk_mentorship_innovator FOREIGN KEY (innovator_id) REFERENCES profiles(id) ON DELETE CASCADE,
@@ -79,8 +108,13 @@ CREATE TABLE mentorships (
     CONSTRAINT fk_mentorship_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
 );
 
+ALTER TABLE mentorships ADD COLUMN IF NOT EXISTS message TEXT;
+ALTER TABLE mentorships ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
+ALTER TABLE mentorships ADD COLUMN IF NOT EXISTS rejection_requested_at TIMESTAMPTZ;
+ALTER TABLE mentorships ADD COLUMN IF NOT EXISTS reports_enabled BOOLEAN DEFAULT FALSE;
+
 -- Chat Messages
-CREATE TABLE chat_messages (
+CREATE TABLE IF NOT EXISTS chat_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     mentorship_id UUID NOT NULL REFERENCES mentorships(id) ON DELETE CASCADE,
     sender_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -92,7 +126,7 @@ CREATE TABLE chat_messages (
 );
 
 -- Notifications
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     title TEXT,
@@ -103,7 +137,7 @@ CREATE TABLE notifications (
 );
 
 -- Milestone Reports
-CREATE TABLE milestone_reports (
+CREATE TABLE IF NOT EXISTS milestone_reports (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     milestone_title TEXT,
@@ -113,7 +147,7 @@ CREATE TABLE milestone_reports (
 );
 
 -- Section Feedback
-CREATE TABLE section_feedback (
+CREATE TABLE IF NOT EXISTS section_feedback (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     mentorship_id UUID NOT NULL REFERENCES mentorships(id) ON DELETE CASCADE,
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -125,7 +159,7 @@ CREATE TABLE section_feedback (
 );
 
 -- Progress Reports
-CREATE TABLE progress_reports (
+CREATE TABLE IF NOT EXISTS progress_reports (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     mentorship_id UUID NOT NULL REFERENCES mentorships(id) ON DELETE CASCADE,
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -140,7 +174,7 @@ CREATE TABLE progress_reports (
 );
 
 -- Mentorship Sessions
-CREATE TABLE mentorship_sessions (
+CREATE TABLE IF NOT EXISTS mentorship_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     mentorship_id UUID NOT NULL REFERENCES mentorships(id) ON DELETE CASCADE,
     title TEXT,
@@ -155,7 +189,7 @@ CREATE TABLE mentorship_sessions (
 );
 
 -- Events
-CREATE TABLE events (
+CREATE TABLE IF NOT EXISTS events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     description TEXT,
@@ -168,7 +202,7 @@ CREATE TABLE events (
 );
 
 -- User Activity (for heatmaps)
-CREATE TABLE user_activity (
+CREATE TABLE IF NOT EXISTS user_activity (
     id TEXT PRIMARY KEY, -- uid_YYYY-MM-DD
     user_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     activity_date DATE NOT NULL,
@@ -220,7 +254,39 @@ CREATE POLICY "Repair_Events_All" ON events FOR ALL USING (true) WITH CHECK (tru
 DROP POLICY IF EXISTS "Repair_Activity_All" ON user_activity;
 CREATE POLICY "Repair_Activity_All" ON user_activity FOR ALL USING (true) WITH CHECK (true);
 
--- GRANT PERMISSIONS
-GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated, service_role;
+-- 5. AUTOMATION (Profile Sync)
+-- This function runs every time a new user signs up in Supabase Auth
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, role)
+  VALUES (
+    new.id, 
+    new.email, 
+    COALESCE(new.raw_user_meta_data->>'full_name', 'New Member'), 
+    COALESCE(new.raw_user_meta_data->>'role', 'innovator')
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to call the function on every signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 6. ONE-TIME REPAIR (Sync existing Auth users to public.profiles)
+-- Run this once if you have existing users who are missing profile entries
+INSERT INTO public.profiles (id, email, full_name, role)
+SELECT 
+    id, 
+    email, 
+    COALESCE(raw_user_meta_data->>'full_name', 'Sync Member'), 
+    COALESCE(raw_user_meta_data->>'role', 'innovator')
+FROM auth.users
+ON CONFLICT (id) DO NOTHING;
+
+-- Verification
+SELECT 'SUCCESS: Schema restored and accounts synced.' as status;

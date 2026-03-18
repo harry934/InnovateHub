@@ -657,10 +657,23 @@ class MentorDashboard {
             industries_of_interest: this.onboardingData.industries?.join(', ')
           };
 
-          // Only include availability if we are sure it won't crash (legacy check or let SQL fix handle it)
           if (this.onboardingData.availability) profileData.availability = this.onboardingData.availability;
 
-          await window.SupabaseService.upsertProfile(profileData);
+          try {
+              await window.SupabaseService.upsertProfile(profileData);
+          } catch (err) {
+              if (err.message && err.message.includes('schema cache')) {
+                  console.warn("MentorDashboard: Schema cache mismatch detected. Retrying with minimal profile...");
+                  // Essential fields only to bypass stale cache columns
+                  await window.SupabaseService.upsertProfile({
+                      id: this.currentUser.uid,
+                      status: "active",
+                      profile_complete: true
+                  });
+              } else {
+                  throw err;
+              }
+          }
           console.log("Mentor Dashboard: Supabase Onboarding Synced ✓");
       }
 

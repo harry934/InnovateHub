@@ -1,13 +1,13 @@
 /* Premium Collaboration Hub 3-Column Layout */
 .collab-layout-premium {
     display: grid;
-    grid-template-columns: 300px 1fr 320px;
-    height: calc(100vh - 120px);
-    background: #fff;
-    border-radius: 20px;
+    grid-template-columns: 320px 1fr 350px;
+    height: calc(100vh - 100px);
+    background: #f8fafc;
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.08);
 }
 
 /* 1. Sidebar - Project/Mentee List */
@@ -138,10 +138,11 @@
 
 .pinned-guidance-box {
     margin: 16px 32px;
-    background: #f0fdfa;
+    background: #fff;
     border: 1px solid rgba(26, 94, 79, 0.1);
-    border-radius: 16px;
-    padding: 16px 20px;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(26, 94, 79, 0.04);
 }
 
 .pin-icon-wrapper {
@@ -176,8 +177,37 @@
 
 .message-group {
     display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    max-width: 85%;
+    margin-bottom: 8px;
+}
+
+.message-content-wrapper {
+    display: flex;
     flex-direction: column;
-    max-width: 75%;
+}
+
+.chat-avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.chat-avatar-sm-placeholder {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--brand-teal);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
 }
 
 .message-header {
@@ -200,7 +230,7 @@
 }
 
 .bubble-premium {
-    padding: 14px 20px;
+    padding: 12px 16px;
     border-radius: 18px;
     font-size: 0.95rem;
     line-height: 1.5;
@@ -210,6 +240,7 @@
 
 .message-group.sent {
     align-self: flex-end;
+    justify-content: flex-end;
 }
 
 .message-group.sent .message-header {
@@ -217,8 +248,8 @@
 }
 
 .message-group.sent .bubble-premium {
-    background: #fff7ed;
-    color: #1a5e4f;
+    background: var(--brand-teal);
+    color: #ffffff !important;
     border-bottom-right-radius: 4px;
 }
 
@@ -230,6 +261,34 @@
     background: #f0fdfa;
     color: #1e293b;
     border-bottom-left-radius: 4px;
+}
+
+/* Blueprint Pins */
+.feedback-bubble-premium {
+    background: #fff;
+    border-left: 3px solid var(--brand-orange);
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-top: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    font-size: 0.85rem;
+}
+
+.feedback-meta {
+    font-weight: 800;
+    font-size: 0.65rem;
+    color: var(--brand-orange);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.feedback-text {
+    color: #334155;
+    font-style: italic;
+}
+
+.border-dashed {
+    border-style: dashed !important;
 }
 
 .attachment-card {
@@ -287,33 +346,75 @@
 }
 
 .btn-chat-action {
-    background: transparent;
+    background: #f1f5f9;
     border: none;
-    color: #94a3b8;
-    width: 40px;
-    transition: color 0.2s;
+    color: #64748b;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
 }
 
 .btn-chat-action:hover {
-    color: var(--brand-teal);
+    background: #e2e8f0;
+    color: var(--brand-green);
+}
+
+.chat-input-form-premium {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 16px;
+    padding: 8px 12px;
+    gap: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+    width: 100%;
+}
+
+.chat-input-form-premium input {
+    flex: 1;
+    border: none !important;
+    background: transparent !important;
+    padding: 10px 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+
+.chat-input-form-premium input::placeholder {
+    color: #94a3b8;
 }
 
 .btn-chat-send {
     background: var(--brand-orange);
     border: none;
-    color: #fff;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    color: #ffffff !important;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(243, 168, 19, 0.2);
-    transition: transform 0.2s;
+    box-shadow: 0 4px 12px rgba(243, 168, 19, 0.3);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .btn-chat-send:active {
-    transform: scale(0.95);
+    transform: scale(0.9);
+}
+
+.collab-tools-aside button.nav-link.active {
+    color: var(--brand-teal) !important;
+}
+
+/* Fix for black text on green buttons */
+.btn-primary, .btn-success, .btn-teal {
+    color: #ffffff !important;
 }
 
 /* 3. Tools Panel - Right Aside */
@@ -390,4 +491,50 @@
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* Blueprint Card Styles for Tools Panel */
+.blueprint-card {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    transition: all 0.3s ease;
+}
+
+.blueprint-card:hover {
+    border-color: rgba(26, 94, 79, 0.2);
+    box-shadow: 0 8px 25px rgba(26, 94, 79, 0.05);
+}
+
+.blueprint-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.blueprint-title {
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: var(--brand-teal);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.blueprint-content {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #334155;
+    background: #f8fafc;
+    padding: 12px 16px;
+    border-radius: 12px;
+}
+
+.feedback-pin-container {
+    margin-top: 15px;
 }

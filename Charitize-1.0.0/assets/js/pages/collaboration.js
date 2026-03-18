@@ -2,7 +2,11 @@
 
 // Helper: get current Supabase user (sync-safe via localStorage)
 function getCurrentAuthUser() {
-    // Try Supabase session synchronously via localStorage cache
+    // 1. Try singleton manager first (Best source of truth)
+    if (window.AuthManager && window.AuthManager.currentUser) {
+        return window.AuthManager.currentUser;
+    }
+    // 2. Fallback to localStorage if AuthManager is not yet loaded
     const stored = localStorage.getItem('innovateHubUser');
     if (stored) {
         try { return JSON.parse(stored); } catch(e) {}
@@ -36,12 +40,7 @@ class CollaborationHub {
             const currentAuthUser = getCurrentAuthUser();
             if (!currentAuthUser || !currentAuthUser.uid) {
                 console.warn("CollaborationHub: No user authenticated yet. Waiting for AuthManager...");
-                // Check if AuthManager is initialized
-                if (window.AuthManager && window.AuthManager._initialized) {
-                    console.error("CollaborationHub: AuthManager is initialized but no user found. Redirecting...");
-                    window.location.href = 'login.html';
-                    return;
-                }
+                // Don't redirect here, let dashboard.html handle auth guard
                 setTimeout(() => this.init(mentorshipId), 1000);
                 return;
             }
@@ -51,10 +50,17 @@ class CollaborationHub {
                 return;
             }
 
-            const user = JSON.parse(localStorage.getItem('innovateHubUser') || '{}');
+            const user = currentAuthUser;
             this.isInnovator = user.role === 'innovator';
+            console.log(`CollaborationHub: User identity confirmed as ${this.isInnovator ? 'Innovator' : 'Mentor'}`);
 
             // Set role-based labels
+            const roleBadge = document.getElementById('collabRoleBadge');
+            if (roleBadge) {
+                roleBadge.textContent = this.isInnovator ? 'Innovator View' : 'Mentor View';
+                roleBadge.className = 'badge-role-view ' + (this.isInnovator ? 'bg-innovator' : 'bg-mentor');
+            }
+
             const sidebarTitle = document.getElementById('collabSidebarTitle');
             if (sidebarTitle) sidebarTitle.textContent = this.isInnovator ? 'My Projects' : 'My Mentees';
             
@@ -146,17 +152,20 @@ class CollaborationHub {
 
                     return {
                         id: m.id,
-                        ...m,
-                        projectId: m.project_id,
+                        project_id: m.project_id,
                         project: project || { title: 'General Mentorship' },
                         partner: partner,
-                        projectTitle: project?.title || m.project_title || 'General Mentorship'
+                        projectTitle: project?.title || m.project_title || 'General Mentorship',
+                        status: m.status,
+                        pinned_guidance: m.pinned_guidance,
+                        created_at: m.created_at
                     };
                 }));
             }
 
             console.log(`CollaborationHub: Found ${this.allMentorships.length} total entries.`, this.allMentorships);
             this.renderSidebar();
+            this.updateMentorSelector();
         } catch (err) {
             console.error("CollaborationHub: Error loading data", err);
         }
@@ -179,6 +188,11 @@ class CollaborationHub {
             // Status colors
             const statusColor = m.status === 'accepted' ? 'bg-success' : 'bg-warning text-dark';
 
+            // Avatar logic
+            const avatarHtml = partner.avatar_url 
+                ? `<img src="${partner.avatar_url}" class="avatar-circle-sm" alt="${partner.full_name}">`
+                : `<div class="avatar-circle-sm bg-teal text-white">${(partner.full_name || 'U').charAt(0)}</div>`;
+
             return `
                 <div class="project-card-new ${isActive ? 'active' : ''}" onclick="window.CollaborationHub.switchSession('${m.id}')">
                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -193,9 +207,7 @@ class CollaborationHub {
                             <i class="far fa-clock me-1"></i> ${m.created_at ? this.getRelativeTime(m.created_at) : 'Active now'}
                         </span>
                         <div class="partner-avatar-circles">
-                            <div class="avatar-circle-sm bg-teal text-white">
-                                ${(partner.full_name || 'U').charAt(0)}
-                            </div>
+                            ${avatarHtml}
                         </div>
                     </div>
                 </div>
@@ -215,6 +227,34 @@ class CollaborationHub {
                     card.style.display = match ? 'block' : 'none';
                 });
             };
+        }
+        
+        this.updateMentorSelector();
+    }
+
+    updateMentorSelector() {
+        const selectorContainer = document.getElementById('collabMentorSelectorContainer');
+        const selector = document.getElementById('collabMentorSelector');
+        
+        if (!selector || !selectorContainer) return;
+
+        // Only show selector for innovators who have multiple mentors
+        if (this.isInnovator && this.allMentorships.length > 0) {
+            selectorContainer.style.display = 'block';
+            
+            // Clear and populate
+            selector.innerHTML = '<option value="">Switch Mentorship...</option>';
+            this.allMentorships.forEach(m => {
+                const partnerName = m.partner?.full_name || 'Assigned Mentor';
+                const isSelected = m.id === this.activeMentorshipId;
+                const option = document.createElement('option');
+                option.value = m.id;
+                option.textContent = `${m.projectTitle} (with ${partnerName})`;
+                if (isSelected) option.selected = true;
+                selector.appendChild(option);
+            });
+        } else {
+            selectorContainer.style.display = 'none';
         }
     }
 
@@ -248,6 +288,10 @@ class CollaborationHub {
             else card.classList.remove('active');
         });
 
+        // Update selector UI
+        const selector = document.getElementById('collabMentorSelector');
+        if (selector) selector.value = mentorshipId;
+
         if (mentorshipId === 'demo_session') {
             this.renderEmptyState();
             return;
@@ -259,6 +303,16 @@ class CollaborationHub {
             this._partnerData = mentorship.partner;
             // Ensure projectData is populated for the blueprint view
             this.projectData = mentorship.project || mentorship.projects || { title: mentorship.projectTitle };
+            
+            // Refresh full mentorship data to get latest reports_enabled status
+            try {
+                const refreshed = await window.SupabaseService.getMentorships(mentorshipId);
+                if (refreshed && refreshed.length > 0) {
+                    this.mentorshipData.reports_enabled = refreshed[0].reports_enabled;
+                }
+            } catch (e) {
+                console.warn("Failed to refresh mentorship reports_enabled status", e);
+            }
         }
 
         this.updateUI();
@@ -350,6 +404,31 @@ class CollaborationHub {
 
         if (otherContainer) otherContainer.innerHTML = ''; // Clear other tab
         
+        // Add Mentor Control Toggle for reports
+        if (!this.isInnovator && this.activeMentorshipId !== 'demo_session') {
+            const controlsHtml = `
+                <div class="insight-card-premium mb-3 bg-light border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="fw-bold mb-0" style="font-size: 0.85rem;">Allow Reports</h6>
+                            <p class="extra-small text-muted mb-0">Let innovator submit progress updates</p>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="allowReportsToggle" 
+                                ${this.mentorshipData.reports_enabled ? 'checked' : ''} 
+                                onchange="window.CollaborationHub.toggleReports(this.checked)">
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Prepend to the panel
+            const panelHeader = document.querySelector('.tools-panel-header');
+            if (panelHeader && !document.getElementById('allowReportsToggle')) {
+                // Instead of prepending to panelHeader which might be shared, 
+                // we'll add it above the tabs in the sidebar tools view if possible
+            }
+        }
+
         if (this._activeTab === 'feedback') {
             this.renderFeedbackTab(container);
         } else {
@@ -410,19 +489,31 @@ class CollaborationHub {
     async renderReportsTab(container) {
         let html = '';
         
-        // Form for innovators
+        // Form for innovators - gated by reports_enabled
         if (this.isInnovator && this.activeMentorshipId !== 'demo_session') {
-            html += `
-                <div class="insight-card-premium mb-4">
-                    <h6 class="fw-bold mb-2"><i class="fas fa-file-upload me-2 text-orange"></i>Submit Progress</h6>
-                    <p class="text-muted extra-small mb-3">Keep your mentor updated on your latest milestones.</p>
-                    <input type="text" id="reportTitleInput" class="form-control mb-2" placeholder="Report Title (e.g., Week 2 Sync)">
-                    <textarea id="reportSummaryInput" class="form-control mb-3" rows="3" placeholder="What have you achieved?"></textarea>
-                    <button class="btn btn-orange w-100 text-white rounded-pill" onclick="window.CollaborationHub.submitReport()">
-                        Submit Report
-                    </button>
-                </div>
-            `;
+            if (this.mentorshipData.reports_enabled) {
+                html += `
+                    <div class="insight-card-premium mb-4">
+                        <h6 class="fw-bold mb-2"><i class="fas fa-file-upload me-2 text-orange"></i>Submit Progress</h6>
+                        <p class="text-muted extra-small mb-3">Keep your mentor updated on your latest milestones.</p>
+                        <input type="text" id="reportTitleInput" class="form-control mb-2" placeholder="Report Title (e.g., Week 2 Sync)">
+                        <textarea id="reportSummaryInput" class="form-control mb-3" rows="3" placeholder="What have you achieved?"></textarea>
+                        <button class="btn btn-orange w-100 text-white rounded-pill" onclick="window.CollaborationHub.submitReport()">
+                            Submit Report
+                        </button>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="insight-card-premium mb-4 bg-light text-center border-dashed">
+                        <div class="py-3">
+                            <i class="fas fa-lock text-muted mb-2"></i>
+                            <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">Reports Locked</h6>
+                            <p class="extra-small text-muted mb-0">Your mentor hasn't enabled progress reporting yet.</p>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         // List of reports
@@ -508,7 +599,7 @@ class CollaborationHub {
 
         try {
             const messages = await window.SupabaseService.getMessages(this.activeMentorshipId);
-            this.renderMessages(messages);
+            this.renderMessages(messages || []);
         } catch (err) { console.warn("Supabase Chat Load Error", err); }
 
         if (this.unsubscribeChat) {
@@ -556,21 +647,33 @@ class CollaborationHub {
 
     appendMessage(msg) {
         const chatBox = document.getElementById('collabChatBox');
+        if (!chatBox) return;
         const uid = getCurrentAuthUser()?.uid;
         const isMe = msg.sender_id === uid;
-        const senderName = isMe ? 'You' : (this._partnerData?.full_name || 'Partner');
+        const partner = this._partnerData || { full_name: 'Partner' };
+        
+        const senderName = isMe ? 'You' : partner.full_name;
+        const avatarUrl = isMe ? (JSON.parse(localStorage.getItem('innovateHubUser') || '{}').avatar_url) : partner.avatar_url;
         
         const msgGroup = document.createElement('div');
         msgGroup.className = `message-group ${isMe ? 'sent' : 'received'}`;
         
+        const avatarHtml = avatarUrl 
+            ? `<img src="${avatarUrl}" class="chat-avatar-sm" alt="${senderName}">`
+            : `<div class="chat-avatar-sm-placeholder">${(senderName || 'U').charAt(0)}</div>`;
+
         msgGroup.innerHTML = `
-            <div class="message-header">
-                <span class="sender-name">${senderName}</span>
-                <span class="message-time">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            ${!isMe ? avatarHtml : ''}
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender-name">${senderName}</span>
+                    <span class="message-time">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+                <div class="bubble-premium">
+                    ${msg.text || msg.message_text || msg.content || ''}
+                </div>
             </div>
-            <div class="bubble-premium">
-                ${msg.text || msg.message_text || ''}
-            </div>
+            ${isMe ? avatarHtml : ''}
         `;
         
         chatBox.appendChild(msgGroup);
@@ -581,50 +684,55 @@ class CollaborationHub {
         const container = document.getElementById('collabProjectDetails');
         if (!container) return;
 
+        // Strict mapping for blueprint sections
         const sections = [
-            { id: 'problemStatement', title: 'Problem Blueprint', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3a2.5 2.5 0 0 1 2.5-2.5H20v22H6.5a2.5 2.5 0 0 1-2.5-2.5z"/></svg>' },
-            { id: 'proposedSolution', title: 'Solution Vision', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
+            { id: 'problem_statement', title: 'Problem Statement', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3a2.5 2.5 0 0 1 2.5-2.5H20v22H6.5a2.5 2.5 0 0 1-2.5-2.5z"/></svg>' },
             { id: 'objectives', title: 'Strategic Objectives', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>' },
-            { id: 'expectedImpact', title: 'Expected Impact', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' }
+            { id: 'proposed_solution', title: 'Proposed Solution', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
+            { id: 'expected_impact', title: 'Expected Impact', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' }
         ];
 
         let html = '';
-        for (const s of sections) {
-            // Fetch feedback for this section
-            let feedbackHtml = '';
-            if (this.activeMentorshipId) {
-                try {
-                    const feedbacks = await window.SupabaseService.getSectionFeedback(this.activeMentorshipId, s.id);
-                    feedbackHtml = feedbacks.map(f => `
-                        <div class="feedback-bubble-premium">
-                            <div class="feedback-meta">MENTOR FEEDBACK • ${new Date(f.created_at).toLocaleDateString()}</div>
-                            <div>${f.comment}</div>
-                        </div>
-                    `).join('');
-                } catch (err) { console.warn("Feedback load failed", err); }
-            }
+        if (!this.projectData || (!this.projectData.problem_statement && !this.projectData.title)) {
+             html = '<div class="text-center p-5 text-muted">No project blueprints found for this mentorship.</div>';
+        } else {
+            for (const s of sections) {
+                // Fetch feedback for this section
+                let feedbackHtml = '';
+                if (this.activeMentorshipId) {
+                    try {
+                        const feedbacks = await window.SupabaseService.getSectionFeedback(this.activeMentorshipId, s.id);
+                        feedbackHtml = feedbacks.map(f => `
+                            <div class="feedback-bubble-premium">
+                                <div class="feedback-meta">MENTOR FEEDBACK • ${new Date(f.created_at).toLocaleDateString()}</div>
+                                <div class="feedback-text">${f.comment}</div>
+                            </div>
+                        `).join('');
+                    } catch (err) { console.warn("Feedback load failed", err); }
+                }
 
-            html += `
-                <div class="blueprint-card" id="section-${s.id}">
-                    <div class="blueprint-header">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="text-success">${s.icon}</span>
-                            <span class="blueprint-title">${s.title}</span>
+                html += `
+                    <div class="blueprint-card" id="section-${s.id}">
+                        <div class="blueprint-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-success">${s.icon}</span>
+                                <span class="blueprint-title">${s.title}</span>
+                            </div>
+                            ${!this.isInnovator ? `
+                                <button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="window.CollaborationHub.promptFeedback('${s.id}', '${s.title}')">
+                                    + Add Review
+                                </button>
+                            ` : ''}
                         </div>
-                        ${!this.isInnovator ? `
-                            <button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="window.CollaborationHub.promptFeedback('${s.id}', '${s.title}')">
-                                + Add Review
-                            </button>
-                        ` : ''}
+                        <div class="blueprint-content">
+                            ${this.projectData[s.id] || (this.projectData[s.id.replace('_', '')]) || 'This section is currently empty.'}
+                        </div>
+                        <div class="feedback-pin-container" id="feedback-list-${s.id}">
+                            ${feedbackHtml}
+                        </div>
                     </div>
-                    <div class="blueprint-content">
-                        ${this.projectData[s.id] || 'This section is currently empty.'}
-                    </div>
-                    <div class="feedback-pin-container" id="feedback-list-${s.id}">
-                        ${feedbackHtml}
-                    </div>
-                </div>
-            `;
+                `;
+            }
         }
         container.innerHTML = html;
     }
@@ -651,6 +759,21 @@ class CollaborationHub {
         }
     }
 
+    async toggleReports(enabled) {
+        if (this.isInnovator) return;
+        try {
+            await window.SupabaseService.updateMentorshipReportsStatus(this.activeMentorshipId, enabled);
+            this.mentorshipData.reports_enabled = enabled;
+            // No need to full refresh, just update internal state
+            console.log(`CollaborationHub: Reports ${enabled ? 'enabled' : 'disabled'} for session ${this.activeMentorshipId}`);
+        } catch (err) {
+            alert("Failed to update report status.");
+            // Revert checkbox
+            const toggle = document.getElementById('allowReportsToggle');
+            if (toggle) toggle.checked = !enabled;
+        }
+    }
+
     async loadMilestones() {
         // Milestone logic can be added here if needed for the hub view
     }
@@ -672,6 +795,22 @@ class CollaborationHub {
 
     updateMeetingUI() {
         // Meeting UI placeholder
+        // Feedback listener
+        if (this.projectData && this.projectData.id) {
+            this.unsubscribeFeedback = window.SupabaseService.subscribeToProjectFeedback(this.projectData.id, payload => {
+                console.log("Real-time Feedback:", payload);
+                if (this.activeTab === 'feedback') this.renderFeedbackTab();
+                else this.renderProjectDetails();
+            });
+        }
+
+        // Reports listener
+        if (this.activeMentorshipId) {
+            this.unsubscribeReports = window.SupabaseService.subscribeToProgressReports(this.activeMentorshipId, payload => {
+                console.log("Real-time Report:", payload);
+                if (this.activeTab === 'reports') this.renderReportsTab();
+            });
+        }
     }
 }
 

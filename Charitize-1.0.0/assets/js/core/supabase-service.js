@@ -208,6 +208,23 @@ const SupabaseService = {
         }
     },
 
+    async updateMentorshipReportsStatus(mentorshipId, enabled) {
+        try {
+            const { data, error } = await window.supabase
+                .from('mentorships')
+                .update({ 
+                    reports_enabled: enabled,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', mentorshipId)
+                .select();
+            if (error) throw error;
+            return data[0];
+        } catch (error) {
+            return this.handleSupabaseError(error, 'updateMentorshipReportsStatus');
+        }
+    },
+
     async getMentorshipByProject(projectId, userId) {
         try {
             const { data, error } = await window.supabase
@@ -331,6 +348,20 @@ const SupabaseService = {
         }
     },
 
+    async updatePinnedGuidance(mentorshipId, guidance) {
+        try {
+            const { data, error } = await window.supabase
+                .from('mentorships')
+                .update({ pinned_guidance: guidance, updated_at: new Date().toISOString() })
+                .eq('id', mentorshipId)
+                .select();
+            if (error) throw error;
+            return data[0];
+        } catch (error) {
+            return this.handleSupabaseError(error, 'updatePinnedGuidance');
+        }
+    },
+
     // â”€â”€â”€ Activity & Analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async logActivity(userId, type = 'login') {
         const now = new Date();
@@ -386,8 +417,8 @@ const SupabaseService = {
                 .from('chat_messages')
                 .insert([{
                     mentorship_id: messageData.mentorship_id,
-                    author_id: messageData.author_id || messageData.sender_id,
-                    content: messageData.content || messageData.text || messageData.message_text
+                    sender_id: messageData.sender_id,
+                    text: messageData.text || messageData.message_text
                 }])
                 .select();
             if (error) throw error;
@@ -441,7 +472,7 @@ const SupabaseService = {
         try {
             const { data, error } = await window.supabase
                 .from('notifications')
-                .update({ read: true })
+                .update({ is_read: true })
                 .eq('id', notifId)
                 .select();
             if (error) throw error;
@@ -449,6 +480,27 @@ const SupabaseService = {
         } catch (error) {
             console.error("SupabaseService: markNotificationAsRead failed", error);
             return null;
+        }
+    },
+
+    async createSession(sessionData) {
+        try {
+            const { data, error } = await window.supabase
+                .from('mentorship_sessions')
+                .insert([{
+                    mentorship_id: sessionData.mentorship_id,
+                    title: sessionData.title || 'Mentorship Session',
+                    description: sessionData.description || '',
+                    session_date: sessionData.session_date || new Date().toISOString().split('T')[0],
+                    session_time: sessionData.session_time || '10:00:00',
+                    meeting_link: sessionData.meeting_link || sessionData.zoom_link || '',
+                    status: 'scheduled'
+                }])
+                .select();
+            if (error) throw error;
+            return data[0];
+        } catch (error) {
+            return this.handleSupabaseError(error, 'createSession');
         }
     },
 
@@ -538,6 +590,20 @@ const SupabaseService = {
                 schema: 'public', 
                 table: 'section_feedback', 
                 filter: `project_id=eq.${projectId}` 
+            }, payload => {
+                callback(payload);
+            })
+            .subscribe();
+    },
+
+    subscribeToProgressReports(mentorshipId, callback) {
+        return window.supabase
+            .channel(`public:progress_reports:mentorship_id=eq.${mentorshipId}`)
+            .on('postgres_changes', { 
+                event: '*', 
+                schema: 'public', 
+                table: 'progress_reports', 
+                filter: `mentorship_id=eq.${mentorshipId}` 
             }, payload => {
                 callback(payload);
             })

@@ -2,6 +2,7 @@
 
 // Helper: get current Supabase user (sync-safe via localStorage)
 function getCurrentAuthUser() {
+    if (window.AuthManager) return window.AuthManager.getCurrentUser();
     const stored = localStorage.getItem('innovateHubUser');
     if (stored) {
         try { return JSON.parse(stored); } catch(e) {}
@@ -248,6 +249,12 @@ async function openMentorProfileModal(mentorId) {
                         bio: sbProfile.bio,
                         institution: sbProfile.institution,
                         photoURL: sbProfile.avatar_url,
+                        bannerURL: sbProfile.banner_url,
+                        linkedinURL: sbProfile.linkedin_url,
+                        websiteURL: sbProfile.website_url,
+                        experience: sbProfile.experience,
+                        mentoringStyle: sbProfile.mentoring_style,
+                        industriesOfInterest: sbProfile.industries_of_interest,
                         availability: sbProfile.availability,
                         communicationPreference: sbProfile.communication_preference,
                         categories: sbProfile.expertise ? sbProfile.expertise.split(',').map(s => s.trim()) : []
@@ -294,52 +301,72 @@ async function openMentorProfileModal(mentorId) {
         
         overlay.innerHTML = `
             <div class="mentor-profile-modal shadow-2xl" 
-                 style="width:95%; max-width:800px; max-height:90vh; background:white; border-radius:32px; overflow:hidden; display:flex; flex-direction:column; border: 1px solid rgba(0,0,0,0.05);">
+                 style="width:95%; max-width:850px; max-height:92vh; background:white; border-radius:32px; overflow:hidden; display:flex; flex-direction:column; border: 1px solid rgba(0,0,0,0.05);">
                 
                 <!-- Professional Banner -->
-                <div style="height:160px; background:linear-gradient(135deg, #1a5e4f 0%, #0a2d26 100%); position:relative;">
-                    <button class="mpm-close" style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.2); border:none; color:white; width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="document.getElementById('mentorProfileModalOverlay').remove()">✕</button>
+                <div style="height:200px; background:${m.bannerURL ? `url('${m.bannerURL}') center/cover no-repeat` : 'linear-gradient(135deg, #1a5e4f 0%, #0a2d26 100%)'}; position:relative;">
+                    <button class="mpm-close" style="position:absolute; top:20px; right:20px; background:rgba(0,0,0,0.3); border:none; color:white; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(4px);" onclick="document.getElementById('mentorProfileModalOverlay').remove()">✕</button>
                     
-                    <div style="position:absolute; bottom:-60px; left:40px;">
+                    <div style="position:absolute; bottom:-70px; left:40px;">
                         ${m.photoURL ? 
-                            `<img src="${m.photoURL}" style="width:130px; height:130px; border-radius:32px; border:6px solid white; object-fit:cover; box-shadow:0 12px 30px rgba(0,0,0,0.15);">` :
-                            `<div style="width:130px; height:130px; border-radius:32px; border:6px solid white; background:var(--brand-yellow); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:3rem; box-shadow:0 12px 30px rgba(0,0,0,0.15);">${getInitials(m.fullName)}</div>`
+                            `<img src="${m.photoURL}" style="width:150px; height:150px; border-radius:32px; border:6px solid white; object-fit:cover; box-shadow:0 12px 30px rgba(0,0,0,0.15);">` :
+                            `<div style="width:150px; height:150px; border-radius:32px; border:6px solid white; background:var(--brand-yellow); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:3.5rem; box-shadow:0 12px 30px rgba(0,0,0,0.15);">${getInitials(m.fullName)}</div>`
                         }
                     </div>
                 </div>
 
-                <div style="padding:80px 40px 40px; overflow-y:auto; flex:1;">
+                <div style="padding:10px 40px 10px; overflow-y:auto; flex:1; margin-top: 75px;">
                     <div class="row g-4">
-                        <div class="col-lg-7">
+                        <div class="col-lg-8">
                             <div class="mb-4">
-                                <h2 style="font-family:var(--font-head); font-weight:800; color:#1e293b; margin-bottom:4px; font-size:2rem;">${m.fullName || 'Mentor'}</h2>
-                                <p style="font-size:1.1rem; color:var(--brand-green); font-weight:700; margin-bottom:12px;">${m.expertise || 'Professional Expert'}</p>
-                                <div style="color:#64748b; font-size:0.9rem; display:flex; flex-wrap:wrap; gap:16px;">
-                                    <span><i class="fa fa-university me-2"></i>${m.institution || 'USIU-Africa'}</span>
-                                    <span><i class="fa fa-map-marker-alt me-2"></i>Nairobi, Kenya</span>
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h2 style="font-family:var(--font-head); font-weight:800; color:#1e293b; margin-bottom:4px; font-size:2.2rem;">${m.fullName || 'Mentor'}</h2>
+                                        <p style="font-size:1.1rem; color:var(--brand-green); font-weight:700; margin-bottom:8px;">${m.expertise || 'Professional Expert'}</p>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        ${m.linkedinURL ? `<a href="${m.linkedinURL}" target="_blank" class="btn btn-outline-primary rounded-circle" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;"><i class="fab fa-linkedin-in"></i></a>` : ''}
+                                        ${m.websiteURL ? `<a href="${m.websiteURL}" target="_blank" class="btn btn-outline-secondary rounded-circle" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;"><i class="fa fa-globe"></i></a>` : ''}
+                                    </div>
+                                </div>
+                                <div style="color:#64748b; font-size:0.95rem; display:flex; flex-wrap:wrap; gap:16px;">
+                                    <span><i class="fa fa-university me-1"></i>${m.institution || 'USIU-Africa'}</span>
+                                    <span><i class="fa fa-map-marker-alt me-1"></i>Nairobi, Kenya</span>
                                 </div>
                             </div>
 
+                            <hr style="opacity:0.1; margin: 24px 0;">
+
                             <div style="margin-bottom:32px;">
-                                <h6 style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:1px; color:#94a3b8; margin-bottom:12px;">Professional Biography</h6>
-                                <p style="line-height:1.7; color:#475569; font-size:0.95rem;">${m.bio || 'Experienced professional dedicated to fostering innovation and supporting next-generation talent in the African tech ecosystem.'}</p>
+                                <h6 style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:1px; color:#94a3b8; margin-bottom:12px;">About Me</h6>
+                                <p style="line-height:1.7; color:#334155; font-size:0.95rem;">${m.bio || 'Experienced professional dedicated to fostering innovation and supporting next-generation talent.'}</p>
                             </div>
 
-                            <div>
-                                <h6 style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:1px; color:#94a3b8; margin-bottom:12px;">Focus Areas</h6>
+                            <div style="margin-bottom:32px;">
+                                <h6 style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:1px; color:#94a3b8; margin-bottom:12px;">Professional Experience</h6>
+                                <p style="line-height:1.6; color:#334155; font-size:0.95rem; white-space: pre-line;">${m.experience || 'Professional background details not provided.'}</p>
+                            </div>
+
+                            <div style="margin-bottom:32px;">
+                                <h6 style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:1px; color:#94a3b8; margin-bottom:12px;">Mentoring Style</h6>
+                                <p style="line-height:1.6; color:#334155; font-size:0.95rem;">${m.mentoringStyle || 'Collaborative and outcome-driven approach.'}</p>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:1px; color:#94a3b8; margin-bottom:12px;">Industries of Interest</h6>
                                 <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                                    ${(m.categories || []).map(c => `
+                                    ${(m.industriesOfInterest ? m.industriesOfInterest.split(',') : []).map(ind => `
                                         <span style="background:#f1f5f9; color:#475569; padding:6px 14px; border-radius:10px; font-weight:700; font-size:0.75rem; border:1px solid rgba(0,0,0,0.03);">
-                                            ${c.toUpperCase()}
+                                            ${ind.trim().toUpperCase()}
                                         </span>
-                                    `).join('')}
+                                    `).join('') || '<span class="text-muted small">Not specified</span>'}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-lg-5">
-                            <div style="background:#f8fafc; border-radius:24px; padding:28px; border:1px solid rgba(0,0,0,0.03);">
-                                <h6 style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:1px; color:#94a3b8; margin-bottom:24px;">Mentorship Stats</h6>
+                        <div class="col-lg-4">
+                            <div style="background:#f8fafc; border-radius:24px; padding:28px; border:1px solid rgba(0,0,0,0.03); position:sticky; top:0;">
+                                <h6 style="font-weight:700; text-transform:uppercase; font-size:0.75rem; letter-spacing:1px; color:#94a3b8; margin-bottom:24px;">Mentorship Profile</h6>
                                 
                                 <div class="d-flex align-items-center gap-3 mb-4">
                                     <div style="width:50px; height:50px; background:white; border-radius:14px; display:flex; align-items:center; justify-content:center; color:var(--brand-green); box-shadow:0 4px 10px rgba(0,0,0,0.03); font-size:1.2rem; font-weight:800;">${menteeCount}</div>
@@ -353,35 +380,36 @@ async function openMentorProfileModal(mentorId) {
                                     <div style="width:50px; height:50px; background:white; border-radius:14px; display:flex; align-items:center; justify-content:center; color:#f3a813; box-shadow:0 4px 10px rgba(0,0,0,0.03);"><i class="fa fa-calendar-check"></i></div>
                                     <div>
                                         <div style="font-size:0.75rem; color:#64748b; font-weight:600;">Availability</div>
-                                        <div style="font-size:0.85rem; font-weight:700; color:#1e293b;">${m.availability || 'Weekends, 10am - 4pm'}</div>
+                                        <div style="font-size:0.85rem; font-weight:700; color:#1e293b;">${m.availability || 'Direct inquiry'}</div>
                                     </div>
                                 </div>
 
-                                <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center gap-3 mb-4">
                                     <div style="width:50px; height:50px; background:white; border-radius:14px; display:flex; align-items:center; justify-content:center; color:#3b82f6; box-shadow:0 4px 10px rgba(0,0,0,0.03);"><i class="fa fa-comments"></i></div>
                                     <div>
-                                        <div style="font-size:0.75rem; color:#64748b; font-weight:600;">Preferred Communication</div>
-                                        <div style="font-size:0.85rem; font-weight:700; color:#1e293b;">${m.communicationPreference || 'Zoom & Slack'}</div>
+                                        <div style="font-size:0.75rem; color:#64748b; font-weight:600;">Preference</div>
+                                        <div style="font-size:0.85rem; font-weight:700; color:#1e293b;">${m.communicationPreference || 'Chat / Email'}</div>
                                     </div>
+                                </div>
+
+                                <div style="margin-top:40px;">
+                                    ${existingReq
+                                        ? `<button disabled style="width:100%; padding:18px; border-radius:18px; border:none; color:white; font-weight:800; font-size:0.9rem; background:${existingReq.status === 'accepted' ? 'var(--brand-green)' : '#f3a813'}; opacity:0.8; display:flex; align-items:center; justify-content:center; gap:10px;">
+                                             ${existingReq.status === 'accepted' ? '<i class="fa fa-check-circle"></i> Connected' : '<i class="fa fa-clock"></i> Pending'}
+                                           </button>`
+                                        : isFull 
+                                            ? `<button disabled style="width:100%; padding:18px; border-radius:18px; border:none; background:#cbd5e1; color:#64748b; font-weight:800; font-size:1rem; display:flex; align-items:center; justify-content:center; gap:10px;">
+                                                <i class="fa fa-ban"></i> Capacity Full
+                                               </button>`
+                                            : `<button onclick="MentorDiscovery.openRequestFlow('${mentorId}')" 
+                                                       style="width:100%; padding:18px; border-radius:18px; border:none; background:linear-gradient(135deg, var(--brand-green) 0%, #0a2d26 100%); color:white; font-weight:800; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 8px 16px rgba(26,94,79,0.2); transition:all 0.3s ease;">
+                                                <i class="fa fa-paper-plane"></i> Connect Now
+                                               </button>`
+                                    }
                                 </div>
                             </div>
                         </div>
-                                 <div style="margin-top:40px;">
-                        ${existingReq
-                            ? `<button disabled style="width:100%; padding:20px; border-radius:18px; border:none; color:white; font-weight:800; font-size:1rem; background:${existingReq.status === 'accepted' ? 'var(--brand-green)' : '#f3a813'}; opacity:0.8; display:flex; align-items:center; justify-content:center; gap:12px;">
-                                 ${existingReq.status === 'accepted' ? '<i class="fa fa-check-circle"></i> Connected Mentor' : '<i class="fa fa-clock"></i> Request Pending Approval'}
-                               </button>`
-                            : isFull 
-                                ? `<button disabled style="width:100%; padding:20px; border-radius:18px; border:none; background:#cbd5e1; color:#64748b; font-weight:800; font-size:1.1rem; display:flex; align-items:center; justify-content:center; gap:12px;">
-                                    <i class="fa fa-ban"></i> Mentor at Capacity (Max 2 Mentees)
-                                   </button>`
-                                : `<button onclick="MentorDiscovery.openRequestFlow('${mentorId}')" 
-                                           style="width:100%; padding:20px; border-radius:18px; border:none; background:linear-gradient(135deg, var(--brand-green) 0%, #0a2d26 100%); color:white; font-weight:800; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:12px; box-shadow:0 12px 24px rgba(26,94,79,0.3); transition:all 0.3s ease;">
-                                    <i class="fa fa-paper-plane"></i> Apply for Mentorship Session
-                                   </button>`
-                        }
                     </div>
-         </div>
                 </div>
             </div>`;
 
@@ -845,12 +873,11 @@ const MentorDiscovery = {
     async init() {
         renderCategoryFilters();
         
-        // Fix: Wait for auth if not ready
-        if (!auth.currentUser) {
-            console.log("MentorDiscovery: Waiting for auth...");
-            auth.onAuthStateChanged((user) => {
-                if (user) renderMentorDiscovery();
-            });
+        const user = getCurrentAuthUser();
+        if (!user) {
+            console.log("MentorDiscovery: No authenticated user found.");
+            // We can still render, but connection actions will require login
+            renderMentorDiscovery();
         } else {
             renderMentorDiscovery();
         }
