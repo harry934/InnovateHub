@@ -12,9 +12,31 @@ body {
 }
 
 /* Main Container */
+#collabSection.active {
+    display: flex !important;
+    flex-direction: column;
+    height: auto;
+    min-height: 80vh;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    margin: -10px 16px 30px 16px; /* Pulls it up closer to the navbar, gives side breathing room */
+    padding: 0 !important; /* Overrides .dashboard-section 32px padding */
+    overflow: hidden; /* Ensures child elements respect border-radius */
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.collab-top-bar {
+    flex-shrink: 0;
+    padding: 12px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
 .collaboration-hub {
     display: flex;
-    height: 100vh;
+    flex: 1;
+    overflow: hidden;
     background: #f8fafc;
 }
 
@@ -75,13 +97,21 @@ body {
     overflow-y: auto;
 }
 
-/* Brand Backgrounds */
+/* Brand Backgrounds & Typography Enforcement */
 .gradient-teal {
     background: linear-gradient(to right, #1a5e4f, #14463a);
 }
 
 .gradient-orange {
     background: linear-gradient(to right, #f59e0b, #d97706);
+}
+
+.gradient-teal h1, .gradient-teal h2, .gradient-teal h3, .gradient-teal h4, .gradient-teal h5, .gradient-teal h6, .gradient-teal p, .gradient-teal span, .gradient-teal i {
+    color: #ffffff !important;
+}
+
+.gradient-orange h1, .gradient-orange h2, .gradient-orange h3, .gradient-orange h4, .gradient-orange h5, .gradient-orange h6, .gradient-orange p, .gradient-orange span, .gradient-orange i {
+    color: #ffffff !important;
 }
 
 .gradient-teal-bg {
@@ -227,9 +257,32 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 1rem;
+    padding: 1rem 1.5rem;
     color: white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    position: relative;
+    z-index: 10;
+}
+
+.btn-hub-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-hub-back:hover {
+    background: var(--brand-orange, #f3a813);
+    border-color: var(--brand-orange, #f3a813);
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(243, 168, 19, 0.4);
 }
 
 .chat-header-info {
@@ -366,8 +419,11 @@ body {
 .chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 1rem;
-    background: white;
+    padding: 2rem;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .message-container {
@@ -433,21 +489,66 @@ body {
 }
 
 .message-bubble {
-    padding: 0.75rem 1rem;
-    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 1.25rem;
     border: 1px solid;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
 }
 
 .mentor-message .message-bubble {
-    background: #f3f4f6;
+    background: white;
     border-color: #e5e7eb;
     color: #1f2937;
+    border-bottom-left-radius: 0.25rem;
 }
 
 .innovator-message .message-bubble {
-    background: #1f2937;
-    border-color: #374151;
+    background: var(--brand-green, #1a5e4f);
+    border-color: var(--brand-green, #1a5e4f);
     color: white;
+    border-bottom-right-radius: 0.25rem;
+    box-shadow: 0 4px 12px rgba(26, 94, 79, 0.2);
+}
+
+.mentor-message .message-bubble {
+    background: #ffffff;
+    border-color: #e5e7eb;
+    color: #1f2937;
+    border-bottom-left-radius: 0.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Project Overview Styling */
+.project-details-grid {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #edf2f7;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.detail-section {
+    padding: 1rem;
+    border-radius: 12px;
+    background: #f8fafc;
+    border-left: 4px solid #cbd5e1;
+}
+
+.detail-section h6 {
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+    .project-details-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .message-text {
@@ -1122,4 +1223,119 @@ textarea.form-control {
 .chat-messages::-webkit-scrollbar-thumb:hover,
 .tab-content::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
+}
+
+/* ═══════════════════════════════════════════════════
+   WhatsApp-Style Chat Bubble System
+   ═══════════════════════════════════════════════════ */
+
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1.25rem;
+    gap: 0.4rem;
+}
+
+/* Row wrapper provides alignment */
+.chat-msg-row {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+    margin-bottom: 0.25rem;
+}
+
+.chat-msg-row--me {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.chat-msg-row--other {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+/* The bubble itself */
+.chat-bubble {
+    padding: 0.55rem 0.9rem 0.4rem 0.9rem;
+    border-radius: 18px;
+    max-width: 100%;
+    word-break: break-word;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Received (other person) bubble — LEFT side */
+.chat-bubble--other {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-bottom-left-radius: 4px;
+    color: #1f2937;
+}
+
+/* Sent (me) bubble — RIGHT side */
+.chat-bubble--me {
+    border-bottom-right-radius: 4px;
+}
+
+/* Mentor "me" bubble */
+.chat-bubble--me.bubble-mentor {
+    background: linear-gradient(135deg, #1a5e4f, #14463a);
+    color: white;
+}
+
+/* Innovator "me" bubble */
+.chat-bubble--me.bubble-innovator {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+/* Sender label (only shown on received/other bubbles) */
+.bubble-sender {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #1a5e4f;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.3px;
+}
+
+/* Message text */
+.bubble-text {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    margin: 0 0 0.2rem 0;
+}
+
+/* Timestamp shown below text, right-aligned inside the bubble */
+.bubble-time {
+    display: block;
+    font-size: 0.68rem;
+    opacity: 0.7;
+    text-align: right;
+    margin-top: 2px;
+}
+
+.chat-bubble--me .bubble-time {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.chat-bubble--other .bubble-time {
+    color: #9ca3af;
+}
+
+/* Group consecutive messages from the same person (optional spacing) */
+.chat-msg-row + .chat-msg-row--me {
+    margin-top: 0.1rem;
+}
+.chat-msg-row + .chat-msg-row--other {
+    margin-top: 0.1rem;
+}
+
+/* Ensure empty state is centred */
+.chat-messages .empty-state {
+    align-self: center;
+    margin: auto;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #9ca3af;
 }

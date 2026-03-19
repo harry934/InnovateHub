@@ -57,19 +57,15 @@ class CollaborationHub {
 
     setupInitialVisibility() {
         // Show correct view based on role
-        const mentorView = document.getElementById('mentorView');
-        const innovatorView = document.getElementById('innovatorView');
-        const collabSection = document.getElementById('collabSection');
-
-        if (collabSection) collabSection.style.display = 'block';
+        const mentorView = document.getElementById('mentorHubView');
+        const innovatorView = document.getElementById('innovatorHubView');
         if (mentorView) mentorView.style.display = !this.isInnovator ? 'flex' : 'none';
         if (innovatorView) innovatorView.style.display = this.isInnovator ? 'flex' : 'none';
 
-        // Ensure global back button is visible
+        // Hide legacy global back button container as we're moving it into headers
         const backBtn = document.getElementById('collabBackButtonContainer');
         if (backBtn) {
-            backBtn.style.display = 'block';
-            backBtn.style.padding = '10px 20px';
+            backBtn.style.display = 'none';
         }
     }
 
@@ -79,7 +75,10 @@ class CollaborationHub {
         
         if (window.SupabaseService) {
             const data = await window.SupabaseService.getMentorships(user.uid, role);
-            this.allSessions = data || [];
+            
+            // Filter out ghost entries where the project was deleted in Supabase
+            this.allSessions = (data || []).filter(session => session.project != null);
+            
             this.renderProjectSidebar();
         }
     }
@@ -179,7 +178,7 @@ class CollaborationHub {
             this.updateUI();
             await this.loadMessages();
             this.setupRealtimeChat();
-            this.loadStats();
+            // Removed renderProjectDetails call to clear the top of chat
         }
     }
 
@@ -188,8 +187,8 @@ class CollaborationHub {
         const partner = this.isInnovator ? this.mentorshipData.mentor : this.mentorshipData.innovator;
         
         const titleEl = document.getElementById(`${prefix}ProjectName`);
-        const subTitleEl = document.getElementById(this.isInnovator ? 'innovatorMentor' : 'mentorInnovator');
-        const pinnedEl = document.getElementById(`${prefix}PinnedGuidance`);
+        const subTitleEl = document.getElementById(`${prefix}SubTitle`);
+        const pinnedEl = document.getElementById(`${prefix}PinnedGuidanceText`);
 
         if (titleEl) titleEl.textContent = this.projectData?.title || 'Collaboration Hub';
         if (subTitleEl) subTitleEl.textContent = `${this.isInnovator ? 'Mentor' : 'Mentoring'}: ${partner?.full_name || 'Partner'}`;
@@ -245,32 +244,33 @@ class CollaborationHub {
         const container = document.getElementById(`${prefix}ChatMessages`);
         if (!container) return;
 
+        // Remove empty state if present
+        const emptyState = container.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+
         const user = this.getCurrentUser();
-        const senderId = msg.sender_id || msg.author_id;
-        const isMe = senderId === user.uid;
+        const isMe = msg.sender_id === (user.id || user.uid);
         
-        // Determine role for styling
-        // If I am innovator and sent it -> innovator message
-        // If I am innovator and someone else sent it -> mentor message
-        // If I am mentor and sent it -> mentor message
-        // If I am mentor and someone else sent it -> innovator message
-        let senderRole = 'innovator';
-        if (this.isInnovator) {
-            senderRole = isMe ? 'innovator' : 'mentor';
-        } else {
-            senderRole = isMe ? 'mentor' : 'innovator';
-        }
+        const senderRole = isMe ? (this.isInnovator ? 'innovator' : 'mentor') : (this.isInnovator ? 'mentor' : 'innovator');
+        const content = msg.text || msg.message_text || msg.content || msg.comment || '';
+        const timestamp = msg.created_at 
+            ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        const senderLabel = isMe ? 'You' : (senderRole === 'mentor' ? 'Mentor' : 'Innovator');
 
-        const msgData = {
-            sender: senderRole,
-            senderName: isMe ? 'You' : (senderRole === 'mentor' ? 'Mentor' : 'Innovator'),
-            content: msg.message_text || msg.content || '',
-            timestamp: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            attachments: msg.file_url ? [{ name: 'Document', type: 'PDF' }] : [] // Placeholder
-        };
-
-        const messageEl = this.createMessage(msgData);
-        container.appendChild(messageEl);
+        const messageDiv = document.createElement('div');
+        // WhatsApp-style: messages from 'me' go right, others go left
+        messageDiv.className = `chat-msg-row ${isMe ? 'chat-msg-row--me' : 'chat-msg-row--other'}`;
+        
+        messageDiv.innerHTML = `
+            <div class="chat-bubble ${isMe ? 'chat-bubble--me' : 'chat-bubble--other'} ${isMe ? (this.isInnovator ? 'bubble-innovator' : 'bubble-mentor') : ''}"> 
+                ${!isMe ? `<span class="bubble-sender">${senderLabel}</span>` : ''}
+                <p class="bubble-text">${content}</p>
+                <span class="bubble-time">${timestamp}</span>
+            </div>
+        `;
+        container.appendChild(messageDiv);
         container.scrollTop = container.scrollHeight;
     }
 
@@ -321,6 +321,25 @@ class CollaborationHub {
 
         const text = input.value.trim();
         const user = this.getCurrentUser();
+        
+        if (!this.activeMentorshipId) {
+            alert('Please select a mentorship session first.');
+            return;
+        }
+        
+        if (!user) {
+            alert('Authentication error. Please refresh the page.');
+            return;
+        }
+
+        // Optimistically show the message immediately
+        const optimisticMsg = {
+            sender_id: user.id || user.uid,
+            text: text,
+            created_at: new Date().toISOString()
+        };
+        this.appendMessage(optimisticMsg);
+        input.value = '';
 
         try {
             await window.SupabaseService.sendMessage({
@@ -328,11 +347,17 @@ class CollaborationHub {
                 sender_id: user.id || user.uid,
                 text: text
             });
-            input.value = '';
-            this.scrollToBottom(role);
         } catch (e) {
             console.error("Send Error:", e);
-            alert("Failed to send message. Please try again.");
+            // Show subtle error without removing the optimistic message
+            const prefix = role;
+            const container = document.getElementById(`${prefix}ChatMessages`);
+            if (container) {
+                const errDiv = document.createElement('div');
+                errDiv.className = 'chat-msg-row chat-msg-row--me';
+                errDiv.innerHTML = '<small class="text-danger me-2">⚠ Failed to deliver</small>';
+                container.appendChild(errDiv);
+            }
         }
     }
 
@@ -364,11 +389,12 @@ class CollaborationHub {
 
             container.innerHTML = '';
             feedbacks.forEach(f => {
+                // Supabase stores feedback content in 'comment' field, not 'content'
                 const data = {
-                    category: f.category || 'Feedback',
-                    rating: f.rating ? f.rating.toLowerCase().replace(' ', '-') : 'positive',
-                    content: f.content,
-                    timestamp: new Date(f.created_at).toLocaleDateString()
+                    category: f.field_id || f.category || 'General Feedback',
+                    rating: f.rating ? f.rating.toLowerCase().replace(/\s/g, '-') : (f.stars >= 4 ? 'positive' : f.stars >= 3 ? 'suggestion' : 'needs-work'),
+                    content: f.comment || f.content || f.text || 'No content provided',
+                    timestamp: new Date(f.created_at).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })
                 };
                 container.appendChild(this.createFeedbackCard(data));
             });
@@ -414,11 +440,17 @@ class CollaborationHub {
     }
 
     async submitFeedback() {
-        const category = document.getElementById('feedbackCategory').value;
-        const rating = document.getElementById('feedbackRating').value;
-        const content = document.getElementById('feedbackText').value.trim();
+        const categoryEl = document.getElementById('feedbackCategory');
+        const ratingEl = document.getElementById('feedbackRating');
+        const contentEl = document.getElementById('feedbackText');
+        
+        if (!contentEl) return;
+        const category = categoryEl ? categoryEl.value : 'General';
+        const rating = ratingEl ? ratingEl.value : 'positive';
+        const content = contentEl.value.trim();
 
         if (!content) return alert("Please enter feedback content.");
+        if (!this.projectData?.id) return alert("No project selected for feedback.");
 
         try {
             const user = this.getCurrentUser();
@@ -427,16 +459,17 @@ class CollaborationHub {
                 project_id: this.projectData.id,
                 mentor_id: user.id || user.uid,
                 field_id: category,
-                comment: content,
+                comment: content,   // Stored in 'comment' field per schema
+                rating: rating,
                 stars: rating === 'positive' ? 5 : (rating === 'needs-work' ? 3 : 4)
             });
             alert("Feedback submitted successfully!");
-            document.getElementById('feedbackText').value = '';
+            contentEl.value = '';
             this.loadFeedbacks();
             this.loadStats();
         } catch (e) { 
             console.error("Feedback error:", e);
-            alert("Failed to submit feedback."); 
+            alert("Failed to submit feedback: " + e.message); 
         }
     }
 
@@ -485,9 +518,10 @@ class CollaborationHub {
             reports.forEach(r => {
                 const data = {
                     title: r.title || 'Weekly Update',
-                    content: r.content,
+                    // Supabase stores report body in 'summary', not 'content'
+                    content: r.summary || r.content || r.details || 'No details provided',
                     status: r.status || 'submitted',
-                    timestamp: new Date(r.created_at).toLocaleDateString(),
+                    timestamp: new Date(r.created_at).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }),
                     attachments: r.file_url ? [{ name: 'Project Attachment' }] : []
                 };
                 listEl.appendChild(this.createReportCard(data));
@@ -509,7 +543,8 @@ class CollaborationHub {
                     ${report.attachments.map(att => `
                         <div class="report-attachment">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
                             </svg>
                             <span>${att.name}</span>
                         </div>
@@ -546,7 +581,7 @@ class CollaborationHub {
             try {
                 await window.SupabaseService.updateMentorshipStatus(this.activeMentorshipId, 'active', { pinned_guidance: next });
                 this.mentorshipData.pinned_guidance = next;
-                document.getElementById(`${role}PinnedGuidance`).textContent = next;
+                document.getElementById(`${role}PinnedGuidanceText`).textContent = next;
             } catch (e) { console.error("Update failed:", e); }
         }
     }
@@ -613,6 +648,68 @@ class CollaborationHub {
 
         if (fbBtn) fbBtn.onclick = () => this.submitFeedback();
         if (repBtn) repBtn.onclick = () => this.submitReport();
+    }
+
+    renderProjectDetails() {
+        const mentorship = this.mentorshipData;
+        if (!mentorship) return;
+
+        const statsContainer = document.getElementById(this.isInnovator ? 'innovatorStatsRow' : 'mentorStatsRow');
+        const overviewContainer = document.getElementById(this.isInnovator ? 'innovatorProjectOverview' : 'mentorProjectOverview');
+
+        if (statsContainer) {
+            statsContainer.innerHTML = `
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="label">Project Title</div>
+                        <div class="value text-truncate">${mentorship.project?.title || 'General Mentorship'}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="label">${this.isInnovator ? 'Mentor' : 'Innovator'}</div>
+                        <div class="value text-truncate">${this.isInnovator ? (mentorship.mentor?.full_name || 'Assigned Mentor') : (mentorship.innovator?.full_name || 'Innovator')}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="label">Status</div>
+                        <div class="value">
+                            <span class="status-indicator status-${mentorship.status || 'pending'}"></span>
+                            ${(mentorship.status || 'Active').toUpperCase()}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (overviewContainer && mentorship.project) {
+            const p = mentorship.project;
+            overviewContainer.innerHTML = `
+                <div class="project-details-grid p-4 mt-3">
+                    <div class="detail-section">
+                        <h6 class="text-danger"><i class="fa fa-exclamation-triangle me-2"></i> Problem Statement</h6>
+                        <p class="fs-7 mb-0">${p.problem_statement || p.problemStatement || 'No details provided'}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h6 class="text-primary"><i class="fa fa-bullseye me-2"></i> Objectives</h6>
+                        <p class="fs-7 mb-0">${p.objectives || 'No details provided'}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h6 class="text-warning"><i class="fa fa-lightbulb-o me-2"></i> Proposed Solution</h6>
+                        <p class="fs-7 mb-0">${p.proposed_solution || p.proposedSolution || 'No details provided'}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h6 class="text-success"><i class="fa fa-line-chart me-2"></i> Expected Impact</h6>
+                        <p class="fs-7 mb-0">${p.expected_impact || p.expectedImpact || 'No details provided'}</p>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    renderProjectOverview() {
+        // ... (this already handles empty state)
     }
 
     renderEmptyState() {

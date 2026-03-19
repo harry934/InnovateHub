@@ -156,7 +156,7 @@ async function renderLandingStats() {
 
         const stats = [
             { label: 'Innovation Projects', value: projectsCount, icon: 'fa-rocket', color: '#1a5e4f' },
-            { label: 'Active Mentees', value: activeMentorships, icon: 'fa-user-tie', color: '#f3a813' },
+            { label: 'Active Mentors', value: activeMentorships, icon: 'fa-user-tie', color: '#f3a813' },
             { label: 'Upcoming Sessions', value: sessionCount, icon: 'fa-calendar-check', color: '#1a5e4f' }
         ];
 
@@ -378,7 +378,15 @@ async function renderLandingStats() {
 
                     try {
                         const publicUrl = await window.SupabaseService.uploadAvatar(currentUser.uid, file);
-                        alert('Profile picture updated!');
+                        // Sync Navbar
+                        window.dispatchEvent(new CustomEvent('profileUpdated', {
+                            detail: {
+                                fullName: currentUser.displayName || currentUser.email.split('@')[0],
+                                photoUrl: publicUrl
+                            }
+                        }));
+                        
+                        alert('Profile picture updated successfully!');
                         // Refresh all profile circles
                         if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
                             window.StaggeredMenu.updateInitials(realName, publicUrl);
@@ -399,35 +407,44 @@ async function renderLandingStats() {
             if (!container) return;
             container.innerHTML = EmptyStates.templates.loadingState();
             
+            let projects = [];
+
             try {
-                let projects = [];
-                // 1. Try Supabase First
                 if (window.SupabaseService) {
-                    const sbProjects = await window.SupabaseService.getProjects({ innovator_id: currentUser.uid });
+                    // Try innovator_id first (correct schema field)
+                    let sbProjects = await window.SupabaseService.getProjects({ innovator_id: currentUser.uid });
+                    
+                    // Fallback: try user_id if innovator_id returned nothing
+                    if (!sbProjects || sbProjects.length === 0) {
+                        sbProjects = await window.SupabaseService.getProjects({ user_id: currentUser.uid });
+                    }
+                    
                     if (sbProjects && sbProjects.length > 0) {
                         projects = sbProjects;
-                        console.log("Innovator Dashboard: Loaded projects from Supabase");
+                        console.log(`Innovator Dashboard: Loaded ${projects.length} projects from Supabase`);
                     }
                 }
-
-                // Removed Firestore fallback to ensure Supabase is the single source of truth
-                
-                if (projects.length === 0) {
-                    container.innerHTML = EmptyStates.templates.noProjects();
-                    return;
-                }
-                
-                container.innerHTML = '';
-                projects.forEach(project => {
-                    container.innerHTML += StructuredProjectCard.render(project, {
-                        showActions: true,
-                        isExpanded: false
-                    });
-                });
             } catch (error) {
                 console.error('Error loading projects:', error);
-                container.innerHTML = EmptyStates.templates.errorState('Failed to load projects');
+                container.innerHTML = EmptyStates.templates.errorState('Failed to load projects: ' + (error.message || ''));
+                return;
             }
+
+            if (projects.length === 0) {
+                container.innerHTML = EmptyStates.templates.noProjects();
+                return;
+            }
+            
+            // Filter duplicates by ID
+            const uniqueProjects = Array.from(new Map(projects.map(p => [p.id, p])).values());
+            
+            container.innerHTML = '';
+            uniqueProjects.forEach(project => {
+                container.innerHTML += StructuredProjectCard.render(project, {
+                    showActions: true,
+                    isExpanded: false
+                });
+            });
         }
 
         async function renderMyMentors() {
@@ -530,35 +547,64 @@ async function renderLandingStats() {
             }
 
             const fileInput = form.querySelector('input[name="document"]');
-            const file = fileInput.files ? fileInput.files[0] : null;
+            const file = fileInput && fileInput.files ? fileInput.files[0] : null;
             
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Submitting...';
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Saving...';
 
-            const projectData = {
-                innovatorId: currentUser.uid,
-                userId: currentUser.uid,
-                title: form.title.value,
-                categories: categories,
-                problemStatement: form.problemStatement.value,
-                objectives: form.objectives.value,
-                proposedSolution: form.proposedSolution.value,
-                expectedImpact: form.expectedImpact.value
-            };
-            
+            // Check if editing an existing project
+            const editingProjectId = form.dataset.editingProjectId;
+
             try {
-                await (window.ProjectService || ProjectService).submitProject(projectData, file);
-                alert('Project submitted successfully!');
+                if (editingProjectId) {
+                    // UPDATE existing project via Supabase directly
+                    await window.SupabaseService.upsertProfile && true; // warmup check
+                    const { error } = await window.supabase
+                        .from('projects')
+                        .update({
+                            title: form.title ? form.title.value : '',
+                            categories: categories,
+                            problem_statement: form.problemStatement ? form.problemStatement.value : '',
+                            objectives: form.objectives ? form.objectives.value : '',
+                            proposed_solution: form.proposedSolution ? form.proposedSolution.value : '',
+                            expected_impact: form.expectedImpact ? form.expectedImpact.value : '',
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', editingProjectId);
+                    
+                    if (error) throw error;
+                    
+                    alert('Project updated successfully!');
+                    delete form.dataset.editingProjectId;
+                } else {
+                    // CREATE new project
+                    const projectData = {
+                        innovatorId: currentUser.uid,
+                        userId: currentUser.uid,
+                        title: form.title ? form.title.value : '',
+                        categories: categories,
+                        problemStatement: form.problemStatement ? form.problemStatement.value : '',
+                        objectives: form.objectives ? form.objectives.value : '',
+                        proposedSolution: form.proposedSolution ? form.proposedSolution.value : '',
+                        expectedImpact: form.expectedImpact ? form.expectedImpact.value : ''
+                    };
+                    await (window.ProjectService || ProjectService).submitProject(projectData, file);
+                    alert('Project submitted successfully!');
+                }
+
                 form.reset();
                 if (autoSave) await autoSave.clearDraft();
+                submitBtn.textContent = 'Submit Project';
                 window.showDashboardSection('projects');
                 await loadProjects();
             } catch (error) {
-                console.error('Error submitting project:', error);
-                alert('Failed to submit project: ' + error.message);
+                console.error('Error saving project:', error);
+                alert('Failed to save project: ' + error.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Submit Project';
+                if (!submitBtn.textContent.includes('Submit')) {
+                    submitBtn.textContent = 'Submit Project';
+                }
             }
         }
 
@@ -569,17 +615,23 @@ async function renderLandingStats() {
             
             submitBtn.disabled = true;
             
-            const skills = form.skills.value.split(',').map(s => s.trim()).filter(s => s !== '');
+            const skills = form.skills ? form.skills.value.split(',').map(s => s.trim()).filter(s => s !== '') : [];
             const profileData = {
-                fullName: form.fullName.value,
-                bio: form.bio.value,
-                institution: form.institution.value,
+                fullName: form.fullName ? form.fullName.value : (form.profileName ? form.profileName.value : ''),
+                bio: form.bio ? form.bio.value : '',
+                institution: form.institution ? form.institution.value : '',
                 skills: skills,
-                interests: form.interests.value,
-                updatedAt: serverTimestamp()
+                interests: form.interests ? form.interests.value : ''
             };
 
             try {
+                // Fetch current avatar from Supabase (don't overwrite with undefined)
+                let existingAvatarUrl = '';
+                try {
+                    const currentProfile = await window.SupabaseService.getProfile(currentUser.uid);
+                    existingAvatarUrl = currentProfile?.avatar_url || '';
+                } catch (_) {}
+
                 // 1. Primary Sync: Supabase
                 if (window.SupabaseService) {
                     await window.SupabaseService.upsertProfile({
@@ -588,31 +640,25 @@ async function renderLandingStats() {
                         bio: profileData.bio,
                         institution: profileData.institution,
                         expertise: skills.join(', '), 
-                        updated_at: new Date()
+                        updated_at: new Date().toISOString()
                     });
                     console.log("Innovator Dashboard: Supabase Profile Updated ✓");
                 }
                 
-                // Update local storage if needed (optional, but keep consistent)
+                // Update local storage
                 const storedUser = JSON.parse(localStorage.getItem('innovateHubUser') || '{}');
                 storedUser.fullName = profileData.fullName;
                 localStorage.setItem('innovateHubUser', JSON.stringify(storedUser));
 
+                // Dispatch global update event
+                window.dispatchEvent(new CustomEvent('profileUpdated', {
+                    detail: {
+                        fullName: profileData.fullName,
+                        photoUrl: existingAvatarUrl
+                    }
+                }));
+
                 alert('Profile updated!');
-                
-                // Sync with navbar
-                const avatarUrl = document.getElementById('profilePreview')?.src || "";
-                if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
-                    window.StaggeredMenu.updateInitials(profileData.fullName, avatarUrl);
-                }
-
-                const userDisplayName = document.getElementById('userDisplayName');
-                const profileDisplayNameDisplay = document.getElementById('profileDisplayNameDisplay');
-                if (userDisplayName) userDisplayName.textContent = profileData.fullName;
-                if (profileDisplayNameDisplay) profileDisplayNameDisplay.textContent = profileData.fullName;
-
-                const profileHeaderName = document.querySelector('.profile-header-premium h2');
-                if (profileHeaderName) profileHeaderName.textContent = profileData.fullName;
 
             } catch (error) {
                 console.error('Error updating profile:', error);
@@ -623,33 +669,68 @@ async function renderLandingStats() {
         }
 
         window.confirmDeleteProject = async function(projectId) {
-            if (!confirm('Are you sure you want to delete this project? This will also remove any uploaded documents from Supabase and cannot be undone.')) {
+            if (!confirm('Are you sure you want to delete this project? This cannot be undone.')) {
                 return;
             }
 
             try {
-                // 1. Primary Sync: Supabase
-                if (window.supabase) {
-                    const { error } = await window.supabase
-                        .from('projects')
-                        .delete()
-                        .eq('id', projectId);
-                    if (error) console.error("Supabase Project Delete Error:", error);
-                    else console.log("Innovator Dashboard: Supabase Project Deleted ✓");
-                }
-
-                // 2. Delete from MongoDB via API (Legacy System)
-                if (window.api && window.api.deleteProject) {
-                    await window.api.deleteProject(projectId);
+                if (window.SupabaseService) {
+                    await window.SupabaseService.deleteProject(projectId);
+                    console.log("Innovator Dashboard: Supabase Project Deleted ✓");
                 }
 
                 alert('Project deleted successfully.');
                 await loadProjects(); // Refresh the list
+                if (typeof renderMyMentors === 'function') {
+                    await renderMyMentors(); // Refresh the mentors list to remove deleted project logic
+                }
             } catch (error) {
                 console.error('Error deleting project:', error);
                 alert('Failed to delete project: ' + error.message);
             }
         };
+
+        // Edit project: navigate to submit section and populate form with existing data
+        window.editProject = async function(projectId) {
+            try {
+                const projects = await window.SupabaseService.getProjects({ id: projectId });
+                const project = projects && projects[0];
+                if (!project) return alert('Project not found.');
+
+                // Navigate to submit section
+                window.showDashboardSection('submit');
+
+                // Pre-fill form fields
+                setTimeout(() => {
+                    const form = document.getElementById('projectForm');
+                    if (!form) return;
+
+                    if (form.title) form.title.value = project.title || '';
+                    if (form.problemStatement) form.problemStatement.value = project.problem_statement || '';
+                    if (form.objectives) form.objectives.value = project.objectives || '';
+                    if (form.proposedSolution) form.proposedSolution.value = project.proposed_solution || '';
+                    if (form.expectedImpact) form.expectedImpact.value = project.expected_impact || '';
+
+                    // Pre-check categories
+                    if (project.categories && Array.isArray(project.categories)) {
+                        form.querySelectorAll('input[name="categories"]').forEach(cb => {
+                            cb.checked = project.categories.includes(cb.value);
+                        });
+                    }
+
+                    // Store editing ID on the form for the submit handler
+                    form.dataset.editingProjectId = projectId;
+
+                    // Update submit button text
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) submitBtn.textContent = 'Update Project';
+                }, 300);
+            } catch (err) {
+                console.error('Edit project error:', err);
+                alert('Failed to load project for editing.');
+            }
+        };
+
 
         function debounce(func, wait) {
             let timeout;

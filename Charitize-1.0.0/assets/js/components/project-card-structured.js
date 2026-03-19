@@ -38,16 +38,16 @@ export class StructuredProjectCard {
                             ${project.title || 'Untitled Project'}
                         </h4>
                         <div class="d-flex align-items-center gap-2 flex-wrap">
-                            ${project.category ? `
+                            ${project.category || project.categories ? `
                                 <span class="badge bg-light text-dark border" style="color: #1a5e4f !important;">
-                                    ${this.formatCategory(project.category)}
+                                    ${this.formatCategory(Array.isArray(project.categories) ? project.categories[0] : (project.category || ''))}
                                 </span>
                             ` : ''}
                             ${StatusBadge.render(project.status || 'pending')}
-                            ${project.createdAt ? `
+                            ${(project.created_at || project.createdAt) ? `
                                 <small class="text-muted d-flex align-items-center gap-1 ms-2">
                                     ${icons.calendar}
-                                    ${this.formatDate(project.createdAt)}
+                                    ${this.formatDate(project.created_at || project.createdAt)}
                                 </small>
                             ` : ''}
                         </div>
@@ -144,24 +144,24 @@ export class StructuredProjectCard {
      * Handles both structured and unstructured data
      */
     static extractSections(project) {
-        // If project has structured sections, use them
-        if (project.problemStatement || project.objectives) {
+        // Supabase returns snake_case, JS may also have camelCase — handle both
+        if (project.problem_statement || project.problemStatement || project.objectives) {
             return {
-                problemStatement: project.problemStatement || '',
+                problemStatement: project.problem_statement || project.problemStatement || '',
                 objectives: project.objectives || '',
-                proposedSolution: project.proposedSolution || project.solution || '',
-                expectedImpact: project.expectedImpact || project.impact || '',
-                additionalNotes: project.additionalNotes || project.notes || ''
+                proposedSolution: project.proposed_solution || project.proposedSolution || project.solution || '',
+                expectedImpact: project.expected_impact || project.expectedImpact || project.impact || '',
+                additionalNotes: project.additional_notes || project.additionalNotes || project.notes || ''
             };
         }
 
         // Otherwise, try to parse from description
         const description = project.description || '';
         return {
-            problemStatement: this.extractFromDescription(description, 'problem'),
-            objectives: this.extractFromDescription(description, 'objectives'),
-            proposedSolution: this.extractFromDescription(description, 'solution'),
-            expectedImpact: this.extractFromDescription(description, 'impact'),
+            problemStatement: description,
+            objectives: '',
+            proposedSolution: '',
+            expectedImpact: '',
             additionalNotes: ''
         };
     }
@@ -187,22 +187,19 @@ export class StructuredProjectCard {
      */
     static renderActions(project) {
         const actions = [];
-        const plusIcon = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-        const taskIcon = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         const editIcon = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-
-        // Edit (if draft or pending)
-        if (project.status === 'draft' || project.status === 'pending') {
+        // Edit if not yet accepted
+        if (project.status !== 'accepted') {
             actions.push(`
-                <button class="btn btn-sm btn-outline-warning d-flex align-items-center gap-2" onclick="editProject('${project.id}')">
+                <button class="btn btn-sm btn-outline-warning d-flex align-items-center gap-2" onclick="window.editProject('${project.id}')">
                     ${editIcon}
                     Edit
                 </button>
             `);
         }
 
-        // Delete button
+        // Delete button — always visible
         const trashIcon = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         actions.push(`
             <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-2" onclick="window.confirmDeleteProject('${project.id}')">

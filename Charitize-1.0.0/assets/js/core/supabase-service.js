@@ -73,14 +73,15 @@ const SupabaseService = {
                 .select('*, innovator:profiles!fk_project_innovator(full_name, email)');
             
             if (filter.innovator_id) query = query.eq('innovator_id', filter.innovator_id);
+            if (filter.user_id) query = query.eq('innovator_id', filter.user_id); // fallback alias
             if (filter.status) query = query.eq('status', filter.status);
             if (filter.id) query = query.eq('id', filter.id);
             
             const { data, error } = await query.order('created_at', { ascending: false });
             if (error) throw error;
             
-            if (data.length === 0 && filter.innovator_id) {
-                console.log(`SupabaseService: No projects found for innovator ${filter.innovator_id}.`);
+            if (data.length === 0 && (filter.innovator_id || filter.user_id)) {
+                console.log(`SupabaseService: No projects found for innovator ${filter.innovator_id || filter.user_id}.`);
             }
             return data;
         } catch (error) {
@@ -116,6 +117,23 @@ const SupabaseService = {
             return data[0];
         } catch (error) {
             return this.handleSupabaseError(error, 'updateProjectStatus');
+        }
+    },
+
+    async deleteProject(projectId) {
+        try {
+            // Manually delete related records first to prevent orphaned UI state in Collaboration Hub
+            await window.supabase.from('mentorships').delete().eq('project_id', projectId);
+            await window.supabase.from('section_feedback').delete().eq('project_id', projectId);
+
+            const { error } = await window.supabase
+                .from('projects')
+                .delete()
+                .eq('id', projectId);
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            return this.handleSupabaseError(error, 'deleteProject');
         }
     },
 
@@ -637,18 +655,7 @@ const SupabaseService = {
     },
 
     // ─── Chat Messaging ───────────────────────────────────────
-    async sendMessage(message) {
-        try {
-            const { data, error } = await window.supabase
-                .from('chat_messages')
-                .insert([message])
-                .select();
-            if (error) throw error;
-            return data[0];
-        } catch (error) {
-            return this.handleSupabaseError(error, 'sendMessage');
-        }
-    },
+    // sendMessage and subscribing moved up to Chat & Notifications section
 
     async getMessages(mentorshipId) {
         try {

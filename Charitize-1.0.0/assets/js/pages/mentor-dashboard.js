@@ -790,7 +790,12 @@ class MentorDashboard {
                 // Update Firestore - Removed
 
                 // Sync Navbar
-                this.updateUserIdentity(this.currentUser.displayName || this.currentUser.email.split('@')[0], publicUrl);
+                window.dispatchEvent(new CustomEvent('profileUpdated', {
+                    detail: {
+                        fullName: this.currentUser.displayName || this.currentUser.email.split('@')[0],
+                        photoUrl: publicUrl
+                    }
+                }));
                 
                 alert('Profile picture updated successfully!');
             } catch (err) {
@@ -1283,10 +1288,14 @@ class MentorDashboard {
           
           // 2. Secondary Sync: Firestore (Silent) - Removed
 
-          alert('Profile updated successfully!');
-          // Sync with navbar
-          const avatarUrl = document.getElementById('profilePreview')?.src || "";
-          this.updateUserIdentity(profileData.fullName, avatarUrl);
+            alert('Profile updated successfully!');
+            // Sync with navbar & dashboard
+            window.dispatchEvent(new CustomEvent('profileUpdated', {
+                detail: {
+                    fullName: profileData.fullName,
+                    photoUrl: avatarUrl
+                }
+            }));
       } catch (err) {
            console.error("Profile update error:", err);
           alert("Failed to update profile.");
