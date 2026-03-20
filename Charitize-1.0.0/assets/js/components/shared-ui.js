@@ -61,16 +61,12 @@
   };
 
   // 3. NAVBAR AUTH STATE TOGGLE
-  window.updateNavbarUI = function (user) {
-    // Fallback to localStorage if user object not provided
-    if (!user) {
-      user = window.loadFromLocalStorage("innovateHubUser");
-    }
+  // Apply the logged-in/guest state based on a user object
+  function applyNavbarState(user) {
+    const isLoggedIn = user && (user.uid || user.id);
     const guestButtons = document.getElementById("guestButtons");
     const navDashboardBtn = document.getElementById("navDashboardBtn");
     const logoutLink = document.querySelector(".logout-link");
-
-    const isLoggedIn = user && (user.uid || user.id);
 
     if (isLoggedIn) {
       document.body.classList.add("user-logged-in");
@@ -82,28 +78,75 @@
       if (guestButtons) guestButtons.classList.remove("d-none");
       if (navDashboardBtn) navDashboardBtn.classList.add("d-none");
       if (logoutLink) logoutLink.classList.add("d-none");
-      // Clear potentially stale localStorage only if no user object exists
-      if (!user) {
-        localStorage.removeItem("innovateHubUser");
+      // Always clear stale localStorage when no real session
+      localStorage.removeItem("innovateHubUser");
+    }
+  }
+
+  // updateNavbarUI: checks live Supabase session — never trusts localStorage alone
+  window.updateNavbarUI = async function (userOverride) {
+    // If an explicit user object is passed in (e.g. from onAuthStateChange), use it directly
+    if (userOverride !== undefined) {
+      applyNavbarState(userOverride);
+      return;
+    }
+
+    // Otherwise: check the live Supabase session to get the real auth state
+    if (window.supabase) {
+      try {
+        const { data: { session } } = await window.supabase.auth.getSession();
+        if (session && session.user) {
+          // Valid session — show "MY DASHBOARD"
+          const cachedUser = window.loadFromLocalStorage
+            ? window.loadFromLocalStorage("innovateHubUser")
+            : JSON.parse(localStorage.getItem("innovateHubUser") || "null");
+          applyNavbarState(cachedUser || session.user);
+        } else {
+          // No live session — show "GET STARTED" and clear stale data
+          applyNavbarState(null);
+        }
+      } catch (e) {
+        console.warn("updateNavbarUI: Supabase session check failed", e);
+        applyNavbarState(null);
       }
+    } else {
+      // Supabase not ready yet — use localStorage as temporary fallback
+      const cached = window.loadFromLocalStorage
+        ? window.loadFromLocalStorage("innovateHubUser")
+        : JSON.parse(localStorage.getItem("innovateHubUser") || "null");
+      applyNavbarState(cached);
     }
   };
 })();
 
 // 4. GLOBAL UI ACTIONS - Moved outside IIFE for reliability
-window.logout = function () {
+window.logout = async function () {
   console.log("Global logout triggered.");
 
-  // Clear local session immediately for UI updates
-  localStorage.removeItem("innovateHubUser");
-
-  // If the specialized logout in innovate-hub.js or dashboard scripts is ready, call it
-  if (typeof window.firebaseLogout === "function") {
-    window.firebaseLogout();
-  } else {
-    // Fallback: direct redirect to login.html if firebase modules aren't loaded
-    window.location.href = "login.html";
+  // 1. Terminate session via AuthManager (handles Supabase + Local Storage)
+  if (window.AuthManager) {
+    try {
+      await window.AuthManager.logout();
+    } catch (e) {
+      console.warn("AuthManager logout error:", e);
+    }
+  } else if (window.supabase) {
+    // Fallback if AuthManager not yet loaded
+    try {
+      await window.supabase.auth.signOut();
+      localStorage.removeItem("innovateHubUser");
+      localStorage.removeItem("justLoggedIn");
+      sessionStorage.clear();
+    } catch (e) {
+      console.warn("Supabase signOut fallback error:", e);
+    }
   }
+
+  // 2. Update the navbar UI immediately to show "GET STARTED"
+  if (typeof window.updateNavbarUI === "function") window.updateNavbarUI(null);
+
+  // 3. Redirect to homepage using replace() so back-button cannot return to dashboard
+  window.location.replace("index.html");
 };
 
 (function () {

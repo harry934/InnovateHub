@@ -20,7 +20,7 @@ body {
     background: #ffffff;
     border-radius: 20px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.06);
-    margin: -10px 16px 30px 16px; /* Pulls it up closer to the navbar, gives side breathing room */
+    margin: -6px 16px 30px 16px; /* Pulls it up closer to the navbar, gives side breathing room */
     padding: 0 !important; /* Overrides .dashboard-section 32px padding */
     overflow: hidden; /* Ensures child elements respect border-radius */
     border: 1px solid rgba(0,0,0,0.05);
@@ -99,11 +99,13 @@ body {
 
 /* Brand Backgrounds & Typography Enforcement */
 .gradient-teal {
-    background: linear-gradient(to right, #1a5e4f, #14463a);
+    background-color: #1a5e4f !important;
+    background-image: linear-gradient(to right, #1a5e4f, #14463a) !important;
 }
 
 .gradient-orange {
-    background: linear-gradient(to right, #f59e0b, #d97706);
+    background-color: #f59e0b !important;
+    background-image: linear-gradient(to right, #f59e0b, #d97706) !important;
 }
 
 .gradient-teal h1, .gradient-teal h2, .gradient-teal h3, .gradient-teal h4, .gradient-teal h5, .gradient-teal h6, .gradient-teal p, .gradient-teal span, .gradient-teal i {

@@ -57,6 +57,14 @@ html, body {
   z-index: 1;
 }
 
+/* FIX: ENFORCE MAX-WIDTH FOR DASHBOARD CONTENT (PREVENT STRETCHING) */
+.dashboard-content-limit {
+    max-width: 1200px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100%;
+}
+
 /* ── ADMINISTRATION CARDS (CLEAN) ────────────────────────── */
 /* Standard Dashboard/Premium Card */
 .dashboard-grid-card {

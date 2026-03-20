@@ -29,12 +29,12 @@
     <link href="assets/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet" />
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="assets/css/auth-ui.css" rel="stylesheet" />
-    <link href="assets/css/style.css?v=111.0.0" rel="stylesheet" />
-    <link href="assets/css/staggered-menu.css?v=111.0.0" rel="stylesheet" />
-    <link href="assets/css/dashboard-rebuild.css?v=111.0.0" rel="stylesheet" />
-    <link href="assets/css/collab-screen.css?v=111.0.0" rel="stylesheet" />
-    <link href="assets/css/innovate-hub.css?v=111.0.0" rel="stylesheet" />
-    <link href="assets/css/nuru-assistant.css?v=111.0.0" rel="stylesheet" />
+    <link href="assets/css/style.css?v=113.0.0" rel="stylesheet" />
+    <link href="assets/css/staggered-menu.css?v=113.0.0" rel="stylesheet" />
+    <link href="assets/css/dashboard-rebuild.css?v=113.0.0" rel="stylesheet" />
+    <link href="assets/css/collab-screen.css?v=113.0.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=113.0.0" rel="stylesheet" />
+    <link href="assets/css/nuru-assistant.css?v=113.0.0" rel="stylesheet" />
     <style>
         :root {
             --brand-teal: #1a5e4f;
@@ -116,7 +116,7 @@
           class="py-5"
       style="position: relative; z-index: 2"
     >
-      <div class="container mb-5">
+      <div class="container mb-5 dashboard-content-limit">
         <!-- Simplified Hero -->
         <div
           class="mb-5 d-flex justify-content-between align-items-end flex-wrap gap-4"
@@ -166,7 +166,7 @@
 
     <!-- Container for dynamic sections (Proper dashboard centering, avoiding infinite stretch on ultra-wide screens) -->
     <div id="activeSectionContainer" style="display: none">
-      <div class="container py-5">
+      <div class="container py-5 dashboard-content-limit">
          <div id="collabBackButtonContainer" class="mb-4">
            <button
              class="btn btn-success px-4 d-flex align-items-center gap-2 shadow-sm fw-bold border-2"
@@ -1334,6 +1334,7 @@
       
       // Export gloablly and establish alias. Must be outside function scope.
       window.showSection = window.showDashboardSection;
+      
 
       // ── Mentor access control: show blocking screen ──────────
       function showMentorPendingScreen() {
@@ -1571,9 +1572,9 @@
         // Load role-specific module
         let modulePath = null;
         if (role === "mentor") {
-            modulePath = `./assets/js/pages/mentor-dashboard.js?v=111.0.0`;
+            modulePath = `./assets/js/pages/mentor-dashboard.js?v=113.0.0`;
         } else if (role === "innovator") {
-            modulePath = `./assets/js/pages/innovator-dashboard.js?v=111.0.0`;
+            modulePath = `./assets/js/pages/innovator-dashboard.js?v=113.0.0`;
         }
 
         if (modulePath) {

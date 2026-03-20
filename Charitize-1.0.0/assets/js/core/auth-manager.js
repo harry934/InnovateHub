@@ -143,6 +143,7 @@ class AuthManager {
             this.currentUser = null;
             localStorage.removeItem('innovateHubUser');
             localStorage.removeItem('justLoggedIn');
+            sessionStorage.clear();
             return true;
         } catch (error) {
             console.error('AuthManager: Logout error:', error);

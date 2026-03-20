@@ -944,21 +944,33 @@ class AdminDashboard {
 
     async logout() {
         try {
-            await auth.signOut();
+            // Sign out from Supabase to invalidate the server session
+            if (window.supabase) {
+                await window.supabase.auth.signOut();
+            }
             localStorage.removeItem('innovateHubUser');
-            window.location.href = 'login.html';
+            localStorage.removeItem('justLoggedIn');
+            sessionStorage.clear();
+            // Redirect to homepage using replace() so back-button can't return
+            window.location.replace('index.html');
         } catch (e) {
-            window.location.href = 'login.html';
+            console.error('Admin logout error:', e);
+            localStorage.removeItem('innovateHubUser');
+            localStorage.removeItem('justLoggedIn');
+            sessionStorage.clear();
+            window.location.replace('index.html');
         }
     }
 }
 
 // Global Exports
 window.AdminDashboard = AdminDashboard;
-window.logout = () => window.adminDashboard?.logout();
+// NOTE: window.logout is intentionally NOT overridden here.
+// The canonical logout is defined in shared-ui.js and handles Supabase signOut + redirect to index.html.
+// The admin 'End Session' button calls window.logout() which uses that shared implementation.
 window.showSection = (section) => window.adminDashboard?.showSection(section);
 
 // Auto-init
 document.addEventListener('DOMContentLoaded', () => {
-    new AdminDashboard();
+    window.adminDashboard = new AdminDashboard();
 });

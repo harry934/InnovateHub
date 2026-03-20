@@ -48,20 +48,24 @@ window.supabaseLogout = async function() {
             await window.supabase.auth.signOut();
         }
         localStorage.removeItem("innovateHubUser");
+        localStorage.removeItem("justLoggedIn");
+        sessionStorage.clear();
         if (typeof window.updateNavbarUI === 'function') window.updateNavbarUI(null);
         
-        // Use window.location.replace to prevent back-button navigation to a session
-        window.location.replace("login.html");
+        // Redirect to homepage so user lands on main page, not login page
+        // Use replace() to prevent back-button from returning to the dashboard
+        window.location.replace("index.html");
     } catch (error) {
         console.error("Logout error:", error);
         localStorage.removeItem("innovateHubUser");
-        window.location.replace("login.html");
+        localStorage.removeItem("justLoggedIn");
+        sessionStorage.clear();
+        window.location.replace("index.html");
     }
 };
 
-// Backward compatibility for scripts calling the old name
+// Backward compatibility alias (do NOT overwrite window.logout as shared-ui.js owns the authoritative version)
 window.firebaseLogout = window.supabaseLogout;
-window.logout = window.supabaseLogout;
 
 // ========================================
 // 14. SERVICES
