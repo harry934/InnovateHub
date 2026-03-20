@@ -57,11 +57,19 @@ html, body {
   z-index: 1;
 }
 
-/* FIX: ENFORCE MAX-WIDTH FOR DASHBOARD CONTENT (PREVENT STRETCHING) */
+/* OUTER LIMIT: Standard modern desktop boundary */
 .dashboard-content-limit {
-    max-width: 1200px !important;
+    max-width: 1140px !important;
     margin-left: auto !important;
     margin-right: auto !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* INNER LIMIT: For forms, lists, and detailed content (Better readability) */
+.dashboard-inner-container {
+    max-width: 1000px !important;
+    margin: 0 auto !important;
     width: 100%;
 }
 
