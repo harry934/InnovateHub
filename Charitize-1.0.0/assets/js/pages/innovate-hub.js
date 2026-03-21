@@ -1,111 +1,91 @@
-import { auth } from '../core/firebase-config.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-// Firestore imports removed
+import authManager from '../core/auth-manager.js';
 
-// 1. UI INITIALIZATION HANDLED BY shared-ui.js
-// (Splash screen, preloader, and navbar toggles are now in shared-ui.js)
+// Initialize Auth on load
+(async () => {
+    try {
+        // IMPORTANT: Must initialize auth or getCurrentUser() will be empty/stale
+        await authManager.init();
+        console.log("AuthManager initialized successfully ✓");
+        
+        const user = authManager.getCurrentUser();
+        const path = window.location.pathname;
+        const isAuthPage = path.includes('signup') || path.includes('login');
+        const isDashboardPage = path.includes('dashboard') || path.includes('admin-dashboard');
+        
+        console.log("InnovateHub Guard: Path:", path, "User:", user?.email, "IsAuth:", isAuthPage, "IsDashboard:", isDashboardPage);
 
+        if (user) {
+            const isComplete = authManager.isProfileComplete();
+            console.log("InnovateHub Guard: Profile Complete:", isComplete, "Role:", user.role);
+
+            // ONLY force redirect to signup if we are on a PROTECTED page (like the dashboard)
+            // or if we are not on an auth page and the profile is clearly missing a role.
+            if (!isComplete && isDashboardPage) {
+                console.log("InnovateHub Guard: Redirecting incomplete profile away from dashboard.");
+                window.location.href = 'signup.html?reason=incomplete_profile';
+                return;
+            }
+        }
+
+        // Listen for auth changes to update UI
+        authManager.onAuthChange((user) => {
+            console.log("InnovateHub: Auth state changed:", user?.email);
+            if (window.updateNavbarUI) window.updateNavbarUI(user);
+        });
+        
+        // Initial UI update from confirmed auth state
+        if (window.updateNavbarUI) window.updateNavbarUI(authManager.getCurrentUser());
+    } catch (e) {
+        console.error("AuthManager initialization failed:", e);
+    }
+})();
 
 /**
- * Real-time Firebase Auth Listener
- * Synchronizes Firebase auth state with LocalStorage and UI
+ * innovate-hub.js
+ * Core platform services and legacy service wrappers.
+ * Fully migrated to Supabase Auth.
  */
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        try {
-            // 1. Fetch user profile from Supabase to get role and other metadata
-            let profileData = {};
-            
-            if (window.SupabaseService) {
-                try {
-                    const sbProfile = await window.SupabaseService.getProfile(user.uid);
-                    if (sbProfile) {
-                        profileData = {
-                            role: sbProfile.role,
-                            fullName: sbProfile.full_name || sbProfile.fullName,
-                            status: sbProfile.status
-                        };
-                    }
-                } catch (e) {
-                    console.warn("Supabase profile fetch failed", e);
-                }
-            }
-            
-            if (!profileData.role) {
-                console.warn("No profile found for user:", user.uid);
-                profileData = { role: 'innovator', fullName: user.displayName || user.email };
-            }
 
-            // 2. Sync with Supabase
-            if (window.SupabaseService) {
-                try {
-                    await window.SupabaseService.upsertProfile({
-                        id: user.uid,
-                        email: user.email,
-                        full_name: profileData.fullName || profileData.full_name || user.displayName || user.email.split('@')[0],
-                        role: profileData.role || 'innovator',
-                        status: profileData.status || 'active',
-                        updated_at: new Date().toISOString()
-                    });
-                    console.log("Supabase Auth Sync: Profile unified ✓");
-                } catch (sbErr) {
-                    console.error("Supabase Auth Sync: Failed", sbErr);
-                }
-            }
-
-            // 3. Prepare complete session data
-            const sessionData = { 
-                uid: user.uid, 
-                email: user.email, 
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-                loggedIn: true,
-                ...profileData // Merge Firestore data (role, fullName, etc.)
-            };
-
-            // 4. Save and Update UI
-            window.saveToLocalStorage("innovateHubUser", sessionData);
-            if (typeof window.updateNavbarUI === 'function') window.updateNavbarUI(sessionData);
-            if (typeof window.updateUIForRole === 'function') window.updateUIForRole(sessionData);
-        } catch (error) {
-            console.error("Error in auth listener:", error);
-            const basicSession = { uid: user.uid, email: user.email, loggedIn: true };
-            window.saveToLocalStorage("innovateHubUser", basicSession);
-        }
-    } else {
-        localStorage.removeItem("innovateHubUser");
-        if (typeof window.updateNavbarUI === 'function') window.updateNavbarUI(null);
-    }
-});
+// Helper: get current user (sync-safe via localStorage)
+function getCurrentAuthUser() {
+    return authManager.getCurrentUser();
+}
 
 // Helper for Auth Redirection handled in dashboard scripts
 export function requireAuth() {
-    const user = loadFromLocalStorage("innovateHubUser");
-    if (!user || !user.loggedIn) {
+    const user = authManager.getCurrentUser();
+    if (!user) {
         window.location.href = 'login.html';
     }
     return user;
 }
 
 // Global Exports for Module services
-window.firebaseLogout = async function() {
-    console.log("Firebase logout triggered from innovate-hub.js");
+window.supabaseLogout = async function() {
+    console.log("Supabase logout triggered from innovate-hub.js");
     try {
-        await signOut(auth);
+        if (window.supabase) {
+            await window.supabase.auth.signOut();
+        }
         localStorage.removeItem("innovateHubUser");
+        localStorage.removeItem("justLoggedIn");
+        sessionStorage.clear();
         if (typeof window.updateNavbarUI === 'function') window.updateNavbarUI(null);
         
-        // Use window.location.replace to prevent back-button navigation to a session
-        window.location.replace("login.html");
+        // Redirect to homepage so user lands on main page, not login page
+        // Use replace() to prevent back-button from returning to the dashboard
+        window.location.replace("index.html");
     } catch (error) {
         console.error("Logout error:", error);
         localStorage.removeItem("innovateHubUser");
-        window.location.replace("login.html");
+        localStorage.removeItem("justLoggedIn");
+        sessionStorage.clear();
+        window.location.replace("index.html");
     }
 };
 
-// Re-sync global logout with firebase-aware logout
-window.logout = window.firebaseLogout;
+// Backward compatibility alias (do NOT overwrite window.logout as shared-ui.js owns the authoritative version)
+window.firebaseLogout = window.supabaseLogout;
 
 // ========================================
 // 14. SERVICES
@@ -116,8 +96,11 @@ window.logout = window.firebaseLogout;
 
 export const ProjectService = {
     submitProject: async (formData, file) => {
+        const user = getCurrentAuthUser();
+        if (!user) throw new Error("No authenticated user found.");
+
         let projectData = {
-            innovator_id: auth.currentUser.uid,
+            innovator_id: user.uid,
             title: formData.title,
             problem_statement: formData.problemStatement,
             proposed_solution: formData.proposedSolution,
@@ -136,12 +119,15 @@ export const ProjectService = {
                 }
 
                 const sbProject = await window.SupabaseService.createProject(projectData);
+                if (!sbProject || !sbProject.id) {
+                    throw new Error("Failed to create project record in database.");
+                }
                 console.log("Supabase Project Created ✓", sbProject.id);
                 
                 if (file) {
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${sbProject.id}-${Date.now()}.${fileExt}`;
-                    const filePath = `documents/${auth.currentUser.uid}/${fileName}`;
+                    const filePath = `documents/${user.uid}/${fileName}`;
 
                     // Check if bucket exists/is accessible by trying upload
                     const { error: uploadError } = await window.supabase.storage
@@ -175,8 +161,9 @@ export const ProjectService = {
 
 export const MentorshipService = {
     sendRequest: async (mentorId, projectId) => {
+        const user = getCurrentAuthUser();
         const mentorshipData = {
-            innovator_id: auth.currentUser.uid,
+            innovator_id: user?.uid,
             mentor_id: mentorId,
             project_id: projectId,
             status: 'pending'
@@ -216,11 +203,12 @@ export const NotificationService = {
 
 export const MilestoneService = {
     report: async (projectId, milestoneTitle, content) => {
+        const user = getCurrentAuthUser();
         const reportData = {
             project_id: projectId,
             milestone_title: milestoneTitle,
             content,
-            reported_by: auth.currentUser.uid
+            reported_by: user?.uid
         };
 
         // 1. Primary Sync: Supabase
@@ -239,10 +227,11 @@ export const MilestoneService = {
 
 export const CollaborationService = {
     addComment: async (projectId, content) => {
+        const user = getCurrentAuthUser();
         const commentData = {
             project_id: projectId,
             content,
-            author_id: auth.currentUser.uid
+            author_id: user?.uid
         };
 
         // 1. Primary Sync: Supabase

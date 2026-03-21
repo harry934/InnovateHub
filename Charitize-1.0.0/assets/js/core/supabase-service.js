@@ -73,14 +73,15 @@ const SupabaseService = {
                 .select('*, innovator:profiles!fk_project_innovator(full_name, email)');
             
             if (filter.innovator_id) query = query.eq('innovator_id', filter.innovator_id);
+            if (filter.user_id) query = query.eq('innovator_id', filter.user_id); // fallback alias
             if (filter.status) query = query.eq('status', filter.status);
             if (filter.id) query = query.eq('id', filter.id);
             
             const { data, error } = await query.order('created_at', { ascending: false });
             if (error) throw error;
             
-            if (data.length === 0 && filter.innovator_id) {
-                console.log(`SupabaseService: No projects found for innovator ${filter.innovator_id}.`);
+            if (data.length === 0 && (filter.innovator_id || filter.user_id)) {
+                console.log(`SupabaseService: No projects found for innovator ${filter.innovator_id || filter.user_id}.`);
             }
             return data;
         } catch (error) {
@@ -116,6 +117,23 @@ const SupabaseService = {
             return data[0];
         } catch (error) {
             return this.handleSupabaseError(error, 'updateProjectStatus');
+        }
+    },
+
+    async deleteProject(projectId) {
+        try {
+            // Manually delete related records first to prevent orphaned UI state in Collaboration Hub
+            await window.supabase.from('mentorships').delete().eq('project_id', projectId);
+            await window.supabase.from('section_feedback').delete().eq('project_id', projectId);
+
+            const { error } = await window.supabase
+                .from('projects')
+                .delete()
+                .eq('id', projectId);
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            return this.handleSupabaseError(error, 'deleteProject');
         }
     },
 
@@ -208,6 +226,23 @@ const SupabaseService = {
         }
     },
 
+    async updateMentorshipReportsStatus(mentorshipId, enabled) {
+        try {
+            const { data, error } = await window.supabase
+                .from('mentorships')
+                .update({ 
+                    reports_enabled: enabled,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', mentorshipId)
+                .select();
+            if (error) throw error;
+            return data[0];
+        } catch (error) {
+            return this.handleSupabaseError(error, 'updateMentorshipReportsStatus');
+        }
+    },
+
     async getMentorshipByProject(projectId, userId) {
         try {
             const { data, error } = await window.supabase
@@ -282,7 +317,7 @@ const SupabaseService = {
             const { data, error } = await window.supabase
                 .from('events')
                 .select('*')
-                .order('event_date', { ascending: true });
+                .order('event_date', { ascending: false });
             if (error) throw error;
             return data;
         } catch (error) {
@@ -300,6 +335,33 @@ const SupabaseService = {
             return data[0];
         } catch (error) {
             return this.handleSupabaseError(error, 'upsertEvent');
+        }
+    },
+
+    async getEventById(id) {
+        try {
+            const { data, error } = await window.supabase
+                .from('events')
+                .select('*')
+                .eq('id', id)
+                .maybeSingle();
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            return this.handleSupabaseError(error, 'getEventById');
+        }
+    },
+
+    async deleteEvent(id) {
+        try {
+            const { error } = await window.supabase
+                .from('events')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            return this.handleSupabaseError(error, 'deleteEvent');
         }
     },
 
@@ -328,6 +390,20 @@ const SupabaseService = {
             return data.publicUrl;
         } catch (error) {
             return this.handleSupabaseError(error, 'uploadAvatar');
+        }
+    },
+
+    async updatePinnedGuidance(mentorshipId, guidance) {
+        try {
+            const { data, error } = await window.supabase
+                .from('mentorships')
+                .update({ pinned_guidance: guidance, updated_at: new Date().toISOString() })
+                .eq('id', mentorshipId)
+                .select();
+            if (error) throw error;
+            return data[0];
+        } catch (error) {
+            return this.handleSupabaseError(error, 'updatePinnedGuidance');
         }
     },
 
@@ -386,8 +462,8 @@ const SupabaseService = {
                 .from('chat_messages')
                 .insert([{
                     mentorship_id: messageData.mentorship_id,
-                    author_id: messageData.author_id || messageData.sender_id,
-                    content: messageData.content || messageData.text || messageData.message_text
+                    sender_id: messageData.sender_id,
+                    text: messageData.text || messageData.message_text
                 }])
                 .select();
             if (error) throw error;
@@ -441,7 +517,7 @@ const SupabaseService = {
         try {
             const { data, error } = await window.supabase
                 .from('notifications')
-                .update({ read: true })
+                .update({ is_read: true })
                 .eq('id', notifId)
                 .select();
             if (error) throw error;
@@ -449,6 +525,27 @@ const SupabaseService = {
         } catch (error) {
             console.error("SupabaseService: markNotificationAsRead failed", error);
             return null;
+        }
+    },
+
+    async createSession(sessionData) {
+        try {
+            const { data, error } = await window.supabase
+                .from('mentorship_sessions')
+                .insert([{
+                    mentorship_id: sessionData.mentorship_id,
+                    title: sessionData.title || 'Mentorship Session',
+                    description: sessionData.description || '',
+                    session_date: sessionData.session_date || new Date().toISOString().split('T')[0],
+                    session_time: sessionData.session_time || '10:00:00',
+                    meeting_link: sessionData.meeting_link || sessionData.zoom_link || '',
+                    status: 'scheduled'
+                }])
+                .select();
+            if (error) throw error;
+            return data[0];
+        } catch (error) {
+            return this.handleSupabaseError(error, 'createSession');
         }
     },
 
@@ -543,6 +640,20 @@ const SupabaseService = {
             })
             .subscribe();
     },
+
+    subscribeToProgressReports(mentorshipId, callback) {
+        return window.supabase
+            .channel(`public:progress_reports:mentorship_id=eq.${mentorshipId}`)
+            .on('postgres_changes', { 
+                event: '*', 
+                schema: 'public', 
+                table: 'progress_reports', 
+                filter: `mentorship_id=eq.${mentorshipId}` 
+            }, payload => {
+                callback(payload);
+            })
+            .subscribe();
+    },
     
     async submitSectionFeedback(feedback) {
         return this.submitFeedback(feedback);
@@ -568,6 +679,35 @@ const SupabaseService = {
             if (error) throw error;
             return data[0];
         } catch (error) { return null; }
+    },
+
+    // ─── Chat Messaging ───────────────────────────────────────
+    // sendMessage and subscribing moved up to Chat & Notifications section
+
+    async getMessages(mentorshipId) {
+        try {
+            const { data, error } = await window.supabase
+                .from('chat_messages')
+                .select('*')
+                .eq('mentorship_id', mentorshipId)
+                .order('created_at', { ascending: true });
+            if (error) throw error;
+            return data;
+        } catch (error) { return []; }
+    },
+
+    subscribeToMessages(mentorshipId, callback) {
+        return window.supabase
+            .channel(`public:chat_messages:mentorship_id=eq.${mentorshipId}`)
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'chat_messages', 
+                filter: `mentorship_id=eq.${mentorshipId}` 
+            }, payload => {
+                callback(payload.new);
+            })
+            .subscribe();
     },
 
     // â”€â”€â”€ Error Handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

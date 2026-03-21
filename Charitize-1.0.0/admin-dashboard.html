@@ -15,11 +15,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" rel="stylesheet">
 
     <!-- Bootstrap & Custom CSS -->
-    <link href="assets/css/bootstrap.min.css?v=15.0.0" rel="stylesheet">
-    <link href="assets/css/innovate-hub.css?v=15.0.0" rel="stylesheet">
-    <link href="assets/css/dashboard-rebuild.css?v=15.0.0" rel="stylesheet">
-    <link href="assets/css/nuru-assistant.css?v=15.0.0" rel="stylesheet">
-    <link href="assets/css/mobile-nav.css?v=15.0.0" rel="stylesheet">
+    <link href="assets/css/bootstrap.min.css?v=130.0.0" rel="stylesheet">
+    <link href="assets/css/innovate-hub.css?v=130.0.0" rel="stylesheet">
+    <link href="assets/css/dashboard-rebuild.css?v=130.0.0" rel="stylesheet">
+    <link href="assets/css/nuru-assistant.css?v=130.0.0" rel="stylesheet">
+    <link href="assets/css/mobile-nav.css?v=130.0.0" rel="stylesheet">
 </head>
 
 <body>
@@ -57,13 +57,9 @@
                         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
                         Project Submissions
                     </a>
-                    <a class="nav-link" href="#" onclick="showSection('mentorshipApprovals')">
-                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
-                        Pairing Approvals
-                    </a>
                     <a class="nav-link" href="#" onclick="showSection('mentorshipPairings')">
                         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        Active Pairings
+                        Mentorship Management
                     </a>
                     <a class="nav-link" href="#" onclick="showSection('eventsManagement')">
                         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -98,6 +94,7 @@
 
         <!-- Main Content -->
         <div class="dashboard-main">
+            <div class="dashboard-content-limit py-4">
             <!-- Clean background elements handled by CSS -->
 
             <!-- ══ ADMIN OVERVIEW SECTION ══ -->
@@ -128,9 +125,9 @@
                     <p class="text-muted">All innovators and mentors on the platform</p>
                 </div>
                 <div class="filter-group d-flex gap-2 mb-4">
-                    <button class="filter-btn active" onclick="setRoleFilter('all')">All Members</button>
-                    <button class="filter-btn" onclick="setRoleFilter('innovator')">Innovators</button>
-                    <button class="filter-btn" onclick="setRoleFilter('mentor')">Mentors</button>
+                    <button class="filter-btn active" onclick="adminDashboard.setRoleFilter('all')">All Members</button>
+                    <button class="filter-btn" onclick="adminDashboard.setRoleFilter('innovator')">Innovators</button>
+                    <button class="filter-btn" onclick="adminDashboard.setRoleFilter('mentor')">Mentors</button>
                 </div>
                 <!-- Card Grid Container -->
                 <div class="row" id="usersCardGrid">
@@ -160,23 +157,48 @@
                 </div>
             </div>
 
-            <!-- ══ MENTORSHIP PAIRING APPROVALS SECTION ══ -->
-            <div id="mentorshipApprovalsSection" class="dashboard-section" style="display:none;">
-                <div class="dashboard-header mb-4">
-                    <h2 style="font-family:var(--font-head);font-weight:800;color:var(--brand-green);">Pairing Approvals</h2>
-                    <p class="text-muted">Review and authorize mentor-mentee relationships</p>
-                </div>
-                <div id="mentorshipApprovalList">
-                    <!-- Injected by admin-dashboard.js -->
-                </div>
-            </div>
 
             <!-- ══ MENTORSHIP PAIRINGS SECTION ══ -->
             <div id="mentorshipPairingsSection" class="dashboard-section" style="display:none;">
                 <div class="dashboard-header mb-4">
-                    <h2 style="font-family:var(--font-head);font-weight:800;color:var(--brand-green);">Mentorship Pairings</h2>
-                    <p class="text-muted">Manage active mentorship relationships across the platform</p>
+                    <h2 style="font-family:var(--font-head);font-weight:800;color:var(--brand-green);">Mentorship Management</h2>
+                    <p class="text-muted">Manage active mentorship relationships and resolve requests to stop</p>
                 </div>
+
+                <!-- Manual Pairing Form -->
+                <div class="admin-table-card mb-4" style="background: rgba(26, 94, 79, 0.02); border: 1px dashed var(--brand-green);">
+                    <div class="admin-table-header">
+                        <h3 class="admin-table-title"><i class="fa fa-plus-circle me-2"></i>Manual Mentorship Pairing</h3>
+                    </div>
+                    <div class="p-4">
+                        <form id="manualPairingForm" class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">1. Select Innovator</label>
+                                <select id="pairInnovatorSelect" class="form-select" required onchange="AdminPanel.loadInnovatorProjects(this.value)">
+                                    <option value="">Choose Innovator...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">2. Select Project</label>
+                                <select id="pairProjectSelect" class="form-select" required disabled>
+                                    <option value="">Choose Project...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">3. Assign Mentor</label>
+                                <select id="pairMentorSelect" class="form-select" required>
+                                    <option value="">Choose Mentor...</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mt-3 text-end">
+                                <button type="submit" class="btn btn-primary px-4 fw-bold rounded-pill">
+                                    Create Pairing
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="admin-table-card">
                     <div class="admin-table-header">
                         <h3 class="admin-table-title">Active Pairings</h3>
@@ -263,133 +285,6 @@
                 </div>
             </div>
 
-            <!-- My Projects Section (kept for legacy compatibility) -->
-            <div id="projectsSection" class="dashboard-section" style="display:none;">
-                <div class="dashboard-header mb-4">
-                    <h2>My Projects</h2>
-                    <p class="text-muted">Track and manage your innovation projects</p>
-                </div>
-                <div id="projectsContainer"></div>
-            </div>
-
-            <!-- Submit Project Section -->
-            <div id="submitSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>Submit New Project</h2>
-                    <p class="text-muted">Share your innovative idea with us</p>
-                </div>
-
-                <div class="dashboard-card">
-                    <form id="projectForm">
-                        <div class="mb-3">
-                            <label class="form-label">Project Title</label>
-                            <input type="text" class="form-control" name="title" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label d-block">Project Categories (Select any that apply)</label>
-                            <div class="d-flex flex-wrap gap-3 p-3 border" style="background: #f8f9fa;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="technology" id="catTech">
-                                    <label class="form-check-label" for="catTech">Technology</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="healthcare" id="catHealth">
-                                    <label class="form-check-label" for="catHealth">Healthcare</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="education" id="catEdu">
-                                    <label class="form-check-label" for="catEdu">Education</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="environment" id="catEnv">
-                                    <label class="form-check-label" for="catEnv">Environment</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="social" id="catSocial">
-                                    <label class="form-check-label" for="catSocial">Social Impact</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="agriculture" id="catAgri">
-                                    <label class="form-check-label" for="catAgri">AgriTech</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="categories" value="robotics" id="catRobo">
-                                    <label class="form-check-label" for="catRobo">Robotics</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Problem Statement</label>
-                            <textarea class="form-control" name="problemStatement" rows="3" required></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Objectives</label>
-                            <textarea class="form-control" name="objectives" rows="3" required></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Proposed Solution</label>
-                            <textarea class="form-control" name="proposedSolution" rows="4" required></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Expected Impact</label>
-                            <textarea class="form-control" name="expectedImpact" rows="3" required></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Supporting Document (Optional)</label>
-                            <input type="file" class="form-control" name="document" accept=".pdf,.doc,.docx">
-                        </div>
-
-                        <button type="submit" class="btn btn-custom-signup">Submit Project</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Find Mentors Section -->
-            <div id="mentorsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>Find Mentors</h2>
-                    <p class="text-muted">Connect with experienced mentors</p>
-                </div>
-
-                <div class="filter-panel mb-4 p-3 bg-white shadow-sm">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Filter by Categories</label>
-                            <div id="mentorCategoryCheckboxes" class="d-flex flex-wrap gap-2">
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="technology">Technology</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="healthcare">Healthcare</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="education">Education</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="environment">Environment</span>
-                                <span class="badge bg-light text-dark border p-2 cursor-pointer category-filter-pill" data-value="agriculture">AgriTech</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Search Mentors</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa fa-search"></i></span>
-                                <input type="text" class="form-control" id="mentorSearchInput" placeholder="Search by name, expertise or institution">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="mentorsContainer" class="row g-4"></div>
-            </div>
-
-            <!-- My Mentors Section -->
-            <div id="myMentorsSection" class="dashboard-section" style="display: none;">
-                <div class="dashboard-header mb-4">
-                    <h2>My Mentors</h2>
-                    <p class="text-muted">Your assigned mentors and requests</p>
-                </div>
-                <div id="myMentorsContainer"></div>
-            </div>
 
             <!-- Admin Settings Section -->
             <div id="profileSection" class="dashboard-section" style="display: none;">
@@ -478,23 +373,25 @@
                     </div>
                 </div>
             </div>
+            </div> <!-- End of .dashboard-content-limit -->
         </div>
     </div>
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/utils/ui-utils.js?v=10.0.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=10.0.0"></script>
-    <script src="assets/js/core/api.js?v=10.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=150.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=150.0.0"></script>
+    <script src="assets/js/core/api.js?v=150.0.0"></script>
     
     <!-- Supabase SDK & Config -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/core/supabase-config.js?v=13.0.0"></script>
+    <script src="assets/js/core/supabase-config.js?v=200.0.0"></script>
     <script src="assets/js/core/supabase-service.js?v=13.0.0" type="module"></script>
 
     <!-- Firebase & Core JS -->
-    <script type="module" src="assets/js/pages/admin-dashboard.js?v=10.0.0"></script>
+    <script type="module" src="assets/js/pages/admin-dashboard.js?v=150.0.0"></script>
+    <script src="assets/js/components/notification-system.js?v=150.0.0"></script>
 
 
 

@@ -1,5 +1,5 @@
-import { auth } from '../core/firebase-config.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// Supabase Auth — user data provided by dashboard.html via initDashboard()
+
 // Firestore imports removed
 import StatusBadge from "../components/status-badges.js";
 import EmptyStates from "../components/empty-states.js";
@@ -194,7 +194,7 @@ class MentorDashboard {
                 id: user.uid,
                 full_name: userData?.fullName || user.displayName || user.email.split('@')[0],
                 email: user.email,
-                role: 'mentor',
+                // role removed to prevent overwrites
                 status: existingProfile?.status || userData?.status || 'active',
                 profile_complete: isComplete,
                 avatar_url: userData?.photoUrl || userData?.photoURL || user.photoURL || ''
@@ -226,97 +226,162 @@ class MentorDashboard {
     try {
       // Fetch latest from Supabase
       const sbProfile = await window.SupabaseService.getProfile(this.currentUser.uid);
-      let userData = sbProfile || providedData;
+      const userData = sbProfile || providedData;
 
       if (userData) {
-        // 1. Check Approval Status
         const status = userData.status || userData.mentorStatus || userData.approvalStatus || "";
-        const isActuallyApproved = userData.isApproved === true || status === "approved" || status === "active";
-
-        if (status === 'rejected') {
-            console.log("MentorDashboard: Account rejected.");
-            return false;
-        }
-
-        if (!isActuallyApproved) {
-            console.log("MentorDashboard: Approval pending or unknown status:", status);
-            this.showPendingApprovalUI();
-            return false;
-        }
-
-    console.log("Mentor Dashboard: Checking profile completion...");
+        const isApproved = userData.isApproved === true || status === "approved" || status === "active";
+        const isComplete = userData.profile_complete === true || userData.profileComplete === true;
         
-    let isComplete = providedData.profileComplete === true || providedData.profile_complete === true;
-    
-    // If Firestore says incomplete, double check Supabase
-    if (!isComplete && window.SupabaseService) {
-        try {
-            const sbProfile = await window.SupabaseService.getProfile(this.currentUser.uid);
-            if (sbProfile && sbProfile.profile_complete === true) {
-                console.log("Mentor Dashboard: Profile completion verified via Supabase ✓");
-                isComplete = true;
+        const onboardingContainer = document.getElementById('onboarding-content');
+        const dashContent = document.getElementById('dashboard-content');
+        const landingCards = document.getElementById("dashboardQuickAccess");
+
+        // Gating Logic: If NOT approved OR NOT complete, lock the dashboard
+        if (!isApproved || !isComplete) {
+            console.log("MentorDashboard: Gating active. Approved:", isApproved, "Complete:", isComplete);
+            
+            // 1. Show dashboard but prepare for locking
+            if (dashContent) {
+                dashContent.style.display = 'block';
+                dashContent.style.visibility = 'visible';
+                dashContent.style.opacity = '1';
             }
-        } catch (e) {
-            console.warn("Mentor Dashboard: Supabase completion check failed", e);
+            if (landingCards) landingCards.style.display = 'block';
+            
+            // 2. Render the lock UI and Progress Bar
+            this.renderProfileCompletion(userData, isApproved, isComplete);
+            
+            // 3. Apply locking to specific cards (except Profile and Nuru)
+            this.applyDashboardLocking();
+            
+            // 4. If not approved, show a small "Awaiting Approval" banner if they ARE complete
+            if (isApproved && !isComplete) {
+                // They are approved but haven't finished the wizard
+                // We could show the wizard inline or just let them use the Profile section
+            }
+            
+            return true; // Return true to allow init to continue (but locked)
         }
-    }
 
-    const onboardingContainer = document.getElementById('onboarding-content');
-    const dashContent = document.getElementById('dashboard-content');
-    const landingCards = document.getElementById("dashboardQuickAccess");
-    const activeSectionContainer = document.getElementById("activeSectionContainer");
-
-    if (!isComplete) {
-        console.warn("Mentor Dashboard: Profile incomplete. Launching onboarding wizard.");
-        document.body.style.background = 'linear-gradient(135deg, #edf7f4 0%, #fdf6e9 100%)';
-        if (landingCards) {
-            landingCards.style.display = "none";
-            landingCards.style.visibility = "hidden";
-        }
-        if (activeSectionContainer) {
-            activeSectionContainer.style.display = "none";
-        }
-        if (onboardingContainer) {
-            onboardingContainer.style.setProperty('display', 'block', 'important');
-            onboardingContainer.style.visibility = 'visible';
-            onboardingContainer.style.opacity = '1';
-            onboardingContainer.style.zIndex = '1000';
-        }
-        if (dashContent) dashContent.style.display = 'none';
+        // Fully approved and complete
+        console.log("Mentor Dashboard: Access granted.");
+        const lockBar = document.getElementById('mentorProfileCompletion');
+        if (lockBar) lockBar.style.display = 'none';
         
-        // Wait for internal scripts to settle before initializing wizard
-        setTimeout(() => {
-            this.showOnboardingInline();
-        }, 150); // Original delay was 150ms, keeping it.
-        return false;
-    } else {
-        console.log("Mentor Dashboard: Profile verified complete. Access granted.");
-        if (onboardingContainer) onboardingContainer.style.display = 'none';
         if (dashContent) {
             dashContent.style.display = 'block';
             dashContent.style.visibility = 'visible';
-            dashContent.style.opacity = '1';
         }
-        if (landingCards) {
-            landingCards.style.display = "block";
-            landingCards.style.visibility = "visible";
-        }
-        document.body.style.overflow = 'auto';
-        document.body.style.background = '';
-
-        const realName = providedData.full_name || providedData.fullName || this.currentUser.displayName || this.currentUser.email.split('@')[0];
-        const realAvatar = providedData.avatar_url || providedData.photoUrl || this.currentUser.photoURL || '';
-
-        this.updateUserIdentity(realName, realAvatar);
-        this.populateProfileForms(providedData);
-        this.syncProfileHeaderUI(providedData);
+        
+        this.unlockDashboard();
         return true;
       }
-    }
+      return false;
     } catch (err) {
       console.error("Error in checkProfileCompletion:", err);
       return false;
     }
+  }
+
+  renderProfileCompletion(data, isApproved, isComplete) {
+    const container = document.getElementById('mentorProfileCompletion');
+    if (!container) return;
+    container.style.display = 'block';
+
+    // Calculate completion
+    let filledFields = 0;
+    const fields = [
+        { key: 'full_name', label: 'Basic Info' },
+        { key: 'bio', label: 'Bio' },
+        { key: 'profession', label: 'Profession' },
+        { key: 'expertise', label: 'Expertise' },
+        { key: 'experience', label: 'Experience' },
+        { key: 'availability', label: 'Availability' },
+        { key: 'avatar_url', label: 'Photo' },
+        { key: 'status', label: 'Approval' }
+    ];
+
+    if (data.full_name || data.fullName) filledFields++;
+    if (data.bio) filledFields++;
+    if (data.profession) filledFields++;
+    if (data.expertise && (Array.isArray(data.expertise) ? data.expertise.length > 0 : data.expertise.length > 5)) filledFields++;
+    if (data.experience) filledFields++;
+    if (data.availability || data.meeting_link) filledFields++;
+    if (data.avatar_url || data.photoUrl) filledFields++;
+    if (isApproved) filledFields++;
+
+    const percentage = Math.round((filledFields / fields.length) * 100);
+    
+    let statusMessage = "";
+    if (!isComplete) {
+        statusMessage = "Please complete your profile to unlock all features.";
+    } else if (!isApproved) {
+        statusMessage = "Profile complete! Awaiting admin approval (usually 24-48h).";
+    }
+
+    container.innerHTML = `
+        <div class="profile-completion-wrapper">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="completion-status-text">
+                    <i class="fa ${isComplete ? 'fa-check-circle' : 'fa-info-circle'} me-2"></i>
+                    ${statusMessage}
+                </div>
+                <div class="fw-bold" style="color:var(--brand-green)">${percentage}%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar-fill" style="width: ${percentage}%"></div>
+            </div>
+            <div class="step-indicator">
+                ${fields.map((f, i) => {
+                    const isStepFilled = i < filledFields;
+                    const isCurrent = i === filledFields;
+                    return `
+                        <div class="step-item ${isStepFilled ? 'completed' : ''} ${isCurrent ? 'active' : ''}">
+                            <div class="step-dot"></div>
+                            <span>${f.label}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+  }
+
+  applyDashboardLocking() {
+    // Select all dashboard cards except Profile and empty/placeholder ones
+    const cards = document.querySelectorAll('.dashboard-card, .dash-nav-card');
+    cards.forEach(card => {
+        // Skip Profile card and Nuru (nuru is usually a floating button or fixed)
+        const text = card.textContent.toLowerCase();
+        if (text.includes('profile') || text.includes('settings') || card.id === 'nuruControl') {
+            return;
+        }
+
+        card.classList.add('is-locked');
+        
+        // Add overlay if not present
+        if (!card.querySelector('.dashboard-locked-overlay')) {
+            const overlay = document.createElement('div');
+            overlay.className = 'dashboard-locked-overlay';
+            overlay.innerHTML = `
+                <div class="lock-message">
+                    <i class="fa fa-lock fa-2x mb-2" style="color:var(--brand-yellow)"></i>
+                    <div class="small fw-bold">Section Locked</div>
+                </div>
+            `;
+            card.appendChild(overlay);
+        }
+    });
+  }
+
+  unlockDashboard() {
+    const cards = document.querySelectorAll('.is-locked');
+    cards.forEach(card => {
+        card.classList.remove('is-locked');
+        const overlay = card.querySelector('.dashboard-locked-overlay');
+        if (overlay) overlay.remove();
+    });
   }
 
   syncProfileHeaderUI(data) {
@@ -646,7 +711,7 @@ class MentorDashboard {
 
       // 2. Primary Sync: Supabase Profile
       if (window.SupabaseService) {
-          await window.SupabaseService.upsertProfile({
+          const profileData = {
             id: this.currentUser.uid,
             status: "active",
             profile_complete: true,
@@ -654,9 +719,26 @@ class MentorDashboard {
             expertise: this.onboardingData.expertise?.join(', '),
             experience: this.onboardingData.experience,
             mentoring_style: this.onboardingData.style,
-            availability: this.onboardingData.availability,
             industries_of_interest: this.onboardingData.industries?.join(', ')
-          });
+          };
+
+          if (this.onboardingData.availability) profileData.availability = this.onboardingData.availability;
+
+          try {
+              await window.SupabaseService.upsertProfile(profileData);
+          } catch (err) {
+              if (err.message && err.message.includes('schema cache')) {
+                  console.warn("MentorDashboard: Schema cache mismatch detected. Retrying with minimal profile...");
+                  // Essential fields only to bypass stale cache columns
+                  await window.SupabaseService.upsertProfile({
+                      id: this.currentUser.uid,
+                      status: "active",
+                      profile_complete: true
+                  });
+              } else {
+                  throw err;
+              }
+          }
           console.log("Mentor Dashboard: Supabase Onboarding Synced ✓");
       }
 
@@ -773,12 +855,17 @@ class MentorDashboard {
                 // Update Firestore - Removed
 
                 // Sync Navbar
-                this.updateUserIdentity(this.currentUser.displayName || this.currentUser.email.split('@')[0], publicUrl);
+                window.dispatchEvent(new CustomEvent('profileUpdated', {
+                    detail: {
+                        fullName: this.currentUser.displayName || this.currentUser.email.split('@')[0],
+                        photoUrl: publicUrl
+                    }
+                }));
                 
                 alert('Profile picture updated successfully!');
             } catch (err) {
                 console.error("Profile pic upload failed:", err);
-                alert('Failed to update profile picture. Ensure your Supabase Storage has a "public" bucket.');
+                alert('Failed to update profile picture. Ensure your Supabase Storage has a "public-assets" bucket and it is set to public.');
             } finally {
                 if (preview) preview.style.opacity = '1';
             }
@@ -1266,10 +1353,14 @@ class MentorDashboard {
           
           // 2. Secondary Sync: Firestore (Silent) - Removed
 
-          alert('Profile updated successfully!');
-          // Sync with navbar
-          const avatarUrl = document.getElementById('profilePreview')?.src || "";
-          this.updateUserIdentity(profileData.fullName, avatarUrl);
+            alert('Profile updated successfully!');
+            // Sync with navbar & dashboard
+            window.dispatchEvent(new CustomEvent('profileUpdated', {
+                detail: {
+                    fullName: profileData.fullName,
+                    photoUrl: avatarUrl
+                }
+            }));
       } catch (err) {
            console.error("Profile update error:", err);
           alert("Failed to update profile.");
@@ -1315,18 +1406,31 @@ class MentorDashboard {
         try {
             const requestId = this.currentRejectionRequestId;
             
-            // 1. Update Supabase (Primary)
+            // Check if this is an INITIAL rejection or an ACTIVE mentorship termination
+            // We can check the status of the request first
+            const mentorships = await window.SupabaseService.getMentorships();
+            const currentReq = mentorships.find(m => m.id === requestId);
+            
+            let targetStatus = "rejected"; // Default for new requests
+            if (currentReq && currentReq.status === 'accepted') {
+                targetStatus = "pending_admin_rejection"; // Admin must dissolve active ones
+            }
+
+            // 1. Update Supabase
             if (window.SupabaseService) {
-                await window.SupabaseService.updateMentorshipStatus(requestId, "pending_admin_rejection", {
+                await window.SupabaseService.updateMentorshipStatus(requestId, targetStatus, {
                     rejection_reason: reason,
                     rejection_requested_at: new Date().toISOString()
                 });
             }
 
-            // 2. Legacy Sync: Firestore & Notification (Background) - Removed
-
             modalInstance.hide();
-            alert('Your rejection request has been submitted for admin approval.');
+            
+            if (targetStatus === "rejected") {
+                alert('Request rejected successfully.');
+            } else {
+                alert('Your request to stop mentorship has been submitted for admin review.');
+            }
             
             // Reload UI
             this.loadRequests();
@@ -1334,8 +1438,8 @@ class MentorDashboard {
             this.loadStats();
 
         } catch (error) {
-            console.error("Error submitting rejection request:", error);
-            alert("Failed to submit rejection request: " + error.message);
+            console.error("Error submitting rejection:", error);
+            alert("Failed to submit rejection: " + error.message);
         } finally {
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = 'Submit Rejection Request';
@@ -1421,5 +1525,6 @@ export async function initDashboard(user, userData) {
     };
 }
 
-// Initial instance for window access
+
+// Initial instance for window access (legacy)
 window.dashboard = window.dashboard || new MentorDashboard();

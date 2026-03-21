@@ -1,37 +1,68 @@
-import { auth } from '../core/firebase-config.js';
-// Firestore imports removed
+// Supabase Auth — no Firebase dependency
 
 class AdminDashboard {
     constructor() {
         this.currentUser = null;
         this.eventsLoaded = false;
         this.heatmapData = {};
+        this.currentRoleFilter = 'all';
         this.init();
     }
 
     async init() {
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
+        // Use Supabase session instead of Firebase onAuthStateChanged
+        let supabaseUser = null;
+        if (window.supabase) {
+            const { data: { session } } = await window.supabase.auth.getSession();
+            supabaseUser = session?.user || null;
+        }
+
+        if (!supabaseUser) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Role Guard: Verify admin status in Supabase
+        if (window.SupabaseService) {
+            try {
+                const profile = await window.SupabaseService.getProfile(supabaseUser.id);
+                const roleFromProfile = (profile?.role || "").toLowerCase();
+                const roleFromMeta = (supabaseUser.user_metadata?.role || "").toLowerCase();
+                
+                if (roleFromProfile !== 'admin' && roleFromMeta !== 'admin') {
+                    console.error("AdminDashboard: Unauthorized - Role from profile:", roleFromProfile, "Role from meta:", roleFromMeta);
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+            } catch (err) {
+                console.error("AdminDashboard: Role verification failed:", err);
+                window.location.href = 'dashboard.html';
                 return;
             }
-            this.currentUser = user;
-            
-            // Basic UI Setup
-            this.updateUserDisplay();
-            this.setupNotifications();
-            
-            // Initial Data Load
-            await this.loadStats();
-            await this.loadProjectReviews();
-            await this.renderActivityHeatmap();
-            
-            // Make instance globally available for onclick handlers
-            window.adminDashboard = this;
-            window.AdminPanel = this; // Backward compatibility for legacy handlers
-            
-            this.setupEventListeners();
-        });
+        }
+
+        // Wrap user to match expected shape
+        this.currentUser = {
+            uid: supabaseUser.id,
+            id: supabaseUser.id,
+            email: supabaseUser.email,
+            displayName: supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0]
+        };
+
+        // Basic UI Setup
+        this.updateUserDisplay();
+        this.setupNotifications();
+
+        // Initial Data Load
+        await this.loadStats();
+        await this.loadProjectReviews();
+        await this.renderActivityHeatmap();
+
+        // Make instance globally available for onclick handlers
+        window.adminDashboard = this;
+        window.AdminPanel = this;
+
+        this.setupEventListeners();
     }
 
     setupEventListeners() {
@@ -229,12 +260,26 @@ class AdminDashboard {
             case 'adminOverview': this.loadStats(); this.renderActivityHeatmap(); break;
             case 'projectApprovals': this.loadProjectReviews(); break;
             case 'mentorApprovals': this.loadMentorApprovals(); break;
-            case 'mentorshipApprovals': this.loadMentorshipApprovals(); break;
             case 'users': this.loadUsers(); break;
             case 'eventsManagement': this.loadAdminEvents(); break;
             case 'mentorshipPairings': this.loadMentorships(); break;
-            case 'rejectionRequests': this.loadRejectionRequests(); break;
         }
+    }
+
+    setRoleFilter(role) {
+        console.log("Admin Dashboard: Setting role filter to", role);
+        this.currentRoleFilter = role;
+        
+        // Update UI buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.getAttribute('onclick')?.includes(`'${role}'`)) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        this.loadUsers();
     }
 
     // ============================================================
@@ -307,25 +352,55 @@ class AdminDashboard {
         container.innerHTML = '<div class="text-center p-5 w-100"><span class="spinner-border"></span></div>';
         try {
             if (!window.SupabaseService) return;
-            const profiles = await window.SupabaseService.getAllProfiles();
+            const filter = this.currentRoleFilter === 'all' ? null : this.currentRoleFilter;
+            const profiles = await window.SupabaseService.getAllProfiles(filter);
             let users = (profiles || []).filter(u => u.role !== 'admin');
+
+            console.group("Admin Dashboard: User Data Log");
+            console.log("Current Filter:", this.currentRoleFilter);
+            console.log("Total Profiles Fetched:", profiles?.length || 0);
+            console.log("Innovators:", users.filter(u => u.role === 'innovator').length);
+            console.log("Mentors:", users.filter(u => u.role === 'mentor').length);
+            console.groupEnd();
+
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-5 w-100">
+                        <div class="mb-3"><i class="fa fa-users-slash display-4 text-muted"></i></div>
+                        <h4 class="text-muted">No users found for this filter.</h4>
+                        <p class="text-muted small">Try switching to 'All Members' or check if users have synced from Firebase.</p>
+                    </div>`;
+                return;
+            }
 
             container.innerHTML = users.map(u => `
                 <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="premium-user-card p-4" style="background:#fff; border-radius:20px; box-shadow:0 8px 30px rgba(0,0,0,0.05);">
+                    <div class="premium-user-card p-4 h-100" style="background:#fff; border-radius:20px; box-shadow:0 8px 30px rgba(0,0,0,0.05); display:flex; flex-direction:column;">
                         <div class="d-flex align-items-center gap-3 mb-3">
-                            <div style="width:50px; height:50px; background:#f1f5f9; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#1a5e4f;">${(u.fullName || u.email).substring(0, 2).toUpperCase()}</div>
-                            <div>
-                                <h6 class="mb-0 fw-bold">${u.fullName || 'User'}</h6>
-                                <p class="mb-0 small text-muted">${u.role}</p>
+                            <div style="width:50px; height:50px; background:#f1f5f9; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#1a5e4f; flex-shrink:0;">
+                                ${(u.full_name || u.fullName || u.email || 'U').substring(0, 2).toUpperCase()}
+                            </div>
+                            <div style="min-width:0;">
+                                <h6 class="mb-0 fw-bold text-truncate">${u.full_name || u.fullName || 'ID: ' + u.id.substring(0, 8)}</h6>
+                                <p class="mb-0 small text-muted text-uppercase fw-bold" style="font-size:0.65rem;">${u.role}</p>
                             </div>
                         </div>
-                        <div class="small text-muted mb-3"><i class="fa fa-envelope me-2"></i>${u.email}</div>
-                        <button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="adminDashboard.deleteUser('${u.id}')">Block Account</button>
+                        <div class="small text-muted mb-3 text-truncate"><i class="fa fa-envelope me-2"></i>${u.email || 'No email provided'}</div>
+                        <div class="mb-3 small">
+                            <span class="badge ${u.status === 'approved' || u.status === 'active' ? 'bg-success' : 'bg-warning'} text-white">
+                                ${u.status || 'pending'}
+                            </span>
+                        </div>
+                        <div class="mt-auto">
+                            <button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="adminDashboard.deleteUser('${u.id}')">Block Account</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
-        } catch(e) {}
+        } catch(e) {
+            console.error("Error loading users:", e);
+            container.innerHTML = '<div class="alert alert-danger">Error loading users. Please check the console for details.</div>';
+        }
     }
 
     async deleteUser(id) {
@@ -391,8 +466,12 @@ class AdminDashboard {
         try {
             if (window.SupabaseService) {
                 await window.SupabaseService.updateProfileStatus(id, 'approved');
+                
+                // Send Notification
+                if (typeof NotificationSystem !== 'undefined') {
+                    await NotificationSystem.send(id, "Your mentor application has been approved! Welcome to Innovate Hub.");
+                }
             }
-            // Firestore sync removed
             
             alert('Mentor approved!');
             this.loadMentorApprovals();
@@ -403,11 +482,14 @@ class AdminDashboard {
 
     async rejectMentor(id) {
         try {
-            // Sync with Supabase
             if (window.SupabaseService) {
                 await window.SupabaseService.updateProfileStatus(id, 'rejected');
+                
+                // Send Notification
+                if (typeof NotificationSystem !== 'undefined') {
+                    await NotificationSystem.send(id, "We regret to inform you that your mentor application was not approved at this time.");
+                }
             }
-            // Firestore sync removed
             
             alert('Mentor rejected.');
             this.loadMentorApprovals();
@@ -419,112 +501,7 @@ class AdminDashboard {
     // ============================================================
     //  MENTORSHIP PAIRING APPROVALS
     // ============================================================
-    async loadMentorshipApprovals() {
-        const container = document.getElementById('mentorshipApprovalList');
-        if (!container) return;
-        
-        container.innerHTML = '<div class="text-center p-5"><span class="spinner-border text-primary"></span></div>';
-        try {
-            let pendingPairings = [];
-
-            // Supabase (Primary)
-            if (window.SupabaseService) {
-                const sbReqs = await window.SupabaseService.getPendingAdminMentorships();
-                if (sbReqs && sbReqs.length > 0) {
-                    pendingPairings = sbReqs.map(r => ({
-                        id: r.id,
-                        innovatorId: r.innovator_id,
-                        mentorId: r.mentor_id,
-                        projectId: r.project_id,
-                        status: r.status,
-                        innovatorName: r.innovator?.full_name || 'Innovator',
-                        mentorName: r.mentor?.full_name || 'Mentor',
-                        projectTitle: r.project?.title || 'General Mentorship'
-                    }));
-                    console.log("Admin: Loaded pending pairings from Supabase ✓");
-                }
-            }
-
-            if (pendingPairings.length === 0) {
-                container.innerHTML = '<div class="text-center p-5 text-muted">No pairings awaiting admin approval.</div>';
-                return;
-            }
-
-            let html = '';
-            for (const r of pendingPairings) {
-                html += `
-                    <div class="dashboard-card mb-3 p-4 border-start border-info border-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold mb-0">Mentorship Pair Request</h5>
-                            <span class="badge bg-info text-white">Pending Admin</span>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="small text-muted">Innovator</div>
-                                <div class="fw-bold text-dark">${r.innovatorName}</div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="small text-muted">Mentor</div>
-                                <div class="fw-bold text-dark">${r.mentorName}</div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="small text-muted">Project</div>
-                                <div class="fw-bold text-dark">${r.projectTitle}</div>
-                            </div>
-                        </div>
-                        <div class="d-flex gap-2 mt-4">
-                            <button class="btn btn-sm btn-success px-4" onclick="adminDashboard.approvePairing('${r.id}')">Approve Pairing</button>
-                            <button class="btn btn-sm btn-outline-danger px-4" onclick="adminDashboard.rejectPairing('${r.id}')">Reject Pairing</button>
-                        </div>
-                    </div>`;
-            }
-            container.innerHTML = html;
-        } catch (e) {
-            console.error(e);
-            container.innerHTML = `<div class="alert alert-danger">Failed to load pairings.</div>`;
-        }
-    }
-
-    async approvePairing(id) {
-        if (!confirm('Approve this mentor-mentee pairing? Both parties will gain access to the Collaboration Hub.')) return;
-        try {
-            // 1. Optional Firestore Sync removed
-
-
-            // 2. Supabase Sync: Update Status
-            if (window.SupabaseService) {
-                try {
-                    await window.SupabaseService.updateMentorshipStatus(id, 'accepted');
-                    console.log("Admin: Pairing approval synced to Supabase");
-                } catch (sbErr) {
-                    console.error("Admin: Supabase pairing sync failed", sbErr);
-                }
-            }
-
-            alert('Pairing approved!');
-            this.loadMentorshipApprovals();
-        } catch(e) { alert(e.message); }
-    }
-
-    async rejectPairing(id) {
-        if (!confirm('Reject this pairing request?')) return;
-        try {
-            // 1. Update Firestore - Removed
-
-            // 2. Supabase Sync: Update Status
-            if (window.SupabaseService) {
-                try {
-                    await window.SupabaseService.updateMentorshipStatus(id, 'rejected');
-                    console.log("Admin: Pairing rejection synced to Supabase");
-                } catch (sbErr) {
-                    console.error("Admin: Supabase pairing sync failed", sbErr);
-                }
-            }
-
-            alert('Pairing rejected.');
-            this.loadMentorshipApprovals();
-        } catch(e) { alert(e.message); }
-    }
+    // loadMentorshipApprovals, approvePairing, rejectPairing removed as mentors now handle these directly.
 
     // ============================================================
     //  EVENT MANAGEMENT
@@ -546,7 +523,7 @@ class AdminDashboard {
                     <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; margin-bottom:0.5rem; background:#fff; border-radius:12px; border:1px solid #e2e8f0; gap:1rem;">
                         <div style="min-width:0; flex:1;">
                             <div style="font-weight:700; font-size:0.85rem; color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ev.title}</div>
-                            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${ev.date} &bull; ${ev.location}</div>
+                            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${ev.event_date || 'No Date'} &bull; ${ev.location}</div>
                         </div>
                         <div style="display:flex; gap:0.4rem; flex-shrink:0;">
                             <button onclick="adminDashboard.editEvent('${ev.id}')" title="Edit"
@@ -560,7 +537,13 @@ class AdminDashboard {
                         </div>
                     </div>`
             ).join('');
-        } catch(e) {}
+        } catch(e) {
+            console.error("Error loading events:", e);
+            container.innerHTML = `<div class="col-12 text-center text-danger py-4">
+                <i class="fa fa-exclamation-circle mb-2"></i><br>
+                Failed to load events. Please check the console.
+            </div>`;
+        }
     }
 
     async handleEventSubmit(e) {
@@ -608,7 +591,7 @@ class AdminDashboard {
             };
 
             if (id) {
-                // Supabase Sync: Upsert Event
+                // Supabase Sync: Update Existing Event
                 if (window.SupabaseService) {
                     try {
                         await window.SupabaseService.upsertEvent({
@@ -623,16 +606,15 @@ class AdminDashboard {
                         console.log("Supabase Event Sync: Updated");
                     } catch (sbErr) {
                         console.error("Supabase Event Sync Error", sbErr);
+                        throw sbErr; // Rethrow to catch in the main block
                     }
                 }
                 alert('Event updated!');
             } else {
-                const newId = 'event_' + Date.now();
-                // Supabase Sync: Upsert Event
+                // Supabase Sync: Create New Event (Omit ID to let DB generate UUID)
                 if (window.SupabaseService) {
                     try {
                         await window.SupabaseService.upsertEvent({
-                            id: newId,
                             title: data.title,
                             description: data.description,
                             event_date: data.date,
@@ -643,6 +625,7 @@ class AdminDashboard {
                         console.log("Supabase Event Sync: Created");
                     } catch (sbErr) {
                         console.error("Supabase Event Sync Error", sbErr);
+                        throw sbErr; // Rethrow to catch in the main block
                     }
                 }
                 alert('Event created!');
@@ -870,21 +853,33 @@ class AdminDashboard {
 
     async logout() {
         try {
-            await auth.signOut();
+            // Sign out from Supabase to invalidate the server session
+            if (window.supabase) {
+                await window.supabase.auth.signOut();
+            }
             localStorage.removeItem('innovateHubUser');
-            window.location.href = 'login.html';
+            localStorage.removeItem('justLoggedIn');
+            sessionStorage.clear();
+            // Redirect to homepage using replace() so back-button can't return
+            window.location.replace('index.html');
         } catch (e) {
-            window.location.href = 'login.html';
+            console.error('Admin logout error:', e);
+            localStorage.removeItem('innovateHubUser');
+            localStorage.removeItem('justLoggedIn');
+            sessionStorage.clear();
+            window.location.replace('index.html');
         }
     }
 }
 
 // Global Exports
 window.AdminDashboard = AdminDashboard;
-window.logout = () => window.adminDashboard?.logout();
+// NOTE: window.logout is intentionally NOT overridden here.
+// The canonical logout is defined in shared-ui.js and handles Supabase signOut + redirect to index.html.
+// The admin 'End Session' button calls window.logout() which uses that shared implementation.
 window.showSection = (section) => window.adminDashboard?.showSection(section);
 
 // Auto-init
 document.addEventListener('DOMContentLoaded', () => {
-    new AdminDashboard();
+    window.adminDashboard = new AdminDashboard();
 });

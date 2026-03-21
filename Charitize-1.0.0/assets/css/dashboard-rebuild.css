@@ -57,6 +57,22 @@ html, body {
   z-index: 1;
 }
 
+/* OUTER LIMIT: Standard modern desktop boundary */
+.dashboard-content-limit {
+    max-width: 1140px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* INNER LIMIT: For forms, lists, and detailed content (Better readability) */
+.dashboard-inner-container {
+    max-width: 1000px !important;
+    margin: 0 auto !important;
+    width: 100%;
+}
+
 /* ── ADMINISTRATION CARDS (CLEAN) ────────────────────────── */
 /* Standard Dashboard/Premium Card */
 .dashboard-grid-card {
@@ -216,6 +232,22 @@ body::after {
 /* Clean background base */
 .page-blob {
   display: none !important;
+}
+
+/* ── ANIMATIONS ─────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
 }
 
 /* Ensure all content sits above the background layer */
@@ -389,10 +421,13 @@ section,
   letter-spacing: 0.5px;
   border-radius: 10px;
   transition: all 0.3s ease;
+  opacity: 1 !important; /* Force visibility */
+  transform: none !important;
+  visibility: visible !important;
 }
 
 .project-actions .btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -753,7 +788,7 @@ body.role-mentor,
 
 .dash-nav-card {
   position: relative;
-  background: #ffffff;
+  background: linear-gradient(160deg, #ffffff 50%, rgba(44, 95, 93, 0.02) 100%);
   border-radius: 20px;
   padding: 36px;
   cursor: pointer;
@@ -761,9 +796,9 @@ body.role-mentor,
   flex-direction: column;
   justify-content: flex-start;
   min-height: 290px;
-  border: 1px solid rgba(26, 95, 93, 0.12); /* More distinct border */
+  border: 1px solid rgba(26, 95, 93, 0.12);
   transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); /* Stronger shadow */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); /* Always has a gentle soft shadow */
   overflow: hidden;
   z-index: 10;
 }
@@ -798,10 +833,10 @@ body.role-mentor,
   width: 60px;
   height: 60px;
   background: var(--brand-yellow);
-  opacity: 0.1;
+  opacity: 0.15;
   border-radius: 50%;
   transition: all 0.5s ease;
-  transform: translate(20px, -20px);
+  transform: translate(5px, -5px); /* Let a corner peak inside */
   z-index: 0;
 }
 
@@ -816,7 +851,8 @@ body.role-mentor,
   bottom: 0;
   left: 0;
   height: 6px;
-  width: 0;
+  width: 60px; /* Small persistent visual cue */
+  border-radius: 0 4px 0 20px;
   background: #2C5F5D; /* Solid Teal */
   transition: width 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   z-index: 2;
@@ -840,6 +876,7 @@ body.role-mentor,
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   z-index: 1;
+  box-shadow: 0 4px 10px rgba(44, 95, 93, 0.04); /* Soft shadow by default */
 }
 
 .dash-nav-card:hover .dnc-icon {
@@ -918,14 +955,17 @@ body.role-mentor,
   right: 32px;
   width: 40px;
   height: 40px;
-  background: #f1f5f9;
+  background: #f8fafc;
+  border: 1px solid rgba(0,0,0,0.05); /* Soft border */
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: rgba(44, 95, 93, 0.6); /* Brand teal, slightly faded */
   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   z-index: 1;
+  opacity: 1; /* Fully visible */
+  transform: translateX(0); /* Fixed the duplicate offset */
 }
 
 .dnc-arrow svg {
@@ -936,8 +976,9 @@ body.role-mentor,
 
 .dash-nav-card:hover .dnc-arrow {
   background: #F2A81D;
+  border-color: #F2A81D;
   color: #fff;
-  transform: translateX(5px);
+  transform: translateX(5px) rotate(-45deg);
   box-shadow: 0 4px 12px rgba(242, 168, 29, 0.3);
 }
 
@@ -994,22 +1035,7 @@ body.role-mentor,
     color: #64748b;
 }
 
-/* Arrow - Understated */
-/* Arrow - Understated */
-.dnc-arrow {
-  position: absolute;
-  bottom: 32px;
-  right: 32px;
-  opacity: 0.2;
-  transform: translateX(-10px);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  color: var(--brand-green);
-}
-
-.dash-nav-card:hover .dnc-arrow {
-  opacity: 1;
-  transform: translateX(0) rotate(-45deg);
-}
+/* Duplicated Understated Arrow rule removed */
 
 /* Uiverse inspired tags/types */
 .card-tags {

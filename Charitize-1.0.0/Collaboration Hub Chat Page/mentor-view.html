@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Collaboration Hub</title>
+    <link rel="stylesheet" href="collaboration-hub.css">
+</head>
+<body>
+    <!-- Mentor View Container -->
+    <div class="collaboration-hub mentor-view">
+        <!-- Left Sidebar - Projects -->
+        <aside class="sidebar left-sidebar" id="leftSidebar">
+            <div class="sidebar-header gradient-teal">
+                <div class="sidebar-title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="7"></circle>
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                    </svg>
+                    <h2>My Mentees</h2>
+                </div>
+                <p>Active mentorship projects</p>
+            </div>
+            <div class="sidebar-content">
+                <div class="project-list" id="projectList">
+                    <!-- Projects will be loaded here -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Panel - Chat -->
+        <main class="center-panel">
+            <!-- Chat Header -->
+            <div class="chat-header gradient-teal">
+                <button class="icon-btn menu-toggle" id="leftMenuToggle">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="chat-header-info">
+                    <div class="project-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="6"></circle>
+                            <circle cx="12" cy="12" r="2"></circle>
+                        </svg>
+                        <h2 id="currentProjectName">AI-Powered Learning Platform</h2>
+                    </div>
+                    <p id="currentInnovator">Mentoring: Sarah Chen</p>
+                </div>
+                <span class="badge badge-mentor">Mentor View</span>
+                <button class="icon-btn menu-toggle right-toggle" id="rightMenuToggle">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Pinned Message -->
+            <div class="pinned-message pinned-teal">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="17" x2="12" y2="22"></line>
+                    <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                </svg>
+                <div class="pinned-content">
+                    <p class="pinned-label">Pinned Guidance</p>
+                    <p class="pinned-text">Remember to include unit tests for all new features and update the API documentation accordingly.</p>
+                </div>
+                <button class="btn-small btn-ghost">Edit</button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be loaded here -->
+            </div>
+
+            <!-- Message Input -->
+            <div class="message-input-container">
+                <button class="icon-btn attach-btn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                </button>
+                <input type="text" class="message-input" placeholder="Send message..." id="messageInput">
+                <button class="btn btn-primary gradient-teal" id="sendBtn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span class="btn-text">Send</span>
+                </button>
+            </div>
+        </main>
+
+        <!-- Right Sidebar - Feedback Tools -->
+        <aside class="sidebar right-sidebar" id="rightSidebar">
+            <div class="sidebar-header gradient-teal">
+                <div class="sidebar-title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    <h3>Mentorship Tools</h3>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab-list tabs-teal">
+                    <button class="tab-btn active" data-tab="give-feedback">Give Feedback</button>
+                    <button class="tab-btn" data-tab="view-reports">View Reports</button>
+                </div>
+
+                <!-- Give Feedback Tab -->
+                <div class="tab-content active" id="give-feedback">
+                    <div class="tab-inner">
+                        <div class="feedback-form card card-teal">
+                            <h4 class="form-title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <circle cx="12" cy="12" r="6"></circle>
+                                    <circle cx="12" cy="12" r="2"></circle>
+                                </svg>
+                                Provide Structured Feedback
+                            </h4>
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select class="form-control">
+                                    <option>Project Concept</option>
+                                    <option>Technical Implementation</option>
+                                    <option>Market Viability</option>
+                                    <option>Recommendations</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Rating</label>
+                                <select class="form-control">
+                                    <option value="positive">Strong</option>
+                                    <option value="needs-work">Needs Work</option>
+                                    <option value="suggestion">Suggestion</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Feedback</label>
+                                <textarea class="form-control" rows="5" placeholder="Share your expert insights..."></textarea>
+                            </div>
+                            <button class="btn btn-primary gradient-teal w-full">Submit Feedback</button>
+                        </div>
+
+                        <div class="feedback-list">
+                            <h4>Previous Feedback</h4>
+                            <div id="feedbackList">
+                                <!-- Feedback cards will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Reports Tab -->
+                <div class="tab-content" id="view-reports">
+                    <div class="tab-inner">
+                        <div class="empty-state">
+                            <div class="empty-icon gradient-teal-bg">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                            </div>
+                            <p>Reports from <span id="reportInnovatorName">Sarah Chen</span> will appear here</p>
+                            <p class="empty-subtext">2 reports submitted this month</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Overlay -->
+        <div class="overlay" id="overlay"></div>
+    </div>
+
+    <script src="collaboration-hub.js"></script>
+    <script src="mentor-data.js"></script>
+</body>
+</html>

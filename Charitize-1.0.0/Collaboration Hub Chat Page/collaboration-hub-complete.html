@@ -1,0 +1,2034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaboration Hub - Mentorship Platform</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+
+        /* Role Selector Styles */
+        .role-selector {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            padding: 2rem;
+        }
+
+        .role-selector-container {
+            max-width: 64rem;
+            width: 100%;
+        }
+
+        .role-selector-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .role-selector-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.75rem;
+        }
+
+        .role-selector-header p {
+            font-size: 1.125rem;
+            color: #6b7280;
+        }
+
+        .role-cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .role-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .role-card {
+            padding: 2rem;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .role-card:hover {
+            border-color: currentColor;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-card.mentor-card:hover {
+            border-color: #14b8a6;
+        }
+
+        .role-card.innovator-card:hover {
+            border-color: #f97316;
+        }
+
+        .role-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            transition: transform 0.3s;
+        }
+
+        .role-card:hover .role-icon {
+            transform: scale(1.1);
+        }
+
+        .mentor-card .role-icon {
+            background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        }
+
+        .innovator-card .role-icon {
+            background: linear-gradient(135deg, #f97316 0%, #f59e0b 100%);
+        }
+
+        .role-card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #1f2937;
+        }
+
+        .role-card .description {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-features {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-dot {
+            width: 0.375rem;
+            height: 0.375rem;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .mentor-card .feature-dot {
+            background: #0d9488;
+        }
+
+        .innovator-card .feature-dot {
+            background: #f97316;
+        }
+
+        .role-btn {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mentor-card .role-btn {
+            background: linear-gradient(to right, #0d9488, #0891b2);
+        }
+
+        .mentor-card .role-btn:hover {
+            background: linear-gradient(to right, #0f766e, #0e7490);
+        }
+
+        .innovator-card .role-btn {
+            background: linear-gradient(to right, #f97316, #f59e0b);
+        }
+
+        .innovator-card .role-btn:hover {
+            background: linear-gradient(to right, #ea580c, #d97706);
+        }
+
+        /* Main Container */
+        .collaboration-hub {
+            display: none;
+            height: 100vh;
+            background: linear-gradient(135deg, #f0fdfa 0%, #cffafe 100%);
+        }
+
+        .collaboration-hub.active {
+            display: flex;
+        }
+
+        .innovator-view {
+            background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: white;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .left-sidebar {
+            width: 320px;
+        }
+
+        .right-sidebar {
+            width: 384px;
+            border-right: none;
+            border-left: 1px solid #e5e7eb;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-title h2,
+        .sidebar-title h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .sidebar-header p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Gradient Backgrounds */
+        .gradient-teal {
+            background: linear-gradient(to right, #0d9488, #0891b2);
+        }
+
+        .gradient-orange {
+            background: linear-gradient(to right, #f97316, #f59e0b);
+        }
+
+        .gradient-teal-bg {
+            background-color: #ccfbf1;
+            color: #0f766e;
+        }
+
+        .gradient-orange-bg {
+            background-color: #fed7aa;
+            color: #c2410c;
+        }
+
+        /* Project List */
+        .project-list {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .project-card {
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .project-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-card.active {
+            border-color: #1f2937;
+            background: #f9fafb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-card h3 {
+            font-size: 0.938rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-card .innovator-name,
+        .project-card .mentor-name {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.75rem;
+        }
+
+        .project-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .project-time {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid;
+        }
+
+        .badge-active {
+            background: rgba(34, 197, 94, 0.1);
+            color: #15803d;
+            border-color: #bbf7d0;
+        }
+
+        .badge-feedback.pending, .badge-pending {
+            background: rgba(234, 179, 8, 0.1);
+            color: #a16207;
+            border-color: #fde047;
+        }
+
+        .badge-revision.submitted, .badge-submitted {
+            background: rgba(59, 130, 246, 0.1);
+            color: #1e40af;
+            border-color: #bfdbfe;
+        }
+
+        .badge-completed {
+            background: rgba(107, 114, 128, 0.1);
+            color: #374151;
+            border-color: #d1d5db;
+        }
+
+        .badge-mentor, .badge-innovator {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .badge-positive {
+            background: rgba(34, 197, 94, 0.1);
+            color: #15803d;
+            border-color: #bbf7d0;
+        }
+
+        .badge-needs-work {
+            background: rgba(234, 179, 8, 0.1);
+            color: #a16207;
+            border-color: #fde047;
+        }
+
+        .badge-suggestion {
+            background: rgba(59, 130, 246, 0.1);
+            color: #1e40af;
+            border-color: #bfdbfe;
+        }
+
+        /* Center Panel */
+        .center-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .project-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .project-title h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-header-info p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            background: #fed7aa;
+            border-bottom: 1px solid #fdba74;
+            padding: 1rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #7c2d12;
+        }
+
+        .progress-percentage {
+            font-size: 0.875rem;
+            color: #c2410c;
+        }
+
+        .progress-bar {
+            height: 0.5rem;
+            background: #fef3c7;
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #f97316, #f59e0b);
+            transition: width 0.3s ease;
+        }
+
+        .progress-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+            font-size: 0.75rem;
+            color: #c2410c;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Pinned Message */
+        .pinned-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid;
+        }
+
+        .pinned-teal {
+            background: #ccfbf1;
+            border-bottom-color: #99f6e4;
+        }
+
+        .pinned-orange {
+            background: #fef3c7;
+            border-bottom-color: #fde68a;
+        }
+
+        .pinned-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .pinned-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .pinned-teal .pinned-label {
+            color: #0f766e;
+        }
+
+        .pinned-orange .pinned-label {
+            color: #92400e;
+        }
+
+        .pinned-text {
+            font-size: 0.875rem;
+        }
+
+        .pinned-teal .pinned-text {
+            color: #134e4a;
+        }
+
+        .pinned-orange .pinned-text {
+            color: #78350f;
+        }
+
+        /* Chat Messages */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: white;
+        }
+
+        .message-container {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            max-width: 56rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .message-container.innovator-message {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .message-avatar.mentor-avatar {
+            background: #0d9488;
+        }
+
+        .message-avatar.innovator-avatar {
+            background: #f97316;
+        }
+
+        .message-content {
+            flex: 1;
+            max-width: 70%;
+            min-width: 0;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .innovator-message .message-header {
+            flex-direction: row-reverse;
+        }
+
+        .message-sender {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .message-bubble {
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid;
+        }
+
+        .mentor-message .message-bubble {
+            background: #f3f4f6;
+            border-color: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .innovator-message .message-bubble {
+            background: #1f2937;
+            border-color: #374151;
+            color: white;
+        }
+
+        .message-text {
+            font-size: 0.938rem;
+            line-height: 1.5;
+        }
+
+        .message-attachments {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .innovator-message .attachment-item {
+            background: #374151;
+            border-color: #4b5563;
+        }
+
+        /* Message Input */
+        .message-input-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 0.625rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.938rem;
+            outline: none;
+        }
+
+        .message-input:focus {
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+        }
+
+        .innovator-view .message-input:focus {
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.938rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+
+        .btn-primary.gradient-teal {
+            background: linear-gradient(to right, #0d9488, #0891b2);
+        }
+
+        .btn-primary.gradient-teal:hover {
+            background: linear-gradient(to right, #0f766e, #0e7490);
+        }
+
+        .btn-primary.gradient-orange {
+            background: linear-gradient(to right, #f97316, #f59e0b);
+        }
+
+        .btn-primary.gradient-orange:hover {
+            background: linear-gradient(to right, #ea580c, #d97706);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+
+        .btn-outline:hover {
+            background: #f9fafb;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: inherit;
+        }
+
+        .btn-ghost:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            height: 1.5rem;
+        }
+
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: #f9fafb;
+        }
+
+        .menu-toggle {
+            border: none;
+            background: transparent;
+            color: white;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .attach-btn {
+            flex-shrink: 0;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .mb-3 {
+            margin-bottom: 0.75rem;
+        }
+
+        /* Icons */
+        .icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            stroke-width: 2;
+        }
+
+        .icon-btn .icon {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tab-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .tabs-teal {
+            background: #f0fdfa;
+        }
+
+        .tabs-orange {
+            background: #ffedd5;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            border-bottom: 2px solid transparent;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #6b7280;
+        }
+
+        .tabs-teal .tab-btn.active {
+            color: #0d9488;
+            border-bottom-color: #0d9488;
+            background: white;
+        }
+
+        .tabs-orange .tab-btn.active {
+            color: #f97316;
+            border-bottom-color: #f97316;
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-inner {
+            padding: 1rem;
+        }
+
+        /* Cards */
+        .card {
+            padding: 1rem;
+            border: 1px solid;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-teal {
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+            border-color: #99f6e4;
+        }
+
+        .card-orange {
+            background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+            border-color: #fdba74;
+        }
+
+        .form-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.938rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-teal .form-title {
+            color: #0f766e;
+        }
+
+        .card-orange .form-title {
+            color: #9a3412;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 0.75rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+        }
+
+        .innovator-view .form-control:focus {
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        /* Feedback Cards */
+        .feedback-card {
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 0.75rem;
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .feedback-category {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-icon {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ccfbf1;
+            border-radius: 0.5rem;
+        }
+
+        .category-icon .icon {
+            color: #0f766e;
+        }
+
+        .category-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .feedback-text {
+            font-size: 0.875rem;
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-time {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* Report Cards */
+        .report-card {
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 0.75rem;
+        }
+
+        .report-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .report-category {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .report-icon {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fed7aa;
+            border-radius: 0.5rem;
+        }
+
+        .report-icon .icon {
+            color: #c2410c;
+        }
+
+        .report-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .report-text {
+            font-size: 0.875rem;
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+
+        .report-attachments {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-attachment {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+
+        .report-attachment .icon {
+            width: 0.875rem;
+            height: 0.875rem;
+            color: #6b7280;
+        }
+
+        .report-time {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* Info Card */
+        .info-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-card-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .info-card h4 {
+            font-size: 0.938rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-orange h4 {
+            color: #9a3412;
+        }
+
+        .info-card p {
+            font-size: 0.875rem;
+        }
+
+        .card-orange p {
+            color: #c2410c;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .empty-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+
+        .empty-icon .icon {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+            font-size: 0.938rem;
+        }
+
+        .empty-subtext {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-top: 0.5rem;
+        }
+
+        /* Lists */
+        .feedback-list h4,
+        .report-list h4 {
+            font-size: 0.938rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #1f2937;
+        }
+
+        /* Mobile Overlay */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Hidden utility */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1023px) {
+            .left-sidebar,
+            .right-sidebar {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                z-index: 50;
+                transform: translateX(-100%);
+            }
+
+            .left-sidebar.active {
+                transform: translateX(0);
+            }
+
+            .right-sidebar {
+                right: 0;
+                transform: translateX(100%);
+            }
+
+            .right-sidebar.active {
+                transform: translateX(0);
+            }
+
+            .menu-toggle {
+                display: inline-flex;
+            }
+
+            .attach-btn {
+                display: none;
+            }
+
+            .badge-mentor,
+            .badge-innovator {
+                display: none;
+            }
+
+            .btn-text {
+                display: none;
+            }
+
+            .btn-small {
+                display: none;
+            }
+
+            .chat-header {
+                padding: 0.75rem;
+            }
+
+            .project-title h2 {
+                font-size: 0.875rem;
+            }
+
+            .chat-header-info p {
+                font-size: 0.75rem;
+            }
+
+            .message-input-container {
+                padding: 0.75rem;
+            }
+
+            .chat-messages {
+                padding: 0.75rem;
+            }
+
+            .pinned-message {
+                padding: 0.75rem;
+            }
+
+            .pinned-text {
+                font-size: 0.75rem;
+            }
+
+            .progress-section {
+                padding: 0.75rem;
+            }
+
+            .progress-stats {
+                font-size: 0.75rem;
+            }
+
+            .tab-btn {
+                font-size: 0.75rem;
+            }
+
+            .form-group label {
+                font-size: 0.75rem;
+            }
+
+            .form-control {
+                font-size: 0.875rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .btn-text {
+                display: inline;
+            }
+
+            .attach-btn {
+                display: inline-flex;
+            }
+
+            .badge-mentor,
+            .badge-innovator {
+                display: inline-flex;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .menu-toggle,
+            .right-toggle {
+                display: none;
+            }
+
+            .left-sidebar,
+            .right-sidebar {
+                position: static;
+                transform: none;
+            }
+        }
+
+        /* Scrollbar Styling */
+        .sidebar-content::-webkit-scrollbar,
+        .chat-messages::-webkit-scrollbar,
+        .tab-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track,
+        .chat-messages::-webkit-scrollbar-track,
+        .tab-content::-webkit-scrollbar-track {
+            background: #f3f4f6;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb,
+        .chat-messages::-webkit-scrollbar-thumb,
+        .tab-content::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb:hover,
+        .chat-messages::-webkit-scrollbar-thumb:hover,
+        .tab-content::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <!-- Role Selector -->
+    <div class="role-selector" id="roleSelector">
+        <div class="role-selector-container">
+            <div class="role-selector-header">
+                <h1>Collaboration Hub</h1>
+                <p>Select your role to continue</p>
+            </div>
+            <div class="role-cards">
+                <!-- Mentor Card -->
+                <div class="role-card mentor-card" onclick="selectRole('mentor')">
+                    <div class="role-icon">
+                        <svg class="icon" style="width: 2rem; height: 2rem;" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <circle cx="12" cy="8" r="7"></circle>
+                            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                        </svg>
+                    </div>
+                    <h2>Mentor</h2>
+                    <p class="description">Guide innovators and provide expert feedback</p>
+                    <div class="role-features">
+                        <div class="role-feature">
+                            <div class="feature-dot"></div>
+                            <span>Review project submissions</span>
+                        </div>
+                        <div class="role-feature">
+                            <div class="feature-dot"></div>
+                            <span>Provide structured feedback</span>
+                        </div>
+                        <div class="role-feature">
+                            <div class="feature-dot"></div>
+                            <span>Track mentee progress</span>
+                        </div>
+                    </div>
+                    <button class="role-btn">Continue as Mentor</button>
+                </div>
+
+                <!-- Innovator Card -->
+                <div class="role-card innovator-card" onclick="selectRole('innovator')">
+                    <div class="role-icon">
+                        <svg class="icon" style="width: 2rem; height: 2rem;" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+                            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+                            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+                            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+                        </svg>
+                    </div>
+                    <h2>Innovator</h2>
+                    <p class="description">Develop your project with expert guidance</p>
+                    <div class="role-features">
+                        <div class="role-feature">
+                            <div class="feature-dot"></div>
+                            <span>Receive expert feedback</span>
+                        </div>
+                        <div class="role-feature">
+                            <div class="feature-dot"></div>
+                            <span>Submit progress reports</span>
+                        </div>
+                        <div class="role-feature">
+                            <div class="feature-dot"></div>
+                            <span>Collaborate with mentors</span>
+                        </div>
+                    </div>
+                    <button class="role-btn">Continue as Innovator</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mentor View -->
+    <div class="collaboration-hub mentor-view" id="mentorView">
+        <!-- Left Sidebar - Projects -->
+        <aside class="sidebar left-sidebar" id="mentorLeftSidebar">
+            <div class="sidebar-header gradient-teal">
+                <div class="sidebar-title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="7"></circle>
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                    </svg>
+                    <h2>My Mentees</h2>
+                </div>
+                <p>Active mentorship projects</p>
+            </div>
+            <div class="sidebar-content">
+                <div class="project-list" id="mentorProjectList"></div>
+            </div>
+        </aside>
+
+        <!-- Center Panel - Chat -->
+        <main class="center-panel">
+            <!-- Chat Header -->
+            <div class="chat-header gradient-teal">
+                <button class="icon-btn menu-toggle" onclick="toggleSidebar('mentorLeftSidebar')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="chat-header-info">
+                    <div class="project-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="6"></circle>
+                            <circle cx="12" cy="12" r="2"></circle>
+                        </svg>
+                        <h2 id="mentorProjectName">AI-Powered Learning Platform</h2>
+                    </div>
+                    <p id="mentorInnovator">Mentoring: Sarah Chen</p>
+                </div>
+                <span class="badge badge-mentor">Mentor View</span>
+                <button class="icon-btn menu-toggle right-toggle" onclick="toggleSidebar('mentorRightSidebar')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Pinned Message -->
+            <div class="pinned-message pinned-teal">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="17" x2="12" y2="22"></line>
+                    <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                </svg>
+                <div class="pinned-content">
+                    <p class="pinned-label">Pinned Guidance</p>
+                    <p class="pinned-text">Remember to include unit tests for all new features and update the API documentation accordingly.</p>
+                </div>
+                <button class="btn-small btn-ghost">Edit</button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="mentorChatMessages"></div>
+
+            <!-- Message Input -->
+            <div class="message-input-container">
+                <button class="icon-btn attach-btn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                </button>
+                <input type="text" class="message-input" placeholder="Send message..." id="mentorMessageInput">
+                <button class="btn btn-primary gradient-teal" onclick="sendMessage('mentor')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span class="btn-text">Send</span>
+                </button>
+            </div>
+        </main>
+
+        <!-- Right Sidebar - Feedback Tools -->
+        <aside class="sidebar right-sidebar" id="mentorRightSidebar">
+            <div class="sidebar-header gradient-teal">
+                <div class="sidebar-title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    <h3>Mentorship Tools</h3>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab-list tabs-teal">
+                    <button class="tab-btn active" onclick="switchTab('mentor', 'give-feedback')">Give Feedback</button>
+                    <button class="tab-btn" onclick="switchTab('mentor', 'view-reports')">View Reports</button>
+                </div>
+
+                <!-- Give Feedback Tab -->
+                <div class="tab-content active" id="mentor-give-feedback">
+                    <div class="tab-inner">
+                        <div class="feedback-form card card-teal">
+                            <h4 class="form-title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <circle cx="12" cy="12" r="6"></circle>
+                                    <circle cx="12" cy="12" r="2"></circle>
+                                </svg>
+                                Provide Structured Feedback
+                            </h4>
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select class="form-control">
+                                    <option>Project Concept</option>
+                                    <option>Technical Implementation</option>
+                                    <option>Market Viability</option>
+                                    <option>Recommendations</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Rating</label>
+                                <select class="form-control">
+                                    <option value="positive">Strong</option>
+                                    <option value="needs-work">Needs Work</option>
+                                    <option value="suggestion">Suggestion</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Feedback</label>
+                                <textarea class="form-control" rows="5" placeholder="Share your expert insights..."></textarea>
+                            </div>
+                            <button class="btn btn-primary gradient-teal w-full">Submit Feedback</button>
+                        </div>
+
+                        <div class="feedback-list">
+                            <h4>Previous Feedback</h4>
+                            <div id="mentorFeedbackList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Reports Tab -->
+                <div class="tab-content" id="mentor-view-reports">
+                    <div class="tab-inner">
+                        <div class="empty-state">
+                            <div class="empty-icon gradient-teal-bg">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                            </div>
+                            <p>Reports from <span id="mentorReportInnovatorName">Sarah Chen</span> will appear here</p>
+                            <p class="empty-subtext">2 reports submitted this month</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Overlay -->
+        <div class="overlay" id="mentorOverlay" onclick="closeAllSidebars('mentor')"></div>
+    </div>
+
+    <!-- Innovator View -->
+    <div class="collaboration-hub innovator-view" id="innovatorView">
+        <!-- Left Sidebar - Projects -->
+        <aside class="sidebar left-sidebar" id="innovatorLeftSidebar">
+            <div class="sidebar-header gradient-orange">
+                <div class="sidebar-title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+                        <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+                        <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+                        <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+                    </svg>
+                    <h2>My Projects</h2>
+                </div>
+                <p>Projects under mentorship</p>
+            </div>
+            <div class="sidebar-content">
+                <div class="project-list" id="innovatorProjectList"></div>
+            </div>
+        </aside>
+
+        <!-- Center Panel - Chat -->
+        <main class="center-panel">
+            <!-- Chat Header -->
+            <div class="chat-header gradient-orange">
+                <button class="icon-btn menu-toggle" onclick="toggleSidebar('innovatorLeftSidebar')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="chat-header-info">
+                    <div class="project-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m15 14 5-5-5-5"></path>
+                            <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"></path>
+                        </svg>
+                        <h2 id="innovatorProjectName">AI-Powered Learning Platform</h2>
+                    </div>
+                    <p id="innovatorMentor">Mentor: Dr. Michael Johnson</p>
+                </div>
+                <span class="badge badge-innovator">Innovator View</span>
+                <button class="icon-btn menu-toggle right-toggle" onclick="toggleSidebar('innovatorRightSidebar')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span class="progress-label">Project Progress</span>
+                    <span class="progress-percentage">65% Complete</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span class="stat-item">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        3 Feedbacks
+                    </span>
+                    <span class="stat-item">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                        2 Reports
+                    </span>
+                </div>
+            </div>
+
+            <!-- Pinned Message -->
+            <div class="pinned-message pinned-orange">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="17" x2="12" y2="22"></line>
+                    <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                </svg>
+                <div class="pinned-content">
+                    <p class="pinned-label">Mentor's Guidance</p>
+                    <p class="pinned-text">Remember to include unit tests for all new features and update the API documentation accordingly.</p>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="innovatorChatMessages"></div>
+
+            <!-- Message Input -->
+            <div class="message-input-container">
+                <button class="icon-btn attach-btn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                </button>
+                <input type="text" class="message-input" placeholder="Ask your mentor..." id="innovatorMessageInput">
+                <button class="btn btn-primary gradient-orange" onclick="sendMessage('innovator')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span class="btn-text">Send</span>
+                </button>
+            </div>
+        </main>
+
+        <!-- Right Sidebar - Feedback & Reports -->
+        <aside class="sidebar right-sidebar" id="innovatorRightSidebar">
+            <div class="sidebar-header gradient-orange">
+                <div class="sidebar-title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+                        <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+                    </svg>
+                    <h3>Growth & Progress</h3>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab-list tabs-orange">
+                    <button class="tab-btn active" onclick="switchTab('innovator', 'feedback')">Mentor Feedback</button>
+                    <button class="tab-btn" onclick="switchTab('innovator', 'reports')">My Reports</button>
+                </div>
+
+                <!-- Feedback Tab -->
+                <div class="tab-content active" id="innovator-feedback">
+                    <div class="tab-inner">
+                        <div class="info-card card card-orange">
+                            <div class="info-card-icon gradient-orange-bg">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="m15 14 5-5-5-5"></path>
+                                    <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Mentorship Insights</h4>
+                                <p>Review your mentor's feedback to improve your project</p>
+                            </div>
+                        </div>
+                        <div id="innovatorFeedbackList"></div>
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div class="tab-content" id="innovator-reports">
+                    <div class="tab-inner">
+                        <div class="report-form card card-orange">
+                            <h4 class="form-title">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                                Submit Progress Report
+                            </h4>
+                            <div class="form-group">
+                                <label>Report Title</label>
+                                <input type="text" class="form-control" placeholder="e.g., Week 4 Progress Update">
+                            </div>
+                            <div class="form-group">
+                                <label>Details</label>
+                                <textarea class="form-control" rows="4" placeholder="Describe your progress..."></textarea>
+                            </div>
+                            <button class="btn btn-outline w-full mb-3">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                                </svg>
+                                Attach Files
+                            </button>
+                            <button class="btn btn-primary gradient-orange w-full">Submit Report</button>
+                        </div>
+
+                        <div class="report-list">
+                            <h4>Previous Reports</h4>
+                            <div id="innovatorReportsList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Overlay -->
+        <div class="overlay" id="innovatorOverlay" onclick="closeAllSidebars('innovator')"></div>
+    </div>
+
+    <script>
+        // Data Storage
+        const data = {
+            mentor: {
+                projects: [
+                    { id: '1', name: 'AI-Powered Learning Platform', innovatorName: 'Sarah Chen', status: 'active', lastActivity: '5 min ago', isActive: true },
+                    { id: '2', name: 'Sustainable Energy Dashboard', innovatorName: 'James Rodriguez', status: 'feedback pending', lastActivity: '2 hours ago', isActive: false },
+                    { id: '3', name: 'Healthcare Analytics Tool', innovatorName: 'Maya Patel', status: 'revision submitted', lastActivity: '1 day ago', isActive: false }
+                ],
+                messages: [
+                    { id: '1', sender: 'mentor', senderName: 'Dr. Michael Johnson', content: "Hi Sarah! I've reviewed your latest prototype. The user interface is looking great!", timestamp: '10:30 AM' },
+                    { id: '2', sender: 'innovator', senderName: 'Sarah Chen', content: 'Thank you! I implemented the changes you suggested regarding the navigation flow.', timestamp: '10:32 AM' },
+                    { id: '3', sender: 'mentor', senderName: 'Dr. Michael Johnson', content: 'Excellent work. I have some feedback on the technical implementation. Please check the feedback section.', timestamp: '10:35 AM' },
+                    { id: '4', sender: 'innovator', senderName: 'Sarah Chen', content: "I've uploaded the revised architecture documentation based on your recommendations.", timestamp: '11:15 AM', attachments: [{ name: 'architecture-v2.pdf', type: 'PDF' }] },
+                    { id: '5', sender: 'mentor', senderName: 'Dr. Michael Johnson', content: "Perfect! This addresses all my concerns. Let's schedule a call to discuss market strategy.", timestamp: '11:45 AM' }
+                ],
+                feedback: [
+                    { id: '1', category: 'Project Concept', content: 'The core idea of personalized AI-driven learning paths is strong and addresses a real market need.', rating: 'positive', timestamp: 'March 16, 2026 at 9:30 AM' },
+                    { id: '2', category: 'Technical Implementation', content: 'Consider implementing a microservices approach for better scalability. Also, add caching layers for the recommendation engine.', rating: 'needs-work', timestamp: 'March 16, 2026 at 9:45 AM' }
+                ]
+            },
+            innovator: {
+                projects: [
+                    { id: '1', name: 'AI-Powered Learning Platform', mentorName: 'Dr. Michael Johnson', status: 'active', lastActivity: '5 min ago', isActive: true },
+                    { id: '2', name: 'Sustainable Energy Dashboard', mentorName: 'Dr. Michael Johnson', status: 'feedback pending', lastActivity: '2 hours ago', isActive: false },
+                    { id: '3', name: 'Healthcare Analytics Tool', mentorName: 'Dr. Michael Johnson', status: 'revision submitted', lastActivity: '1 day ago', isActive: false }
+                ],
+                messages: [
+                    { id: '1', sender: 'mentor', senderName: 'Dr. Michael Johnson', content: "Hi Sarah! I've reviewed your latest prototype. The user interface is looking great!", timestamp: '10:30 AM' },
+                    { id: '2', sender: 'innovator', senderName: 'Sarah Chen', content: 'Thank you! I implemented the changes you suggested regarding the navigation flow.', timestamp: '10:32 AM' },
+                    { id: '3', sender: 'mentor', senderName: 'Dr. Michael Johnson', content: 'Excellent work. I have some feedback on the technical implementation. Please check the feedback section.', timestamp: '10:35 AM' },
+                    { id: '4', sender: 'innovator', senderName: 'Sarah Chen', content: "I've uploaded the revised architecture documentation based on your recommendations.", timestamp: '11:15 AM', attachments: [{ name: 'architecture-v2.pdf', type: 'PDF' }] }
+                ],
+                feedback: [
+                    { id: '1', category: 'Project Concept', content: 'The core idea of personalized AI-driven learning paths is strong and addresses a real market need. Consider expanding on how you differentiate from existing platforms.', rating: 'positive', timestamp: 'March 16, 2026 at 9:30 AM' },
+                    { id: '2', category: 'Technical Implementation', content: 'The current architecture is solid, but I recommend implementing a microservices approach for better scalability. Also, consider adding caching layers for the recommendation engine.', rating: 'needs-work', timestamp: 'March 16, 2026 at 9:45 AM' },
+                    { id: '3', category: 'Market Viability', content: 'Your target market analysis is comprehensive. I suggest focusing on the K-12 segment initially before expanding to enterprise training.', rating: 'suggestion', timestamp: 'March 16, 2026 at 10:00 AM' }
+                ],
+                reports: [
+                    { id: '1', title: 'Week 3 Progress Report', content: 'Completed user authentication module and integrated the AI recommendation system. Currently working on the dashboard analytics.', attachments: [{ name: 'progress-report-week3.pdf' }], timestamp: 'March 15, 2026 at 4:30 PM', status: 'reviewed' },
+                    { id: '2', title: 'Architecture Revision', content: 'Updated the system architecture based on your feedback. Implemented microservices for the core modules and added Redis caching.', attachments: [{ name: 'architecture-v2.pdf' }, { name: 'api-documentation.pdf' }], timestamp: 'March 16, 2026 at 11:15 AM', status: 'submitted' }
+                ]
+            }
+        };
+
+        // Role Selection
+        function selectRole(role) {
+            document.getElementById('roleSelector').style.display = 'none';
+            if (role === 'mentor') {
+                document.getElementById('mentorView').classList.add('active');
+                initializeView('mentor');
+            } else {
+                document.getElementById('innovatorView').classList.add('active');
+                initializeView('innovator');
+            }
+        }
+
+        // Initialize View
+        function initializeView(role) {
+            loadProjects(role);
+            loadMessages(role);
+            loadFeedback(role);
+            if (role === 'innovator') {
+                loadReports();
+            }
+        }
+
+        // Load Projects
+        function loadProjects(role) {
+            const listId = role === 'mentor' ? 'mentorProjectList' : 'innovatorProjectList';
+            const list = document.getElementById(listId);
+            list.innerHTML = '';
+            
+            data[role].projects.forEach(project => {
+                const card = createProjectCard(project, role);
+                list.appendChild(card);
+            });
+        }
+
+        // Create Project Card
+        function createProjectCard(project, role) {
+            const div = document.createElement('div');
+            div.className = `project-card ${project.isActive ? 'active' : ''}`;
+            div.innerHTML = `
+                <h3>${project.name}</h3>
+                <p class="${role === 'mentor' ? 'innovator-name' : 'mentor-name'}">
+                    ${role === 'mentor' ? project.innovatorName : project.mentorName}
+                </p>
+                <div class="project-meta">
+                    <span class="badge badge-${project.status.replace(' ', '-')}">${project.status.charAt(0).toUpperCase() + project.status.slice(1)}</span>
+                    <span class="project-time">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        ${project.lastActivity}
+                    </span>
+                </div>
+            `;
+            return div;
+        }
+
+        // Load Messages
+        function loadMessages(role) {
+            const chatId = role === 'mentor' ? 'mentorChatMessages' : 'innovatorChatMessages';
+            const chat = document.getElementById(chatId);
+            chat.innerHTML = '';
+            
+            data[role].messages.forEach(message => {
+                const msgDiv = createMessage(message);
+                chat.appendChild(msgDiv);
+            });
+            
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Create Message
+        function createMessage(message) {
+            const div = document.createElement('div');
+            div.className = `message-container ${message.sender}-message`;
+            
+            const initials = message.senderName.split(' ').map(n => n[0]).join('');
+            const avatarClass = message.sender === 'mentor' ? 'mentor-avatar' : 'innovator-avatar';
+            
+            let attachmentsHTML = '';
+            if (message.attachments && message.attachments.length > 0) {
+                attachmentsHTML = `
+                    <div class="message-attachments">
+                        ${message.attachments.map(att => `
+                            <div class="attachment-item">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                                </svg>
+                                <span>${att.name}</span>
+                                ${att.type ? `<span style="color: #9ca3af;">(${att.type})</span>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            div.innerHTML = `
+                <div class="message-avatar ${avatarClass}">${initials}</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-sender">${message.senderName}</span>
+                        <span class="message-time">${message.timestamp}</span>
+                    </div>
+                    <div class="message-bubble">
+                        <p class="message-text">${message.content}</p>
+                        ${attachmentsHTML}
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        // Load Feedback
+        function loadFeedback(role) {
+            const listId = role === 'mentor' ? 'mentorFeedbackList' : 'innovatorFeedbackList';
+            const list = document.getElementById(listId);
+            list.innerHTML = '';
+            
+            data[role].feedback.forEach(feedback => {
+                const card = createFeedbackCard(feedback);
+                list.appendChild(card);
+            });
+        }
+
+        // Create Feedback Card
+        function createFeedbackCard(feedback) {
+            const div = document.createElement('div');
+            div.className = 'feedback-card';
+            
+            const ratingText = {
+                'positive': 'Strong',
+                'needs-work': 'Needs Work',
+                'suggestion': 'Suggestion'
+            };
+            
+            div.innerHTML = `
+                <div class="feedback-header">
+                    <div class="feedback-category">
+                        <div class="category-icon">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m15 14 5-5-5-5"></path>
+                                <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"></path>
+                            </svg>
+                        </div>
+                        <span class="category-name">${feedback.category}</span>
+                    </div>
+                    ${feedback.rating ? `<span class="badge badge-${feedback.rating}">${ratingText[feedback.rating]}</span>` : ''}
+                </div>
+                <p class="feedback-text">${feedback.content}</p>
+                <p class="feedback-time">${feedback.timestamp}</p>
+            `;
+            
+            return div;
+        }
+
+        // Load Reports
+        function loadReports() {
+            const list = document.getElementById('innovatorReportsList');
+            list.innerHTML = '';
+            
+            data.innovator.reports.forEach(report => {
+                const card = createReportCard(report);
+                list.appendChild(card);
+            });
+        }
+
+        // Create Report Card
+        function createReportCard(report) {
+            const div = document.createElement('div');
+            div.className = 'report-card';
+            
+            let attachmentsHTML = '';
+            if (report.attachments && report.attachments.length > 0) {
+                attachmentsHTML = `
+                    <div class="report-attachments">
+                        ${report.attachments.map(att => `
+                            <div class="report-attachment">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                                </svg>
+                                <span>${att.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            div.innerHTML = `
+                <div class="report-header">
+                    <div class="report-category">
+                        <div class="report-icon">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                        </div>
+                        <span class="report-title">${report.title}</span>
+                    </div>
+                    <span class="badge badge-${report.status}">${report.status === 'reviewed' ? 'Reviewed' : 'Submitted'}</span>
+                </div>
+                <p class="report-text">${report.content}</p>
+                ${attachmentsHTML}
+                <p class="report-time">${report.timestamp}</p>
+            `;
+            
+            return div;
+        }
+
+        // Toggle Sidebar
+        function toggleSidebar(sidebarId) {
+            const sidebar = document.getElementById(sidebarId);
+            const role = sidebarId.includes('mentor') ? 'mentor' : 'innovator';
+            const overlay = document.getElementById(role + 'Overlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // Close All Sidebars
+        function closeAllSidebars(role) {
+            document.getElementById(role + 'LeftSidebar').classList.remove('active');
+            document.getElementById(role + 'RightSidebar').classList.remove('active');
+            document.getElementById(role + 'Overlay').classList.remove('active');
+        }
+
+        // Switch Tab
+        function switchTab(role, tabName) {
+            const prefix = role + '-';
+            const tabs = document.querySelectorAll(`#${role}View .tab-content`);
+            const buttons = document.querySelectorAll(`#${role}View .tab-btn`);
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(prefix + tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Send Message
+        function sendMessage(role) {
+            const inputId = role + 'MessageInput';
+            const input = document.getElementById(inputId);
+            const message = input.value.trim();
+            
+            if (message) {
+                console.log(`${role} sending:`, message);
+                input.value = '';
+                // Add your message sending logic here
+            }
+        }
+
+        // Enter key for messages
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('mentorMessageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendMessage('mentor');
+            });
+            
+            document.getElementById('innovatorMessageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendMessage('innovator');
+            });
+        });
+    </script>
+</body>
+</html>

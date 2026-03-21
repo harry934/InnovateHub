@@ -6,6 +6,21 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <link href="assets/img/favicon.ico" rel="icon" />
 
+    <!-- Role-Based Redirect Guard (Immunity for Admins) -->
+    <script>
+      (function() {
+        try {
+          const user = JSON.parse(localStorage.getItem("innovateHubUser"));
+          if (user && user.role) {
+            const role = user.role.toLowerCase();
+            if (role === 'admin' && !window.location.pathname.includes('admin-dashboard')) {
+              window.location.replace("admin-dashboard.html");
+            }
+          }
+        } catch(e) {}
+      })();
+    </script>
+
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,14 +41,15 @@
 
     <!-- Libraries Stylesheet -->
     <link href="assets/lib/animate/animate.min.css" rel="stylesheet" />
+    <link href="assets/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet" />
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="assets/css/auth-ui.css" rel="stylesheet" />
-    <link href="assets/css/style.css?v=100.0.0" rel="stylesheet" />
-    <link href="assets/css/staggered-menu.css?v=100.0.0" rel="stylesheet" />
-    <link href="assets/css/dashboard-rebuild.css?v=100.0.0" rel="stylesheet" />
-    <link href="assets/css/collab-screen.css?v=100.0.0" rel="stylesheet" />
-    <link href="assets/css/innovate-hub.css?v=100.0.0" rel="stylesheet" />
-    <link href="assets/css/nuru-assistant.css?v=100.0.0" rel="stylesheet" />
+    <link href="assets/css/style.css?v=130.0.0" rel="stylesheet" />
+    <link href="assets/css/staggered-menu.css?v=130.0.0" rel="stylesheet" />
+    <link href="assets/css/dashboard-rebuild.css?v=130.0.0" rel="stylesheet" />
+    <link href="assets/css/collab-screen.css?v=130.0.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=130.0.0" rel="stylesheet" />
+    <link href="assets/css/nuru-assistant.css?v=130.0.0" rel="stylesheet" />
     <style>
         :root {
             --brand-teal: #1a5e4f;
@@ -54,11 +70,14 @@
         .btn-primary {
             background-color: var(--brand-teal) !important;
             border-color: var(--brand-teal) !important;
+            color: #ffffff !important;
+            transition: all 0.2s ease;
         }
         .btn-secondary, .btn-orange {
             background-color: var(--brand-orange) !important;
             border-color: var(--brand-orange) !important;
-            color: #000 !important;
+            color: #ffffff !important;
+            transition: all 0.2s ease;
         }
         .brand-divider {
             border-top: 3px solid var(--brand-orange);
@@ -74,24 +93,27 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/core/supabase-config.js"></script>
+    <script src="assets/js/core/supabase-config.js?v=300.0.0"></script>
 
     <!-- Core Dependencies (jQuery first, then Bootstrap) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="assets/lib/easing/easing.min.js"></script>
+    <script src="assets/lib/waypoints/waypoints.min.js"></script>
+    <script src="assets/lib/owlcarousel/owl.carousel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Project Modules -->
-    <script src="assets/js/components/live-wallpaper.js?v=100.0.0" type="module"></script>
-    <script src="assets/js/components/activity-heatmap.js?v=100.0.0" type="module"></script>
-    <script src="assets/js/pages/mentor-discovery.js?v=100.0.0" type="module"></script>
-    <script src="assets/js/pages/dashboard-charts.js?v=100.0.0" type="module"></script>
-    <script src="assets/js/pages/collaboration.js?v=100.0.0" type="module"></script>
+    <script src="assets/js/components/live-wallpaper.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/components/activity-heatmap.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/pages/mentor-discovery.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/pages/dashboard-charts.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/pages/collaboration.js?v=102.0.0" type="module"></script>
     
     <!-- Supabase Services & Modules -->
-    <script src="assets/js/core/supabase-service.js?v=100.0.0" type="module"></script>
-    <script src="assets/js/modules/session-manager.js?v=100.0.0" type="module"></script>
-    <script src="assets/js/modules/feedback-service.js?v=100.0.0" type="module"></script>
-    <script src="assets/js/modules/report-manager.js?v=100.0.0" type="module"></script>
+    <script src="assets/js/core/supabase-service.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/modules/session-manager.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/modules/feedback-service.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/modules/report-manager.js?v=102.0.0" type="module"></script>
   </head>
 
   <body>
@@ -101,7 +123,7 @@
     <div id="liveWallpaperBg" style="position: fixed; inset: 0; z-index: -1; pointer-events: none;"></div>
 
     <!-- Dashboard Content Wrapper (Hidden until onboarding check) -->
-    <div id="dashboard-content" style="display: none; position: relative; z-index: 10;">
+    <div id="dashboard-content" class="dashboard-content-limit" style="display: none; position: relative; z-index: 10;">
         <!-- Dashboard Landing Page -->
         <div
 
@@ -109,7 +131,7 @@
           class="py-5"
       style="position: relative; z-index: 2"
     >
-      <div class="container mb-5">
+      <div class="container mb-5 dashboard-content-limit">
         <!-- Simplified Hero -->
         <div
           class="mb-5 d-flex justify-content-between align-items-end flex-wrap gap-4"
@@ -142,6 +164,11 @@
           </div>
         </div>
 
+        <!-- Profile Completion Progress (Injected by mentor-dashboard.js) -->
+        <div id="mentorProfileCompletion" class="mb-4" style="display: none">
+          <!-- Progress bar injected here -->
+        </div>
+
         <!-- Landing Quick Stats (Injected by role JS) -->
         <div id="landingStatsRow" class="row g-4 mb-5" style="display: none">
           <!-- Stats cards injected here -->
@@ -157,72 +184,67 @@
       </div>
     </div>
 
-    <!-- Container for dynamic sections -->
+    <!-- Container for dynamic sections (Proper dashboard centering, avoiding infinite stretch on ultra-wide screens) -->
     <div id="activeSectionContainer" style="display: none">
-      <div class="container py-5">
-        <div class="mb-5">
-          <button
-            class="btn btn-outline-secondary px-4 d-flex align-items-center gap-2"
-            onclick="showDashboardSection('home')"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            Back to Dashboard
-          </button>
-        </div>
+      <div class="container py-5 dashboard-content-limit">
+         <div id="collabBackButtonContainer" class="mb-4">
+           <button
+             class="btn btn-success px-4 d-flex align-items-center gap-2 shadow-sm fw-bold border-2"
+             onclick="showDashboardSection('home')"
+             style="background-color: var(--brand-green); color: white; border-color: white;"
+           >
+             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+             Back to Dashboard
+           </button>
+         </div>
 
         <!-- Virtual Sessions Section -->
         <div id="sessionsSection" class="dashboard-section" style="display: none">
-          <div class="section-header mb-4">
-            <h2 class="display-6 fw-bold" style="color: #1a5e4f">Virtual Sessions</h2>
-            <p class="text-muted">Schedule and join your mentoring video calls</p>
-            <hr class="brand-divider" />
-          </div>
-          <div id="sessionsContainer" class="row g-4">
-            <!-- Sessions injected by session-manager.js -->
-            <div class="col-12 text-center py-5">
-              <div class="spinner-border text-primary"></div>
+          <div class="dashboard-inner-container">
+            <div class="section-header mb-4">
+              <h2 class="display-6 fw-bold" style="color: #1a5e4f">Virtual Sessions</h2>
+              <p class="text-muted">Schedule and join your mentoring video calls</p>
+              <hr class="brand-divider" />
+            </div>
+            <div id="sessionsContainer" class="row g-4">
+              <!-- Sessions injected by session-manager.js -->
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary"></div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Project Feedback Section -->
         <div id="feedbackSection" class="dashboard-section" style="display: none">
-          <div class="section-header mb-4">
-            <h2 class="display-6 fw-bold" style="color: #1a5e4f">Project Feedback</h2>
-            <p class="text-muted">Review projects and track feedback ratings</p>
-            <hr class="brand-divider" />
-          </div>
-          <div id="feedbackContainer" class="row g-4">
-            <!-- Feedback injected by feedback-service.js -->
-            <div class="col-12 text-center py-5">
-              <div class="spinner-border text-primary"></div>
+          <div class="dashboard-inner-container">
+            <div class="section-header mb-4">
+              <h2 class="display-6 fw-bold" style="color: #1a5e4f">Project Feedback</h2>
+              <p class="text-muted">Review projects and track feedback ratings</p>
+              <hr class="brand-divider" />
+            </div>
+            <div id="feedbackContainer" class="row g-4">
+              <!-- Feedback injected by feedback-service.js -->
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary"></div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Progress Reports Section -->
         <div id="reportsSection" class="dashboard-section" style="display: none">
-          <div class="section-header mb-4">
-            <h2 class="display-6 fw-bold" style="color: #1a5e4f">Progress Reports</h2>
-            <p class="text-muted">Track milestones, achievements, and challenges</p>
-            <hr class="brand-divider" />
-          </div>
-          <div id="reportsContainer" class="row g-4">
-            <!-- Reports injected by report-manager.js -->
-            <div class="col-12 text-center py-5">
-              <div class="spinner-border text-primary"></div>
+          <div class="dashboard-inner-container">
+            <div class="section-header mb-4">
+              <h2 class="display-6 fw-bold" style="color: #1a5e4f">Progress Reports</h2>
+              <p class="text-muted">Track milestones, achievements, and challenges</p>
+              <hr class="brand-divider" />
+            </div>
+            <div id="reportsContainer" class="row g-4">
+              <!-- Reports injected by report-manager.js -->
+              <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -233,306 +255,415 @@
           class="dashboard-section"
           style="display: none"
         >
-          <div class="section-header d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h2 class="display-6 fw-bold" style="color: #1a5e4f">My Projects</h2>
-              <p class="text-muted">Track and manage your submitted innovation projects</p>
-            </div>
-            <button class="btn btn-primary rounded-pill px-4" onclick="window.showDashboardSection('submit')">
-              <i class="fa fa-plus me-2"></i> Submit New Project
-            </button>
-          </div>
-          <div id="projectsContainer"></div>
-        </div>
-
-        <!-- Mentorship: Collaboration Screen (Focus Panel) -->
-        <div id="collabSection" class="dashboard-section" style="display: none">
-          <div id="collabScreenContainer">
-              <div class="collab-layout-premium">
-                  <!-- 1. Sidebar: Project/Mentee List -->
-                  <aside class="collab-sidebar-new">
-                      <div class="sidebar-header-premium">
-                          <h5 id="collabSidebarTitle" class="fw-bold mb-1">My Projects</h5>
-                          <p id="collabSidebarSubtitle" class="small text-muted mb-0">Active mentorship projects</p>
-                      </div>
-                      <div class="sidebar-search-box">
-                          <i class="fa fa-search"></i>
-                          <input type="text" id="collabContactSearch" placeholder="Search projects..." class="form-control">
-                      </div>
-                      <div id="collabContactList" class="contact-list-new">
-                          <!-- Cards injected by collaboration.js -->
-                      </div>
-                  </aside>
-
-                  <!-- 2. Main Workspace: Chat & Guidance -->
-                  <main class="collab-chat-workspace">
-                      <header class="chat-workspace-header">
-                          <div class="d-flex align-items-center justify-content-between w-100">
-                              <div class="d-flex align-items-center gap-3">
-                                  <div class="header-project-icon">
-                                      <i class="fa fa-project-diagram"></i>
-                                  </div>
-                                  <div>
-                                      <h4 id="collabProjectHeaderTitle" class="h5 fw-bold text-white mb-0">Select a Project</h4>
-                                      <p id="collabPartnerName" class="small text-white opacity-75 mb-0">Select a conversation to begin</p>
-                                  </div>
-                              </div>
-                              <div id="collabRoleBadge" class="badge-role-view">Mentor View</div>
-                          </div>
-                      </header>
-
-                      <!-- Project Progress (Innovator Only) -->
-                      <div id="collabProgressContainer" class="collab-progress-banner" style="display:none;">
-                          <div class="d-flex justify-content-between align-items-center mb-2">
-                              <span class="fw-bold text-dark">Project Progress</span>
-                              <span id="collabProgressPercent" class="fw-bold text-orange">0% Complete</span>
-                          </div>
-                          <div class="progress progress-premium">
-                              <div id="collabProgressBar" class="progress-bar bg-orange" role="progressbar" style="width: 0%;"></div>
-                          </div>
-                          <div class="progress-stats-row mt-2">
-                              <span><i class="fa fa-comment-dots text-teal"></i> <span id="collabFeedbackCount">0</span> Feedbacks</span>
-                              <span><i class="fa fa-file-alt text-teal"></i> <span id="collabReportCount">0</span> Reports</span>
-                          </div>
-                      </div>
-
-                      <!-- Pinned Guidance -->
-                      <div id="collabPinnedGuidance" class="pinned-guidance-box">
-                          <div class="d-flex align-items-start gap-3">
-                              <div class="pin-icon-wrapper">
-                                  <i class="fa fa-thumbtack"></i>
-                              </div>
-                              <div class="flex-grow-1">
-                                  <div class="d-flex justify-content-between align-items-center mb-1">
-                                      <h6 class="fw-bold mb-0 text-teal">Pinned Guidance</h6>
-                                      <button id="editPinnedGuidance" class="btn-edit-pin" style="display:none;">Edit</button>
-                                  </div>
-                                  <p id="pinnedGuidanceText" class="mb-0 small text-muted">Remember to include unit tests for all new features and update the API documentation accordingly.</p>
-                              </div>
-                          </div>
-                      </div>
-
-                      <!-- Project Blueprint / Details View -->
-                      <div id="collabProjectDetails" class="project-details-blueprint-view px-4 py-3" style="max-height: 400px; overflow-y: auto;">
-                          <!-- Blueprint cards injected here by JS -->
-                      </div>
-
-                      <!-- Chat Area -->
-                      <div class="chat-messages-container" id="collabChatBox">
-                          <!-- Messages injected here -->
-                          <div class="empty-chat-placeholder">
-                              <i class="fa fa-comments"></i>
-                              <p>Your conversation will appear here</p>
-                          </div>
-                      </div>
-
-                      <!-- Chat Input -->
-                      <div class="chat-input-area-premium">
-                          <form id="collabChatForm" class="chat-input-form-premium">
-                              <button type="button" class="btn-chat-action" onclick="document.getElementById('collabFileUpload').click()">
-                                  <i class="fa fa-paperclip"></i>
-                              </button>
-                              <input type="file" id="collabFileUpload" style="display:none;">
-                              <input type="text" id="collabChatInput" placeholder="Ask your mentor a question..." required autocomplete="off">
-                              <button type="submit" class="btn-chat-send">
-                                  <i class="fa fa-paper-plane"></i>
-                              </button>
-                          </form>
-                      </div>
-                  </main>
-
-                  <!-- 3. Tools Panel -->
-                  <section class="collab-tools-aside">
-                      <header class="tools-aside-header">
-                          <i class="fa fa-chart-line text-teal"></i>
-                          <h5 id="toolsPanelTitle" class="fw-bold mb-0">Mentorship Tools</h5>
-                      </header>
-                      
-                      <div class="tools-tabs-wrapper">
-                          <ul class="nav nav-pills tools-pills" id="collabToolsTabs" role="tablist">
-                              <li class="nav-item flex-grow-1">
-                                  <button class="nav-link active" id="feedback-tab" data-bs-toggle="tab" data-bs-target="#tab-feedback" type="button" role="tab">Feedback</button>
-                              </li>
-                              <li class="nav-item flex-grow-1">
-                                  <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#tab-reports" type="button" role="tab">Reports</button>
-                              </li>
-                          </ul>
-                      </div>
-
-                      <div class="tab-content tools-tab-panes" id="collabToolsContent">
-                          <div class="tab-pane fade show active" id="tab-feedback" role="tabpanel">
-                              <div id="feedbackToolsContainer" class="tools-pane-inner">
-                                  <!-- Content by JS -->
-                              </div>
-                          </div>
-                          <div class="tab-pane fade" id="tab-reports" role="tabpanel">
-                              <div id="reportsToolsContainer" class="tools-pane-inner">
-                                  <!-- Content by JS -->
-                              </div>
-                          </div>
-                      </div>
-                  </section>
+          <div class="dashboard-inner-container">
+            <div class="section-header d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <h2 class="display-6 fw-bold" style="color: #1a5e4f">My Projects</h2>
+                <p class="text-muted">Track and manage your submitted innovation projects</p>
               </div>
+              <button class="btn btn-primary rounded-pill px-4" onclick="window.showDashboardSection('submit')">
+                <i class="fa fa-plus me-2"></i> Submit New Project
+              </button>
+            </div>
+            <div id="projectsContainer"></div>
           </div>
         </div>
+        </div>
+    </div> <!-- End of .container -->
+  </div> <!-- End of activeSectionContainer -->
+
+  <!-- Collaboration Hub (Refined User Design) - Full Width -->
+  <div id="collabSection" class="dashboard-section" style="display: none">
+      <!-- Back Button at the very top -->
+      <div class="collab-top-bar">
+          <button onclick="window.showDashboardSection('home')" class="btn btn-success px-4 d-flex align-items-center gap-2 shadow-sm fw-bold border-2" style="background-color: var(--brand-green); color: white; border-color: white;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+              Back to Dashboard
+          </button>
+      </div>
+
+      <!-- Mentor View -->
+      <div class="collaboration-hub mentor-view" id="mentorHubView" style="display: none;">
+          <!-- Left Sidebar - Projects -->
+          <aside class="sidebar left-sidebar" id="mentorLeftSidebar">
+              <div class="sidebar-header gradient-teal">
+                  <div class="sidebar-title">
+                      <i class="fa fa-user-tie"></i>
+                      <h2>My Mentees</h2>
+                  </div>
+                  <p>Active mentorship projects</p>
+              </div>
+              <div class="sidebar-content">
+                  <div class="project-list" id="mentorProjectList"></div>
+              </div>
+          </aside>
+
+          <!-- Center Panel - Chat -->
+          <main class="center-panel">
+              <div class="chat-header gradient-teal">
+                  <button class="icon-btn menu-toggle" onclick="window.CollaborationHub.toggleSidebar('mentorLeftSidebar')">
+                      <i class="fa fa-bars"></i>
+                  </button>
+                  <div class="chat-header-info">
+                      <div class="project-title">
+                          <i class="fa fa-rocket"></i>
+                          <h2 id="mentorProjectName">Project Name</h2>
+                      </div>
+                      <p id="mentorSubTitle">Mentoring: Innovator Name</p>
+                  </div>
+                  <span class="badge badge-mentor">Mentor View</span>
+                  <button class="icon-btn menu-toggle right-toggle" onclick="window.CollaborationHub.toggleSidebar('mentorRightSidebar')">
+                      <i class="fa fa-ellipsis-v"></i>
+                  </button>
+              </div>
+
+              <div class="pinned-message pinned-teal">
+                  <i class="fa fa-thumb-tack"></i>
+                  <div class="pinned-content">
+                      <p class="pinned-label">Pinned Guidance</p>
+                      <p class="pinned-text" id="mentorPinnedGuidanceText">No guidance pinned yet.</p>
+                  </div>
+                  <button class="btn-small btn-ghost" onclick="window.CollaborationHub.editPinnedMessage('mentor')">Edit</button>
+              </div>
+
+              <div class="chat-messages" id="mentorChatMessages"></div>
+
+              <div class="message-input-container">
+                  <button class="icon-btn attach-btn">
+                      <i class="fa fa-paperclip"></i>
+                  </button>
+                  <input type="text" class="message-input" placeholder="Send message..." id="mentorMessageInput">
+                  <button class="btn btn-primary gradient-teal" id="mentorSendBtn">
+                      <i class="fa fa-paper-plane"></i>
+                      <span class="btn-text">Send</span>
+                  </button>
+              </div>
+          </main>
+
+          <!-- Right Sidebar - Tools -->
+          <aside class="sidebar right-sidebar" id="mentorRightSidebar">
+              <div class="sidebar-header gradient-teal">
+                  <div class="sidebar-title">
+                      <i class="fa fa-gears"></i>
+                      <h3>Mentorship Tools</h3>
+                  </div>
+              </div>
+              <div class="tabs">
+                  <div class="tab-list tabs-teal">
+                      <button class="tab-btn active" data-tab="mentor-give-feedback">Give Feedback</button>
+                      <button class="tab-btn" data-tab="mentor-view-reports">View Reports</button>
+                  </div>
+                  <div class="tab-content active" id="mentor-give-feedback">
+                      <div class="tab-inner">
+                          <div class="feedback-form card card-teal">
+                              <h4 class="form-title"><i class="fa fa-commenting-o"></i> Give Feedback</h4>
+                              <div class="form-group mb-2">
+                                  <label>Category</label>
+                                  <select class="form-control" id="feedbackCategory">
+                                      <option>Project Concept</option>
+                                      <option>Technical Implementation</option>
+                                      <option>Market Viability</option>
+                                      <option>Recommendations</option>
+                                  </select>
+                              </div>
+                              <div class="form-group mb-2">
+                                  <label>Rating</label>
+                                  <select class="form-control" id="feedbackRating">
+                                      <option value="positive">Strong</option>
+                                      <option value="needs-work">Needs Work</option>
+                                      <option value="suggestion">Suggestion</option>
+                                  </select>
+                              </div>
+                              <div class="form-group mb-3">
+                                  <label>Feedback</label>
+                                  <textarea class="form-control" rows="4" id="feedbackText" placeholder="Share insights..."></textarea>
+                              </div>
+                              <button class="btn btn-primary gradient-teal w-full" id="submitFeedbackBtn">Submit</button>
+                          </div>
+                          <div class="feedback-list mt-3">
+                              <h4>Previous Feedback</h4>
+                              <div id="mentorFeedbackList"></div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="tab-content" id="mentor-view-reports">
+                      <div class="tab-inner"><div id="mentorReportsList"></div></div>
+                  </div>
+              </div>
+          </aside>
+          <!-- Mobile Overlay -->
+          <div class="overlay" id="mentorOverlay" onclick="window.CollaborationHub.closeAllSidebars('mentor')"></div>
+      </div>
+
+      <!-- Innovator View -->
+      <div class="collaboration-hub innovator-view" id="innovatorHubView" style="display: none;">
+          <!-- Left Sidebar - Projects -->
+          <aside class="sidebar left-sidebar" id="innovatorLeftSidebar">
+              <div class="sidebar-header gradient-orange">
+                  <div class="sidebar-title">
+                      <i class="fa fa-lightbulb-o"></i>
+                      <h2>My Projects</h2>
+                  </div>
+                  <p>Active mentorship projects</p>
+              </div>
+              <div class="sidebar-content">
+                  <div class="project-list" id="innovatorProjectList"></div>
+              </div>
+          </aside>
+
+          <!-- Center Panel - Chat -->
+          <main class="center-panel">
+              <div class="chat-header gradient-orange">
+                  <button class="icon-btn menu-toggle" onclick="window.CollaborationHub.toggleSidebar('innovatorLeftSidebar')">
+                      <i class="fa fa-bars"></i>
+                  </button>
+                  <div class="chat-header-info">
+                      <div class="project-title">
+                          <i class="fa fa-rocket"></i>
+                          <h2 id="innovatorProjectName">Project Name</h2>
+                      </div>
+                      <p id="innovatorSubTitle">Mentor: Name</p>
+                  </div>
+                  <span class="badge badge-innovator">Innovator View</span>
+                  <button class="icon-btn menu-toggle right-toggle" onclick="window.CollaborationHub.toggleSidebar('innovatorRightSidebar')">
+                      <i class="fa fa-ellipsis-v"></i>
+                  </button>
+              </div>
+
+              <div class="progress-section">
+                  <div class="progress-header">
+                      <span class="progress-label">Project Progress</span>
+                      <span class="progress-percentage" id="projectProgressText">0% Complete</span>
+                  </div>
+                  <div class="progress-bar">
+                      <div class="progress-fill" id="projectProgressBar" style="width: 0%"></div>
+                  </div>
+              </div>
+
+              <div class="pinned-message pinned-orange">
+                  <i class="fa fa-thumb-tack"></i>
+                  <div class="pinned-content">
+                      <p class="pinned-label">Mentor's Guidance</p>
+                      <p class="pinned-text" id="innovatorPinnedGuidanceText">No guidance pinned yet.</p>
+                  </div>
+              </div>
+
+              <div class="chat-messages" id="innovatorChatMessages"></div>
+
+              <div class="message-input-container">
+                  <button class="icon-btn attach-btn">
+                      <i class="fa fa-paperclip"></i>
+                  </button>
+                  <input type="text" class="message-input" placeholder="Ask your mentor..." id="innovatorMessageInput">
+                  <button class="btn btn-primary gradient-orange" id="innovatorSendBtn">
+                      <i class="fa fa-paper-plane"></i>
+                      <span class="btn-text">Send</span>
+                  </button>
+              </div>
+          </main>
+
+          <!-- Right Sidebar - Growth -->
+          <aside class="sidebar right-sidebar" id="innovatorRightSidebar">
+              <div class="sidebar-header gradient-orange">
+                  <div class="sidebar-title">
+                      <i class="fa fa-line-chart"></i>
+                      <h3>Growth & Progress</h3>
+                  </div>
+              </div>
+              <div class="tabs">
+                  <div class="tab-list tabs-orange">
+                      <button class="tab-btn active" data-tab="innovator-feedback">Mentor Feedback</button>
+                      <button class="tab-btn" data-tab="innovator-reports">My Reports</button>
+                  </div>
+                  <div class="tab-content active" id="innovator-feedback">
+                      <div class="tab-inner"><div id="innovatorFeedbackList"></div></div>
+                  </div>
+                  <div class="tab-content" id="innovator-reports">
+                      <div class="tab-inner">
+                          <div class="report-form card card-orange">
+                              <h4 class="form-title"><i class="fa fa-file-text-o"></i> Submit Report</h4>
+                              <div class="form-group mb-2">
+                                  <label>Report Title</label>
+                                  <input type="text" class="form-control" id="reportTitle" placeholder="e.g. Week 4 Update">
+                              </div>
+                              <div class="form-group mb-3">
+                                  <label>Details</label>
+                                  <textarea class="form-control" rows="4" id="reportContent" placeholder="Describe progress..."></textarea>
+                              </div>
+                              <button class="btn btn-primary gradient-orange w-full" id="submitReportBtn">Submit Report</button>
+                          </div>
+                          <div class="report-list mt-3">
+                              <h4>Previous Reports</h4>
+                              <div id="innovatorReportsList"></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </aside>
+          <!-- Mobile Overlay -->
+          <div class="overlay" id="innovatorOverlay" onclick="window.CollaborationHub.closeAllSidebars('innovator')"></div>
+      </div>
+  </div>
 
         <!-- Innovator: Submit Project (Focus Panel) -->
         <div id="submitSection" class="dashboard-section" style="display: none">
-          <div class="section-header mb-4">
-            <h2 class="display-6 fw-bold" style="color: #1a5e4f">
-              Submit New Project
-            </h2>
-            <p class="text-muted">Share your vision with the community</p>
-            <hr class="brand-divider" />
-          </div>
-          <div class="submit-card-wrapper theme-section-card">
-            <form id="projectForm">
-              <div class="mb-4">
-                <label class="form-label fw-bold" style="color: #1a5e4f"
-                  >Project Title</label
-                >
-                <input type="text" class="form-control" name="title" required />
-              </div>
+          <div class="dashboard-inner-container">
+            <div class="section-header mb-4">
+              <h2 class="display-6 fw-bold" style="color: #1a5e4f">
+                Submit New Project
+              </h2>
+              <p class="text-muted">Share your vision with the community</p>
+              <hr class="brand-divider" />
+            </div>
+            <div class="submit-card-wrapper theme-section-card">
+              <form id="projectForm">
+                <div class="mb-4">
+                  <label class="form-label fw-bold" style="color: #1a5e4f"
+                    >Project Title</label
+                  >
+                  <input type="text" class="form-control" name="title" required />
+                </div>
 
-              <div class="mb-5">
-                <label
-                  class="form-label d-block fw-bold mb-3"
-                  style="color: #1a5e4f"
-                  >Project Categories</label
-                >
-                <div class="d-flex flex-wrap gap-3">
-                  <div class="form-check me-3">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      name="categories"
-                      value="technology"
-                      id="catTech"
-                    /><label class="form-check-label" for="catTech"
-                      >Technology</label
-                    >
-                  </div>
-                  <div class="form-check me-3">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      name="categories"
-                      value="healthcare"
-                      id="catHealth"
-                    /><label class="form-check-label" for="catHealth"
-                      >Healthcare</label
-                    >
-                  </div>
-                  <div class="form-check me-3">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      name="categories"
-                      value="education"
-                      id="catEdu"
-                    /><label class="form-check-label" for="catEdu"
-                      >Education</label
-                    >
-                  </div>
-                  <div class="form-check me-3">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      name="categories"
-                      value="environment"
-                      id="catEnv"
-                    /><label class="form-check-label" for="catEnv"
-                      >Environment</label
-                    >
-                  </div>
-                  <div class="form-check me-3">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      name="categories"
-                      value="social"
-                      id="catSocial"
-                    /><label class="form-check-label" for="catSocial"
-                      >Social Impact</label
-                    >
+                <div class="mb-5">
+                  <label
+                    class="form-label d-block fw-bold mb-3"
+                    style="color: #1a5e4f"
+                    >Project Categories</label
+                  >
+                  <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check me-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="categories"
+                        value="technology"
+                        id="catTech"
+                      /><label class="form-check-label" for="catTech"
+                        >Technology</label
+                      >
+                    </div>
+                    <div class="form-check me-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="categories"
+                        value="healthcare"
+                        id="catHealth"
+                      /><label class="form-check-label" for="catHealth"
+                        >Healthcare</label
+                      >
+                    </div>
+                    <div class="form-check me-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="categories"
+                        value="education"
+                        id="catEdu"
+                      /><label class="form-check-label" for="catEdu"
+                        >Education</label
+                      >
+                    </div>
+                    <div class="form-check me-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="categories"
+                        value="environment"
+                        id="catEnv"
+                      /><label class="form-check-label" for="catEnv"
+                        >Environment</label
+                      >
+                    </div>
+                    <div class="form-check me-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="categories"
+                        value="social"
+                        id="catSocial"
+                      /><label class="form-check-label" for="catSocial"
+                        >Social Impact</label
+                      >
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div class="mb-4">
-                <label class="form-label fw-bold" style="color: #1a5e4f"
-                  >Problem Statement</label
-                >
-                <textarea
-                  class="form-control"
-                  name="problemStatement"
-                  rows="2"
-                  required
-                ></textarea>
-              </div>
-
-              <div class="mb-4">
-                <label class="form-label fw-bold" style="color: #1a5e4f"
-                  >Objectives</label
-                >
-                <textarea
-                  class="form-control"
-                  name="objectives"
-                  rows="2"
-                  required
-                ></textarea>
-              </div>
-
-              <div class="mb-4">
-                <label class="form-label fw-bold" style="color: #1a5e4f"
-                  >Proposed Solution</label
-                >
-                <textarea
-                  class="form-control"
-                  name="proposedSolution"
-                  rows="3"
-                  required
-                ></textarea>
-              </div>
-
-              <div class="mb-5">
-                <label class="form-label fw-bold" style="color: #1a5e4f"
-                  >Expected Impact</label
-                >
-                <textarea
-                  class="form-control"
-                  name="expectedImpact"
-                  rows="2"
-                  required
-                ></textarea>
-              </div>
-
-              <!-- Custom Elegant File Upload Styling -->
-              <div class="mb-5">
-                <label class="form-label fw-bold" style="color: #1a5e4f"
-                  >Attach Case Study / Document</label
-                >
-                <input
-                  class="form-control w-100"
-                  type="file"
-                  name="document"
-                  accept=".pdf,.doc,.docx"
-                  required
-                />
-                <div class="form-text mt-2 text-muted">
-                  Accepted formats: PDF, DOC, DOCX
+                <div class="mb-4">
+                  <label class="form-label fw-bold" style="color: #1a5e4f"
+                    >Problem Statement</label
+                  >
+                  <textarea
+                    class="form-control"
+                    name="problemStatement"
+                    rows="2"
+                    required
+                  ></textarea>
                 </div>
-              </div>
 
-              <div class="text-end mt-4">
-                <button
-                  type="submit"
-                  class="btn btn-primary px-5 py-3 rounded-pill fw-bold text-uppercase"
-                >
-                  Submit Project <i class="fa fa-paper-plane ms-2"></i>
-                </button>
-              </div>
-            </form>
+                <div class="mb-4">
+                  <label class="form-label fw-bold" style="color: #1a5e4f"
+                    >Objectives</label
+                  >
+                  <textarea
+                    class="form-control"
+                    name="objectives"
+                    rows="2"
+                    required
+                  ></textarea>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold" style="color: #1a5e4f"
+                    >Proposed Solution</label
+                  >
+                  <textarea
+                    class="form-control"
+                    name="proposedSolution"
+                    rows="3"
+                    required
+                  ></textarea>
+                </div>
+
+                <div class="mb-5">
+                  <label class="form-label fw-bold" style="color: #1a5e4f"
+                    >Expected Impact</label
+                  >
+                  <textarea
+                    class="form-control"
+                    name="expectedImpact"
+                    rows="2"
+                    required
+                  ></textarea>
+                </div>
+
+                <!-- Custom Elegant File Upload Styling -->
+                <div class="mb-5">
+                  <label class="form-label fw-bold" style="color: #1a5e4f"
+                    >Attach Case Study / Document</label
+                  >
+                  <input
+                    class="form-control w-100"
+                    type="file"
+                    name="document"
+                    accept=".pdf,.doc,.docx"
+                    required
+                  />
+                  <div class="form-text mt-2 text-muted">
+                    Accepted formats: PDF, DOC, DOCX
+                  </div>
+                </div>
+
+                <div class="text-end mt-4">
+                  <button
+                    type="submit"
+                    class="btn btn-primary px-5 py-3 rounded-pill fw-bold text-uppercase"
+                  >
+                    Submit Project <i class="fa fa-paper-plane ms-2"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
         <!-- Innovator: Find Mentors (Focus Panel) -->
@@ -541,28 +672,30 @@
           class="dashboard-section"
           style="display: none"
         >
-          <div class="mb-4">
-            <h2 class="display-6 fw-bold">Find Mentors</h2>
-            <p class="text-muted">
-              Connect with experienced experts in your field
-            </p>
-          </div>
-          <div class="mb-5 p-4 bg-white rounded shadow-sm border">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <input
-                  type="text"
-                  class="form-control"
-                  id="mentorSearchInput"
-                  placeholder="Search by name, expertise or institution"
-                />
-              </div>
-              <div class="col-md-6" id="mentorCategoryCheckboxes">
-                <!-- Category pills injected here -->
+          <div class="dashboard-inner-container">
+            <div class="mb-4">
+              <h2 class="display-6 fw-bold">Find Mentors</h2>
+              <p class="text-muted">
+                Connect with experienced experts in your field
+              </p>
+            </div>
+            <div class="mb-5 p-4 bg-white rounded shadow-sm border">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="mentorSearchInput"
+                    placeholder="Search by name, expertise or institution"
+                  />
+                </div>
+                <div class="col-md-6" id="mentorCategoryCheckboxes">
+                  <!-- Category pills injected here -->
+                </div>
               </div>
             </div>
+            <div id="mentorsContainer" class="row g-4"></div>
           </div>
-          <div id="mentorsContainer" class="row g-4"></div>
         </div>
 
         <!-- Innovator: My Mentors (Focus Panel) -->
@@ -571,13 +704,15 @@
           class="dashboard-section"
           style="display: none"
         >
-          <div class="mb-4">
-            <h2 class="display-6 fw-bold">My Mentors</h2>
-            <p class="text-muted">
-              Your active mentorship connections and pending requests
-            </p>
+          <div class="dashboard-inner-container">
+            <div class="mb-4">
+              <h2 class="display-6 fw-bold">My Mentors</h2>
+              <p class="text-muted">
+                Your active mentorship connections and pending requests
+              </p>
+            </div>
+            <div id="myMentorsContainer"></div>
           </div>
-          <div id="myMentorsContainer"></div>
         </div>
 
         <!-- Shared: Profile (Focus Panel) -->
@@ -586,177 +721,179 @@
           class="dashboard-section"
           style="display: none"
         >
-          <div class="mb-4">
-            <h2 class="display-6 fw-bold">My Profile</h2>
-            <p class="text-muted">
-              Manage your personal information and professional bio
-            </p>
-          </div>
-          <div class="row g-5">
-            <div class="col-lg-4 text-center">
-              <div class="p-4 bg-white rounded shadow-sm border">
-                <div class="position-relative d-inline-block mb-4">
-                  <img
-                    id="profilePreview"
-                    src="assets/img/user-default.png"
-                    alt="Profile"
-                    class="rounded-circle border"
-                    style="
-                      width: 180px;
-                      height: 180px;
-                      object-fit: cover;
-                      border: 5px solid #fff !important;
-                      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-                    "
-                  />
-                  <label
-                    class="btn btn-primary position-absolute bottom-0 end-0 rounded-circle p-2 text-white"
-                    for="profilePicInput"
-                    style="
-                      width: 45px;
-                      height: 45px;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      background-color: var(--brand-green);
-                      border: none;
-                    "
-                  >
-                    <i class="fa fa-camera"></i>
-                  </label>
-                  <input type="file" id="profilePicInput" hidden />
-                </div>
-                <h3 id="profileDisplayNameDisplay" class="fw-bold mb-2">
-                  User Name
-                </h3>
-                <div class="mt-2 mb-3" id="mentorPublicPreviewBtn" style="display:none;">
-                    <button class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-bold" onclick="window.dashboard.openPublicProfilePreview()">
-                        <i class="fa fa-eye me-1"></i> Preview Public Profile
-                    </button>
-                </div>
-                <div
-                  id="skillsBadgeContainer"
-                  class="d-flex flex-wrap justify-content-center gap-2 mt-3"
-                ></div>
-              </div>
+          <div class="dashboard-inner-container">
+            <div class="mb-4">
+              <h2 class="display-6 fw-bold">My Profile</h2>
+              <p class="text-muted">
+                Manage your personal information and professional bio
+              </p>
             </div>
-            <div class="col-lg-8">
-              <!-- Profile Completeness (Mentor) -->
-              <div id="mentorCompleteness" class="mb-4" style="display:none; cursor:pointer;" onclick="window.showDashboardSection('profile')">
-                  <div class="d-flex justify-content-between align-items-center mb-1">
-                      <span class="fw-bold text-dark small">Profile Completeness (Click to complete)</span>
-                      <span id="completenessText" class="fw-bold text-primary small">0%</span>
+            <div class="row g-5">
+              <div class="col-lg-4 text-center">
+                <div class="p-4 bg-white rounded shadow-sm border">
+                  <div class="position-relative d-inline-block mb-4">
+                    <img
+                      id="profilePreview"
+                      src="assets/img/user-default.png"
+                      alt="Profile"
+                      class="rounded-circle border"
+                      style="
+                        width: 180px;
+                        height: 180px;
+                        object-fit: cover;
+                        border: 5px solid #fff !important;
+                        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+                      "
+                    />
+                    <label
+                      class="btn btn-primary position-absolute bottom-0 end-0 rounded-circle p-2 text-white"
+                      for="profilePicInput"
+                      style="
+                        width: 45px;
+                        height: 45px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background-color: var(--brand-green);
+                        border: none;
+                      "
+                    >
+                      <i class="fa fa-camera"></i>
+                    </label>
+                    <input type="file" id="profilePicInput" hidden />
                   </div>
-                  <div class="progress" style="height: 8px;">
-                      <div id="completenessFill" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                  <h3 id="profileDisplayNameDisplay" class="fw-bold mb-2">
+                    User Name
+                  </h3>
+                  <div class="mt-2 mb-3" id="mentorPublicPreviewBtn" style="display:none;">
+                      <button class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-bold" onclick="window.dashboard.openPublicProfilePreview()">
+                          <i class="fa fa-eye me-1"></i> Preview Public Profile
+                      </button>
                   </div>
+                  <div
+                    id="skillsBadgeContainer"
+                    class="d-flex flex-wrap justify-content-center gap-2 mt-3"
+                  ></div>
+                </div>
               </div>
+              <div class="col-lg-8">
+                <!-- Profile Completeness (Mentor) -->
+                <div id="mentorCompleteness" class="mb-4" style="display:none; cursor:pointer;" onclick="window.showDashboardSection('profile')">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-bold text-dark small">Profile Completeness (Click to complete)</span>
+                        <span id="completenessText" class="fw-bold text-primary small">0%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div id="completenessFill" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
 
-              <div class="p-5 bg-white rounded shadow-sm border">
-                <form id="profileForm">
-                  <div class="row g-4">
-                    <div class="col-md-6">
-                      <label class="form-label">Full Name</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="profileName"
-                        name="fullName"
-                        required
-                      />
+                <div class="p-5 bg-white rounded shadow-sm border">
+                  <form id="profileForm">
+                    <div class="row g-4">
+                      <div class="col-md-6">
+                        <label class="form-label">Full Name</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="profileName"
+                          name="fullName"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Email Address</label>
+                        <input
+                          type="email"
+                          class="form-control"
+                          id="profileEmail"
+                          name="email"
+                          readonly
+                        />
+                      </div>
+                      <div class="col-12">
+                        <label class="form-label">Professional Bio</label>
+                        <textarea
+                          class="form-control"
+                          id="profileBio"
+                          name="bio"
+                          rows="3"
+                        ></textarea>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label"
+                          >Institution / Organization</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="profileInstitution"
+                          name="institution"
+                        />
+                      </div>
+                      <div class="col-md-6" id="mentorProfessionGroup">
+                        <label class="form-label">Profession / Role</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="profileProfession"
+                          name="profession"
+                        />
+                      </div>
+                      <div class="col-md-6" id="innovatorSkillsGroup">
+                        <label class="form-label">Skills (Innovator)</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="profileSkills"
+                          name="skills"
+                        />
+                      </div>
+                      <div class="col-md-6" id="mentorExpertiseGroup">
+                        <label class="form-label">Expertise (Mentor)</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="profileExpertise"
+                          name="expertise"
+                        />
+                      </div>
+                      <div class="col-md-6" id="mentorExperienceGroup">
+                        <label class="form-label">Years of Experience (Mentor)</label>
+                        <input
+                          type="number"
+                          class="form-control"
+                          id="profileExperience"
+                          name="experience"
+                          min="0"
+                          placeholder="e.g. 5"
+                        />
+                      </div>
+                      <div class="col-md-6" id="communicationGroup">
+                        <label class="form-label">Preferred Communication Method</label>
+                        <select class="form-select" id="profileCommunication" name="communicationPreference">
+                          <option value="Zoom">Zoom</option>
+                          <option value="Google Meet">Google Meet</option>
+                          <option value="WhatsApp">WhatsApp</option>
+                          <option value="Email">Email</option>
+                          <option value="Slack">Slack</option>
+                        </select>
+                      </div>
+                      <div class="col-12" id="innovatorInterestsGroup">
+                        <label class="form-label">Innovation Interests</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="profileInterests"
+                          name="interests"
+                        />
+                      </div>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Email Address</label>
-                      <input
-                        type="email"
-                        class="form-control"
-                        id="profileEmail"
-                        name="email"
-                        readonly
-                      />
-                    </div>
-                    <div class="col-12">
-                      <label class="form-label">Professional Bio</label>
-                      <textarea
-                        class="form-control"
-                        id="profileBio"
-                        name="bio"
-                        rows="3"
-                      ></textarea>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label"
-                        >Institution / Organization</label
-                      >
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="profileInstitution"
-                        name="institution"
-                      />
-                    </div>
-                    <div class="col-md-6" id="mentorProfessionGroup">
-                      <label class="form-label">Profession / Role</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="profileProfession"
-                        name="profession"
-                      />
-                    </div>
-                    <div class="col-md-6" id="innovatorSkillsGroup">
-                      <label class="form-label">Skills (Innovator)</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="profileSkills"
-                        name="skills"
-                      />
-                    </div>
-                    <div class="col-md-6" id="mentorExpertiseGroup">
-                      <label class="form-label">Expertise (Mentor)</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="profileExpertise"
-                        name="expertise"
-                      />
-                    </div>
-                    <div class="col-md-6" id="mentorExperienceGroup">
-                      <label class="form-label">Years of Experience (Mentor)</label>
-                      <input
-                        type="number"
-                        class="form-control"
-                        id="profileExperience"
-                        name="experience"
-                        min="0"
-                        placeholder="e.g. 5"
-                      />
-                    </div>
-                    <div class="col-md-6" id="communicationGroup">
-                      <label class="form-label">Preferred Communication Method</label>
-                      <select class="form-select" id="profileCommunication" name="communicationPreference">
-                        <option value="Zoom">Zoom</option>
-                        <option value="Google Meet">Google Meet</option>
-                        <option value="WhatsApp">WhatsApp</option>
-                        <option value="Email">Email</option>
-                        <option value="Slack">Slack</option>
-                      </select>
-                    </div>
-                    <div class="col-12" id="innovatorInterestsGroup">
-                      <label class="form-label">Innovation Interests</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="profileInterests"
-                        name="interests"
-                      />
-                    </div>
-                  </div>
-                  <button type="submit" class="btn btn-success mt-4 w-100 py-3 text-white fw-bold" style="background-color: var(--brand-green); border: none;">
-                    Update Profile
-                  </button>
-                </form>
+                    <button type="submit" class="btn btn-success mt-4 w-100 py-3 text-white fw-bold" style="background-color: var(--brand-green); border: none;">
+                      Update Profile
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -768,39 +905,41 @@
           class="dashboard-section"
           style="display: none"
         >
-          <div class="mb-4">
-            <h2 class="display-6 fw-bold">Impact Overview</h2>
-            <p class="text-muted">Your mentorship contributions at a glance</p>
-          </div>
-          <div class="row g-4">
-            <div class="col-md-4">
-              <div
-                class="card border-0 shadow-sm p-4 text-center rounded border-start border-5 border-primary"
-              >
-                <h5>Total Mentees</h5>
-                <h2
-                  class="display-4 fw-bold mb-0"
-                  id="totalMentees"
-                  style="color: #1a5e4f"
-                >
-                  0
-                </h2>
-              </div>
+          <div class="dashboard-inner-container">
+            <div class="mb-4">
+              <h2 class="display-6 fw-bold">Impact Overview</h2>
+              <p class="text-muted">Your mentorship contributions at a glance</p>
             </div>
-            <div class="col-md-4">
-              <div
-                class="card border-0 shadow-sm p-4 text-center rounded border-start border-5 border-warning"
-              >
-                <h5>Pending Requests</h5>
-                <h2
-                  class="display-4 fw-bold mb-0 text-warning"
-                  id="pendingRequests"
+            <div class="row g-4">
+              <div class="col-md-4">
+                <div
+                  class="card border-0 shadow-sm p-4 text-center rounded border-start border-5 border-primary"
                 >
-                  0
-                </h2>
+                  <h5>Total Mentees</h5>
+                  <h2
+                    class="display-4 fw-bold mb-0"
+                    id="totalMentees"
+                    style="color: #1a5e4f"
+                  >
+                    0
+                  </h2>
+                </div>
               </div>
+              <div class="col-md-4">
+                <div
+                  class="card border-0 shadow-sm p-4 text-center rounded border-start border-5 border-warning"
+                >
+                  <h5>Pending Requests</h5>
+                  <h2
+                    class="display-4 fw-bold mb-0 text-warning"
+                    id="pendingRequests"
+                  >
+                    0
+                  </h2>
+                </div>
+              </div>
+              <!-- Impact Created Box removed as requested -->
             </div>
-            <!-- Impact Created Box removed as requested -->
           </div>
         </div>
 
@@ -810,11 +949,13 @@
           class="dashboard-section"
           style="display: none"
         >
-          <div class="mb-4">
-            <h2 class="display-6 fw-bold">Mentorship Requests</h2>
-            <p class="text-muted">Innovators seeking your expert guidance</p>
+          <div class="dashboard-inner-container">
+            <div class="mb-4">
+              <h2 class="display-6 fw-bold">Mentorship Requests</h2>
+              <p class="text-muted">Innovators seeking your expert guidance</p>
+            </div>
+            <div id="requestsContainer"></div>
           </div>
-          <div id="requestsContainer"></div>
         </div>
 
         <!-- Mentor: Mentees (Focus Panel) -->
@@ -823,15 +964,18 @@
           class="dashboard-section"
           style="display: none"
         >
-          <div class="mb-4">
-            <h2 class="display-6 fw-bold">My Mentees</h2>
-            <p class="text-muted">Innovators currently under your wing</p>
+          <div class="dashboard-inner-container">
+            <div class="mb-4">
+              <h2 class="display-6 fw-bold">My Mentees</h2>
+              <p class="text-muted">Innovators currently under your wing</p>
+            </div>
+            <div id="menteesContainer"></div>
           </div>
-          <div id="menteesContainer"></div>
         </div>
 
         <!-- Mentor: Schedule (Focus Panel) -->
         <div id="scheduleSection" class="dashboard-section" style="display: none">
+          <div class="dashboard-inner-container">
             <div class="mb-4">
                 <h2 class="display-6 fw-bold">My Schedule & Availability</h2>
                 <p class="text-muted">Manage your time slots and meeting integration</p>
@@ -882,6 +1026,7 @@
                     </div>
                 </div>
             </div>
+          </div>
         </div>
 
         <!-- Shared: Notifications (Focus Panel) -->
@@ -890,14 +1035,16 @@
           class="dashboard-section"
           style="display: none"
         >
-          <div class="mb-4">
-            <h2 class="display-6 fw-bold">Notifications</h2>
-            <p class="text-muted">Stay updated with your latest activities</p>
+          <div class="dashboard-inner-container">
+            <div class="mb-4">
+              <h2 class="display-6 fw-bold">Notifications</h2>
+              <p class="text-muted">Stay updated with your latest activities</p>
+            </div>
+            <div
+              id="notificationsPageList"
+              class="list-group list-group-flush border rounded overflow-hidden shadow-sm"
+            ></div>
           </div>
-          <div
-            id="notificationsPageList"
-            class="list-group list-group-flush border rounded overflow-hidden shadow-sm"
-          ></div>
         </div>
       </div>
     </div> <!-- End of dashboard-content -->
@@ -953,17 +1100,14 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="assets/js/pages/main.js?v=100.0.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=100.0.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=100.0.0"></script>
-    <script src="assets/js/core/api.js?v=100.0.0"></script>
+    <script src="assets/js/pages/main.js?v=300.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=300.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=300.0.0"></script>
+    <script src="assets/js/core/supabase-service.js?v=300.0.0" type="module"></script>
+    <script src="assets/js/core/api.js?v=300.0.0"></script>
     <!-- Feature Scripts -->
-    <script type="module" src="assets/js/pages/mentor-discovery.js?v=100.0.0"></script>
-    <script src="assets/js/components/file-upload.js?v=100.0.0"></script>
-    <script type="module" src="assets/js/pages/innovate-hub.js?v=100.0.0"></script>
-    <script src="assets/js/components/staggered-menu.js?v=100.0.0"></script>
-    <script src="assets/js/components/nuru-assistant.js?v=100.0.0"></script>
-    <script type="module" src="assets/js/components/collab-screen.js?v=100.0.0"></script>
+    <script src="assets/js/components/staggered-menu.js?v=102.0.0"></script>
+    <script src="assets/js/components/nuru-assistant.js?v=102.0.0"></script>
     
     <!-- Fail-Safe Helper -->
     <div id="dashboardFailSafe" style="display:none; position:fixed; bottom:20px; right:20px; z-index:10000; animation: slideUp 0.5s ease-out;">
@@ -1070,15 +1214,86 @@
     </div>
 
     <script type="module">
-      import { auth } from "./assets/js/core/firebase-config.js";
-      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+      import authManager from "./assets/js/core/auth-manager.js";
+
+      // Initialize AuthManager and trigger initial check
+      (async () => {
+          const user = await authManager.init();
+          if (!user) {
+              window.location.replace("login.html");
+          }
+      })();
 
       window.dashboardReady = false;
+      
+      // ── GLOBAL PROFILE SYNC ───────────────────────────────
+      window.addEventListener('profileUpdated', (e) => {
+          const { detail } = e;
+          if (!detail) return;
+          
+          console.log("Dashboard: Global profile update received:", detail);
+          
+          // 1. Update Navbar Initials/Photo
+          if (window.StaggeredMenu) {
+              if (detail.photoUrl) {
+                  window.StaggeredMenu.updatePhoto(detail.photoUrl);
+              } else if (detail.fullName) {
+                  window.StaggeredMenu.updateInitials(detail.fullName);
+              }
+          }
+          
+          // 2. Update Dashboard Greeting
+          const greetingEl = document.getElementById("dashboardGreeting");
+          if (greetingEl && detail.fullName) {
+              const hour = new Date().getHours();
+              let timeGreeting = "Good evening";
+              if (hour < 12) timeGreeting = "Good morning";
+              else if (hour < 17) timeGreeting = "Good afternoon";
+              
+              const firstName = detail.fullName.split(' ')[0];
+              greetingEl.textContent = `${timeGreeting}, ${firstName}`;
+          }
+          
+          // 3. Update Profile Display Name in Profile Section
+          const profileDisplayName = document.getElementById('profileDisplayNameDisplay');
+          if (profileDisplayName && detail.fullName) {
+              profileDisplayName.textContent = detail.fullName;
+          }
+          
+          // 4. Update Profile Preview Image
+          const profilePreview = document.getElementById('profilePreview');
+          if (profilePreview && detail.photoUrl) {
+              profilePreview.src = detail.photoUrl;
+          }
+          
+          // 5. Update local storage for persistence across reloads
+          try {
+              const stored = JSON.parse(localStorage.getItem('innovateHubUser') || '{}');
+              if (detail.fullName) stored.fullName = detail.fullName;
+              if (detail.photoUrl) stored.photoUrl = detail.photoUrl;
+              localStorage.setItem('innovateHubUser', JSON.stringify(stored));
+          } catch (err) {}
+      });
 
       // ── GLOBAL NAVIGATION REGISTRY ──────────────────────────
       window.showDashboardSection = function (sectionId) {
+        // Role Detection
+        const user = JSON.parse(localStorage.getItem('innovateHubUser') || '{}');
+        const role = user.role;
+
+        // Role-Section Guard Map
+        const roleGuards = {
+          'mentor': ['projects', 'submit', 'mentors'],
+          'innovator': ['requests']
+        };
+
+        if (roleGuards[role] && roleGuards[role].includes(sectionId)) {
+          console.warn(`Dashboard: Access denied for role '${role}' to section '${sectionId}'`);
+          window.showDashboardSection('home');
+          return;
+        }
+
         // If a modal is active (like onboarding), don't force section visibility yet
-        // This prevents the "gray screen" backdrop from being visible without content
         if (document.body.classList.contains('modal-open') && sectionId === 'home') {
             console.log("Dashboard: Modal active, skipping section switch to 'home'");
             return;
@@ -1091,6 +1306,17 @@
         if (!sectionId || sectionId === "home") {
           if (quickAccess) quickAccess.style.display = "block";
           if (container) container.style.display = "none";
+          
+          // Explicitly hide full-width sections that sit outside the container
+          const collab = document.getElementById("collabSection");
+          if (collab) {
+              collab.style.display = "none";
+              collab.classList.remove("active");
+          }
+          
+          // Clean up active classes
+          sections.forEach((s) => s.classList.remove("active"));
+
           window.scrollTo({ top: 0, behavior: "smooth" });
           
           const gsapTargets = document.querySelectorAll(".article-wrapper");
@@ -1108,12 +1334,25 @@
         } else {
           if (quickAccess) quickAccess.style.display = "none";
           if (container) container.style.display = "block";
-          sections.forEach((s) => (s.style.display = "none"));
+          sections.forEach((s) => {
+              s.style.display = "none";
+              s.classList.remove("active");
+          });
           const target =
             document.getElementById(sectionId + "Section") ||
             document.getElementById(sectionId);
           if (target) {
-            target.style.display = "block";
+            target.classList.add("active");
+            if (sectionId !== 'collab') {
+                target.style.display = "block";
+            }
+            
+            // Toggle Hub-specific UI constraints
+            const backBtnContainer = document.getElementById('collabBackButtonContainer');
+            if (backBtnContainer) {
+                backBtnContainer.style.display = (sectionId === 'collab') ? 'none' : 'block';
+            }
+
             if (window.gsap) {
               gsap.from(target, {
                 duration: 0.6,
@@ -1139,6 +1378,7 @@
       
       // Export gloablly and establish alias. Must be outside function scope.
       window.showSection = window.showDashboardSection;
+      
 
       // ── Mentor access control: show blocking screen ──────────
       function showMentorPendingScreen() {
@@ -1177,7 +1417,7 @@
       }
 
       // ── Auth listener: Supabase as Single Source of Truth ───────
-      onAuthStateChanged(auth, async (user) => {
+      authManager.onAuthChange(async (user) => {
         if (!user) {
           window.location.replace("login.html");
           return;
@@ -1190,20 +1430,22 @@
           // 1. Primary Attempt: Supabase (Single Source of Truth)
           if (window.SupabaseService) {
               try {
-                  const sbProfile = await window.SupabaseService.getProfile(user.uid);
-                  if (sbProfile) {
-                      userData = {
-                          fullName: sbProfile.full_name,
-                          role: sbProfile.role,
-                          email: user.email,
-                          status: sbProfile.status,
-                          profileComplete: true,
-                          isApproved: sbProfile.status === 'approved' || sbProfile.status === 'active',
-                          photoURL: sbProfile.avatar_url
-                      };
-                      role = userData.role;
-                      console.log("Dashboard: Profile loaded from Supabase ✓");
-                  }
+                  const sbProfile = await window.SupabaseService.getProfile(user.id || user.uid);
+                    const roleFromProfile = sbProfile?.role;
+                    const roleFromMeta = user.user_metadata?.role;
+                    role = (roleFromProfile || roleFromMeta || "innovator").toLowerCase();
+                    
+                    userData = {
+                        fullName: sbProfile?.full_name || user.user_metadata?.full_name || user.email.split('@')[0],
+                        role: role,
+                        email: user.email,
+                        status: sbProfile?.status || 'active',
+                        profileComplete: sbProfile?.profile_complete === true || role === 'admin',
+                        isApproved: sbProfile?.status === 'approved' || sbProfile?.status === 'active' || role === 'admin',
+                        photoURL: sbProfile?.avatar_url || user.user_metadata?.avatar_url,
+                        rejectionReason: sbProfile?.rejection_reason
+                    };
+                    console.log("Dashboard: Profile loaded. Role:", role, "Admin:", role === 'admin');
               } catch (sbErr) {
                   console.warn("Dashboard: Supabase profile fetch failed, trying Firestore migrate...", sbErr);
               }
@@ -1373,26 +1615,22 @@
         }
 
         // Load role-specific module
-        const modulePath =
-          role === "mentor"
-            ? `./assets/js/pages/mentor-dashboard.js?v=100.0.0`
-            : `./assets/js/pages/innovator-dashboard.js?v=100.0.0`;
+        let modulePath = null;
+        if (role === "mentor") {
+            modulePath = `./assets/js/pages/mentor-dashboard.js?v=114.0.0`;
+        } else if (role === "innovator") {
+            modulePath = `./assets/js/pages/innovator-dashboard.js?v=114.0.0`;
+        }
 
-        try {
-          const mod = await import(modulePath);
-          if (mod && typeof mod.initDashboard === "function") {
-            await mod.initDashboard(user, userData);
-          }
-        } catch (err) {
-          console.error("Dashboard: Module load error:", err);
-          try {
-            const fallback =
-              await import(`./assets/js/pages/innovator-dashboard.js?v=100.0.0`);
-            if (fallback && fallback.initDashboard)
-              await fallback.initDashboard(user, userData);
-          } catch (e2) {
-            console.error("Dashboard: Fallback also failed:", e2);
-          }
+        if (modulePath) {
+            try {
+              const mod = await import(modulePath);
+              if (mod && typeof mod.initDashboard === "function") {
+                await mod.initDashboard(user, userData);
+              }
+            } catch (err) {
+              console.error(`Dashboard: Failed to load ${role} dashboard module:`, err);
+            }
         }
 
         window.dashboardReady = true;
@@ -1400,27 +1638,26 @@
         
         // Ensure the main container is visible if profile is complete
         const dashContent = document.getElementById("dashboard-content");
-        if (dashContent && role !== "mentor") {
-            // Innovators always see the dashboard
-            dashContent.style.display = "block";
-            dashContent.style.visibility = "visible";
-        } else if (dashContent && role === "mentor" && userData && userData.profileComplete) {
-            // Mentors see the dashboard only when profile is complete
-            dashContent.style.display = "block";
-            dashContent.style.visibility = "visible";
-        } else if (dashContent && role === "mentor") {
-            // Make sure the background wrapper is active, but the QuickAccess cards are hidden
-            dashContent.style.display = "block";
-            dashContent.style.visibility = "visible";
-            const landingCards = document.getElementById("dashboardQuickAccess");
-            if (landingCards) landingCards.style.display = "none";
+        if (dashContent) {
+            if (role === 'innovator') {
+                dashContent.style.display = "block";
+                dashContent.style.visibility = "visible";
+            } else if (role === "mentor") {
+                if (userData && userData.profileComplete) {
+                    dashContent.style.display = "block";
+                    dashContent.style.visibility = "visible";
+                } else {
+                    // Mentors who haven't finished onboarding see the background but no cards
+                    dashContent.style.display = "block";
+                    dashContent.style.visibility = "visible";
+                    const landingCards = document.getElementById("dashboardQuickAccess");
+                    if (landingCards) landingCards.style.display = "none";
+                }
+            }
         }
 
-        // Only show home section if we're not potentially showing onboarding
-        // mentor-dashboard.js will manage its own visibility if profile is incomplete
-        if (role !== "mentor" || (userData && userData.profileComplete)) {
-            window.showDashboardSection("home");
-        }
+        // Always show home section initially, mentor-dashboard.js will lock it if needed
+        window.showDashboardSection("home");
 
         // Toggle Profile Field Groups based on Role
         const iSkills = document.getElementById('innovatorSkillsGroup');
@@ -1488,5 +1725,7 @@
         }
       });
     </script>
+    <!-- Collaboration Hub Modals -->
+
   </body>
 </html>
