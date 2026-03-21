@@ -78,43 +78,41 @@
       if (guestButtons) guestButtons.classList.remove("d-none");
       if (navDashboardBtn) navDashboardBtn.classList.add("d-none");
       if (logoutLink) logoutLink.classList.add("d-none");
-      // Always clear stale localStorage when no real session
-      localStorage.removeItem("innovateHubUser");
     }
   }
 
   // updateNavbarUI: checks live Supabase session — never trusts localStorage alone
   window.updateNavbarUI = async function (userOverride) {
-    // If an explicit user object is passed in (e.g. from onAuthStateChange), use it directly
+    // 1. FAST PATH: Check localStorage immediately (synchronous)
+    const cachedUser = window.loadFromLocalStorage
+      ? window.loadFromLocalStorage("innovateHubUser")
+      : JSON.parse(localStorage.getItem("innovateHubUser") || "null");
+
     if (userOverride !== undefined) {
-      applyNavbarState(userOverride);
+      applyNavbarState(userOverride || cachedUser);
       return;
     }
 
-    // Otherwise: check the live Supabase session to get the real auth state
+    // Apply cached state immediately to prevent "GET STARTED" flash
+    if (cachedUser) {
+      applyNavbarState(cachedUser);
+    }
+
+    // 2. LIVE CHECK: Verify with Supabase session
     if (window.supabase) {
       try {
         const { data: { session } } = await window.supabase.auth.getSession();
         if (session && session.user) {
-          // Valid session — show "MY DASHBOARD"
-          const cachedUser = window.loadFromLocalStorage
-            ? window.loadFromLocalStorage("innovateHubUser")
-            : JSON.parse(localStorage.getItem("innovateHubUser") || "null");
+          // Valid live session confirmed
           applyNavbarState(cachedUser || session.user);
-        } else {
-          // No live session — show "GET STARTED" and clear stale data
+        } else if (!cachedUser) {
+          // No session and no cache — show "GET STARTED"
           applyNavbarState(null);
         }
       } catch (e) {
-        console.warn("updateNavbarUI: Supabase session check failed", e);
-        applyNavbarState(null);
+        console.warn("updateNavbarUI: session check failed", e);
+        if (!cachedUser) applyNavbarState(null);
       }
-    } else {
-      // Supabase not ready yet — use localStorage as temporary fallback
-      const cached = window.loadFromLocalStorage
-        ? window.loadFromLocalStorage("innovateHubUser")
-        : JSON.parse(localStorage.getItem("innovateHubUser") || "null");
-      applyNavbarState(cached);
     }
   };
 })();

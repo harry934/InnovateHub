@@ -16,6 +16,21 @@
     <!-- Favicon -->
     <link href="assets/img/favicon.ico" rel="icon" />
 
+    <!-- Role-Based Redirect Guard (Immunity for Admins) -->
+    <script>
+      (function() {
+        try {
+          const user = JSON.parse(localStorage.getItem("innovateHubUser"));
+          if (user && user.role) {
+            const role = user.role.toLowerCase();
+            if (role === 'admin' && !window.location.pathname.includes('admin-dashboard.html')) {
+              window.location.replace("admin-dashboard.html");
+            }
+          }
+        } catch(e) {}
+      })();
+    </script>
+
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -41,13 +56,13 @@
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
 
     <!-- Template Stylesheet -->
-    <link href="assets/css/style.css?v=16.0.0" rel="stylesheet" />
+    <link href="assets/css/style.css?v=140.0.0" rel="stylesheet" />
 
     <!-- Innovate Hub Custom Styles -->
-    <link href="assets/css/innovate-hub.css?v=16.0.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=140.0.0" rel="stylesheet" />
 
     <!-- Mobile Enhancement Styles -->
-    <link href="assets/css/mobile-nav.css?v=16.0.0" rel="stylesheet" />
+    <link href="assets/css/mobile-nav.css?v=140.0.0" rel="stylesheet" />
 
     <!-- Page-specific styles -->
     <style>
@@ -60,6 +75,23 @@
         justify-content: center;
         padding: 2rem;
         position: relative;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .signup-container.ready {
+        opacity: 1;
+      }
+      .signup-loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .back-home {
@@ -405,8 +437,15 @@
     </div>
     <!-- Logo Preloader End -->
 
+    <!-- Loading Overlay -->
+    <div id="signupLoading" class="signup-loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
     <!-- Sign Up Page Container -->
-    <div class="signup-container">
+    <div class="signup-container" id="signupContainer">
       <!-- Back to Home Link (Top Left) -->
       <a href="/" class="back-home">
         <i class="fa fa-arrow-left"></i>
@@ -913,7 +952,6 @@
         }
         return isValid;
       }
-
       // Google OAuth Signup — redirect-based via Supabase
       window.handleGoogleSignIn = async function () {
         if (window.location.protocol === "file:") {
@@ -921,9 +959,10 @@
           return;
         }
         try {
+          // Redirect back to signup page to finish profile if needed
           const { error } = await window.supabase.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: window.location.origin + '/index.html' }
+            options: { redirectTo: window.location.origin + '/signup.html?google=success' }
           });
           if (error) throw error;
         } catch (error) {
@@ -932,11 +971,67 @@
         }
       };
 
+      // --- Core Platform Services ---
+    </script>
+    <script src="assets/js/utils/ui-utils.js?v=151.0.0"></script>
+    <script src="assets/js/core/supabase-service.js?v=151.0.0" type="module"></script>
+
+    <script type="module">
+      import authManager from './assets/js/core/auth-manager.js';
+
       // Check for Google redirect or already logged in on load
       window.addEventListener("load", async () => {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get("google") === "true") {
-          handleGoogleSignIn();
+        const container = document.getElementById("signupContainer");
+        const loader = document.getElementById("signupLoading");
+
+        // Initialize AuthManager
+        await authManager.init();
+        const user = authManager.getCurrentUser();
+
+        if (user) {
+            try {
+                // Check if profile is already complete via centralized logic
+                if (authManager.isProfileComplete()) {
+                    console.log("Profile complete, redirecting to dashboard...");
+                    // If it's an admin, go to admin dashboard, else homepage/innovator dashboard
+                    if (user.role?.toLowerCase() === 'admin') {
+                        window.location.href = "admin-dashboard.html";
+                    } else {
+                        window.location.href = "index.html";
+                    }
+                    return;
+                }
+
+                // Profile incomplete (Step 2/3 required)
+                console.log("Profile incomplete (Step 2/3 required)");
+                
+                // Pre-fill fields
+                if (user.email) document.getElementById("email").value = user.email;
+                if (user.fullName || user.displayName) {
+                    document.getElementById("fullName").value = user.fullName || user.displayName;
+                }
+                
+                // Show Step 2
+                document.getElementById("stepIndicator1").classList.add("completed");
+                document.getElementById("stepIndicator1").classList.remove("active");
+                document.getElementById("step1").classList.remove("active");
+                document.getElementById("step2").classList.add("active");
+                document.getElementById("stepIndicator2").classList.add("active");
+                window.currentStep = 2; // Using global currentStep if defined
+                if (typeof toggleStep3Layout === 'function') toggleStep3Layout();
+
+                if (container) container.classList.add("ready");
+                if (loader) loader.style.display = "none";
+            } catch (err) {
+                console.error("Session check error:", err);
+                if (container) container.classList.add("ready");
+                if (loader) loader.style.display = "none";
+            }
+        } else {
+            // Not logged in, show Step 1
+            if (container) container.classList.add("ready");
+            if (loader) loader.style.display = "none";
         }
       });
 
@@ -961,37 +1056,50 @@
         const btn = document.querySelector("#step3 .button-submit:last-child");
         const originalText = btn ? btn.innerHTML : "Submit";
         if (btn) { btn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Registering...'; btn.disabled = true; }
-
         try {
           const status = role === "mentor" ? "pending" : "active";
+          const { data: { session } } = await window.supabase.auth.getSession();
+          let userId = session?.user?.id;
 
-          // 1. Create Supabase Auth user
-          const { data: authData, error: authError } = await window.supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                full_name: fullName,
-                role:      role,
-                status:    status
+          if (!session) {
+            // 1. Create Supabase Auth user (New Email User)
+            const { data: authData, error: authError } = await window.supabase.auth.signUp({
+              email,
+              password,
+              options: {
+                data: {
+                  full_name: fullName,
+                  role:      role,
+                  status:    status
+                }
               }
-            }
-          });
+            });
+            if (authError) throw authError;
+            userId = authData.user?.id;
+          } else {
+            // 1b. Update Auth metadata for existing user (e.g., Google user completing profile)
+            await window.supabase.auth.updateUser({
+                data: {
+                    full_name: fullName,
+                    role:      role,
+                    status:    status
+                }
+            });
+            // For existing session, userId is already from session.user.id
+          }
 
-          if (authError) throw authError;
+          if (!userId) throw new Error("Could not determine User ID.");
 
-          const userId = authData.user?.id;
-          if (!userId) throw new Error("Signup succeeded but no user ID was returned.");
-
-          // 2. Upsert profile row
+          // 2. Upsert profile row (Ensures role is saved to profiles table)
           const profileData = {
-            id:           userId,
-            email:        email,
-            full_name:    fullName,
-            role:         role,
-            phone:        phone,
-            status:       status,
-            updated_at:   new Date().toISOString()
+            id:               userId,
+            email:            email,
+            full_name:        fullName,
+            role:             role,
+            phone:            phone,
+            status:           status,
+            profile_complete: true, // Mark as officially complete
+            updated_at:       new Date().toISOString()
           };
           if (role === "mentor") {
             profileData.organization = organization;
@@ -1000,12 +1108,8 @@
           }
 
           if (window.SupabaseService) {
-            try {
-              await window.SupabaseService.upsertProfile(profileData);
-              console.log("Profile upserted successfully.");
-            } catch (sbErr) {
-              console.error("Profile upsert failed (trigger may have handled it):", sbErr);
-            }
+            await window.SupabaseService.upsertProfile(profileData);
+            console.log("Profile persisted successfully ✓");
           }
 
           // 3. Store session locally
@@ -1014,7 +1118,7 @@
 
           const welcomeMsg = role === "mentor"
             ? "Application submitted! Pending admin approval."
-            : "Signup successful! Welcome to Innovate Hub.";
+            : "Registration complete! Redirecting to your dashboard...";
           
           alert(welcomeMsg);
           window.location.href = "index.html";

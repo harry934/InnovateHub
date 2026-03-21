@@ -36,13 +36,13 @@
     <link href="assets/lib/animate/animate.min.css" rel="stylesheet" />
 
     <!-- Customized Bootstrap Stylesheet -->
-    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/bootstrap.min.css?v=135.0.0" rel="stylesheet" />
 
     <!-- Template Stylesheet -->
-    <link href="assets/css/style.css?v=10.0.0" rel="stylesheet" />
+    <link href="assets/css/style.css?v=135.0.0" rel="stylesheet" />
 
     <!-- Innovate Hub Custom Styles -->
-    <link href="assets/css/innovate-hub.css?v=10.0.0" rel="stylesheet" />
+    <link href="assets/css/innovate-hub.css?v=135.0.0" rel="stylesheet" />
     
     <!-- Mobile Enhancement Styles -->
     <link href="assets/css/mobile-nav.css?v=11.0.0" rel="stylesheet">
@@ -447,19 +447,8 @@
         if (existing) existing.remove();
         const div = document.createElement('div');
         div.id = 'loginErrorMsg';
-        div.className = 'alert alert-danger mt-3 py-3 small shadow-sm d-flex flex-column align-items-center text-center';
-        
-        // Add resend link if it's an email confirmation error
-        if (msg.includes('confirm your email')) {
-            div.innerHTML = `
-                <div class="mb-2"><i class="fa fa-envelope-open me-2"></i><b>${msg}</b></div>
-                <button class="btn btn-link btn-sm p-0 text-decoration-underline" onclick="window.handleResendConfirmation()" style="color: #842029; font-weight: 600;">
-                    Click here to resend the confirmation email
-                </button>
-            `;
-        } else {
-            div.textContent = msg;
-        }
+        div.className = 'alert alert-danger mt-3 py-2 small shadow-sm text-center';
+        div.textContent = msg;
         document.querySelector('.form').appendChild(div);
       };
 
@@ -470,32 +459,34 @@
       async function handleSuccessfulLogin(session) {
         const supabaseUser = session.user;
         try {
-          let userData = {
-            uid: supabaseUser.id,
-            id: supabaseUser.id,
-            email: supabaseUser.email,
-            displayName: supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0],
-            role: supabaseUser.user_metadata?.role || null
-          };
+            const baseRole = (supabaseUser.user_metadata?.role || "").toLowerCase();
+            let userData = {
+               uid: supabaseUser.id,
+               id: supabaseUser.id,
+               email: supabaseUser.email,
+               displayName: supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0],
+               role: baseRole
+            };
 
-          // Fetch full profile from profiles table
-          if (window.SupabaseService) {
-            try {
-              const profile = await window.SupabaseService.getProfile(supabaseUser.id);
-              if (profile) {
-                userData = {
-                  ...userData,
-                  fullName: profile.full_name,
-                  role: profile.role,
-                  status: profile.status,
-                  loggedIn: true,
-                  ...profile
-                };
-              }
-            } catch (sbErr) {
-              console.error("Profile fetch error:", sbErr);
+            // Fetch full profile from profiles table
+            if (window.SupabaseService) {
+                try {
+                   const profile = await window.SupabaseService.getProfile(supabaseUser.id);
+                   const finalRole = (profile?.role || baseRole).toLowerCase();
+                   
+                   userData = {
+                     ...userData,
+                     fullName: profile?.full_name || userData.displayName,
+                     role: finalRole,
+                     status: profile?.status || 'active',
+                     profileComplete: profile?.profile_complete === true || finalRole === 'admin',
+                     loggedIn: true,
+                     ...profile
+                   };
+                } catch (sbErr) {
+                   console.error("Profile fetch error:", sbErr);
+                }
             }
-          }
 
           localStorage.setItem('innovateHubUser', JSON.stringify(userData));
           localStorage.setItem('justLoggedIn', 'true');
@@ -533,8 +524,8 @@
         } catch (error) {
           console.error("Login error:", error);
           let message = "Incorrect email or password.";
-          if (error.message?.includes('Invalid login credentials')) message = "Incorrect email or password.";
-          if (error.message?.includes('Email not confirmed')) message = "Please confirm your email first.";
+          // Handle specific Supabase error if it still occurs
+          if (error.message?.includes('Email not confirmed')) message = "Email verification is required by the server. Please check your inbox or contact admin.";
           showErrorMessage(message);
           btn.innerHTML = originalText;
           btn.disabled = false;
@@ -582,44 +573,6 @@
           }
         }
       };
-
-      // Resend Confirmation
-      window.handleResendConfirmation = async function () {
-        const email = document.getElementById("email").value.trim();
-        if (!email) {
-            showErrorMessage("Please enter your email address first.");
-            return;
-        }
-        
-        const btn = document.querySelector("#loginErrorMsg button");
-        if (btn) btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Sending...';
-
-        try {
-            const { error } = await window.supabase.auth.resend({
-                type: 'signup',
-                email: email,
-                options: {
-                    emailRedirectTo: window.location.origin + '/login.html'
-                }
-            });
-            if (error) throw error;
-            
-            showSuccessNotification("Confirmation email resent! Please check your inbox (and spam folder).");
-            const existing = document.getElementById('loginErrorMsg');
-            if (existing) existing.remove();
-        } catch (error) {
-            console.error("Resend error:", error);
-            showErrorMessage("Failed to resend: " + error.message);
-        }
-      };
-
-      function showSuccessNotification(msg) {
-        const div = document.createElement('div');
-        div.className = 'alert alert-success mt-3 py-3 small shadow-sm text-center';
-        div.innerHTML = `<i class="fa fa-check-circle me-2"></i> ${msg}`;
-        document.querySelector('.form').appendChild(div);
-        setTimeout(() => div.remove(), 8000);
-      }
     </script>
   </body>
 </html>

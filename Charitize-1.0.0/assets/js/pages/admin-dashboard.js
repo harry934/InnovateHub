@@ -26,8 +26,11 @@ class AdminDashboard {
         if (window.SupabaseService) {
             try {
                 const profile = await window.SupabaseService.getProfile(supabaseUser.id);
-                if (!profile || profile.role !== 'admin') {
-                    console.error("AdminDashboard: Unauthorized access attempt by role:", profile?.role);
+                const roleFromProfile = (profile?.role || "").toLowerCase();
+                const roleFromMeta = (supabaseUser.user_metadata?.role || "").toLowerCase();
+                
+                if (roleFromProfile !== 'admin' && roleFromMeta !== 'admin') {
+                    console.error("AdminDashboard: Unauthorized - Role from profile:", roleFromProfile, "Role from meta:", roleFromMeta);
                     window.location.href = 'dashboard.html';
                     return;
                 }
@@ -620,7 +623,7 @@ class AdminDashboard {
                     <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; margin-bottom:0.5rem; background:#fff; border-radius:12px; border:1px solid #e2e8f0; gap:1rem;">
                         <div style="min-width:0; flex:1;">
                             <div style="font-weight:700; font-size:0.85rem; color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ev.title}</div>
-                            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${ev.date} &bull; ${ev.location}</div>
+                            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${ev.event_date || 'No Date'} &bull; ${ev.location}</div>
                         </div>
                         <div style="display:flex; gap:0.4rem; flex-shrink:0;">
                             <button onclick="adminDashboard.editEvent('${ev.id}')" title="Edit"
@@ -634,7 +637,13 @@ class AdminDashboard {
                         </div>
                     </div>`
             ).join('');
-        } catch(e) {}
+        } catch(e) {
+            console.error("Error loading events:", e);
+            container.innerHTML = `<div class="col-12 text-center text-danger py-4">
+                <i class="fa fa-exclamation-circle mb-2"></i><br>
+                Failed to load events. Please check the console.
+            </div>`;
+        }
     }
 
     async handleEventSubmit(e) {
@@ -682,7 +691,7 @@ class AdminDashboard {
             };
 
             if (id) {
-                // Supabase Sync: Upsert Event
+                // Supabase Sync: Update Existing Event
                 if (window.SupabaseService) {
                     try {
                         await window.SupabaseService.upsertEvent({
@@ -697,16 +706,15 @@ class AdminDashboard {
                         console.log("Supabase Event Sync: Updated");
                     } catch (sbErr) {
                         console.error("Supabase Event Sync Error", sbErr);
+                        throw sbErr; // Rethrow to catch in the main block
                     }
                 }
                 alert('Event updated!');
             } else {
-                const newId = 'event_' + Date.now();
-                // Supabase Sync: Upsert Event
+                // Supabase Sync: Create New Event (Omit ID to let DB generate UUID)
                 if (window.SupabaseService) {
                     try {
                         await window.SupabaseService.upsertEvent({
-                            id: newId,
                             title: data.title,
                             description: data.description,
                             event_date: data.date,
@@ -717,6 +725,7 @@ class AdminDashboard {
                         console.log("Supabase Event Sync: Created");
                     } catch (sbErr) {
                         console.error("Supabase Event Sync Error", sbErr);
+                        throw sbErr; // Rethrow to catch in the main block
                     }
                 }
                 alert('Event created!');

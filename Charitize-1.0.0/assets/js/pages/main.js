@@ -132,14 +132,21 @@
   }
 
   // Donation progress
-  $(".donation-item .donation-progress").waypoint(
-    function () {
-      $(".donation-item .progress .progress-bar").each(function () {
-        $(this).css("height", $(this).attr("aria-valuenow") + "%");
-      });
-    },
-    { offset: "80%" },
-  );
+  if ($.fn.waypoint) {
+    $(".donation-item .donation-progress").waypoint(
+      function () {
+        $(".donation-item .progress .progress-bar").each(function () {
+          $(this).css("height", $(this).attr("aria-valuenow") + "%");
+        });
+      },
+      { offset: "80%" },
+    );
+  } else {
+    // Fallback: Show bars immediately if waypoint is missing
+    $(".donation-item .progress .progress-bar").each(function () {
+      $(this).css("height", $(this).attr("aria-valuenow") + "%");
+    });
+  }
 
   // Header carousel
   $(".header-carousel").owlCarousel({

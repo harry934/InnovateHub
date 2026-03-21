@@ -70,10 +70,11 @@ class AuthManager {
                     uid: supabaseUser.id,
                     id: supabaseUser.id,
                     email: supabaseUser.email,
-                    role: profile.role || 'innovator',
+                    role: profile.role || (supabaseUser.user_metadata?.role) || null,
+                    profileComplete: this._checkProfileComplete(profile, supabaseUser),
                     fullName: profile.full_name,
-                    displayName: profile.full_name || supabaseUser.email.split('@')[0],
-                    loggedIn: true, // Legacy compatibility
+                    displayName: profile.full_name || supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0],
+                    loggedIn: true,
                     ...profile
                 };
             } else {
@@ -82,23 +83,49 @@ class AuthManager {
                     uid: supabaseUser.id,
                     id: supabaseUser.id,
                     email: supabaseUser.email,
+                    profileComplete: false,
                     displayName: supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0],
-                    role: supabaseUser.user_metadata?.role || 'innovator'
+                    role: supabaseUser.user_metadata?.role || null
                 };
             }
 
             localStorage.setItem('innovateHubUser', JSON.stringify(this.currentUser));
         } catch (error) {
             console.error('AuthManager: Error fetching Supabase profile:', error);
+            // On error, do NOT assume innovator role. Stay neutral.
             this.currentUser = {
                 uid: supabaseUser.id,
                 id: supabaseUser.id,
                 email: supabaseUser.email,
                 displayName: supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0],
-                role: 'innovator'
+                role: supabaseUser.user_metadata?.role || null,
+                profileComplete: false,
+                error: true
             };
             localStorage.setItem('innovateHubUser', JSON.stringify(this.currentUser));
         }
+    }
+
+    /**
+     * Logic shared between initial hydration and runtime checks.
+     */
+    _checkProfileComplete(profile, supabaseUser) {
+        if (!profile) return false;
+        
+        // Admins are always considered complete
+        const role = (profile.role || (supabaseUser?.user_metadata?.role) || "").toLowerCase();
+        if (role === 'admin') return true;
+
+        // Otherwise, check the database flag AND the existence of a role
+        return profile.profile_complete === true && !!role;
+    }
+
+    /**
+     * Public method to check if the profile is complete.
+     */
+    isProfileComplete() {
+        const user = this.getCurrentUser();
+        return user ? !!user.profileComplete : false;
     }
 
     /**

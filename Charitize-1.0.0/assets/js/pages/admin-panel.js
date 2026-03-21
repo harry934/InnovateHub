@@ -751,7 +751,8 @@ window.AdminPanel = {
                 </div>`;
             }).join('');
         } catch (e) {
-            console.error(e);
+            console.error("Admin Panel Events Error:", e);
+            container.innerHTML = '<div class="col-12 text-center py-4 text-danger">Failed to load events. Please try again.</div>';
         }
     },
 

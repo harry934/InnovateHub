@@ -6,6 +6,21 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <link href="assets/img/favicon.ico" rel="icon" />
 
+    <!-- Role-Based Redirect Guard (Immunity for Admins) -->
+    <script>
+      (function() {
+        try {
+          const user = JSON.parse(localStorage.getItem("innovateHubUser"));
+          if (user && user.role) {
+            const role = user.role.toLowerCase();
+            if (role === 'admin' && !window.location.pathname.includes('admin-dashboard.html')) {
+              window.location.replace("admin-dashboard.html");
+            }
+          }
+        } catch(e) {}
+      })();
+    </script>
+
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1081,13 +1096,13 @@
 
     <!-- JS Libraries -->
     <script src="assets/js/pages/main.js?v=102.0.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=102.0.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=102.0.0"></script>
-    <script src="assets/js/core/api.js?v=102.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=151.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=151.0.0"></script>
+    <script src="assets/js/core/api.js?v=151.0.0"></script>
     <!-- Feature Scripts -->
-    <script type="module" src="assets/js/pages/mentor-discovery.js?v=102.0.0"></script>
-    <script src="assets/js/components/file-upload.js?v=102.0.0"></script>
-    <script type="module" src="assets/js/pages/innovate-hub.js?v=102.0.0"></script>
+    <script type="module" src="assets/js/pages/mentor-discovery.js?v=151.0.0"></script>
+    <script src="assets/js/components/file-upload.js?v=151.0.0"></script>
+    <script type="module" src="assets/js/pages/innovate-hub.js?v=151.0.0"></script>
     <script src="assets/js/components/staggered-menu.js?v=102.0.0"></script>
     <script src="assets/js/components/nuru-assistant.js?v=102.0.0"></script>
     
@@ -1413,20 +1428,21 @@
           if (window.SupabaseService) {
               try {
                   const sbProfile = await window.SupabaseService.getProfile(user.id || user.uid);
-                    if (sbProfile) {
-                        userData = {
-                            fullName: sbProfile.full_name,
-                            role: sbProfile.role,
-                            email: user.email,
-                            status: sbProfile.status,
-                            profileComplete: sbProfile.profile_complete === true,
-                            isApproved: sbProfile.status === 'approved' || sbProfile.status === 'active',
-                            photoURL: sbProfile.avatar_url,
-                            rejectionReason: sbProfile.rejection_reason
-                        };
-                        role = userData.role;
-                        console.log("Dashboard: Profile loaded from Supabase ✓ Role:", role);
-                    }
+                    const roleFromProfile = sbProfile?.role;
+                    const roleFromMeta = user.user_metadata?.role;
+                    role = (roleFromProfile || roleFromMeta || "innovator").toLowerCase();
+                    
+                    userData = {
+                        fullName: sbProfile?.full_name || user.user_metadata?.full_name || user.email.split('@')[0],
+                        role: role,
+                        email: user.email,
+                        status: sbProfile?.status || 'active',
+                        profileComplete: sbProfile?.profile_complete === true || role === 'admin',
+                        isApproved: sbProfile?.status === 'approved' || sbProfile?.status === 'active' || role === 'admin',
+                        photoURL: sbProfile?.avatar_url || user.user_metadata?.avatar_url,
+                        rejectionReason: sbProfile?.rejection_reason
+                    };
+                    console.log("Dashboard: Profile loaded. Role:", role, "Admin:", role === 'admin');
               } catch (sbErr) {
                   console.warn("Dashboard: Supabase profile fetch failed, trying Firestore migrate...", sbErr);
               }

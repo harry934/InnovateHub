@@ -317,7 +317,7 @@ const SupabaseService = {
             const { data, error } = await window.supabase
                 .from('events')
                 .select('*')
-                .order('event_date', { ascending: true });
+                .order('event_date', { ascending: false });
             if (error) throw error;
             return data;
         } catch (error) {
@@ -335,6 +335,33 @@ const SupabaseService = {
             return data[0];
         } catch (error) {
             return this.handleSupabaseError(error, 'upsertEvent');
+        }
+    },
+
+    async getEventById(id) {
+        try {
+            const { data, error } = await window.supabase
+                .from('events')
+                .select('*')
+                .eq('id', id)
+                .maybeSingle();
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            return this.handleSupabaseError(error, 'getEventById');
+        }
+    },
+
+    async deleteEvent(id) {
+        try {
+            const { error } = await window.supabase
+                .from('events')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            return this.handleSupabaseError(error, 'deleteEvent');
         }
     },
 

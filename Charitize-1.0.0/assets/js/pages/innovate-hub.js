@@ -3,18 +3,34 @@ import authManager from '../core/auth-manager.js';
 // Initialize Auth on load
 (async () => {
     try {
+        // IMPORTANT: Must initialize auth or getCurrentUser() will be empty/stale
         await authManager.init();
         console.log("AuthManager initialized successfully ✓");
         
+        const user = authManager.getCurrentUser();
+        
+        // Role Protection: If logged in but no role OR profile is incomplete, go to signup
+        // EXCEPT if we are already on signup.html or login.html
+        // These pages manage their own auth/onboarding logic — skip the global guard
+        const isAuthPage = window.location.pathname.includes('signup.html') || window.location.pathname.includes('login.html');
+        const isDashboardPage = window.location.pathname.includes('dashboard.html') || window.location.pathname.includes('admin-dashboard.html');
+        
+        if (user && !isAuthPage && !isDashboardPage) {
+            // Standardized check for profile completeness
+            if (!authManager.isProfileComplete()) {
+                console.log("User profile incomplete, redirecting to onboarding...");
+                window.location.href = 'signup.html?reason=incomplete_profile';
+                return;
+            }
+        }
+
         // Listen for auth changes to update UI
         authManager.onAuthChange((user) => {
             if (window.updateNavbarUI) window.updateNavbarUI(user);
         });
         
-        // Initial UI sync
-        setTimeout(() => {
-            if (window.updateNavbarUI) window.updateNavbarUI(authManager.getCurrentUser());
-        }, 500);
+        // Initial UI update from confirmed auth state
+        if (window.updateNavbarUI) window.updateNavbarUI(authManager.getCurrentUser());
     } catch (e) {
         console.error("AuthManager initialization failed:", e);
     }
