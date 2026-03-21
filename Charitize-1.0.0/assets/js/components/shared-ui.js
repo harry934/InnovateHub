@@ -30,13 +30,13 @@
         }, 1200);
       };
 
-      // Hide after 2 seconds
-      setTimeout(hidePreloader, 2000);
+      // Hide after 500ms for a snappier feel
+      setTimeout(hidePreloader, 500);
 
       // Fail-safe
       setTimeout(() => {
         if (preloader) preloader.style.display = "none";
-      }, 5000);
+      }, 3000);
     } else {
       // Internal navigation: hide immediately
       preloader.style.display = "none";
@@ -99,14 +99,18 @@
     }
 
     // 2. LIVE CHECK: Verify with Supabase session
-    if (window.supabase) {
+    if (window.supabase && typeof window.supabase.auth?.getSession === 'function') {
       try {
         const { data: { session } } = await window.supabase.auth.getSession();
         if (session && session.user) {
           // Valid live session confirmed
           applyNavbarState(cachedUser || session.user);
-        } else if (!cachedUser) {
-          // No session and no cache — show "GET STARTED"
+        } else {
+          // No live session — clear cache and show guest state
+          if (cachedUser) {
+              localStorage.removeItem("innovateHubUser");
+              localStorage.removeItem("justLoggedIn");
+          }
           applyNavbarState(null);
         }
       } catch (e) {
@@ -119,31 +123,33 @@
 
 // 4. GLOBAL UI ACTIONS - Moved outside IIFE for reliability
 window.logout = async function () {
-  console.log("Global logout triggered.");
+  console.log("Global logout triggered: Clearing state and redirecting.");
 
-  // 1. Terminate session via AuthManager (handles Supabase + Local Storage)
-  if (window.AuthManager) {
-    try {
-      await window.AuthManager.logout();
-    } catch (e) {
-      console.warn("AuthManager logout error:", e);
-    }
-  } else if (window.supabase) {
-    // Fallback if AuthManager not yet loaded
-    try {
-      await window.supabase.auth.signOut();
-      localStorage.removeItem("innovateHubUser");
-      localStorage.removeItem("justLoggedIn");
-      sessionStorage.clear();
-    } catch (e) {
-      console.warn("Supabase signOut fallback error:", e);
-    }
+  // 1. FAST PATH: Clear all local identifying data immediately
+  localStorage.removeItem("innovateHubUser");
+  localStorage.removeItem("justLoggedIn");
+  sessionStorage.clear();
+
+  // 2. Update navbar state to guest immediately
+  if (typeof window.applyNavbarState === "function") {
+    window.applyNavbarState(null);
+  } else if (typeof window.updateNavbarUI === "function") {
+    window.updateNavbarUI(null);
   }
 
-  // 2. Update the navbar UI immediately to show "GET STARTED"
-  if (typeof window.updateNavbarUI === "function") window.updateNavbarUI(null);
+  // 3. BACKGROUND: Sign out from Supabase/AuthManager
+  // 3. BACKGROUND: Sign out from Supabase/AuthManager
+  try {
+    if (window.AuthManager && typeof window.AuthManager.logout === 'function') {
+      await window.AuthManager.logout();
+    } else if (window.supabase) {
+      await window.supabase.auth.signOut();
+    }
+  } catch (e) {
+    console.warn("Logout background task error:", e);
+  }
 
-  // 3. Redirect to homepage using replace() so back-button cannot return to dashboard
+  // 4. FINAL STEP: Redirect after cache is clear
   window.location.replace("index.html");
 };
 
@@ -169,7 +175,8 @@ window.logout = async function () {
   // Check URL for dashboard flag on load
   window.checkDashboardFlag = function () {
     // Only redirect if NOT already on the dashboard page
-    if (window.location.pathname.endsWith("dashboard.html")) return;
+    const path = window.location.pathname;
+    if (path.includes("dashboard") || path.includes("admin-dashboard")) return;
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("dashboard") === "true") {

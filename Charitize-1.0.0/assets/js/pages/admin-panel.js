@@ -431,6 +431,9 @@ async function renderMentorshipsTable() {
         }
         container.innerHTML = html;
         
+        // After rendering table, initialize the manual pairing form if it exists
+        AdminPanel.initManualPairingForm();
+        
     } catch (e) {
         console.error("Error loading mentorships", e);
         container.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Failed to load data.</td></tr>';
@@ -875,6 +878,112 @@ window.AdminPanel = {
         }
     },
 
+    // ══ MANUAL PAIRING LOGIC ══
+    async initManualPairingForm() {
+        const innovatorSelect = document.getElementById('pairInnovatorSelect');
+        const mentorSelect = document.getElementById('pairMentorSelect');
+        const form = document.getElementById('manualPairingForm');
+
+        if (!innovatorSelect || !mentorSelect || !form) return;
+
+        // Add form submit listener once
+        if (!form.dataset.listenerAdded) {
+            form.addEventListener('submit', (e) => this.handleManualPairing(e));
+            form.dataset.listenerAdded = 'true';
+        }
+
+        try {
+            if (window.SupabaseService) {
+                // Load Innovators
+                const innovators = await window.SupabaseService.getProfilesByRole('innovator');
+                innovatorSelect.innerHTML = '<option value="">Choose Innovator...</option>' + 
+                    innovators.map(u => `<option value="${u.id}">${u.full_name || u.email}</option>`).join('');
+
+                // Load Approved Mentors
+                const mentors = await window.SupabaseService.getProfilesByRole('mentor');
+                const approvedMentors = mentors.filter(m => m.status === 'approved' || m.status === 'active');
+                mentorSelect.innerHTML = '<option value="">Choose Mentor...</option>' + 
+                    approvedMentors.map(u => `<option value="${u.id}">${u.full_name || u.email}</option>`).join('');
+            }
+        } catch (e) {
+            console.error("Error initializing manual pairing form:", e);
+        }
+    },
+
+    async loadInnovatorProjects(innovatorId) {
+        const projectSelect = document.getElementById('pairProjectSelect');
+        if (!projectSelect) return;
+
+        if (!innovatorId) {
+            projectSelect.innerHTML = '<option value="">Choose Project...</option>';
+            projectSelect.disabled = true;
+            return;
+        }
+
+        projectSelect.disabled = false;
+        projectSelect.innerHTML = '<option value="">Loading projects...</option>';
+
+        try {
+            if (window.SupabaseService) {
+                const projects = await window.SupabaseService.getProjects({ innovator_id: innovatorId });
+                const approvedProjects = projects.filter(p => p.status === 'approved');
+                
+                if (approvedProjects.length === 0) {
+                    projectSelect.innerHTML = '<option value="">No approved projects found</option>';
+                    projectSelect.disabled = true;
+                } else {
+                    projectSelect.innerHTML = '<option value="">Choose Project...</option>' + 
+                        approvedProjects.map(p => `<option value="${p.id}">${p.title}</option>`).join('');
+                }
+            }
+        } catch (e) {
+            console.error("Error loading innovator projects:", e);
+            projectSelect.innerHTML = '<option value="">Error loading projects</option>';
+        }
+    },
+
+    async handleManualPairing(e) {
+        e.preventDefault();
+        const innovatorId = document.getElementById('pairInnovatorSelect').value;
+        const projectId = document.getElementById('pairProjectSelect').value;
+        const mentorId = document.getElementById('pairMentorSelect').value;
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+
+        if (!innovatorId || !projectId || !mentorId) {
+            adminToast('Please select all fields.', 'warning');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Creating...';
+
+        try {
+            if (window.SupabaseService) {
+                // Create the mentorship record
+                await window.SupabaseService.createMentorship({
+                    innovator_id: innovatorId,
+                    project_id: projectId,
+                    mentor_id: mentorId,
+                    status: 'accepted', // Auto-accept since admin is doing it
+                    message: 'Manually paired by System Administrator'
+                });
+
+                adminToast('✓ Mentorship pairing created successfully!');
+                e.target.reset();
+                document.getElementById('pairProjectSelect').disabled = true;
+                this.loadInnovatorProjects(null);
+                renderMentorshipsTable();
+                renderAdminStats();
+            }
+        } catch (e) {
+            console.error("Error creating manual pairing:", e);
+            adminToast('Failed to create pairing. Link might already exist.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Create Pairing';
+        }
+    },
+
     init() {
         renderAdminStats();
         renderUsersCards();
@@ -889,6 +998,12 @@ window.AdminPanel = {
         
         const manualMentorForm = document.getElementById('manualMentorForm');
         if (manualMentorForm) manualMentorForm.addEventListener('submit', (e) => this.handleManualMentorRegistration(e));
+
+        const manualPairingForm = document.getElementById('manualPairingForm');
+        if (manualPairingForm) {
+            manualPairingForm.addEventListener('submit', (e) => this.handleManualPairing(e));
+            this.initManualPairingForm();
+        }
     }
 };
 

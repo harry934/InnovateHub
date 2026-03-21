@@ -13,7 +13,7 @@
           const user = JSON.parse(localStorage.getItem("innovateHubUser"));
           if (user && user.role) {
             const role = user.role.toLowerCase();
-            if (role === 'admin' && !window.location.pathname.includes('admin-dashboard.html')) {
+            if (role === 'admin' && !window.location.pathname.includes('admin-dashboard')) {
               window.location.replace("admin-dashboard.html");
             }
           }
@@ -93,7 +93,7 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/core/supabase-config.js"></script>
+    <script src="assets/js/core/supabase-config.js?v=300.0.0"></script>
 
     <!-- Core Dependencies (jQuery first, then Bootstrap) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -162,6 +162,11 @@
               Manage your innovation ecosystem and mentor connections.
             </p>
           </div>
+        </div>
+
+        <!-- Profile Completion Progress (Injected by mentor-dashboard.js) -->
+        <div id="mentorProfileCompletion" class="mb-4" style="display: none">
+          <!-- Progress bar injected here -->
         </div>
 
         <!-- Landing Quick Stats (Injected by role JS) -->
@@ -1095,14 +1100,12 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="assets/js/pages/main.js?v=102.0.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=151.0.0"></script>
-    <script src="assets/js/components/shared-ui.js?v=151.0.0"></script>
-    <script src="assets/js/core/api.js?v=151.0.0"></script>
+    <script src="assets/js/pages/main.js?v=300.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=300.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=300.0.0"></script>
+    <script src="assets/js/core/supabase-service.js?v=300.0.0" type="module"></script>
+    <script src="assets/js/core/api.js?v=300.0.0"></script>
     <!-- Feature Scripts -->
-    <script type="module" src="assets/js/pages/mentor-discovery.js?v=151.0.0"></script>
-    <script src="assets/js/components/file-upload.js?v=151.0.0"></script>
-    <script type="module" src="assets/js/pages/innovate-hub.js?v=151.0.0"></script>
     <script src="assets/js/components/staggered-menu.js?v=102.0.0"></script>
     <script src="assets/js/components/nuru-assistant.js?v=102.0.0"></script>
     
@@ -1614,9 +1617,9 @@
         // Load role-specific module
         let modulePath = null;
         if (role === "mentor") {
-            modulePath = `./assets/js/pages/mentor-dashboard.js?v=113.0.0`;
+            modulePath = `./assets/js/pages/mentor-dashboard.js?v=114.0.0`;
         } else if (role === "innovator") {
-            modulePath = `./assets/js/pages/innovator-dashboard.js?v=113.0.0`;
+            modulePath = `./assets/js/pages/innovator-dashboard.js?v=114.0.0`;
         }
 
         if (modulePath) {
@@ -1628,9 +1631,6 @@
             } catch (err) {
               console.error(`Dashboard: Failed to load ${role} dashboard module:`, err);
             }
-        } else {
-            console.warn("Dashboard: No valid module found for role:", role);
-            // Optional: Redirect to onboarding or show role selection
         }
 
         window.dashboardReady = true;
@@ -1656,11 +1656,8 @@
             }
         }
 
-        // Only show home section if we're not potentially showing onboarding
-        // mentor-dashboard.js will manage its own visibility if profile is incomplete
-        if (role !== "mentor" || (userData && userData.profileComplete)) {
-            window.showDashboardSection("home");
-        }
+        // Always show home section initially, mentor-dashboard.js will lock it if needed
+        window.showDashboardSection("home");
 
         // Toggle Profile Field Groups based on Role
         const iSkills = document.getElementById('innovatorSkillsGroup');

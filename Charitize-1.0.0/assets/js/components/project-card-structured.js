@@ -190,11 +190,24 @@ export class StructuredProjectCard {
         const editIcon = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
         // Edit if not yet accepted
-        if (project.status !== 'accepted') {
+        if (project.status !== 'accepted' && project.status !== 'active') {
             actions.push(`
-                <button class="btn btn-sm btn-outline-warning d-flex align-items-center gap-2" onclick="window.editProject('${project.id}')">
+                <button class="btn btn-sm btn-outline-warning d-flex align-items-center gap-2" onclick="window.editProject('${project.id}')" style="border-radius:8px; font-weight:700;">
                     ${editIcon}
-                    Edit
+                    Edit Project
+                </button>
+            `);
+        }
+
+        // Find Mentor button — only for approved projects
+        if (project.status === 'approved') {
+            const mentorIcon = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100-8 4 4 0 000 8zm14 14v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+            actions.push(`
+                <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" 
+                        onclick="window.showDashboardSection('mentors');" 
+                        style="border-radius:8px; font-weight:700; background:var(--brand-green); border-color:var(--brand-green);">
+                    ${mentorIcon}
+                    Find Mentor
                 </button>
             `);
         }
@@ -202,7 +215,7 @@ export class StructuredProjectCard {
         // Delete button — always visible
         const trashIcon = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         actions.push(`
-            <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-2" onclick="window.confirmDeleteProject('${project.id}')">
+            <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-2" onclick="window.confirmDeleteProject('${project.id}')" style="border-radius:8px; font-weight:700;">
                 ${trashIcon}
                 Delete
             </button>

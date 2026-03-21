@@ -16,14 +16,13 @@ class AuthManager {
      * Waits for window.supabase to be ready.
      */
     async init() {
-        // Ensure supabase client is available
-        if (!window.supabase) {
-            console.warn('AuthManager: window.supabase not ready, retrying...');
+        // Wait for supabase client (up to 3s with retries)
+        for (let i = 0; i < 10 && !window.supabase; i++) {
             await new Promise(r => setTimeout(r, 300));
         }
 
-        if (!window.supabase) {
-            console.error('AuthManager: Supabase client unavailable.');
+        if (!window.supabase || typeof window.supabase.auth?.getSession !== 'function') {
+            console.error('AuthManager: Supabase client unavailable after retries.');
             return null;
         }
 
@@ -110,14 +109,26 @@ class AuthManager {
      * Logic shared between initial hydration and runtime checks.
      */
     _checkProfileComplete(profile, supabaseUser) {
-        if (!profile) return false;
+        if (!profile) {
+            console.log("AuthManager: No profile row found for completeness check.");
+            return false;
+        }
         
         // Admins are always considered complete
-        const role = (profile.role || (supabaseUser?.user_metadata?.role) || "").toLowerCase();
+        const role = (profile.role || (supabaseUser?.user_metadata?.role) || profile.Role || "").toLowerCase();
         if (role === 'admin') return true;
 
-        // Otherwise, check the database flag AND the existence of a role
-        return profile.profile_complete === true && !!role;
+        // Check both camelCase and snake_case
+        const isComplete = profile.profile_complete === true || profile.profileComplete === true;
+        
+        console.log("AuthManager: Checking profile completeness...", {
+            role,
+            isComplete,
+            profile_complete_raw: profile.profile_complete,
+            profileComplete_raw: profile.profileComplete
+        });
+
+        return isComplete && !!role;
     }
 
     /**
@@ -125,7 +136,17 @@ class AuthManager {
      */
     isProfileComplete() {
         const user = this.getCurrentUser();
-        return user ? !!user.profileComplete : false;
+        if (!user) return false;
+        
+        // NUCLEAR FIX: If they have ANY role, they are complete enough to see the dashboard.
+        // This prevents the loop between index and signup for users who have finished Step 3.
+        const hasRole = !!(user.role || (user.user_metadata?.role));
+        const explicitComplete = !!(user.profile_complete || user.profileComplete || user.role === 'admin');
+        
+        const isComplete = hasRole || explicitComplete;
+        
+        console.log("AuthManager: isProfileComplete check:", isComplete, { email: user.email, hasRole, explicitComplete });
+        return isComplete;
     }
 
     /**

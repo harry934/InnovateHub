@@ -194,7 +194,7 @@ export class NotificationSystem {
      * Update UI with current notifications
      */
     updateUI() {
-        this.unreadCount = this.notifications.filter(n => !n.read).length;
+        this.unreadCount = this.notifications.filter(n => !n.is_read).length;
         this.updateBadge();
         this.updateDropdownList();
         

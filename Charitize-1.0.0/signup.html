@@ -381,7 +381,7 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/core/supabase-config.js"></script>
+    <script src="assets/js/core/supabase-config.js?v=300.0.0"></script>
   </head>
 
   <body>
@@ -818,9 +818,9 @@
     <!-- Template Javascript -->
     <script src="assets/js/pages/main.js?v=16.0.0"></script>
 
-    <script src="assets/js/components/shared-ui.js?v=16.0.0"></script>
-    <script src="assets/js/utils/ui-utils.js?v=16.0.0"></script>
-    <script type="module" src="assets/js/pages/innovate-hub.js?v=16.0.0"></script>
+    <script src="assets/js/components/shared-ui.js?v=300.0.0"></script>
+    <script src="assets/js/utils/ui-utils.js?v=300.0.0"></script>
+    <script type="module" src="assets/js/pages/innovate-hub.js?v=300.0.0"></script>
 
     <!-- Mobile Hamburger Menu Enhancement Script -->
     <script>
@@ -973,8 +973,8 @@
 
       // --- Core Platform Services ---
     </script>
-    <script src="assets/js/utils/ui-utils.js?v=151.0.0"></script>
-    <script src="assets/js/core/supabase-service.js?v=151.0.0" type="module"></script>
+    <script src="assets/js/utils/ui-utils.js?v=300.0.0"></script>
+    <script src="assets/js/core/supabase-service.js?v=300.0.0" type="module"></script>
 
     <script type="module">
       import authManager from './assets/js/core/auth-manager.js';
@@ -994,7 +994,8 @@
                 // Check if profile is already complete via centralized logic
                 if (authManager.isProfileComplete()) {
                     console.log("Profile complete, redirecting to dashboard...");
-                    // If it's an admin, go to admin dashboard, else homepage/innovator dashboard
+                    
+                    // Redirect based on role (admins to admin-dashboard, others to index)
                     if (user.role?.toLowerCase() === 'admin') {
                         window.location.href = "admin-dashboard.html";
                     } else {

@@ -1,12 +1,12 @@
 // Auto-extracted from innovator-dashboard.html
 // Supabase Auth — user data provided by dashboard.html via initDashboard()
 
+import ProjectService from '../modules/project-service.js';
 import NotificationSystem from '../components/notification-system.js';
 import StructuredProjectCard from '../components/project-card-structured.js';
 import MentorProfileCard from '../components/mentor-profile-card.js';
 import EmptyStates from '../components/empty-states.js';
 import AutoSaveManager from '../utils/auto-save-manager.js';
-// Note: ProjectService is exposed via window.ProjectService by innovate-hub.js
 
 // ─── Custom SVG icons per card ───────────────────────────────
 const CARD_ICONS = {
@@ -190,6 +190,10 @@ async function renderLandingStats() {
             console.log("Innovator Dashboard: Initializing with provided data...");
             currentUser = user; 
             
+            // Expose services to window to avoid scoping issues with dynamic imports
+            window.ProjectService = ProjectService;
+            window.NotificationSystem = NotificationSystem;
+
             try {
                 // Supabase Sync: Upsert profile to Supabase (Maintain existing role)
                 await window.SupabaseService.upsertProfile({
@@ -239,15 +243,17 @@ async function renderLandingStats() {
                     return;
                 }
                 
-                // Ensure dashboard content is visible
+            } catch (err) {
+                console.error("Critical Dashboard Init Error:", err);
+                if (typeof window.showDashboardSection === 'function') window.showDashboardSection('home');
+            } finally {
+                // Ensure dashboard content is visible regardless of partial init failures
                 const dashContent = document.getElementById("dashboard-content");
                 if (dashContent) {
                     dashContent.style.display = "block";
                     dashContent.style.visibility = "visible";
+                    dashContent.classList.add('fade-in-up'); // Re-trigger just in case
                 }
-            } catch (err) {
-                console.error("Critical Dashboard Init Error:", err);
-                if(typeof window.showDashboardSection === 'function') window.showDashboardSection('projects');
             }
         }
         
@@ -378,6 +384,12 @@ async function renderLandingStats() {
 
                     try {
                         const publicUrl = await window.SupabaseService.uploadAvatar(currentUser.uid, file);
+                        
+                        // Sync Local Storage
+                        const storedUser = JSON.parse(localStorage.getItem('innovateHubUser') || '{}');
+                        storedUser.photoURL = publicUrl;
+                        localStorage.setItem('innovateHubUser', JSON.stringify(storedUser));
+
                         // Sync Navbar
                         window.dispatchEvent(new CustomEvent('profileUpdated', {
                             detail: {
@@ -411,18 +423,9 @@ async function renderLandingStats() {
 
             try {
                 if (window.SupabaseService) {
-                    // Try innovator_id first (correct schema field)
-                    let sbProjects = await window.SupabaseService.getProjects({ innovator_id: currentUser.uid });
-                    
-                    // Fallback: try user_id if innovator_id returned nothing
-                    if (!sbProjects || sbProjects.length === 0) {
-                        sbProjects = await window.SupabaseService.getProjects({ user_id: currentUser.uid });
-                    }
-                    
-                    if (sbProjects && sbProjects.length > 0) {
-                        projects = sbProjects;
-                        console.log(`Innovator Dashboard: Loaded ${projects.length} projects from Supabase`);
-                    }
+                    // Try innovator_id only (correct schema field)
+                    projects = await window.SupabaseService.getProjects({ innovator_id: currentUser.uid }) || [];
+                    console.log(`Innovator Dashboard: Loaded ${projects.length} projects from Supabase`);
                 }
             } catch (error) {
                 console.error('Error loading projects:', error);
@@ -579,8 +582,6 @@ async function renderLandingStats() {
                 } else {
                     // CREATE new project
                     const projectData = {
-                        innovatorId: currentUser.uid,
-                        userId: currentUser.uid,
                         title: form.title ? form.title.value : '',
                         categories: categories,
                         problemStatement: form.problemStatement ? form.problemStatement.value : '',
@@ -588,7 +589,9 @@ async function renderLandingStats() {
                         proposedSolution: form.proposedSolution ? form.proposedSolution.value : '',
                         expectedImpact: form.expectedImpact ? form.expectedImpact.value : ''
                     };
-                    await (window.ProjectService || ProjectService).submitProject(projectData, file);
+                    const service = window.ProjectService || ProjectService;
+                    if (!service) throw new Error("ProjectService is not initialized. Please refresh the page.");
+                    await service.submitProject(projectData, file);
                     alert('Project submitted successfully!');
                 }
 

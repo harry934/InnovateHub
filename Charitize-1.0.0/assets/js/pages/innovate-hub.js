@@ -8,17 +8,20 @@ import authManager from '../core/auth-manager.js';
         console.log("AuthManager initialized successfully ✓");
         
         const user = authManager.getCurrentUser();
+        const path = window.location.pathname;
+        const isAuthPage = path.includes('signup') || path.includes('login');
+        const isDashboardPage = path.includes('dashboard') || path.includes('admin-dashboard');
         
-        // Role Protection: If logged in but no role OR profile is incomplete, go to signup
-        // EXCEPT if we are already on signup.html or login.html
-        // These pages manage their own auth/onboarding logic — skip the global guard
-        const isAuthPage = window.location.pathname.includes('signup.html') || window.location.pathname.includes('login.html');
-        const isDashboardPage = window.location.pathname.includes('dashboard.html') || window.location.pathname.includes('admin-dashboard.html');
-        
-        if (user && !isAuthPage && !isDashboardPage) {
-            // Standardized check for profile completeness
-            if (!authManager.isProfileComplete()) {
-                console.log("User profile incomplete, redirecting to onboarding...");
+        console.log("InnovateHub Guard: Path:", path, "User:", user?.email, "IsAuth:", isAuthPage, "IsDashboard:", isDashboardPage);
+
+        if (user) {
+            const isComplete = authManager.isProfileComplete();
+            console.log("InnovateHub Guard: Profile Complete:", isComplete, "Role:", user.role);
+
+            // ONLY force redirect to signup if we are on a PROTECTED page (like the dashboard)
+            // or if we are not on an auth page and the profile is clearly missing a role.
+            if (!isComplete && isDashboardPage) {
+                console.log("InnovateHub Guard: Redirecting incomplete profile away from dashboard.");
                 window.location.href = 'signup.html?reason=incomplete_profile';
                 return;
             }
@@ -26,6 +29,7 @@ import authManager from '../core/auth-manager.js';
 
         // Listen for auth changes to update UI
         authManager.onAuthChange((user) => {
+            console.log("InnovateHub: Auth state changed:", user?.email);
             if (window.updateNavbarUI) window.updateNavbarUI(user);
         });
         
