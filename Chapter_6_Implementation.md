@@ -8,22 +8,43 @@ The purpose of this chapter is to provide a comprehensive record of the implemen
 ## 6.2 Front-end Implementation
 
 ### i. UI Design and Branding
-The front-end implementation follows a modern, professional aesthetic designed to instill confidence in both innovators and mentors. The branding strategy is centered around a sophisticated color palette of Deep Green (#1a5e4f) and Vibrant Gold (#f3a813). 
+The front-end design of InnovateHub is divided into two primary environments: the public-facing landing page and the secure user dashboard. Both environments maintain a unified brand identity while serving distinct functional purposes.
+
+#### 1. Public Website Interface
+Before user authentication, the platform presents a high-conversion landing page designed to attract and inform potential innovators and mentors. This interface serves as the entry point to the ecosystem.
+
+**Key Features and Design Elements:**
+- **Dynamic Hero Carousel:** Utilizes a full-width slider to communicate the platform's core value propositions: Startup Journeys, Social Impact, Technical Mastery, and Expert Mentorship.
+- **Service Modals:** A categorized grid of innovation areas (AI, Robotics, AgriTech) which, when clicked, open detailed information modals using CSS backdrop-blur and smooth transitions.
+- **Interactive Statistics:** Live counters tracking platform milestones such as "Active Projects" and "Expert Mentors" to build user trust.
+- **Unified Navigation:** A sticky, glassmorphism-enhanced navigation bar ensures accessibility to core information (About, Services, Events) regardless of scroll position.
+
+**Source Code Reference: Landing Page Structure**
+> [!IMPORTANT]
+> **What to Screenshot:** Open the link below and capture the **Hero Carousel and Service Grid (Lines 199-506)**.
+> **Description:** This section of the index.html defines the main visual components of the landing page, including the responsive Owl Carousel slides and the feature grid that serves as the entry point for guest users.
+> [index.html Lines 199-506](file:///c:/Users/kibag/Desktop/USIU%20DOCS/4th%20Year/SWE%203090%20A/InnovateHub/Charitize-1.0.0/index.html#L199-L506)
+
+![[Screenshot: The InnovateHub Public Landing Page showing the hero slider and features]]
+*Figure 6.1: Public Website Landing Page*
+
+#### 2. Secure Dashboard Environment
+The dashboard is a tool-oriented interface reserved for registered users. It uses a fixed-sidebar layout to provide persistent navigation across the platform's management tools.
 
 **Design Principles:**
-- **Professionalism:** Using dark green tones to convey stability and professional growth.
+- **Professionalism:** Using dark green tones (#1a5e4f) and vibrant gold (#f3a813) to convey stability and professional growth.
 - **Micro-interactions:** Utilizing CSS transitions for hover states on project cards and action buttons to improve interactivity.
 - **Glassmorphism:** Implementing translucent, blurred backgrounds in dropdown menus and navigation bars to create a premium, state-of-the-art interface.
 - **Responsiveness:** Ensuring the layout adapts seamlessly to mobile devices using media queries for screen widths below 768px.
 
 **Source Code Reference: Brand Identity Configuration**
 > [!IMPORTANT]
-> **What to Screenshot:** Open the link below and capture **Lines 5 to 25**.
+> **What to Screenshot:** Open the link below and capture **Lines 4 to 26**.
 > **Description:** This snippet defines the CSS :root variables that govern the entire application's visual identity. It includes the brand green, yellow, and the variables for the navigation bar's glassmorphism effects (blur and background opacity).
-> [innovate-hub.css Lines 5-25](file:///c:/Users/kibag/Desktop/USIU%20DOCS/4th%20Year/SWE%203090%20A/InnovateHub/Charitize-1.0.0/assets/css/innovate-hub.css#L5-L25)
+> [innovate-hub.css Lines 4-26](file:///c:/Users/kibag/Desktop/USIU%20DOCS/4th%20Year/SWE%203090%20A/InnovateHub/Charitize-1.0.0/assets/css/innovate-hub.css#L4-L26)
 
 ![[Screenshot: InnovateHub Dashboard UI Layout showing the professional branding and navigation]]
-*Figure 6.1: InnovateHub Dashboard Brand Identity*
+*Figure 6.2: InnovateHub Dashboard Brand Identity*
 
 ### ii. Project Submission Module
 The project submission module is the primary interface for innovators to enter the ecosystem. It is designed to handle complex data entry with structured validation.
@@ -40,7 +61,7 @@ The project submission module is the primary interface for innovators to enter t
 > [project-service.js Lines 4-33](file:///c:/Users/kibag/Desktop/USIU%20DOCS/4th%20Year/SWE%203090%20A/InnovateHub/Charitize-1.0.0/assets/js/modules/project-service.js#L4-L33)
 
 ![[Screenshot: The Project Submission form interface with validation markers]]
-*Figure 6.2: Project Submission Module User Interface*
+*Figure 6.3: Project Submission Module User Interface*
 
 ### iii. Feedback & Communication Module
 The Collaboration Hub is the communication center of the platform. It facilitates the mentorship process through real-time interaction and structured feedback.
@@ -57,7 +78,7 @@ The Collaboration Hub is the communication center of the platform. It facilitate
 > [collaboration-hub.js Lines 109-148](file:///c:/Users/kibag/Desktop/USIU%20DOCS/4th%20Year/SWE%203090%20A/InnovateHub/Charitize-1.0.0/Collaboration%20Hub%20Chat%20Page/collaboration-hub.js#L109-L148)
 
 ![[Screenshot: The Collaboration Hub chat interface with active conversation]]
-*Figure 6.3: Collaboration Hub Messaging and Feedback Interface*
+*Figure 6.4: Collaboration Hub Messaging and Feedback Interface*
 
 ## 6.3 Back-end Implementation
 The project utilizes a cloud-native back-end architecture based on Supabase. This provides a robust PostgreSQL database environment coupled with comprehensive security and real-time features.
@@ -103,7 +124,7 @@ The application is deployed on Firebase Hosting. This environment was selected d
 - **Continuous Integration:** The hosting setup allows for rapid updates and rollbacks, ensuring high platform availability.
 
 ![[Screenshot: The Firebase Console deployment dashboard showing site status]]
-*Figure 6.4: Firebase Deployment Dashboard*
+*Figure 6.5: Firebase Deployment Dashboard*
 
 ## 6.7 Conclusion
 The implementation phase successfully translated the InnovateHub conceptual design into a high-performance digital platform. By utilizing modern web technologies and a cloud-based relational database, the system meets all performance and security requirements. The modular implementation of communication and submission services provides a scalable foundation for future enhancements to the platform.
