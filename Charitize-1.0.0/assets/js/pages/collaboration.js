@@ -37,8 +37,10 @@ class CollaborationHub {
             }
 
             if (targetId) {
+                console.log("CollaborationHub: Switching to initial session:", targetId);
                 await this.switchSession(targetId);
             } else {
+                console.log("CollaborationHub: No sessions found, rendering empty state.");
                 this.renderEmptyState();
             }
 
@@ -178,7 +180,11 @@ class CollaborationHub {
             this.updateUI();
             await this.loadMessages();
             this.setupRealtimeChat();
-            // Removed renderProjectDetails call to clear the top of chat
+            
+            // Render project brief for mentors
+            if (!this.isInnovator) {
+                this.renderProjectBrief();
+            }
         }
     }
 
@@ -197,6 +203,10 @@ class CollaborationHub {
         if (this.isInnovator) {
             this.updateProgressUI();
             this.loadFeedbacks();
+        } else {
+            this.renderProjectBrief();
+            this.loadFeedbacks();
+            this.loadReports();
         }
     }
 
@@ -650,62 +660,43 @@ class CollaborationHub {
         if (repBtn) repBtn.onclick = () => this.submitReport();
     }
 
-    renderProjectDetails() {
+    renderProjectBrief() {
         const mentorship = this.mentorshipData;
-        if (!mentorship) return;
+        const project = this.projectData;
+        const container = document.getElementById('mentorProjectBriefContainer');
 
-        const statsContainer = document.getElementById(this.isInnovator ? 'innovatorStatsRow' : 'mentorStatsRow');
-        const overviewContainer = document.getElementById(this.isInnovator ? 'innovatorProjectOverview' : 'mentorProjectOverview');
+        if (!container || !project) return;
 
-        if (statsContainer) {
-            statsContainer.innerHTML = `
-                <div class="col-md-4">
-                    <div class="stat-card">
-                        <div class="label">Project Title</div>
-                        <div class="value text-truncate">${mentorship.project?.title || 'General Mentorship'}</div>
+        container.innerHTML = `
+            <div class="project-brief-content">
+                <div class="card card-teal mb-3">
+                    <h4 class="form-title"><i class="fa fa-info-circle"></i> Project Overview</h4>
+                    <div class="mb-3">
+                        <label class="fw-bold text-teal small uppercase">Target Area</label>
+                        <p class="mb-0">${project.target_area || 'Not specified'}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold text-teal small uppercase">Problem Statement</label>
+                        <p class="mb-0 text-muted">${project.problem_statement || 'No details provided'}</p>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="stat-card">
-                        <div class="label">${this.isInnovator ? 'Mentor' : 'Innovator'}</div>
-                        <div class="value text-truncate">${this.isInnovator ? (mentorship.mentor?.full_name || 'Assigned Mentor') : (mentorship.innovator?.full_name || 'Innovator')}</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card">
-                        <div class="label">Status</div>
-                        <div class="value">
-                            <span class="status-indicator status-${mentorship.status || 'pending'}"></span>
-                            ${(mentorship.status || 'Active').toUpperCase()}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
 
-        if (overviewContainer && mentorship.project) {
-            const p = mentorship.project;
-            overviewContainer.innerHTML = `
-                <div class="project-details-grid p-4 mt-3">
-                    <div class="detail-section">
-                        <h6 class="text-danger"><i class="fa fa-exclamation-triangle me-2"></i> Problem Statement</h6>
-                        <p class="fs-7 mb-0">${p.problem_statement || p.problemStatement || 'No details provided'}</p>
-                    </div>
-                    <div class="detail-section">
-                        <h6 class="text-primary"><i class="fa fa-bullseye me-2"></i> Objectives</h6>
-                        <p class="fs-7 mb-0">${p.objectives || 'No details provided'}</p>
-                    </div>
-                    <div class="detail-section">
-                        <h6 class="text-warning"><i class="fa fa-lightbulb-o me-2"></i> Proposed Solution</h6>
-                        <p class="fs-7 mb-0">${p.proposed_solution || p.proposedSolution || 'No details provided'}</p>
-                    </div>
-                    <div class="detail-section">
-                        <h6 class="text-success"><i class="fa fa-line-chart me-2"></i> Expected Impact</h6>
-                        <p class="fs-7 mb-0">${p.expected_impact || p.expectedImpact || 'No details provided'}</p>
-                    </div>
+                <div class="card card-teal mb-3">
+                    <h4 class="form-title"><i class="fa fa-lightbulb-o"></i> Proposed Solution</h4>
+                    <p class="mb-0 text-muted">${project.proposed_solution || 'No details provided'}</p>
                 </div>
-            `;
-        }
+
+                <div class="card card-teal mb-3">
+                    <h4 class="form-title"><i class="fa fa-bullseye"></i> Objectives</h4>
+                    <p class="mb-0 text-muted">${project.objectives || 'No details provided'}</p>
+                </div>
+
+                <div class="card card-teal mb-0">
+                    <h4 class="form-title"><i class="fa fa-line-chart"></i> Expected Impact</h4>
+                    <p class="mb-0 text-muted">${project.expected_impact || 'No details provided'}</p>
+                </div>
+            </div>
+        `;
     }
 
     renderProjectOverview() {

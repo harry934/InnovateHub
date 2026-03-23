@@ -145,7 +145,10 @@ const SupabaseService = {
                     *,
                     mentor:profiles!fk_mentorship_mentor(id, full_name, email, avatar_url, role),
                     innovator:profiles!fk_mentorship_innovator(id, full_name, email, avatar_url, role),
-                    project:projects!fk_mentorship_project(id, title, problem_statement, target_area)
+                    project:projects!fk_mentorship_project(
+                        id, title, problem_statement, target_area, 
+                        proposed_solution, objectives, expected_impact
+                    )
                 `);
             
             if (userId && role) {
@@ -251,11 +254,13 @@ const SupabaseService = {
                     *,
                     mentor:profiles!fk_mentorship_mentor(id, full_name, email, avatar_url, role),
                     innovator:profiles!fk_mentorship_innovator(id, full_name, email, avatar_url, role),
-                    project:projects!fk_mentorship_project(id, title, problem_statement, proposed_solution, target_area)
+                    project:projects!fk_mentorship_project(
+                        id, title, problem_statement, proposed_solution, target_area,
+                        objectives, expected_impact
+                    )
                 `)
                 .eq('project_id', projectId)
                 .eq('status', 'accepted')
-                .eq('admin_approved', true)
                 .or(`mentor_id.eq.${userId},innovator_id.eq.${userId}`)
                 .maybeSingle();
             

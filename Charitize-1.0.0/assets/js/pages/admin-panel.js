@@ -73,12 +73,12 @@ async function renderAdminStats() {
 
                 const sbProjects = await window.SupabaseService.getProjects();
                 if (sbProjects) {
-                    stats.reviewQueue = sbProjects.filter(p => p.status === 'pending').length;
+                    stats.reviewQueue = sbProjects.filter(p => (p.status || '').toLowerCase() === 'pending').length;
                 }
 
                 const sbMentorships = await window.SupabaseService.getMentorships();
                 if (sbMentorships) {
-                    stats.activePairs = sbMentorships.filter(m => m.status === 'accepted').length;
+                    stats.activePairs = sbMentorships.filter(m => (m.status || '').toLowerCase() === 'accepted' || (m.status || '').toLowerCase() === 'active').length;
                 }
                 console.log("Admin Panel Stats: Loaded from Supabase");
             } catch (sbErr) {
@@ -301,7 +301,7 @@ async function renderProjectApprovals() {
             try {
                 const sbProjects = await window.SupabaseService.getProjects();
                 if (sbProjects) {
-                    projects = sbProjects.filter(p => p.status === 'pending').map(p => ({
+                    projects = sbProjects.filter(p => (p.status || '').toLowerCase() === 'pending').map(p => ({
                         id: p.id,
                         title: p.title,
                         problemStatement: p.problem_statement,
@@ -926,7 +926,7 @@ window.AdminPanel = {
         try {
             if (window.SupabaseService) {
                 const projects = await window.SupabaseService.getProjects({ innovator_id: innovatorId });
-                const approvedProjects = projects.filter(p => p.status === 'approved');
+                const approvedProjects = projects.filter(p => (p.status || '').toLowerCase() === 'approved');
                 
                 if (approvedProjects.length === 0) {
                     projectSelect.innerHTML = '<option value="">No approved projects found</option>';
@@ -965,6 +965,8 @@ window.AdminPanel = {
                     project_id: projectId,
                     mentor_id: mentorId,
                     status: 'accepted', // Auto-accept since admin is doing it
+                    admin_approved: true, // Manual pairing is pre-approved
+                    accepted_at: new Date().toISOString(),
                     message: 'Manually paired by System Administrator'
                 });
 
@@ -1006,6 +1008,8 @@ window.AdminPanel = {
         }
     }
 };
+
+window.AdminPanel = AdminPanel;
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => window.AdminPanel.init());
