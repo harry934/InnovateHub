@@ -491,12 +491,16 @@
           localStorage.setItem('innovateHubUser', JSON.stringify(userData));
           localStorage.setItem('justLoggedIn', 'true');
 
-          // Redirect to homepage (dashboard-router on index.html handles role-based routing)
-          window.location.href = "index.html";
+          // Redirect straight to dashboard
+          if (userData.role === 'admin') {
+              window.location.href = "admin-dashboard.html";
+          } else {
+              window.location.href = "dashboard.html";
+          }
         } catch (err) {
           console.error("handleSuccessfulLogin error:", err);
           localStorage.setItem('justLoggedIn', 'true');
-          window.location.href = "index.html";
+          window.location.href = "dashboard.html";
         }
       }
 
@@ -542,7 +546,7 @@
           const { error } = await window.supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: window.location.origin + '/index.html'
+              redirectTo: window.location.origin + '/dashboard.html'
             }
           });
           if (error) throw error;

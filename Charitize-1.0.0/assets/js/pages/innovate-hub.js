@@ -4,15 +4,17 @@ import authManager from '../core/auth-manager.js';
 (async () => {
     try {
         // IMPORTANT: Must initialize auth or getCurrentUser() will be empty/stale
-        await authManager.init();
-        console.log("AuthManager initialized successfully ✓");
-        
-        const user = authManager.getCurrentUser();
-        const path = window.location.pathname;
-        const isAuthPage = path.includes('signup') || path.includes('login');
-        const isDashboardPage = path.includes('dashboard') || path.includes('admin-dashboard');
-        
-        console.log("InnovateHub Guard: Path:", path, "User:", user?.email, "IsAuth:", isAuthPage, "IsDashboard:", isDashboardPage);
+        // Wait for authManager initialization before checking guards
+        const user = await authManager.init();
+        const isAuth = !!user;
+        const isDashboardPage = window.location.pathname.includes('dashboard.html');
+
+        console.log("InnovateHub Guard: Final check", { 
+            email: user?.email, 
+            isAuth, 
+            isDashboardPage,
+            initializing: authManager.initializing
+        });
 
         if (user) {
             const isComplete = authManager.isProfileComplete();
