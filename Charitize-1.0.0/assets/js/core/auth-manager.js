@@ -8,6 +8,7 @@ class AuthManager {
     constructor() {
         this.currentUser = null;
         this.authCallbacks = [];
+        this.initializing = true; // NEW: track initialization state
         this._initialized = false;
     }
 
@@ -27,14 +28,27 @@ class AuthManager {
         }
 
         // Try to restore session from existing Supabase session
-        const { data: { session } } = await window.supabase.auth.getSession();
+        const { data: { session }, error } = await window.supabase.auth.getSession();
+        
         if (session) {
             await this._setUserFromSession(session);
         } else {
-            this.currentUser = null;
-            // Only remove if we haven't just performed a local signup/login that might be pending confirmation
-            if (!localStorage.getItem('justLoggedIn')) {
-                localStorage.removeItem('innovateHubUser');
+            console.log("AuthManager: No session found during init.");
+            // If justLoggedIn is true, use optimistic fallback to prevent instant disconnect loops
+            let cachedUser = null;
+            try {
+                const cachedStr = localStorage.getItem('innovateHubUser');
+                if (cachedStr) cachedUser = JSON.parse(cachedStr);
+            } catch(e) {}
+
+            if (localStorage.getItem('justLoggedIn') && cachedUser) {
+                console.log("AuthManager: Falling back to optimistic user because justLoggedIn is true.");
+                this.currentUser = cachedUser;
+            } else {
+                this.currentUser = null;
+                if (!error) {
+                    localStorage.removeItem('innovateHubUser');
+                }
             }
         }
 
@@ -43,13 +57,23 @@ class AuthManager {
             if (session) {
                 await this._setUserFromSession(session);
             } else {
-                this.currentUser = null;
-                localStorage.removeItem('innovateHubUser');
+                // Protect optimistic user during INITIAL_SESSION race condition
+                if (localStorage.getItem('justLoggedIn')) {
+                    console.log("AuthManager: INITIAL_SESSION null event ignored due to justLoggedIn flag.");
+                    try {
+                        const cachedStr = localStorage.getItem('innovateHubUser');
+                        if (cachedStr) this.currentUser = JSON.parse(cachedStr);
+                    } catch(e) {}
+                } else {
+                    this.currentUser = null;
+                    localStorage.removeItem('innovateHubUser');
+                }
             }
             this.authCallbacks.forEach(cb => cb(this.currentUser));
         });
 
         this._initialized = true;
+        this.initializing = false; // Done initializing
         return this.currentUser;
     }
 
@@ -89,6 +113,9 @@ class AuthManager {
             }
 
             localStorage.setItem('innovateHubUser', JSON.stringify(this.currentUser));
+            
+            // Clear flag because we successfully restored a REAL session from Supabase
+            localStorage.removeItem('justLoggedIn');
         } catch (error) {
             console.error('AuthManager: Error fetching Supabase profile:', error);
             // On error, do NOT assume innovator role. Stay neutral.

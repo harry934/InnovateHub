@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Innovate Hub | Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-container": "#92aca2",
+              "on-primary": "#ffffff",
+              "surface": "#F2F5F4", /* Slightly darker, cool-toned off-white */
+              "on-primary-fixed": "#002114",
+              "outline": "#717973",
+              "tertiary": "#132b23",
+              "error-container": "#ffdad6",
+              "surface-container-high": "#e7e8e7",
+              "on-tertiary-fixed-variant": "#334c43",
+              "on-secondary": "#ffffff",
+              "primary-container": "#1b4332",
+              "secondary-fixed-dim": "#ffba27",
+              "on-primary-container": "#86af99",
+              "on-tertiary-fixed": "#072019",
+              "secondary": "#7d5800",
+              "on-secondary-fixed": "#271900",
+              "surface-container-lowest": "#ffffff",
+              "surface-container": "#edeeed",
+              "on-secondary-fixed-variant": "#5e4100",
+              "secondary-container": "#ffb702",
+              "surface-tint": "#3f6653",
+              "primary-fixed-dim": "#a5d0b9",
+              "on-error": "#ffffff",
+              "tertiary-container": "#294139",
+              "surface-bright": "#f9f9f8",
+              "on-primary-fixed-variant": "#274e3d",
+              "tertiary-fixed": "#cde9dd",
+              "outline-variant": "#c1c8c2",
+              "on-surface-variant": "#414844",
+              "on-background": "#191c1c",
+              "background": "#F2F5F4",
+              "secondary-fixed": "#ffdea9",
+              "on-surface": "#191c1c",
+              "surface-variant": "#e1e3e2",
+              "inverse-primary": "#a5d0b9",
+              "surface-dim": "#d9dad9",
+              "surface-container-low": "#f3f4f3",
+              "on-tertiary": "#ffffff",
+              "error": "#ba1a1a",
+              "tertiary-fixed-dim": "#b1cdc1",
+              "inverse-on-surface": "#f0f1f0",
+              "on-secondary-container": "#6b4b00",
+              "on-error-container": "#93000a",
+              "inverse-surface": "#2e3131",
+              "primary-fixed": "#c1ecd4",
+              "primary": "#012d1d"
+            },
+            fontFamily: {
+              "headline": ["Lexend"],
+              "body": ["Manrope"],
+              "label": ["Lexend"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            boxShadow: {
+              'soft': '0 40px 60px -10px rgba(1, 45, 29, 0.05)',
+              'defined': '0 30px 70px -15px rgba(1, 45, 29, 0.18), 0 0 0 1px rgba(1, 45, 29, 0.04)',
+              'elevated': '0 25px 35px -8px rgba(0, 0, 0, 0.08), 0 10px 15px -8px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(1, 45, 29, 0.05)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Manrope', sans-serif; }
+        h1, h2, h3, .font-lexend { font-family: 'Lexend', sans-serif; }
+        
+        #main-nav {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease, backdrop-filter 0.4s ease;
+        }
+        
+        .nav-hidden {
+            transform: translateY(-100%);
+        }
+
+        .nav-scrolled {
+            background-color: rgba(242, 245, 244, 0.85) !important;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px -10px rgba(1, 45, 29, 0.1);
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+        }
+
+        .nav-scrolled #nav-brand,
+        .nav-scrolled #nav-brand span {
+            color: #1b4332 !important;
+        }
+
+        .nav-scrolled .nav-link {
+            color: #1b4332 !important;
+        }
+
+        .nav-scrolled #nav-actions-desktop button .material-symbols-outlined {
+            color: #1b4332 !important;
+        }
+        
+        .nav-scrolled #nav-actions-desktop .border-l {
+            border-color: rgba(27, 67, 50, 0.1);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 0.25; transform: scale(1); }
+            50% { opacity: 0.45; transform: scale(1.1); }
+        }
+        .decorative-icon {
+            animation: float 14s ease-in-out infinite;
+        }
+        .decorative-pulse {
+            animation: pulse-soft 9s ease-in-out infinite;
+        }
+        
+        .dashboard-card {
+            background-color: #ffffff;
+            border: 1px solid rgba(1, 45, 29, 0.04);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .dashboard-card:hover {
+            border-color: rgba(1, 45, 29, 0.12);
+            box-shadow: 0 45px 80px -15px rgba(1, 45, 29, 0.22), 0 0 0 1px rgba(1, 45, 29, 0.04);
+            transform: translateY(-4px);
+        }
+
+        .chart-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: dash 3s ease-out forwards;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: 0; }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-secondary-container selection:text-on-secondary-container overflow-x-hidden">
+<!-- Background Decorations (Refined: 30% Smaller, Saturated, More Purposeful) -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+<!-- Forest Green Shapes -->
+<div class="decorative-icon absolute top-[12%] right-[10%] opacity-30 text-[#1B4332]">
+<span class="material-symbols-outlined text-4xl">add</span>
+</div>
+<div class="decorative-icon absolute top-[28%] left-[6%] opacity-25 text-[#1B4332]" style="animation-delay: -2s;">
+<span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'wght' 300;">close</span>
+</div>
+<div class="decorative-pulse absolute top-[42%] left-[18%] opacity-20 text-[#1B4332]">
+<div class="w-3 h-3 rounded-full bg-current"></div>
+</div>
+<div class="decorative-icon absolute bottom-[35%] left-[12%] opacity-25 text-[#1B4332]" style="animation-delay: -4s;">
+<span class="material-symbols-outlined text-4xl">add</span>
+</div>
+<div class="decorative-pulse absolute bottom-[18%] right-[25%] opacity-20 text-[#1B4332]" style="animation-delay: -3s;">
+<div class="w-2.5 h-2.5 rounded-full bg-current"></div>
+</div>
+<!-- Mustard Yellow Shapes -->
+<div class="decorative-icon absolute top-[55%] right-[15%] opacity-35 text-[#D49D00]" style="animation-delay: -5s;">
+<span class="material-symbols-outlined text-5xl">close</span>
+</div>
+<div class="decorative-icon absolute bottom-[10%] right-[8%] opacity-30 text-[#D49D00]" style="animation-delay: -7s;">
+<span class="material-symbols-outlined text-6xl">add</span>
+</div>
+<div class="decorative-pulse absolute top-[15%] left-[45%] opacity-15 text-[#D49D00]">
+<div class="w-4 h-4 rounded-full bg-current"></div>
+</div>
+<div class="decorative-icon absolute top-[50%] left-[40%] opacity-15 text-[#1B4332]" style="animation-delay: -2.5s;">
+<span class="material-symbols-outlined text-3xl">add</span>
+</div>
+</div>
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full z-50 bg-[#1b4332] text-white" id="main-nav">
+<div class="flex justify-between items-center px-6 md:px-12 py-4 md:py-5 w-full max-w-none">
+<!-- Logo & Branding -->
+<div class="flex items-center gap-3 md:gap-4 text-xl md:text-2xl font-bold font-lexend tracking-tight flex-shrink-0" id="nav-brand">
+<svg class="w-8 h-8 md:w-10 md:h-10 drop-shadow-sm flex-shrink-0" fill="none" viewbox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 4L34 12V28L20 36L6 28V12L20 4Z" stroke="currentColor" stroke-linejoin="round" stroke-width="2.5"></path>
+<circle cx="20" cy="20" fill="currentColor" r="4"></circle>
+<path d="M20 10V14M20 26V30M11 15L14.5 17M25.5 23L29 25M11 25L14.5 23M25.5 17L29 15" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
+</svg>
+<span class="inline">Innovate Hub</span>
+</div>
+<!-- Desktop Navigation Links -->
+<div class="hidden md:flex items-center justify-center space-x-8 lg:space-x-12 px-4" id="nav-links">
+<a class="nav-link text-white font-bold border-b-2 border-secondary-container font-lexend tracking-tight py-1 transition-colors whitespace-nowrap" href="#">Dashboard</a>
+<a class="nav-link text-emerald-100/80 hover:text-white font-lexend font-medium tracking-tight transition-all py-1 whitespace-nowrap" href="#">My Projects</a>
+<a class="nav-link text-emerald-100/80 hover:text-white font-lexend font-medium tracking-tight transition-all py-1 whitespace-nowrap" href="#">Mentors</a>
+<a class="nav-link text-emerald-100/80 hover:text-white font-lexend font-medium tracking-tight transition-all py-1 whitespace-nowrap" href="#">Collaboration</a>
+<a class="nav-link text-emerald-100/80 hover:text-white font-lexend font-medium tracking-tight transition-all py-1 whitespace-nowrap" href="#">Analytics</a>
+</div>
+<!-- Actions -->
+<div class="flex items-center space-x-4 md:space-x-8 flex-shrink-0" id="nav-actions-desktop">
+<button class="p-2 rounded-full hover:bg-white/10 transition-all flex items-center justify-center">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="flex items-center space-x-4 md:space-x-6 pl-4 md:pl-8 border-l border-white/20">
+<img alt="JL profile avatar" class="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover ring-2 ring-secondary-container shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAv-SUxKwiaRldFSKEV7BwEMEzgmftrmbMsVEPaLCjMNGA9PPhU3lxrswXAmrk3gveAczx_lrbFgrFIAnl0jOBvX5IWkilrrbijKGqAx0ws5QqAYGcMFkDkUVrmnUMaseUdU10EBWFFJhse3xQo6aeC8_n0BbYDz0qFP0EreipukzLHAWqQ8JDaxmezO_bd1vgvFBpbxUGTv8fxMKGAKL23PAcA1h_BOAsMnsPv9Xah02dRRHv6hkmtvxlrFg9Dh0TSkKxDVhxVIWEf"/>
+<button class="hidden lg:block bg-secondary-container text-on-secondary-container px-6 py-2 rounded-full font-bold hover:bg-amber-400 transition-all shadow-sm">
+                    Logout
+                </button>
+</div>
+<!-- Mobile menu button -->
+<button class="md:hidden p-2 rounded-lg text-white" id="mobile-menu-btn-top">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="relative pt-28 md:pt-36 pb-24 px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen z-10">
+<!-- Dashboard Header -->
+<header class="mb-10 md:mb-16 relative z-10">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="max-w-2xl">
+<h1 class="text-4xl md:text-6xl font-extrabold text-primary font-lexend tracking-tight leading-tight">
+                    Good evening, Juliet
+                </h1>
+<p class="text-lg md:text-xl text-on-surface-variant mt-3 md:mt-4 font-body max-w-lg">
+                    Manage your innovation ecosystem and mentor connections from your personalized sanctuary.
+                </p>
+</div>
+<div class="flex">
+<button class="w-full md:w-auto bg-white border border-outline-variant/30 px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-elevated font-lexend font-semibold text-primary hover:scale-[0.98] transition-all flex items-center justify-center space-x-2">
+<span class="material-symbols-outlined text-secondary">download</span>
+<span>Export Report</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Stats Section -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-12">
+<div class="dashboard-card p-6 md:p-8 rounded-xl shadow-defined group">
+<div class="flex justify-between items-start">
+<div class="w-14 h-14 md:w-16 md:h-16 bg-primary-container/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-primary-container/20 transition-colors">
+<span class="material-symbols-outlined text-primary text-2xl md:text-3xl" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+</div>
+<span class="text-[10px] md:text-xs font-label uppercase tracking-widest text-on-surface-variant bg-surface-container rounded-full px-3 py-1 font-bold">Active</span>
+</div>
+<h3 class="text-3xl md:text-4xl font-extrabold text-primary font-lexend">1</h3>
+<p class="text-on-surface-variant font-semibold mt-1 uppercase tracking-wider text-xs md:text-sm">Innovation Projects</p>
+</div>
+<div class="dashboard-card p-6 md:p-8 rounded-xl shadow-defined group">
+<div class="w-14 h-14 md:w-16 md:h-16 bg-secondary-container/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-secondary-container/20 transition-colors">
+<span class="material-symbols-outlined text-secondary text-2xl md:text-3xl" style="font-variation-settings: 'FILL' 1;">person_search</span>
+</div>
+<h3 class="text-3xl md:text-4xl font-extrabold text-primary font-lexend">0</h3>
+<p class="text-on-surface-variant font-semibold mt-1 uppercase tracking-wider text-xs md:text-sm">Active Mentors</p>
+</div>
+<div class="dashboard-card p-6 md:p-8 rounded-xl shadow-defined group">
+<div class="w-14 h-14 md:w-16 md:h-16 bg-tertiary-container/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-tertiary-container/20 transition-colors">
+<span class="material-symbols-outlined text-tertiary text-2xl md:text-3xl" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+</div>
+<h3 class="text-3xl md:text-4xl font-extrabold text-primary font-lexend">0</h3>
+<p class="text-on-surface-variant font-semibold mt-1 uppercase tracking-wider text-xs md:text-sm">Upcoming Sessions</p>
+</div>
+</section>
+<!-- Bento Grid Section -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 mb-8 md:mb-12">
+<div class="lg:col-span-7 dashboard-card p-6 md:p-10 rounded-xl shadow-defined min-h-[350px] md:min-h-[400px]">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+<h3 class="text-xl md:text-2xl font-bold text-primary font-lexend">Project Activity</h3>
+<div class="flex space-x-4 md:space-x-6">
+<div class="flex items-center space-x-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-xs md:text-sm font-label font-bold text-on-surface-variant">Growth</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="w-3 h-3 rounded-full bg-secondary-container"></span>
+<span class="text-xs md:text-sm font-label font-bold text-on-surface-variant">Engagement</span>
+</div>
+</div>
+</div>
+<div class="h-48 md:h-64 flex items-end justify-between gap-2 relative">
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<svg class="w-full h-full" viewbox="0 0 500 150">
+<path class="chart-path" d="M0,120 Q50,110 100,80 T200,60 T300,90 T400,40 T500,20" fill="none" stroke="#1B4332" stroke-linecap="round" stroke-width="4"></path>
+<path class="chart-path" d="M0,140 Q60,130 120,110 T240,100 T360,120 T480,80 T500,70" fill="none" stroke="#FFB703" stroke-linecap="round" stroke-width="4" style="animation-delay: 0.5s;"></path>
+</svg>
+</div>
+<div class="flex-1 h-full border-b border-outline-variant/20"></div>
+<div class="flex-1 h-full border-b border-outline-variant/20"></div>
+<div class="flex-1 h-full border-b border-outline-variant/20"></div>
+<div class="flex-1 h-full border-b border-outline-variant/20"></div>
+<div class="flex-1 h-full border-b border-outline-variant/20"></div>
+</div>
+<div class="flex justify-between mt-6 text-[10px] md:text-xs font-bold font-label text-on-surface-variant uppercase tracking-widest">
+<span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+</div>
+</div>
+<div class="lg:col-span-5 dashboard-card p-6 md:p-10 rounded-xl shadow-defined">
+<h3 class="text-xl md:text-2xl font-bold text-primary font-lexend mb-8">Engagement Distribution</h3>
+<div class="flex items-center justify-center mb-8 relative">
+<div class="w-36 h-36 md:w-48 md:h-48 rounded-full border-[16px] md:border-[20px] border-primary-container relative shadow-sm">
+<div class="absolute inset-0 rounded-full border-[16px] md:border-[20px] border-secondary-container" style="clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 80%);"></div>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="text-3xl md:text-4xl font-extrabold text-primary">84%</span>
+<span class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Target</span>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<span class="w-4 h-4 rounded-sm bg-primary-container shadow-sm"></span>
+<span class="font-bold text-sm md:text-base text-on-surface">Direct Mentorship</span>
+</div>
+<span class="font-bold text-primary">65%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<span class="w-4 h-4 rounded-sm bg-secondary-container shadow-sm"></span>
+<span class="font-bold text-sm md:text-base text-on-surface">Resource Usage</span>
+</div>
+<span class="font-bold text-primary">19%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<span class="w-4 h-4 rounded-sm bg-surface-container-highest shadow-sm"></span>
+<span class="font-bold text-sm md:text-base text-on-surface">Collaboration</span>
+</div>
+<span class="font-bold text-primary">16%</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Monthly Metrics Section -->
+<section class="mb-8 md:mb-12">
+<div class="dashboard-card p-6 md:p-10 rounded-xl shadow-defined">
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-10 gap-4">
+<h3 class="text-xl md:text-2xl font-bold text-primary font-lexend">Monthly Metrics Comparison</h3>
+<div class="bg-surface-container-low p-1 rounded-full flex border border-outline-variant/10 shadow-inner self-start">
+<button class="px-6 md:px-8 py-1.5 md:py-2 rounded-full bg-white shadow-elevated text-xs md:text-sm font-bold text-primary">Monthly</button>
+<button class="px-6 md:px-8 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Weekly</button>
+</div>
+</div>
+<div class="flex items-end justify-around h-48 md:h-56 gap-2 md:gap-4 border-b border-outline-variant/10 pb-2">
+<div class="flex flex-col items-center flex-1 max-w-[60px] md:max-w-[80px] group">
+<div class="w-full bg-primary-container rounded-t-lg h-[40%] shadow-lg group-hover:scale-y-105 transition-transform origin-bottom"></div>
+<span class="text-[9px] md:text-[10px] font-bold font-label mt-4 uppercase tracking-tighter text-on-surface-variant">Jan</span>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[60px] md:max-w-[80px] group">
+<div class="w-full bg-secondary-container rounded-t-lg h-[65%] shadow-lg group-hover:scale-y-105 transition-transform origin-bottom"></div>
+<span class="text-[9px] md:text-[10px] font-bold font-label mt-4 uppercase tracking-tighter text-on-surface-variant">Feb</span>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[60px] md:max-w-[80px] group">
+<div class="w-full bg-primary-container rounded-t-lg h-[50%] shadow-lg group-hover:scale-y-105 transition-transform origin-bottom"></div>
+<span class="text-[9px] md:text-[10px] font-bold font-label mt-4 uppercase tracking-tighter text-on-surface-variant">Mar</span>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[60px] md:max-w-[80px] group">
+<div class="w-full bg-secondary-container rounded-t-lg h-[85%] shadow-lg group-hover:scale-y-105 transition-transform origin-bottom"></div>
+<span class="text-[9px] md:text-[10px] font-bold font-label mt-4 uppercase tracking-tighter text-on-surface-variant">Apr</span>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[60px] md:max-w-[80px] group">
+<div class="w-full bg-primary-container rounded-t-lg h-[60%] shadow-lg group-hover:scale-y-105 transition-transform origin-bottom"></div>
+<span class="text-[9px] md:text-[10px] font-bold font-label mt-4 uppercase tracking-tighter text-on-surface-variant">May</span>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[60px] md:max-w-[80px] group">
+<div class="w-full bg-secondary-container rounded-t-lg h-[95%] shadow-lg group-hover:scale-y-105 transition-transform origin-bottom"></div>
+<span class="text-[9px] md:text-[10px] font-bold font-label mt-4 uppercase tracking-tighter text-on-surface-variant">Jun</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Access Cards -->
+<section>
+<h2 class="text-xl md:text-2xl font-bold text-primary font-lexend mb-6 md:mb-8 px-2">Quick Ecosystem Access</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+<a class="dashboard-card p-6 md:p-8 rounded-xl shadow-defined transition-all duration-300 group hover:bg-gradient-to-br hover:from-emerald-50/50 hover:to-amber-50/50 hover:scale-[1.03] hover:-translate-y-2" href="#">
+<div class="w-12 h-12 md:w-14 md:h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-secondary-container transition-all duration-500">
+<span class="material-symbols-outlined text-emerald-900 text-2xl md:text-3xl group-hover:text-amber-900 transition-colors">folder_open</span>
+</div>
+<h4 class="text-lg md:text-xl font-bold text-primary mb-2">My Projects</h4>
+<p class="text-on-surface-variant text-sm font-medium leading-relaxed">View and edit your current innovation milestones.</p>
+</a>
+<a class="dashboard-card p-6 md:p-8 rounded-xl shadow-defined transition-all duration-300 group hover:bg-gradient-to-br hover:from-emerald-50/50 hover:to-amber-50/50 hover:scale-[1.03] hover:-translate-y-2" href="#">
+<div class="w-12 h-12 md:w-14 md:h-14 bg-amber-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-secondary-container transition-all duration-500">
+<span class="material-symbols-outlined text-amber-700 text-2xl md:text-3xl group-hover:text-amber-900 transition-colors">school</span>
+</div>
+<h4 class="text-lg md:text-xl font-bold text-primary mb-2">Find Mentors</h4>
+<p class="text-on-surface-variant text-sm font-medium leading-relaxed">Connect with industry experts in your specific field.</p>
+</a>
+<a class="dashboard-card p-6 md:p-8 rounded-xl shadow-defined transition-all duration-300 group hover:bg-gradient-to-br hover:from-emerald-50/50 hover:to-amber-50/50 hover:scale-[1.03] hover:-translate-y-2" href="#">
+<div class="w-12 h-12 md:w-14 md:h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-secondary-container transition-all duration-500">
+<span class="material-symbols-outlined text-emerald-800 text-2xl md:text-3xl group-hover:text-amber-900 transition-colors">group</span>
+</div>
+<h4 class="text-lg md:text-xl font-bold text-primary mb-2">Collaboration Hub</h4>
+<p class="text-on-surface-variant text-sm font-medium leading-relaxed">Join active discussions and peer reviews.</p>
+</a>
+<a class="dashboard-card p-6 md:p-8 rounded-xl shadow-defined transition-all duration-300 group hover:bg-gradient-to-br hover:from-emerald-50/50 hover:to-amber-50/50 hover:scale-[1.03] hover:-translate-y-2" href="#">
+<div class="w-12 h-12 md:w-14 md:h-14 bg-surface-container-highest rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-secondary-container transition-all duration-500">
+<span class="material-symbols-outlined text-on-surface-variant text-2xl md:text-3xl group-hover:text-amber-900 transition-colors">settings</span>
+</div>
+<h4 class="text-lg md:text-xl font-bold text-primary mb-2">Profile Settings</h4>
+<p class="text-on-surface-variant text-sm font-medium leading-relaxed">Manage your account and notification preferences.</p>
+</a>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-10 md:py-12 px-6 md:px-12 mt-auto bg-emerald-50/60 border-t border-emerald-100/40 z-10 relative">
+<div class="flex flex-col lg:flex-row justify-between items-center space-y-8 lg:space-y-0 max-w-[1600px] mx-auto">
+<div class="font-lexend font-extrabold text-emerald-950 flex items-center gap-2 text-lg">
+<svg class="w-6 h-6 flex-shrink-0" fill="none" viewbox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 4L34 12V28L20 36L6 28V12L20 4Z" stroke="currentColor" stroke-linejoin="round" stroke-width="2.5"></path>
+<circle cx="20" cy="20" fill="currentColor" r="4"></circle>
+</svg>
+            Innovate Hub
+        </div>
+<div class="text-emerald-900/50 font-manrope text-sm font-medium text-center">
+            © 2024 Innovate Hub. All rights reserved.
+        </div>
+<div class="flex flex-wrap justify-center gap-6 md:gap-12">
+<a class="text-emerald-900/60 hover:text-emerald-950 transition-colors text-sm font-bold font-manrope" href="#">Privacy Policy</a>
+<a class="text-emerald-900/60 hover:text-emerald-950 transition-colors text-sm font-bold font-manrope" href="#">Terms of Service</a>
+<a class="text-emerald-900/60 hover:text-emerald-950 transition-colors text-sm font-bold font-manrope" href="#">Support</a>
+</div>
+</div>
+</footer>
+<script>
+    const nav = document.getElementById('main-nav');
+    let lastScrollY = window.scrollY;
+
+    window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+
+        // Visual styling based on scroll depth
+        if (currentScrollY > 60) {
+            nav.classList.add('nav-scrolled');
+        } else {
+            nav.classList.remove('nav-scrolled');
+        }
+
+        // Show/Hide behavior based on scroll direction
+        if (currentScrollY > lastScrollY && currentScrollY > 200) {
+            // Scrolling down
+            nav.classList.add('nav-hidden');
+        } else {
+            // Scrolling up
+            nav.classList.remove('nav-hidden');
+        }
+        
+        lastScrollY = currentScrollY;
+    });
+</script>
+</body></html>

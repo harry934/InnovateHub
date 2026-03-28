@@ -1426,7 +1426,13 @@
 
       // ── Auth listener: Supabase as Single Source of Truth ───────
       authManager.onAuthChange(async (user) => {
+        // If no user and NOT initializing, redirect to login
         if (!user) {
+          if (authManager.initializing) {
+            console.log("Dashboard: Waiting for auth initialization...");
+            return;
+          }
+          console.log("Dashboard: No session found, redirecting to login.");
           window.location.replace("login.html");
           return;
         }
