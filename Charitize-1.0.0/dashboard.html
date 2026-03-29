@@ -50,6 +50,107 @@
     <link href="assets/css/collab-screen.css?v=130.0.0" rel="stylesheet" />
     <link href="assets/css/innovate-hub.css?v=130.0.0" rel="stylesheet" />
     <link href="assets/css/nuru-assistant.css?v=130.0.0" rel="stylesheet" />
+    
+    <!-- Tailwind CSS (Renovation) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-container": "#92aca2",
+              "on-primary": "#ffffff",
+              "surface": "#F2F5F4",
+              "on-primary-fixed": "#002114",
+              "outline": "#717973",
+              "tertiary": "#132b23",
+              "error-container": "#ffdad6",
+              "surface-container-high": "#e7e8e7",
+              "on-tertiary-fixed-variant": "#334c43",
+              "on-secondary": "#ffffff",
+              "primary-container": "#1b4332",
+              "secondary-fixed-dim": "#ffba27",
+              "on-primary-container": "#86af99",
+              "on-tertiary-fixed": "#072019",
+              "secondary": "#7d5800",
+              "on-secondary-fixed": "#271900",
+              "surface-container-lowest": "#ffffff",
+              "surface-container": "#edeeed",
+              "on-secondary-fixed-variant": "#5e4100",
+              "secondary-container": "#ffb702",
+              "surface-tint": "#3f6653",
+              "primary-fixed-dim": "#a5d0b9",
+              "on-error": "#ffffff",
+              "tertiary-container": "#294139",
+              "surface-bright": "#f9f9f8",
+              "on-primary-fixed-variant": "#274e3d",
+              "tertiary-fixed": "#cde9dd",
+              "outline-variant": "#c1c8c2",
+              "on-surface-variant": "#414844",
+              "on-background": "#191c1c",
+              "background": "#F2F5F4",
+              "secondary-fixed": "#ffdea9",
+              "on-surface": "#191c1c",
+              "surface-variant": "#e1e3e2",
+              "inverse-primary": "#a5d0b9",
+              "surface-dim": "#d9dad9",
+              "surface-container-low": "#f3f4f3",
+              "on-tertiary": "#ffffff",
+              "error": "#ba1a1a",
+              "tertiary-fixed-dim": "#b1cdc1",
+              "inverse-on-surface": "#f0f1f0",
+              "on-secondary-container": "#6b4b00",
+              "on-error-container": "#93000a",
+              "inverse-surface": "#2e3131",
+              "primary-fixed": "#c1ecd4",
+              "primary": "#012d1d"
+            },
+            fontFamily: {
+              "headline": ["Lexend"],
+              "body": ["Manrope"],
+              "label": ["Lexend"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            boxShadow: {
+              'soft': '0 40px 60px -10px rgba(1, 45, 29, 0.05)',
+              'defined': '0 30px 70px -15px rgba(1, 45, 29, 0.18), 0 0 0 1px rgba(1, 45, 29, 0.04)',
+              'elevated': '0 25px 35px -8px rgba(0, 0, 0, 0.08), 0 10px 15px -8px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(1, 45, 29, 0.05)',
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+        #main-nav {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease, backdrop-filter 0.4s ease;
+        }
+        .nav-hidden { transform: translateY(-100%); }
+        .nav-scrolled {
+            background-color: rgba(242, 245, 244, 0.85) !important;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px -10px rgba(1, 45, 29, 0.1);
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+            color: #1b4332 !important;
+        }
+        .nav-scrolled .nav-link, .nav-scrolled #nav-brand, .nav-scrolled .material-symbols-outlined {
+            color: #1b4332 !important;
+        }
+        #floating-menu-btn {
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+        }
+        .nav-link { font-size: 0.85rem !important; }
+        #nav-brand { transform: scale(0.9); transform-origin: left center; }
+        /* Mobile Menu */
+        #mobile-menu {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+    </style>
+
     <style>
         :root {
             --brand-teal: #1a5e4f;
@@ -105,6 +206,8 @@
     <!-- Project Modules -->
     <script src="assets/js/components/live-wallpaper.js?v=102.0.0" type="module"></script>
     <script src="assets/js/components/activity-heatmap.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/components/ui-notifications.js?v=102.0.0" type="module"></script>
+    <script src="assets/js/components/activity-timeline.js?v=102.0.0" type="module"></script>
     <script src="assets/js/pages/mentor-discovery.js?v=102.0.0" type="module"></script>
     <script src="assets/js/pages/dashboard-charts.js?v=102.0.0" type="module"></script>
     <script src="assets/js/pages/collaboration.js?v=102.0.0" type="module"></script>
@@ -116,8 +219,56 @@
     <script src="assets/js/modules/report-manager.js?v=102.0.0" type="module"></script>
   </head>
 
-  <body>
-    <div style="height: 100px"></div>
+  <body class="bg-surface">
+    <!-- TopNavBar (Renovated) -->
+    <nav id="main-nav" class="fixed top-0 left-0 right-0 z-[1050] border-b border-white/5 bg-emerald-950/80 backdrop-blur-xl transition-all duration-500 py-2">
+        <div class="container-fluid px-4 lg:px-6">
+            <div class="flex items-center justify-between h-14">
+                <!-- Branding -->
+                <a href="index.html" class="flex items-center gap-3 group">
+                    <img src="assets/img/logo.png" alt="InnovateHub" id="navLogo" class="h-10 w-auto transition-transform duration-300 group-hover:scale-105">
+                </a>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center gap-2" id="navContainer">
+                    <!-- JS Injected items: px-3 py-2, fs-13, font-semibold -->
+                </div>
+
+                <!-- Mobile Trigger -->
+                <div class="lg:hidden flex items-center gap-3">
+                    <button id="mobileMenuTrigger" class="p-2 text-white hover:bg-white/10 rounded-xl transition-all">
+                        <span class="material-symbols-outlined fs-2">menu</span>
+                    </button>
+                    <div id="navContainerMobileShort" class="flex items-center gap-2"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Floating Menu Trigger (Shown when nav hidden) -->
+    <button id="floating-menu-btn" class="fixed top-6 right-6 z-[1001] bg-[#1b4332] text-white p-3 rounded-full shadow-elevated opacity-0 invisible scale-75 hover:scale-100 transition-all">
+        <span class="material-symbols-outlined text-2xl">menu</span>
+    </button>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-[#1b4332] z-[999] opacity-0 invisible flex flex-col p-8 pt-24 text-white">
+        <button class="absolute top-6 right-6 p-2" id="mobile-menu-close">
+            <span class="material-symbols-outlined text-4xl">close</span>
+        </button>
+        <div class="flex flex-col gap-6 text-2xl font-bold font-lexend mt-8" id="nav-links-container-mobile">
+            <!-- Dynamically populated -->
+        </div>
+        <div class="mt-auto border-t border-white/10 pt-8 flex items-center gap-4">
+            <div id="nav-user-profile-mobile" class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center font-bold">US</div>
+            <div>
+                <p id="nav-user-name-mobile" class="font-bold">User Name</p>
+                <button onclick="logout && logout()" class="text-sm text-emerald-100/60 font-medium">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="pt-20 md:pt-28"></div>
+
 
     <!-- Dynamic Live Wallpaper -->
     <div id="liveWallpaperBg" style="position: fixed; inset: 0; z-index: -1; pointer-events: none;"></div>
@@ -132,34 +283,27 @@
       style="position: relative; z-index: 2"
     >
       <div class="container mb-5 dashboard-content-limit">
-        <!-- Simplified Hero -->
         <div
-          class="mb-5 d-flex justify-content-between align-items-end flex-wrap gap-4"
+          class="mb-6 d-flex justify-content-between align-items-center flex-wrap gap-4 px-2"
         >
-          <div>
+          <div class="animate-fade-in">
             <span
-              style="
-                color: var(--brand-yellow);
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 2px;
-                font-size: 0.75rem;
-              "
-              >Platform Overview</span
+              class="badge bg-secondary-container-soft text-secondary-container px-3 py-1.5 mb-2 fw-800 text-uppercase tracking-widest fs-8"
+              >Platform Insights</span
             >
             <h1
               id="dashboardGreeting"
-              class="display-5 fw-bold mb-2"
+              class="display-4 fw-900 mb-2"
               style="
                 font-family: var(--font-head);
                 color: var(--brand-green);
-                font-weight: 900;
+                letter-spacing: -1px;
               "
             >
-              Dashboard
+              Good morning, Member
             </h1>
-            <p class="text-muted lead mb-0">
-              Manage your innovation ecosystem and mentor connections.
+            <p class="text-muted fw-500 fs-5 mb-0 opacity-75">
+              Welcome back to your Innovation Dashboard.
             </p>
           </div>
         </div>
@@ -178,8 +322,42 @@
         <div id="analyticsSection" class="row g-4 mb-5" style="display: none">
         </div>
 
-        <div class="dashboard-grid-container" id="dashboardCardsGrid">
-          <!-- Role-based cards injected by JS -->
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="dashboard-grid-container" id="dashboardCardsGrid">
+              <!-- Role-based cards injected by JS -->
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <!-- Activity Timeline (New) -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+              <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                  <span class="material-symbols-outlined text-primary">history</span>
+                  Recent Activity
+                </h5>
+                <button class="btn btn-light btn-sm rounded-circle p-1">
+                  <span class="material-symbols-outlined fs-6">refresh</span>
+                </button>
+              </div>
+              <div class="card-body p-0">
+                <div id="activityTimeline" class="p-3" style="max-height: 400px; overflow-y: auto;">
+                  <div class="text-center py-5 text-muted">
+                    <span class="material-symbols-outlined fs-1 mb-2">pending_actions</span>
+                    <p class="small mb-0">No recent activity found.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Platform Stats/Tips (New) -->
+            <div class="card border-0 bg-emerald-900 text-white shadow-sm rounded-4 overflow-hidden article-wrapper">
+              <div class="card-body p-4">
+                <h6 class="text-emerald-300 fw-bold text-uppercase fs-8 mb-3">Innovation Tip</h6>
+                <p class="mb-0 fs-14 fw-500 opacity-90">"The best way to predict the future is to create it. Keep iterating on your project goals!"</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -377,6 +555,7 @@
                               </div>
                               <div class="form-group mb-3">
                                   <label>Feedback</label>
+                                  <div id="smartFeedbackPresets"></div>
                                   <textarea class="form-control" rows="4" id="feedbackText" placeholder="Share insights..."></textarea>
                               </div>
                               <button class="btn btn-primary gradient-teal w-full" id="submitFeedbackBtn">Submit</button>
@@ -1555,15 +1734,79 @@
         }
 
         // Shared features
-        navItems.push(
-          { label: "Collaboration Hub", link: "javascript:window.showDashboardSection('collab')" },
-          { label: "Profile Settings", link: "javascript:window.showDashboardSection('profile')" }
-        );
-
-        const profileItems = [
-          { label: "Sign Out", link: "javascript:logout()" },
+        const sharedItems = [
+          { label: "Collaboration Hub", section: "collab" }
         ];
 
+        const allNavItems = [...navItems, ...sharedItems];
+
+        // NEW: Populate the renovated navbar
+        const navContainer = document.getElementById('navContainer');
+        const navContainerMobile = document.getElementById('nav-links-container-mobile');
+        
+        if (navContainer && navContainerMobile) {
+            const navHTML = allNavItems.map(link => {
+                let action = '';
+                if (link.section) {
+                    action = `onclick="window.showDashboardSection('${link.section}')"`;
+                } else if (link.link.includes('showDashboardSection')) {
+                    const sectionId = link.link.match(/'([^']+)'/)?.[1];
+                    action = sectionId ? `onclick="window.showDashboardSection('${sectionId}')"` : '';
+                } else {
+                    return `<a class="nav-link text-white/80 hover:text-white font-lexend font-semibold tracking-tight transition-all px-3 py-2 rounded-xl hover:bg-white/5 flex items-center gap-2 whitespace-nowrap text-[13px]" 
+                               href="${link.link}">${link.label}</a>`;
+                }
+                
+                return `
+                    <a class="nav-link text-white/80 hover:text-white font-lexend font-semibold tracking-tight transition-all px-3 py-2 rounded-xl hover:bg-white/5 flex items-center gap-2 whitespace-nowrap text-[13px] cursor-pointer" 
+                       ${action}>
+                        ${link.label}
+                    </a>
+                `;
+            }).join('');
+
+            navContainer.innerHTML = navHTML;
+            navContainerMobile.innerHTML = navHTML + `
+                <a class="nav-link text-amber-300 hover:text-white font-lexend font-bold tracking-tight transition-all py-1 fs-13 whitespace-nowrap cursor-pointer border-t border-white/10 mt-4 pt-4" 
+                   href="index.html">Main Website</a>
+            `;
+        }
+            
+        // Highlight active link (simple approach)
+        const links = navContainer.querySelectorAll('.nav-link');
+        links.forEach(l => {
+            l.addEventListener('click', function() {
+                links.forEach(ol => ol.classList.remove('text-white', 'border-b-2', 'border-secondary-container', 'font-bold'));
+                l.classList.add('text-white', 'border-b-2', 'border-secondary-container', 'font-bold');
+                l.classList.remove('text-emerald-100/80');
+                // Close mobile menu
+                const mobileMenu = document.getElementById('mobile-menu');
+                if(mobileMenu) {
+                    mobileMenu.classList.add('opacity-0', 'invisible');
+                    mobileMenu.classList.remove('opacity-100', 'visible');
+                }
+            });
+        });
+
+        // --- NEW: Dynamic Greeting Logic ---
+        const greetingEl = document.getElementById("dashboardGreeting");
+        if (greetingEl) {
+            const name = userData.fullName || user.displayName || user.email.split("@")[0];
+            const firstName = name.split(' ')[0];
+            const hour = new Date().getHours();
+            let timeGreeting = "Good evening";
+            if (hour < 12) timeGreeting = "Good morning";
+            else if (hour < 17) timeGreeting = "Good afternoon";
+            
+            greetingEl.textContent = `${timeGreeting}, ${firstName}`;
+            
+            // GSAP Entrance
+            if (window.gsap) {
+                gsap.from(greetingEl, { opacity: 0, y: 15, duration: 1, ease: "power4.out" });
+            }
+        }
+
+        /* 
         if (window.StaggeredMenu) {
           window.StaggeredMenu.init({
             items: [...siteItems, ...navItems, ...profileItems],
@@ -1596,6 +1839,89 @@
               greetingEl.textContent = `${timeGreeting}, ${firstName}`;
           }
         }
+        */
+
+        // NEW: Handle Navbar User Profile (Defined 'name' above)
+        const profileCircle = document.getElementById('nav-user-profile');
+        const profileCircleMobile = document.getElementById('nav-user-profile-mobile');
+        const mobileName = document.getElementById('nav-user-name-mobile');
+        
+        const updateP = (el, url, name) => {
+            if (!el) return;
+            if (url) {
+                el.innerHTML = `<img src="${url}" class="rounded-full w-full h-full object-cover">`;
+            } else if (window.getInitials) {
+                el.textContent = window.getInitials(name);
+            } else {
+                el.textContent = name.substring(0, 2).toUpperCase();
+            }
+        };
+
+        const avatarUrl = user.photoURL || userData.photoURL;
+        updateP(profileCircle, avatarUrl, name);
+        updateP(profileCircleMobile, avatarUrl, name);
+        if (mobileName) mobileName.textContent = name;
+
+        // NEW: Navbar Scroll and Mobile Toggle Logic
+        const nav = document.getElementById('main-nav');
+        const floatBtn = document.getElementById('floating-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        
+        let lastScrollY = window.scrollY;
+
+        const openMenu = () => {
+            if(mobileMenu) {
+                mobileMenu.classList.remove('opacity-0', 'invisible');
+                mobileMenu.classList.add('opacity-100', 'visible');
+            }
+        };
+
+        const closeMenu = () => {
+            if(mobileMenu) {
+                mobileMenu.classList.add('opacity-0', 'invisible');
+                mobileMenu.classList.remove('opacity-100', 'visible');
+            }
+        };
+        
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            const navInner = document.getElementById('nav-inner');
+            
+            if (currentScrollY > 60) {
+                nav.classList.add('nav-scrolled');
+                if (navInner) {
+                    navInner.classList.remove('py-3', 'md:py-4');
+                    navInner.classList.add('py-2');
+                }
+            } else {
+                nav.classList.remove('nav-scrolled');
+                if (navInner) {
+                    navInner.classList.remove('py-2');
+                    navInner.classList.add('py-3', 'md:py-4');
+                }
+            }
+            
+            if (currentScrollY > lastScrollY && currentScrollY > 200) {
+                nav.classList.add('nav-hidden');
+                if (floatBtn) {
+                   floatBtn.classList.remove('opacity-0', 'invisible', 'scale-75');
+                   floatBtn.classList.add('opacity-100', 'visible', 'scale-100');
+                }
+            } else {
+                nav.classList.remove('nav-hidden');
+                if (floatBtn) {
+                   floatBtn.classList.add('opacity-0', 'invisible', 'scale-75');
+                   floatBtn.classList.remove('opacity-100', 'visible', 'scale-100');
+                }
+            }
+            lastScrollY = currentScrollY;
+        }, { passive: true });
+
+        if (mobileMenuBtn) mobileMenuBtn.onclick = openMenu;
+        if (floatBtn) floatBtn.onclick = openMenu;
+        if (mobileMenuClose) mobileMenuClose.onclick = closeMenu;
 
         // Store user in localStorage for mock service lookups
         try {
@@ -1634,6 +1960,14 @@
             modulePath = `./assets/js/pages/mentor-dashboard.js?v=114.0.0`;
         } else if (role === "innovator") {
             modulePath = `./assets/js/pages/innovator-dashboard.js?v=114.0.0`;
+        }
+
+        // Initialize Shared Components
+        if (window.InnovateActivityTimeline) {
+            window.InnovateActivityTimeline.init(user.id || user.uid, role);
+        }
+        if (window.InnovateNotifications) {
+            window.InnovateNotifications.init();
         }
 
         if (modulePath) {
