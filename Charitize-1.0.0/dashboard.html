@@ -682,15 +682,23 @@
                       <div class="tab-inner">
                           <div class="report-form card card-orange">
                               <h4 class="form-title"><i class="fa fa-file-text-o"></i> Submit Report</h4>
-                              <div class="form-group mb-2">
-                                  <label>Report Title</label>
+                              <div class="form-group mb-3">
+                                  <label class="form-label font-bold text-xs uppercase tracking-wider text-emerald-800">Title</label>
                                   <input type="text" class="form-control" id="reportTitle" placeholder="e.g. Week 4 Update">
                               </div>
                               <div class="form-group mb-3">
-                                  <label>Details</label>
-                                  <textarea class="form-control" rows="4" id="reportContent" placeholder="Describe progress..."></textarea>
+                                  <label class="form-label font-bold text-xs uppercase tracking-wider text-emerald-800">Details</label>
+                                  <textarea class="form-control" rows="4" id="reportDetails" placeholder="Describe progress..."></textarea>
                               </div>
-                              <button class="btn btn-primary gradient-orange w-full" id="submitReportBtn">Submit Report</button>
+                              <div class="form-group mb-4">
+                                  <label class="form-label font-bold text-xs uppercase tracking-wider text-emerald-800 flex items-center gap-2">
+                                      <span class="material-symbols-outlined text-[18px]">attach_file</span>
+                                      Attach File (Optional)
+                                  </label>
+                                  <input type="file" class="form-control text-xs" id="reportFile">
+                                  <p class="text-[10px] text-slate-500 mt-1">Upload reports, screenshots, or project documents.</p>
+                              </div>
+                              <button class="btn btn-primary bg-emerald-700 hover:bg-emerald-800 text-white w-full rounded-xl py-2.5 font-bold shadow-soft transition-all" id="submitReportBtn">Submit Report</button>
                           </div>
                           <div class="report-list mt-3">
                               <h4>Previous Reports</h4>
@@ -1300,7 +1308,7 @@
     </div>
 
     <!-- JS Libraries -->
-    <script src="assets/js/pages/main.js?v=300.0.0"></script>
+    <!-- main.js (Moved after libraries below) -->
     <script src="assets/js/utils/ui-utils.js?v=300.0.0"></script>
     <script src="assets/js/components/shared-ui.js?v=300.0.0"></script>
     <script src="assets/js/core/supabase-service.js?v=300.0.0" type="module"></script>
@@ -2110,8 +2118,9 @@
     <script src="assets/lib/owlcarousel/owl.carousel.min.js"></script>
 
     <!-- Main Dashboard Script (Module-Based) -->
-    <script type="module" src="assets/js/core/innovate-hub.js"></script>
+    <!-- Removed broken innovate-hub.js inclusion -->
     
+    <script src="assets/js/pages/main.js?v=300.0.0"></script>
     <script>
       // Force WOW and CounterUp initialization if loaded
       document.addEventListener('DOMContentLoaded', () => {

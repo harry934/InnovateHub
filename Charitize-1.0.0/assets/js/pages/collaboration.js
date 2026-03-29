@@ -400,10 +400,18 @@ class CollaborationHub {
 
             container.innerHTML = '';
             feedbacks.forEach(f => {
-                // Supabase stores feedback content in 'comment' field, not 'content'
+                let ratingKey = 'suggestion';
+                if (typeof f.rating === 'number') {
+                    ratingKey = f.rating >= 4 ? 'positive' : (f.rating <= 2 ? 'needs-work' : 'suggestion');
+                } else if (f.rating && typeof f.rating === 'string') {
+                    ratingKey = f.rating.toLowerCase().replace(/\s/g, '-');
+                } else if (f.stars) {
+                    ratingKey = f.stars >= 4 ? 'positive' : (f.stars <= 2 ? 'needs-work' : 'suggestion');
+                }
+
                 const data = {
                     category: f.field_id || f.category || 'General Feedback',
-                    rating: f.rating ? f.rating.toLowerCase().replace(/\s/g, '-') : (f.stars >= 4 ? 'positive' : f.stars >= 3 ? 'suggestion' : 'needs-work'),
+                    rating: ratingKey,
                     content: f.comment || f.content || f.text || 'No content provided',
                     timestamp: new Date(f.created_at).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })
                 };
@@ -467,6 +475,7 @@ class CollaborationHub {
         }
 
         if (!this.projectData?.id) return alert("No project selected for feedback.");
+        const ratingValue = rating === 'positive' ? 5 : (rating === 'needs-work' ? 2 : 4);
 
         try {
             const user = this.getCurrentUser();
@@ -476,8 +485,8 @@ class CollaborationHub {
                 mentor_id: user.id || user.uid,
                 field_id: category,
                 comment: content,
-                rating: rating,
-                stars: rating === 'positive' ? 5 : (rating === 'needs-work' ? 3 : 4)
+                rating: ratingValue,
+                stars: ratingValue
             });
 
             if (window.InnovateNotifications) {
@@ -529,31 +538,61 @@ class CollaborationHub {
     }
 
     async submitReport() {
-        const title = document.getElementById('reportTitle').value.trim();
-        const details = document.getElementById('reportDetails').value.trim();
+        const titleEl = document.getElementById('reportTitle');
+        const detailsEl = document.getElementById('reportDetails');
+        const fileEl = document.getElementById('reportFile');
 
-        if (!title || !details) return alert("Please fill in all report fields.");
+        if (!titleEl || !detailsEl) return;
+        const title = titleEl.value.trim();
+        const details = detailsEl.value.trim();
+
+        if (!title || !details) {
+            if (window.InnovateNotifications) window.InnovateNotifications.warning("Please enter a title and summary.");
+            else alert("Please fill in the title and details.");
+            return;
+        }
 
         try {
             const user = this.getCurrentUser();
+            const submitBtn = document.getElementById('submitReportBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Uploading...';
+            }
+
+            let fileUrl = null;
+            if (fileEl && fileEl.files?.[0]) {
+                fileUrl = await window.SupabaseService.uploadReportFile(user.id || user.uid, fileEl.files[0]);
+            }
+
             await window.SupabaseService.submitProgressReport({
                 mentorship_id: this.activeMentorshipId,
                 project_id: this.projectData.id,
                 innovator_id: user.id || user.uid,
                 title,
                 summary: details,
+                file_url: fileUrl,
                 status: 'submitted'
             });
-            alert("Report submitted successfully!");
-            document.getElementById('reportTitle').value = '';
-            document.getElementById('reportDetails').value = '';
+
+            if (window.InnovateNotifications) window.InnovateNotifications.success("Progress report submitted!");
+            else alert("Report submitted successfully!");
+
+            titleEl.value = '';
+            detailsEl.value = '';
+            if (fileEl) fileEl.value = '';
             this.loadStats();
-            
-            // Reload reports if active
             this.loadReports();
         } catch (e) { 
             console.error("Report Error:", e);
-            alert("Failed to submit report."); 
+            if (window.InnovateNotifications) window.InnovateNotifications.error("Failed to submit report.");
+            else alert("Failed to submit report."); 
+        } finally {
+            const submitBtn = document.getElementById('submitReportBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit Report';
+            }
         }
     }
 
@@ -573,11 +612,10 @@ class CollaborationHub {
             reports.forEach(r => {
                 const data = {
                     title: r.title || 'Weekly Update',
-                    // Supabase stores report body in 'summary', not 'content'
                     content: r.summary || r.content || r.details || 'No details provided',
                     status: r.status || 'submitted',
                     timestamp: new Date(r.created_at).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }),
-                    attachments: r.file_url ? [{ name: 'Project Attachment' }] : []
+                    file_url: r.file_url
                 };
                 listEl.appendChild(this.createReportCard(data));
             });
@@ -592,32 +630,22 @@ class CollaborationHub {
         const statusText = report.status === 'reviewed' ? 'Reviewed' : 'Submitted';
         
         let attachmentsHTML = '';
-        if (report.attachments && report.attachments.length > 0) {
+        if (report.file_url) {
             attachmentsHTML = `
-                <div class="report-attachments">
-                    ${report.attachments.map(att => `
-                        <div class="report-attachment">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                            </svg>
-                            <span>${att.name}</span>
-                        </div>
-                    `).join('')}
+                <div class="report-attachments mt-2 border-t border-slate-100 pt-2">
+                    <a href="${report.file_url}" target="_blank" class="flex items-center gap-2 text-emerald-700 hover:text-emerald-900 font-bold text-xs no-underline">
+                        <span class="material-symbols-outlined text-[18px]">attach_file</span>
+                        View Attachment
+                    </a>
                 </div>
             `;
         }
         
         card.innerHTML = `
             <div class="report-header">
-                <div class="report-category">
-                    <div class="report-icon">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                        </svg>
-                    </div>
-                    <span class="report-title">${report.title}</span>
+                <div>
+                    <h5 class="report-title">${report.title}</h5>
+                    <span class="report-date">${report.timestamp}</span>
                 </div>
                 <span class="badge ${statusClass}">${statusText}</span>
             </div>

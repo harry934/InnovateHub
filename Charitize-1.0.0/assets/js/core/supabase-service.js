@@ -398,6 +398,28 @@ const SupabaseService = {
         }
     },
 
+    async uploadReportFile(userId, file) {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${userId}-${Date.now()}.${fileExt}`;
+            const filePath = `reports/${fileName}`;
+
+            const { error: uploadError } = await window.supabase.storage
+                .from('public-assets')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = window.supabase.storage
+                .from('public-assets')
+                .getPublicUrl(filePath);
+
+            return data.publicUrl;
+        } catch (error) {
+            return this.handleSupabaseError(error, 'uploadReportFile');
+        }
+    },
+
     async updatePinnedGuidance(mentorshipId, guidance) {
         try {
             const { data, error } = await window.supabase
