@@ -181,9 +181,10 @@ class CollaborationHub {
             await this.loadMessages();
             this.setupRealtimeChat();
             
-            // Render project brief for mentors
+            // Render project brief and presets for mentors
             if (!this.isInnovator) {
                 this.renderProjectBrief();
+                this.renderSmartFeedbackPresets();
             }
         }
     }
@@ -459,7 +460,12 @@ class CollaborationHub {
         const rating = ratingEl ? ratingEl.value : 'positive';
         const content = contentEl.value.trim();
 
-        if (!content) return alert("Please enter feedback content.");
+        if (!content) {
+            if (window.InnovateNotifications) window.InnovateNotifications.error("Please enter feedback content.");
+            else alert("Please enter feedback content.");
+            return;
+        }
+
         if (!this.projectData?.id) return alert("No project selected for feedback.");
 
         try {
@@ -469,18 +475,57 @@ class CollaborationHub {
                 project_id: this.projectData.id,
                 mentor_id: user.id || user.uid,
                 field_id: category,
-                comment: content,   // Stored in 'comment' field per schema
+                comment: content,
                 rating: rating,
                 stars: rating === 'positive' ? 5 : (rating === 'needs-work' ? 3 : 4)
             });
-            alert("Feedback submitted successfully!");
+
+            if (window.InnovateNotifications) {
+                window.InnovateNotifications.success("Feedback submitted! Innovator has been notified.");
+            } else {
+                alert("Feedback submitted successfully!");
+            }
+
             contentEl.value = '';
             this.loadFeedbacks();
             this.loadStats();
         } catch (e) { 
             console.error("Feedback error:", e);
-            alert("Failed to submit feedback: " + e.message); 
+            if (window.InnovateNotifications) window.InnovateNotifications.error("Failed to submit: " + e.message);
+            else alert("Failed to submit feedback: " + e.message); 
         }
+    }
+
+    renderSmartFeedbackPresets() {
+        const container = document.getElementById('smartFeedbackPresets');
+        if (!container || this.isInnovator) return;
+
+        const presets = [
+            { text: "Excellent progress! The logic is sound.", type: 'positive' },
+            { text: "Consider refining the problem statement.", type: 'suggestion' },
+            { text: "Feasibility needs more data points.", type: 'needs-work' },
+            { text: "Great impact analysis - very clear.", type: 'positive' }
+        ];
+
+        container.innerHTML = `
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                ${presets.map(p => `
+                    <button class="btn btn-sm btn-outline-teal fs-12 rounded-pill preset-btn" data-text="${p.text}">
+                        ${p.text}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+
+        container.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.onclick = () => {
+                const textarea = document.getElementById('feedbackText');
+                if (textarea) {
+                    textarea.value = btn.getAttribute('data-text');
+                    if (window.InnovateNotifications) window.InnovateNotifications.info("Preset applied!");
+                }
+            };
+        });
     }
 
     async submitReport() {

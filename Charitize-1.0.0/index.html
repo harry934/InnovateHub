@@ -63,6 +63,22 @@
     <!-- Unified Dashboard Styles -->
     <link href="assets/css/responsive-dashboard.css?v=16.0.0" rel="stylesheet">
     <link href="assets/css/dashboard-unified.css?v=16.0.0" rel="stylesheet">
+    <!-- Tailwind CSS (Renovation) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "primary-container": "#1b4332",
+              "secondary-container": "#ffb702",
+              "primary": "#012d1d",
+              "surface": "#F2F5F4",
+            },
+          },
+        },
+      }
+    </script>
 </head>
 
 <body>
@@ -181,7 +197,7 @@
                     <div class="d-flex ms-auto align-items-center">
                         <!-- Guest View: Clearly visible and styled buttons -->
                         <div id="guestButtons" class="guest-actions d-flex">
-                            <a class="btn btn-get-started" href="signup.html">GET STARTED</a>
+                            <a class="btn btn-get-started" href="signup.html" id="mainHomeGetStartedBtn">GET STARTED</a>
                         </div>
                         <!-- Logged In User View: Simplified Dashboard Button -->
                         <a class="btn btn-get-started me-3 d-none logged-in-only" href="dashboard.html" id="navDashboardBtn">MY DASHBOARD</a>
@@ -1003,6 +1019,31 @@
     })();
     </script>
 
+    <!-- Dynamic Button Swap Script -->
+    <script>
+    (function() {
+        try {
+            const user = JSON.parse(localStorage.getItem("innovateHubUser"));
+            if (user && user.role) {
+                const getStartedButtons = document.querySelectorAll('.btn-get-started');
+                getStartedButtons.forEach(btn => {
+                    const text = btn.textContent.trim().toUpperCase();
+                    if (text === 'GET STARTED' || text === 'GET STARTED TODAY') {
+                        btn.textContent = 'MY DASHBOARD';
+                        btn.href = 'dashboard.html';
+                    }
+                });
+                
+                // Also check specifically named buttons if any
+                const heroBtn = document.querySelector('a[href="signup.html"].btn-primary');
+                if (heroBtn && heroBtn.textContent.includes('Get Started')) {
+                    heroBtn.textContent = 'MY DASHBOARD';
+                    heroBtn.href = 'dashboard.html';
+                }
+            }
+        } catch(e) {}
+    })();
+    </script>
 </body>
 
 </html>

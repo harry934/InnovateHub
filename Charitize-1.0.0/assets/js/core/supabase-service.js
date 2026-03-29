@@ -571,14 +571,48 @@ const SupabaseService = {
     // â”€â”€â”€ Feedback & Reports â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async submitFeedback(feedback) {
         try {
+            // Ensure compatibility with potentially older schema or specific field names
+            const payload = {
+                mentorship_id: feedback.mentorship_id,
+                project_id: feedback.project_id,
+                mentor_id: feedback.mentor_id,
+                field_id: feedback.field_id || 'general',
+                comment: feedback.comment || feedback.text || feedback.content || '',
+                stars: feedback.stars || 5,
+                rating: feedback.rating || (feedback.stars >= 4 ? 'positive' : 'needs-work'),
+                created_at: new Date().toISOString()
+            };
+
             const { data, error } = await window.supabase
-                .from('section_feedback') // Consolidating feedback to section_feedback if appropriate
-                .insert([feedback])
+                .from('section_feedback')
+                .insert([payload])
                 .select();
             if (error) throw error;
             return data[0];
         } catch (error) {
             return this.handleSupabaseError(error, 'submitFeedback');
+        }
+    },
+
+    async getProjectTimeline(projectId) {
+        try {
+            // Fetch everything related to project activity
+            const [feedback, reports, messages] = await Promise.all([
+                this.getProjectFeedback(projectId),
+                window.supabase.from('progress_reports').select('*').eq('project_id', projectId),
+                window.supabase.from('chat_messages').select('*').eq('mentorship_id', projectId) // This might need a mentorship_id lookup
+            ]);
+
+            const timeline = [
+                ...(feedback || []).map(f => ({ ...f, type: 'feedback', date: f.created_at })),
+                ...(reports.data || []).map(r => ({ ...r, type: 'report', date: r.created_at })),
+                // Add more event types as needed
+            ];
+
+            return timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
+        } catch (e) {
+            console.warn("Timeline fetch error:", e);
+            return [];
         }
     },
 
