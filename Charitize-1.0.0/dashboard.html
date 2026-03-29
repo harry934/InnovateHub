@@ -1316,13 +1316,6 @@
     <!-- Feature Scripts -->
     <script src="assets/js/components/staggered-menu.js?v=102.0.0"></script>
     <script src="assets/js/components/nuru-assistant.js?v=102.0.0"></script>
-    
-    <!-- Fail-Safe Helper -->
-    <div id="dashboardFailSafe" style="display:none; position:fixed; bottom:20px; right:20px; z-index:10000; animation: slideUp 0.5s ease-out;">
-        <button class="btn btn-warning shadow-lg px-4 py-3 fw-bold rounded-pill text-dark" onclick="forceFixDashboard()" style="border: 2px solid white;">
-            <i class="fa fa-magic me-2"></i> Stuck? Fix Dashboard View
-        </button>
-    </div>
 
     <script>
         // Emergency Auto-Unblock Fail-Safe
@@ -1768,31 +1761,20 @@
         if (navContainer && navContainerMobile) {
             const navHTML = allNavItems.map(link => {
                 let action = '';
-                const iconMap = {
-                    'home': 'dashboard',
-                    'overview': 'grid_view',
-                    'mentors': 'person_search',
-                    'myMentors': 'groups',
-                    'collab': 'hub',
-                    'profile': 'account_circle',
-                    'notifications': 'notifications'
-                };
-                const icon = iconMap[link.section] || 'link';
-
+                
                 if (link.section) {
                     action = `onclick="window.showDashboardSection('${link.section}')"`;
-                } else if (link.link.includes('showDashboardSection')) {
+                } else if (link.link && link.link.includes('showDashboardSection')) {
                     const sectionId = link.link.match(/'([^']+)'/)?.[1];
                     action = sectionId ? `onclick="window.showDashboardSection('${sectionId}')"` : '';
                 } else {
-                    return `<a class="nav-link text-white/70 hover:text-white font-lexend font-medium tracking-tight transition-all px-3 py-1.5 rounded-lg hover:bg-white/5 flex items-center gap-2 whitespace-nowrap text-[13px]" 
-                               href="${link.link}">${link.label}</a>`;
+                    return `<a class="nav-item-link text-white/80 hover:text-white font-lexend font-bold tracking-tight transition-all px-4 py-2 rounded-xl hover:bg-white/5 whitespace-nowrap text-[14px] uppercase border-b-2 border-transparent" 
+                               href="${link.link || '#'}">${link.label}</a>`;
                 }
                 
                 return `
-                    <a class="nav-link text-white/70 hover:text-white font-lexend font-medium tracking-tight transition-all px-3 py-1.5 rounded-lg hover:bg-white/5 flex items-center gap-2 whitespace-nowrap text-[13px] cursor-pointer" 
+                    <a class="nav-item-link text-white/80 hover:text-white font-lexend font-bold tracking-tight transition-all px-4 py-2 rounded-xl hover:bg-white/5 whitespace-nowrap text-[14px] uppercase border-b-2 border-transparent cursor-pointer" 
                        ${action}>
-                        <span class="material-symbols-outlined text-[18px] opacity-60">${icon}</span>
                         ${link.label}
                     </a>
                 `;
@@ -1808,12 +1790,13 @@
         }
             
         // Highlight active link (simple approach)
-        const links = navContainer.querySelectorAll('.nav-link');
+        // Highlight active link
+        const links = navContainer.querySelectorAll('.nav-item-link');
         links.forEach(l => {
             l.addEventListener('click', function() {
-                links.forEach(ol => ol.classList.remove('text-white', 'border-b-2', 'border-secondary-container', 'font-bold'));
-                l.classList.add('text-white', 'border-b-2', 'border-secondary-container', 'font-bold');
-                l.classList.remove('text-emerald-100/80');
+                links.forEach(ol => ol.classList.remove('text-white', 'border-secondary-container', 'font-bold', 'bg-white/10'));
+                l.classList.add('text-white', 'font-bold', 'bg-white/10');
+                l.classList.remove('text-white/80');
                 // Close mobile menu
                 const mobileMenu = document.getElementById('mobile-menu');
                 if(mobileMenu) {

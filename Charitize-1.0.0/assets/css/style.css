@@ -100,7 +100,7 @@
 .navbar .navbar-nav .nav-link {
     margin-right: 30px;
     padding: 20px 0;
-    color: var(--bs-dark);
+    color: var(--bs-white);
     font-size: 18px;
     outline: none;
 }

@@ -17,7 +17,7 @@
   --nav-scrolled-height: 65px;
   --nav-max-width: 1200px;
   --nav-horizontal-padding: 15px;
-  --nav-menu-offset: -140px;
+  --nav-menu-offset: 0px;
   --nav-item-gap: 20px;
   --nav-active-highlight: rgba(26, 94, 79, 0.1);
   --nav-glass-bg: rgba(243, 168, 19, 0.95);
@@ -46,7 +46,7 @@
 .logo-text {
   font-weight: 700;
   font-size: 1.8rem;
-  color: #ffffff; /* White for better visibility on dark backgrounds */
+  color: #121331; /* Force dark text for visibility on yellow background */
   letter-spacing: -0.5px;
   transition: color 0.3s ease;
 }
@@ -1002,10 +1002,11 @@ body.user-logged-in .logged-in-only {
     display: flex !important;
   }
 
-  /* Desktop: Hide logo until scroll */
+  /* Desktop: Logo is always visible */
   .sticky-logo {
-    opacity: 0;
-    visibility: hidden;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
   }
 
   /* ========================================
@@ -1025,10 +1026,11 @@ body.user-logged-in .logged-in-only {
     justify-content: space-between !important;
     height: var(--nav-height) !important;
     max-width: var(--nav-max-width) !important;
-    margin: 0 auto !important; /* Final horizontal centering */
+    margin: 0 auto !important; 
     width: 100% !important;
-    padding: 0 var(--nav-horizontal-padding) !important; /* Managed edge padding */
+    padding: 0 var(--nav-horizontal-padding) !important; 
     transition: all 0.4s ease !important;
+    background: #f3a813 !important; /* Restored original Yellow background */
   }
 
   .navbar-collapse {
@@ -1037,6 +1039,8 @@ body.user-logged-in .logged-in-only {
     align-items: center !important;
     justify-content: space-between !important;
     padding: 0 !important;
+    visibility: visible !important; /* Force visibility */
+    opacity: 1 !important; /* Force opacity */
   }
 
   /* 1. Logo (Leftmost) */
@@ -1066,6 +1070,7 @@ body.user-logged-in .logged-in-only {
     border-radius: 6px;
     white-space: nowrap !important;
     transition: all 0.3s ease;
+    color: #121331 !important; /* Dark brand color for readability on yellow */
   }
 
   /* Active/Hover states */
