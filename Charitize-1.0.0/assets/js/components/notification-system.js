@@ -161,19 +161,22 @@ export class NotificationSystem {
      */
     async startListening() {
         if (!this.userId) {
-            console.error('User ID required for notifications');
+            console.error('NotificationSystem: User ID required');
             return;
         }
 
         if (window.SupabaseService) {
             // Initial load
-            const initialNotifs = await window.SupabaseService.getNotifications(this.userId);
-            this.notifications = initialNotifs || [];
-            this.updateUI();
+            try {
+                const initialNotifs = await window.SupabaseService.getNotifications(this.userId);
+                this.notifications = initialNotifs || [];
+                this.updateUI();
+            } catch (err) {
+                console.warn("NotificationSystem: Initial notification load failed:", err);
+            }
 
             // Subscribe to real-time changes
             this.subscription = window.SupabaseService.subscribeToNotifications(this.userId, (payload) => {
-                console.log("Realtime Notification:", payload);
                 this.refreshNotifications();
             });
         }

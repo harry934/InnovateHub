@@ -1,0 +1,286 @@
+/* ================================================================
+   INNOVATE HUB — Forest Mentor Sanctuary (v3.0)
+   High-Fidelity Sanctuary Aesthetics, Bento Stats, Growth Rings
+   ================================================================ */
+
+:root {
+    --forest-bg: #f9f9f8;
+    --forest-primary: #1B4332;
+    --forest-dark: #012d1d;
+    --forest-amber: #ffb702;
+    --forest-surface: #ffffff;
+    --forest-text-muted: #6b7280;
+    --lexend-font: 'Lexend', sans-serif;
+}
+
+body {
+    background-color: var(--forest-bg) !important;
+    font-family: var(--lexend-font) !important;
+    color: var(--forest-dark);
+}
+
+/* ── FOREST SANCTUARY HEADER ───────────────────────────────────── */
+.sanctuary-header-title {
+    font-size: 3.5rem; /* ~6xl */
+    font-weight: 900;
+    color: var(--forest-dark);
+    letter-spacing: -0.05em;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+}
+
+.sanctuary-header-desc {
+    color: var(--forest-text-muted);
+    font-size: 1.125rem;
+    max-width: 600px;
+    font-weight: 500;
+}
+
+/* ── BENTO STAT CARDS ─────────────────────────────────────────── */
+.bento-stat-card {
+    background: var(--forest-surface);
+    padding: 2rem;
+    border-radius: 20px;
+    border: none !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.bento-stat-card:hover {
+    transform: scale(1.02);
+}
+
+.bento-stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.icon-prime { background: rgba(27, 67, 50, 0.1); color: var(--forest-primary); }
+.icon-amber { background: rgba(255, 183, 2, 0.1); color: #c98b00; }
+.icon-dark  { background: rgba(1, 45, 29, 0.1); color: var(--forest-dark); }
+
+.bento-stat-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--forest-text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.bento-stat-value {
+    font-size: 2.25rem; /* ~4xl */
+    font-weight: 900;
+    color: var(--forest-primary);
+    line-height: 1.2;
+}
+
+.bento-stat-badge {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+}
+
+.badge-new { color: var(--forest-amber); background: rgba(255, 183, 2, 0.15); }
+.badge-live { color: #ffffff; background: var(--forest-primary); font-size: 0.6rem; }
+
+/* ── GROWTH RINGS CARDS ────────────────────────────────────────── */
+.growth-rings-container {
+    background: white;
+    border-radius: 32px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+    border: 1px solid rgba(27, 67, 50, 0.05);
+}
+
+/* 🌲 Forest Sanctuary Navigation & Layout Polish */
+#dashboard-main-nav {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+}
+
+.dash-nav-link {
+    color: rgba(255,255,255,0.7) !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    padding: 8px 16px !important;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-family: 'Lexend', sans-serif;
+}
+
+.dash-nav-link:hover {
+    color: white !important;
+    background: rgba(255,255,255,0.1);
+}
+
+.dash-nav-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--forest-amber);
+    color: var(--forest-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.dash-nav-avatar:hover {
+    transform: scale(1.05);
+}
+
+/* Fix for 'jumbled' sections */
+.dashboard-content-limit {
+    max-width: 1440px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+}
+
+#forest-sanctuary-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.bg-whisper-symbol {
+    position: absolute;
+    opacity: 0.03;
+    filter: blur(1.5px);
+    user-select: none;
+    pointer-events: none;
+    font-family: serif;
+    animation: floatingSymbol linear infinite;
+}
+
+@keyframes floatingSymbol {
+    0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.03; }
+    90% { opacity: 0.03; }
+    100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+}
+
+/* Ensure Bento grid doesn't collapse awkwardly */
+#landingStatsRow {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.bento-stat-card {
+    height: 100%;
+    min-height: 180px;
+}
+
+/* ── SANCTUARY QUICK ACCESS CARDS (Replaces old prem-dash-card) ─── */
+.sanctuary-card {
+    background: var(--forest-surface);
+    border-radius: 32px;
+    padding: 2rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    border: 1.5px solid rgba(27, 67, 50, 0.05);
+    cursor: pointer;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.sanctuary-card:hover {
+    transform: scale(1.02) translateY(-8px);
+    box-shadow: 0 24px 80px rgba(27, 67, 50, 0.08), 0 4px 20px rgba(0, 0, 0, 0.04);
+    border-color: rgba(27, 67, 50, 0.1);
+}
+
+.sanctuary-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--forest-primary);
+    color: white;
+}
+
+.sanctuary-card-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--forest-dark);
+}
+
+.sanctuary-card-desc {
+    font-size: 0.875rem;
+    color: var(--forest-text-muted);
+    line-height: 1.6;
+}
+
+/* ── WHISPER BACKGROUND SYMBOLS ────────────────────────────────── */
+#forest-sanctuary-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.bg-whisper-symbol {
+    position: absolute;
+    font-family: var(--lexend-font);
+    font-weight: 300;
+    opacity: 0.03; /* Whisper Visibility (3%) */
+    filter: blur(1.5px);
+    animation: floatForest linear infinite;
+}
+
+@keyframes floatForest {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(-100vh) rotate(360deg); }
+}
+
+/* ── LAYOUT STRATEGY ───────────────────────────────────────────── */
+.dashboard-content-limit {
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 64px;
+    padding-right: 64px;
+}
+
+@media (max-width: 991px) {
+    .dashboard-content-limit {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .sanctuary-header-title {
+        font-size: 2.5rem;
+    }
+}
+
+/* ── CLEANUP REDUNDANT CLASSES ─────────────────────────────────── */
+.dash-nav-card, .prem-dash-card { display: none !important; }
+.graph-card { border-radius: 24px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }

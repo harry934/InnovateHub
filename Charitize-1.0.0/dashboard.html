@@ -47,6 +47,7 @@
     <link href="assets/css/style.css?v=130.0.0" rel="stylesheet" />
     <link href="assets/css/staggered-menu.css?v=130.0.0" rel="stylesheet" />
     <link href="assets/css/dashboard-rebuild.css?v=130.0.0" rel="stylesheet" />
+    <link href="assets/css/dashboard-renovation.css?v=1.0.0" rel="stylesheet" />
     <link href="assets/css/collab-screen.css?v=130.0.0" rel="stylesheet" />
     <link href="assets/css/innovate-hub.css?v=130.0.0" rel="stylesheet" />
     <link href="assets/css/nuru-assistant.css?v=130.0.0" rel="stylesheet" />
@@ -220,69 +221,34 @@
   </head>
 
   <body class="bg-surface">
-    <!-- TopNavBar (Renovated) -->
-    <nav id="main-nav" class="fixed top-0 left-0 right-0 z-[1050] border-b border-white/10 bg-emerald-950/90 backdrop-blur-xl transition-all duration-500 py-2">
-        <div class="container-fluid px-4 lg:px-10">
-            <div class="flex items-center justify-between h-14">
-                <!-- Branding (Hidden as per User Request) -->
-                <div class="hidden">
-                    <img src="assets/img/logo.svg" alt="InnovateHub" id="navLogo" class="h-9 w-auto transition-transform duration-300 group-hover:scale-105">
-                </div>
-
-                <!-- Desktop Navigation -->
-                <div class="hidden lg:flex items-center gap-1" id="navContainer">
-                    <!-- JS Injected items -->
-                </div>
-
-                <!-- Actions -->
-                <div class="flex items-center gap-4">
-                    <!-- Notification Bell Container -->
-                    <div id="notificationBell" class="relative"></div>
-                    
-                    <div class="h-8 w-[1px] bg-white/10 mx-1 hidden lg:block"></div>
-                    
-                    <div class="flex items-center gap-3">
-                        <div id="nav-user-profile" class="w-9 h-9 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-sm ring-2 ring-emerald-500/30 overflow-hidden cursor-pointer" onclick="window.showDashboardSection('profile')"></div>
-                        <button onclick="logout && logout()" class="hidden lg:block bg-amber-400 text-[#271900] px-4 py-1.5 rounded-full font-bold text-xs hover:bg-amber-300 transition-all">
-                            Logout
-                        </button>
-                    </div>
-
-                    <!-- Mobile Trigger -->
-                    <button id="mobileMenuTrigger" class="lg:hidden p-2 text-white hover:bg-white/10 rounded-xl transition-all">
-                        <span class="material-symbols-outlined fs-2">menu</span>
-                    </button>
-                </div>
-            </div>
+    <!-- Dashboard Desktop Navbar (hidden on mobile – StaggeredMenu handles mobile) -->
+    <nav id="dashboard-main-nav" class="fixed-top d-none d-lg-flex align-items-center" style="background: var(--forest-primary); z-index: 1040; height: 62px; padding: 0 2rem; border-bottom: 1px solid rgba(255,255,255,0.1);">        <!-- Brand -->
+        <a href="dashboard.html" class="d-flex align-items-center gap-2 text-decoration-none me-4 flex-shrink-0">
+            <img src="assets/img/logo.svg" alt="InnovateHub" style="width:30px;height:30px;filter:brightness(0) invert(1);">
+            <span style="font-family:'Lexend',sans-serif;font-weight:700;font-size:1.1rem;color:white;letter-spacing:-0.5px;">InnovateHub</span>
+        </a>
+        <div style="width:1px;height:22px;background:rgba(255,255,255,0.15);margin-right:1.25rem;"></div>
+        <!-- Desktop Nav Links -->
+        <div class="d-flex align-items-center gap-1 me-auto" id="desktopNavLinks">
+            <a class="dash-nav-link" href="#" onclick="window.showDashboardSection&&window.showDashboardSection('home');return false;"><i class="fa fa-home me-1"></i>Home</a>
+            <a class="dash-nav-link" href="#" onclick="window.handleCardClick&&window.handleCardClick('projects');return false;"><i class="fa fa-rocket me-1"></i>My Projects</a>
+            <a class="dash-nav-link" href="#" onclick="window.handleCardClick&&window.handleCardClick('mentors');return false;"><i class="fa fa-search me-1"></i>Find Mentors</a>
+            <a class="dash-nav-link" href="#" onclick="window.handleCardClick&&window.handleCardClick('collab');return false;"><i class="fa fa-comments me-1"></i>Collaboration</a>
+            <a class="dash-nav-link" href="#" onclick="window.showDashboardSection&&window.showDashboardSection('profile');return false;"><i class="fa fa-user me-1"></i>Profile</a>
+        </div>        <!-- Right Actions -->
+        <div class="d-flex align-items-center gap-3">
+            <div id="notificationBell" class="position-relative"></div>
+            <div style="width:1px;height:22px;background:rgba(255,255,255,0.15);"></div>
+            <div id="nav-user-profile" class="dash-nav-avatar" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);" onclick="window.showDashboardSection&&window.showDashboardSection('profile')" title="My Profile">US</div>
+            <button onclick="logout&&logout()" class="dash-nav-logout-btn" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; padding: 6px 16px; border-radius: 20px; font-weight:600; font-size:0.85rem; transition:all 0.2s;">Logout</button>
         </div>
     </nav>
-
-    <!-- Floating Menu Trigger (Shown when nav hidden) -->
-    <button id="floating-menu-btn" class="fixed top-6 right-6 z-[1001] bg-[#1b4332] text-white p-3 rounded-full shadow-elevated opacity-0 invisible scale-75 hover:scale-100 transition-all">
-        <span class="material-symbols-outlined text-2xl">menu</span>
-    </button>
-
-    <!-- Mobile Menu Overlay -->
-    <div id="mobile-menu" class="fixed inset-0 bg-[#1b4332] z-[999] opacity-0 invisible flex flex-col p-8 pt-24 text-white">
-        <button class="absolute top-6 right-6 p-2" id="mobile-menu-close">
-            <span class="material-symbols-outlined text-4xl">close</span>
-        </button>
-        <div class="flex flex-col gap-6 text-2xl font-bold font-lexend mt-8" id="nav-links-container-mobile">
-            <!-- Dynamically populated -->
-        </div>
-        <div class="mt-auto border-t border-white/10 pt-8 flex items-center gap-4">
-            <div id="nav-user-profile-mobile" class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center font-bold">US</div>
-            <div>
-                <p id="nav-user-name-mobile" class="font-bold">User Name</p>
-                <button onclick="logout && logout()" class="text-sm text-emerald-100/60 font-medium">Logout</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="pt-20 md:pt-28"></div>
+    <!-- Desktop spacer -->
+    <div class="d-none d-lg-block" style="height:62px;"></div>
 
 
-    <!-- Dynamic Live Wallpaper -->
+    <!-- Forest Sanctuary Whisper Background -->
+    <div id="forest-sanctuary-bg"></div>
     <div id="liveWallpaperBg" style="position: fixed; inset: 0; z-index: -1; pointer-events: none;"></div>
 
     <!-- Dashboard Content Wrapper (Hidden until onboarding check) -->
@@ -295,82 +261,82 @@
       style="position: relative; z-index: 2"
     >
       <div class="container mb-5 dashboard-content-limit">
-        <div
-          class="mb-6 d-flex justify-content-between align-items-center flex-wrap gap-4 px-2"
-        >
-          <div class="animate-fade-in">
-            <span
-              class="badge bg-secondary-container-soft text-secondary-container px-3 py-1.5 mb-2 fw-800 text-uppercase tracking-widest fs-8"
-              >Platform Insights</span
-            >
-            <h1
-              id="dashboardGreeting"
-              class="display-4 fw-900 mb-2"
-              style="
-                font-family: var(--font-head);
-                color: var(--brand-green);
-                letter-spacing: -1px;
-              "
-            >
-              Good morning, Member
-            </h1>
-            <p class="text-muted fw-500 fs-5 mb-0 opacity-75">
-              Welcome back to your Innovation Dashboard.
-            </p>
+          <div class="animate-fade-in w-100">
+            <header class="mb-5 py-4">
+              <h1 id="dashboardGreeting" class="sanctuary-header-title">Good evening, Member</h1>
+              <p id="dashboardSubGreeting" class="sanctuary-header-desc">
+                Welcome back to your Sanctuary. Your innovation velocity is up 12% this week. Here is what's happening across your initiatives.
+              </p>
+            </header>
           </div>
-        </div>
 
         <!-- Profile Completion Progress (Injected by mentor-dashboard.js) -->
         <div id="mentorProfileCompletion" class="mb-4" style="display: none">
           <!-- Progress bar injected here -->
         </div>
 
-        <!-- Landing Quick Stats (Injected by role JS) -->
-        <div id="landingStatsRow" class="row g-4 mb-5" style="display: none">
-          <!-- Stats cards injected here -->
+        <!-- Landing Quick Stats Bento (Injected by role JS) -->
+        <div id="landingStatsRow" class="row g-4 mb-5 mx-0" style="display: none">
+          <!-- Bento cards injected here -->
         </div>
 
-        <!-- Platform Analytics - Removed for Cleanup -->
-        <div id="analyticsSection" class="row g-4 mb-5" style="display: none">
+        <!-- Dashboard Analytics Graphs -->
+        <div id="dashboardGraphsSection" class="mb-5" style="display:none;">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="graph-card">
+                        <div class="graph-card-header">
+                            <span class="graph-card-icon"><i class="fa fa-rocket"></i></span>
+                            <div>
+                                <h6 class="graph-card-title">Projects by Status</h6>
+                                <p class="graph-card-sub">Your innovation pipeline</p>
+                            </div>
+                        </div>
+                        <div class="graph-card-body">
+                            <canvas id="projectStatusChart" style="max-height:200px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="graph-card">
+                        <div class="graph-card-header">
+                            <span class="graph-card-icon graph-card-icon--amber"><i class="fa fa-users"></i></span>
+                            <div>
+                                <h6 class="graph-card-title">Mentorship Status</h6>
+                                <p class="graph-card-sub">Connection overview</p>
+                            </div>
+                        </div>
+                        <div class="graph-card-body">
+                            <canvas id="mentorActivityChart" style="max-height:200px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="graph-card">
+                        <div class="graph-card-header">
+                            <span class="graph-card-icon graph-card-icon--dark"><i class="fa fa-bar-chart"></i></span>
+                            <div>
+                                <h6 class="graph-card-title">Platform Activity</h6>
+                                <p class="graph-card-sub">Recent engagement</p>
+                            </div>
+                        </div>
+                        <div class="graph-card-body">
+                            <canvas id="activityTrendChart" style="max-height:200px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row g-4">
-          <div class="col-lg-8">
+          <div class="col-12">
             <div class="dashboard-grid-container" id="dashboardCardsGrid">
               <!-- Role-based cards injected by JS -->
             </div>
           </div>
-          <div class="col-lg-4">
-            <!-- Activity Timeline (New) -->
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-              <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
-                  <span class="material-symbols-outlined text-primary">history</span>
-                  Recent Activity
-                </h5>
-                <button class="btn btn-light btn-sm rounded-circle p-1">
-                  <span class="material-symbols-outlined fs-6">refresh</span>
-                </button>
-              </div>
-              <div class="card-body p-0">
-                <div id="activityTimeline" class="p-3" style="max-height: 400px; overflow-y: auto;">
-                  <div class="text-center py-5 text-muted">
-                    <span class="material-symbols-outlined fs-1 mb-2">pending_actions</span>
-                    <p class="small mb-0">No recent activity found.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Platform Stats/Tips (New) -->
-            <div class="card border-0 bg-emerald-900 text-white shadow-sm rounded-4 overflow-hidden article-wrapper">
-              <div class="card-body p-4">
-                <h6 class="text-emerald-300 fw-bold text-uppercase fs-8 mb-3">Innovation Tip</h6>
-                <p class="mb-0 fs-14 fw-500 opacity-90">"The best way to predict the future is to create it. Keep iterating on your project goals!"</p>
-              </div>
-            </div>
-          </div>
         </div>
+      </div> <!-- End container -->
+    </div> <!-- End dashboardQuickAccess -->
       </div>
     </div>
 
@@ -1371,7 +1337,8 @@
             const isOnboardingVisible = onboardingContent && onboardingContent.style.display === 'block';
 
             if (!overlay && !connectionError && (!dash || dash.style.display === 'none') && !isOnboardingVisible) {
-                document.getElementById('dashboardFailSafe').style.display = 'block';
+                const failSafe = document.getElementById('dashboardFailSafe');
+                if(failSafe) failSafe.style.display = 'block';
             }
         }, 5000);
 
@@ -1753,57 +1720,7 @@
 
         const allNavItems = [...navItems, ...sharedItems];
 
-        // NEW: Populate the renovated navbar
-        const navContainer = document.getElementById('navContainer');
-        const navContainerMobile = document.getElementById('nav-links-container-mobile');
-        
-        if (navContainer && navContainerMobile) {
-            const navHTML = allNavItems.map(link => {
-                let action = '';
-                
-                if (link.section) {
-                    action = `onclick="window.showDashboardSection('${link.section}')"`;
-                } else if (link.link && link.link.includes('showDashboardSection')) {
-                    const sectionId = link.link.match(/'([^']+)'/)?.[1];
-                    action = sectionId ? `onclick="window.showDashboardSection('${sectionId}')"` : '';
-                } else {
-                    return `<a class="nav-item-link text-white/80 hover:text-white font-lexend font-bold tracking-tight transition-all px-4 py-2 rounded-xl hover:bg-white/5 whitespace-nowrap text-[14px] uppercase border-b-2 border-transparent" 
-                               href="${link.link || '#'}">${link.label}</a>`;
-                }
-                
-                return `
-                    <a class="nav-item-link text-white/80 hover:text-white font-lexend font-bold tracking-tight transition-all px-4 py-2 rounded-xl hover:bg-white/5 whitespace-nowrap text-[14px] uppercase border-b-2 border-transparent cursor-pointer" 
-                       ${action}>
-                        ${link.label}
-                    </a>
-                `;
-            }).join('');
-
-            navContainer.innerHTML = navHTML;
-            if (navContainerMobile) {
-                navContainerMobile.innerHTML = navHTML + `
-                    <a class="nav-link text-amber-300 hover:text-white font-lexend font-bold tracking-tight transition-all py-1 fs-13 whitespace-nowrap cursor-pointer border-t border-white/10 mt-4 pt-4" 
-                       href="index.html">Main Website</a>
-                `;
-            }
-        }
-            
-        // Highlight active link (simple approach)
-        // Highlight active link
-        const links = navContainer.querySelectorAll('.nav-item-link');
-        links.forEach(l => {
-            l.addEventListener('click', function() {
-                links.forEach(ol => ol.classList.remove('text-white', 'border-secondary-container', 'font-bold', 'bg-white/10'));
-                l.classList.add('text-white', 'font-bold', 'bg-white/10');
-                l.classList.remove('text-white/80');
-                // Close mobile menu
-                const mobileMenu = document.getElementById('mobile-menu');
-                if(mobileMenu) {
-                    mobileMenu.classList.add('opacity-0', 'invisible');
-                    mobileMenu.classList.remove('opacity-100', 'visible');
-                }
-            });
-        });
+        // Active links and nav container logic is now handled by innovator-dashboard.js and HTML nav bar
 
         // --- NEW: Dynamic Greeting Logic ---
         const greetingEl = document.getElementById("dashboardGreeting");
@@ -1879,66 +1796,7 @@
         updateP(profileCircleMobile, avatarUrl, name);
         if (mobileName) mobileName.textContent = name;
 
-        // NEW: Navbar Scroll and Mobile Toggle Logic
-        const nav = document.getElementById('main-nav');
-        const floatBtn = document.getElementById('floating-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenuClose = document.getElementById('mobile-menu-close');
-        
-        let lastScrollY = window.scrollY;
-
-        const openMenu = () => {
-            if(mobileMenu) {
-                mobileMenu.classList.remove('opacity-0', 'invisible');
-                mobileMenu.classList.add('opacity-100', 'visible');
-            }
-        };
-
-        const closeMenu = () => {
-            if(mobileMenu) {
-                mobileMenu.classList.add('opacity-0', 'invisible');
-                mobileMenu.classList.remove('opacity-100', 'visible');
-            }
-        };
-        
-        window.addEventListener('scroll', () => {
-            const currentScrollY = window.scrollY;
-            const navInner = document.getElementById('nav-inner');
-            
-            if (currentScrollY > 60) {
-                nav.classList.add('nav-scrolled');
-                if (navInner) {
-                    navInner.classList.remove('py-3', 'md:py-4');
-                    navInner.classList.add('py-2');
-                }
-            } else {
-                nav.classList.remove('nav-scrolled');
-                if (navInner) {
-                    navInner.classList.remove('py-2');
-                    navInner.classList.add('py-3', 'md:py-4');
-                }
-            }
-            
-            if (currentScrollY > lastScrollY && currentScrollY > 200) {
-                nav.classList.add('nav-hidden');
-                if (floatBtn) {
-                   floatBtn.classList.remove('opacity-0', 'invisible', 'scale-75');
-                   floatBtn.classList.add('opacity-100', 'visible', 'scale-100');
-                }
-            } else {
-                nav.classList.remove('nav-hidden');
-                if (floatBtn) {
-                   floatBtn.classList.add('opacity-0', 'invisible', 'scale-75');
-                   floatBtn.classList.remove('opacity-100', 'visible', 'scale-100');
-                }
-            }
-            lastScrollY = currentScrollY;
-        }, { passive: true });
-
-        if (mobileMenuBtn) mobileMenuBtn.onclick = openMenu;
-        if (floatBtn) floatBtn.onclick = openMenu;
-        if (mobileMenuClose) mobileMenuClose.onclick = closeMenu;
+        // NEW: Scroll logic now handled by Bootstrap fixed-top class / StaggeredMenu mobile toggle
 
         // Store user in localStorage for mock service lookups
         try {

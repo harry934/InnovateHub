@@ -577,17 +577,28 @@ const SupabaseService = {
     },
 
     subscribeToNotifications(userId, callback) {
+        if (!userId) return null;
+        
+        const channelId = `notifications-${userId}`;
+        // Remove existing channel if any to prevent duplicate subs
+        window.supabase.removeChannel(window.supabase.channel(channelId));
+
         return window.supabase
-            .channel(`public:notifications:user_id=eq.${userId}`)
+            .channel(channelId)
             .on('postgres_changes', { 
                 event: '*', 
                 schema: 'public', 
                 table: 'notifications', 
                 filter: `user_id=eq.${userId}` 
-            }, payload => {
+            }, (payload) => {
+                console.log('SupabaseService: Real-time notification received', payload);
                 callback(payload);
             })
-            .subscribe();
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('SupabaseService: Real-time notifications subscribed ✓');
+                }
+            });
     },
 
     // â”€â”€â”€ Feedback & Reports â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

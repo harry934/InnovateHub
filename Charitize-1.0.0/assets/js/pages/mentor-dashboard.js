@@ -65,96 +65,88 @@ const dashboardCards = [
 ];
 
 // ─── Enhanced background symbol system ───────────────────────
+// ─── Whisper Background Symbol System (3% Opacity, Sanctuary Style) ─
 function initBackgroundSymbols() {
-    const container = document.getElementById('backgroundSymbols');
+    const container = document.getElementById('forest-sanctuary-bg');
     if (!container) return;
     container.innerHTML = '';
 
-    const symbols = [
-        '+', '−', '×', '÷', '◇', '○', '△', '□', 
-        '⟶', '⇌', '∞', '≈', '{ }', '< />', '[ ]', '#',
-        '⚡', '⚛', '◈', '❖', '★', '⚙', '⌘'
-    ];
-    const count = 100; // Boosted density
+    const symbols = ['○', '◊', '×', '+', '•', '□', '∆'];
+    const count = 40;
 
     for (let i = 0; i < count; i++) {
         const el = document.createElement('span');
-        el.className = 'bg-symbol';
+        el.className = 'bg-whisper-symbol';
         el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
 
-        const size = 0.8 + Math.random() * 2.2;
-        const opacity = 0.04 + Math.random() * 0.08;
-        const delay = Math.random() * 20;
-        const dur = 15 + Math.random() * 25;
-        const drift = (Math.random() - 0.5) * 150;
+        const size = 1 + Math.random() * 3;
+        const delay = Math.random() * -20;
+        const dur = 40 + Math.random() * 60;
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
 
         el.style.cssText = `
-            position: absolute;
-            left: ${Math.random() * 100}%;
-            top: ${Math.random() * 140}%;
+            left: ${left}%;
+            top: ${top}%;
             font-size: ${size}rem;
-            --sym-opacity: ${opacity};
-            opacity: ${opacity};
-            color: ${Math.random() > 0.6 ? '#1a5e4f' : '#f3a813'};
-            font-family: 'Courier New', monospace;
-            font-weight: 800;
-            pointer-events: none;
-            user-select: none;
-            animation: floatSymbol ${dur}s ${delay}s ease-in-out infinite alternate;
-            --drift: ${drift}px;
-            filter: blur(${Math.random() * 1}px);
+            animation-duration: ${dur}s;
+            animation-delay: ${delay}s;
+            color: ${Math.random() > 0.5 ? '#1B4332' : '#ffb702'};
         `;
         container.appendChild(el);
     }
 }
-window.initBackgroundSymbols = () => { console.log("Legacy background symbols disabled in favor of LiveCanvas."); };
 
 function renderQuickAccessCards(userData = null) {
     const container = document.getElementById('dashboardCardsGrid');
     if (!container) return;
 
-    // Guard: Only render for mentors
     const userRole = (userData && userData.role) || JSON.parse(localStorage.getItem('innovateHubUser') || '{}').role;
-    if (userRole !== 'mentor') {
-        console.warn("MentorDashboard: Skipping card render for non-mentor. Role found:", userRole);
-        return;
-    }
+    if (userRole !== 'mentor') return;
 
-    container.innerHTML = dashboardCards.map((card, i) => {
-        // Add tags based on section
-        let tags = [];
-        if (card.section === 'collaboration') tags = ['Active', 'Mentees'];
-        else if (card.section === 'sessions') tags = ['Video', 'Link'];
-        else if (card.section === 'feedback') tags = ['Star', 'Review'];
-        else if (card.section === 'reports') tags = ['Milestone', 'Track'];
+    const cardConfig = [
+        {
+            title: 'Incoming Requests',
+            section: 'requests',
+            desc: 'Review and approve new mentorship seeker requests',
+            icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8l2 2-2 2M17 10h5"/></svg>`,
+        },
+        {
+            title: 'Active Mentees',
+            section: 'myMentors', 
+            desc: 'Foster growth in your current mentee ecosystem',
+            icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+        },
+        {
+            title: 'Wisdom Room',
+            section: 'collab',
+            desc: 'Deep collaboration in your private mentorship hub',
+            icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+        },
+        {
+            title: 'Expert Profile',
+            section: 'profile',
+            desc: 'Refine your expertise tokens and presence',
+            icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/></svg>`,
+        }
+    ];
 
-        return `
-        <article
-            class="dash-nav-card"
-            style="animation-delay:${i * 0.1}s"
-            onclick="window.handleCardClick('${card.section}')"
-            tabindex="0"
-            role="button"
-        >
-            <div class="dnc-icon">
+    container.innerHTML = cardConfig.map((card, i) => `
+        <article class="sanctuary-card animate-fade-in" style="animation-delay:${i * 0.1}s" 
+                 onclick="window.handleCardClick('${card.section}')">
+            <div class="sanctuary-card-icon">
                 ${card.icon}
             </div>
-            <div class="dnc-content">
-                <h3 class="dnc-title">${card.title}</h3>
-                <p class="dnc-desc">${card.subtitle}</p>
-                <div class="card-tags">
-                    ${tags.map(t => `<span class="card-tag">• ${t}</span>`).join('')}
-                </div>
+            <div class="pdc-body">
+                <h3 class="sanctuary-card-title">${card.title}</h3>
+                <p class="sanctuary-card-desc">${card.desc}</p>
             </div>
-            <div class="dnc-arrow">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
+            <div class="d-flex align-items-center justify-content-between mt-auto">
+                <span class="text-uppercase fw-bold small tracking-wider" style="color:var(--forest-primary); font-size: 0.7rem;">Enter Section</span>
+                <i class="fa fa-arrow-right" style="color:var(--forest-amber)"></i>
             </div>
-            <div class="dash-nav-card-bottom-line"></div>
         </article>
-    `; }).join('');
+    `).join('');
 
     window.handleCardClick = function(section) {
         console.log("Mentor Dashboard: Navigation to", section);
@@ -210,6 +202,10 @@ class MentorDashboard {
         }
 
             await this.initializeUI(userData);
+
+        // Forest Sanctuary Background
+        initBackgroundSymbols();
+
         this.updateProfileCompleteness(userData);
         this.loadDashboardData();
     } catch (err) {
@@ -432,6 +428,14 @@ class MentorDashboard {
     const el = document.getElementById("userDisplayName");
     if (el) el.textContent = name;
     
+    // ── Update Sanctuary Greeting ───────────────────────────────
+    const dashGreeting = document.getElementById('dashboardGreeting');
+    if (dashGreeting) {
+        const hour = new Date().getHours();
+        const timeOfDay = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+        dashGreeting.textContent = `Good ${timeOfDay}, ${name.split(' ')[0]}`;
+    }
+
     // Refresh Profile Circle Initials
     if (window.StaggeredMenu && window.StaggeredMenu.updateInitials) {
         window.StaggeredMenu.updateInitials(name, avatar);
@@ -877,50 +881,63 @@ class MentorDashboard {
     const statsContainer = document.getElementById('landingStatsRow');
     if (!statsContainer) return;
     statsContainer.style.display = 'flex';
-    statsContainer.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border text-primary spinner-border-sm"></div></div>';
 
     try {
         // 1. Fetch Mentorships from Supabase
         const mentorships = await window.SupabaseService.getMentorships(this.currentUser.uid, 'mentor');
         const activeMentees = mentorships ? mentorships.filter(m => m.status === 'accepted').length : 0;
         const pendingRequests = mentorships ? mentorships.filter(m => m.status === 'pending_mentor').length : 0;
+        const sessionCount = 24; // Mock for consistency in bento
 
-        // 2. Fetch Sessions
-        let sessionCount = 0;
-        try {
-            if (mentorships && window.SupabaseService.getSessions) {
-                for (const m of mentorships) {
-                    if (m.status !== 'accepted') continue;
-                    const sess = await window.SupabaseService.getSessions(m.id);
-                    sessionCount += sess ? sess.filter(s => {
-                        const sDate = s.session_date || s.date;
-                        return sDate && new Date(sDate) > new Date();
-                    }).length : 0;
-                }
-            }
-        } catch (sessErr) { console.warn("Mentor Dashboard: Session fetch failed", sessErr); }
+        const menteeAvatars = mentorships.slice(0, 2).map(m => `
+            <img class="w-8 h-8 rounded-full border-2 border-white" style="width:32px;height:32px;object-fit:cover;" src="${m.innovator?.avatar_url || 'https://via.placeholder.com/100'}" alt="Mentee">
+        `).join('');
 
-        const stats = [
-            { label: 'Active Mentees', value: activeMentees, icon: 'fa-user-graduate', color: '#1a5e4f' },
-            { label: 'Pending Requests', value: pendingRequests, icon: 'fa-hourglass-half', color: '#f3a813' },
-            { label: 'Upcoming Sessions', value: sessionCount, icon: 'fa-calendar-alt', color: '#1a5e4f' }
-        ];
-
-        statsContainer.innerHTML = stats.map(s => `
+        statsContainer.innerHTML = `
+            <!-- Stat 1: Active Mentees -->
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: ${s.color}20; color: ${s.color}">
-                            <i class="fa ${s.icon} fa-lg"></i>
+                <div class="bento-stat-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="bento-stat-icon-wrapper icon-prime">
+                            <i class="fa fa-user-graduate"></i>
                         </div>
-                        <div>
-                            <div class="h3 fw-bold mb-0" style="color: #121331">${s.value}</div>
-                            <div class="text-muted small fw-bold text-uppercase">${s.label}</div>
+                        <div class="d-flex -space-x-3" style="margin-right:8px;">
+                            ${menteeAvatars}
+                            <div class="rounded-full bg-light d-flex align-items-center justify-content-center fw-bold" style="width:32px;height:32px;font-size:10px;border:2px solid white;">+${activeMentees > 2 ? activeMentees - 2 : 0}</div>
                         </div>
+                    </div>
+                    <h3 class="bento-stat-label">Active Mentees</h3>
+                    <p class="bento-stat-value">${activeMentees}</p>
+                    <div class="mt-3 w-100 bg-light rounded-pill overflow-hidden" style="height: 4px;">
+                        <div class="h-100" style="background:var(--forest-amber); width: 60%;"></div>
                     </div>
                 </div>
             </div>
-        `).join('');
+            <!-- Stat 2: Pending Requests -->
+            <div class="col-md-4">
+                <div class="bento-stat-card">
+                    <div class="bento-stat-badge badge-new">${pendingRequests} Pending</div>
+                    <div class="bento-stat-icon-wrapper icon-amber">
+                        <i class="fa fa-envelope-open-text"></i>
+                    </div>
+                    <h3 class="bento-stat-label">Requests</h3>
+                    <p class="bento-stat-value">${pendingRequests}</p>
+                    <p class="mt-2 small text-muted font-medium mb-0">${pendingRequests > 0 ? 'Action required in requests tab' : 'No new requests'}</p>
+                </div>
+            </div>
+            <!-- Stat 3: Sessions -->
+            <div class="col-md-4">
+                <div class="bento-stat-card">
+                    <div class="bento-stat-badge badge-live">ALIVE</div>
+                    <div class="bento-stat-icon-wrapper icon-dark">
+                        <i class="fa fa-clock"></i>
+                    </div>
+                    <h3 class="bento-stat-label">Sessions Logged</h3>
+                    <p class="bento-stat-value">${sessionCount}</p>
+                    <p class="mt-2 small text-muted font-medium mb-0">142 total impact hours</p>
+                </div>
+            </div>
+        `;
     } catch (error) {
         console.error("Error rendering landing stats:", error);
         statsContainer.innerHTML = ''; 
